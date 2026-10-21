@@ -65,35 +65,6 @@ function accLever(sx,sy){
   return L;
 }
 function accLeverSys(sys){return sys&&isFinite(sys.sx)?accLever(sys.sx,sys.sy):accLever(1e6,1e6);}
-const ACC_OLD_FUEL=fuelPriceHere;
-fuelPriceHere=function(){const p=ACC_OLD_FUEL.apply(this,arguments);return G.sys?Math.max(1,Math.round(p*accLeverSys(G.sys).fuel)):p;};
-const ACC_OLD_REPAIR=repairCost;
-repairCost=function(){const p=ACC_OLD_REPAIR.apply(this,arguments);return G.sys&&G.sys.station?Math.max(4,Math.round(p*accLeverSys(G.sys).repair)):p;};
-const ACC_OLD_CTX=marketCtx;
-marketCtx=function(sys){const C=ACC_OLD_CTX.apply(this,arguments);C.occ*=accLeverSys(sys).sell;return C;};
-/* прилавок: скупка выше на sell — запрос не растёт вместе с ней; ниже на buy; и всегда дороже сдачи */
-const ACC_OLD_BUYP=buyPriceFor;
-buyPriceFor=function(sys,k){
-  const p=ACC_OLD_BUYP.apply(this,arguments),L=accLeverSys(sys);
-  if(L.sell===1&&L.buy===1)return p;
-  return Math.max((marketFor(sys)[k]|0)+1,Math.round(p*L.buy/L.sell));
-};
-const ACC_OLD_NPC=watchNpcRate;
-watchNpcRate=function(S){const p=ACC_OLD_NPC.apply(this,arguments);return p>0?Math.min(.9,p+accLeverSys(S).npc):p;};
-const ACC_OLD_GREAD=gaugeRead;
-gaugeRead=function(key){
-  const g=ACC_OLD_GREAD.apply(this,arguments),xy=gaugeKeyXY(key),L=accLever(xy[0],xy[1]);
-  if(L.sFloor)g.s=Math.max(g.s,L.sFloor);
-  if(L.mFloor)g.m=Math.max(g.m,L.mFloor);
-  if(L.oFloor)g.o=Math.max(g.o,L.oFloor);
-  return g;
-};
-const ACC_OLD_DISP=dispIssue;
-dispIssue=function(kind,S){
-  const it=ACC_OLD_DISP.apply(this,arguments);
-  if(it){const m=accLeverSys(S).disp;if(m!==1)it.pay=dispR10(it.pay*m);}
-  return it;
-};
 /* ── снабжение станции: раз на заход ── */
 function accSupply(sys){
   if(!sys||!sys.station)return;
@@ -101,19 +72,6 @@ function accSupply(sys){
   if(A.supV[sys.key]===tag)return;
   A.supV[sys.key]=tag;A.sup[sys.key]=(A.sup[sys.key]|0)+1;
 }
-const ACC_OLD_NEED=needClose;
-needClose=function(sys){const r=ACC_OLD_NEED.apply(this,arguments);if(r)accSupply(sys);return r;};
-const ACC_OLD_ORDER=orderDeliver;
-orderDeliver=function(){const sys=G.sys,r=ACC_OLD_ORDER.apply(this,arguments);if(r)accSupply(sys);return r;};
-const ACC_OLD_DONE=dispDone;
-dispDone=function(it){
-  const r=ACC_OLD_DONE.apply(this,arguments);
-  if(it&&(it.kind==="haul"||it.v==="tri"||it.v==="dvoynaya")){const S=dispSysOf(it.legs[it.legs.length-1].key);if(S)accSupply(S);}
-  return r;
-};
-/* разнарядка по норме (28j) — право на корпуса второй ступени */
-const ACC_OLD_ALLOT=watchAllot;
-watchAllot=function(){const r=ACC_OLD_ALLOT.apply(this,arguments);if(r)accSt().allot=1;return r;};
 /* ── поручитель ── */
 function accSponsor(){
   for(const m of (G.mgrs||[]))if(!m.stalled&&mgrLevel(m)>=ACC_MGR_LVL)return {who:m.name,why:"управляющий"};
@@ -140,32 +98,54 @@ function accGate(id,S){
   if(c<3)return "допуск III и поручитель";
   return accSponsor()?"":"нужен поручитель";
 }
-const ACC_OLD_YARD=yardGate;
-yardGate=function(id,S){
-  const g=ACC_OLD_YARD.apply(this,arguments),a=accGate(id,S);
-  if(!a||(g&&g.lock))return g;   /* дело с державой (04c) — своя причина, она главнее */
-  return {mul:g?g.mul:1,lock:a,why:a};
-};
 /* ── цеха второго и третьего яруса: норма участка ── */
 function accNormOk(){const W=typeof watchSt==="function"?watchSt():null;return !!(W&&W.last&&W.last.norm>=ACC_NORM);}
-const ACC_OLD_BWHY=bldWhy;
-bldWhy=function(sys,def){
-  const w=ACC_OLD_BWHY.apply(this,arguments);
-  if(w||!def||!(def.fam==="C"||(def.fam==="D"&&def.id!=="slipway")))return w;
-  return accNormOk()?"":"ярус дают по норме: нужна сводка участка не ниже "+ACC_NORM+" %";
-};
-/* ── запись ── */
-const ACC_OLD_SNAP=snapshot;
-snapshot=function(){const s=ACC_OLD_SNAP.apply(this,arguments);s.acc=G.acc||null;return s;};
-const ACC_OLD_APPLY=applySave;
-applySave=function(s){
-  const r=ACC_OLD_APPLY.apply(this,arguments);
-  if(!r)return r;
+/* прилавок: скупка выше на sell — запрос не растёт вместе с ней; ниже на buy; и всегда дороже сдачи */
+function accCounter(sys,k,p){
+  const L=accLeverSys(sys);
+  if(L.sell===1&&L.buy===1)return p;
+  return Math.max((marketFor(sys)[k]|0)+1,Math.round(p*L.buy/L.sell));
+}
+function accRestore(s){
   const b=s&&s.acc;G.acc=null;
-  if(b&&typeof b==="object"){
-    const A=accSt();A.allot=b.allot?1:0;
-    if(b.sup&&typeof b.sup==="object")for(const k in b.sup)if(/^-?\d+,-?\d+$/.test(k))A.sup[k]=Math.max(0,b.sup[k]|0);
-    if(b.supV&&typeof b.supV==="object")for(const k in b.supV)if(/^-?\d+,-?\d+$/.test(k))A.supV[k]=String(b.supV[k]);
-  }
-  return r;
-};
+  if(!b||typeof b!=="object")return;
+  const A=accSt();A.allot=b.allot?1:0;
+  if(b.sup&&typeof b.sup==="object")for(const k in b.sup)if(/^-?\d+,-?\d+$/.test(k))A.sup[k]=Math.max(0,b.sup[k]|0);
+  if(b.supV&&typeof b.supV==="object")for(const k in b.supV)if(/^-?\d+,-?\d+$/.test(k))A.supV[k]=String(b.supV[k]);
+}
+const ACC_TIER2=def=>def&&(def.fam==="C"||(def.fam==="D"&&def.id!=="slipway"));
+/* ── крючки — одной таблицей, как у диспетчера (28m): имя → обёртка над прежней функцией ── */
+const ACC_HOOKS=[
+  /* рычаги ступеней — в настоящих ценах */
+  ["fuelPriceHere",O=>function(){const p=O.apply(this,arguments);return G.sys?Math.max(1,Math.round(p*accLeverSys(G.sys).fuel)):p;}],
+  ["repairCost",   O=>function(){const p=O.apply(this,arguments);return G.sys&&G.sys.station?Math.max(4,Math.round(p*accLeverSys(G.sys).repair)):p;}],
+  ["marketCtx",    O=>function(sys){const C=O.apply(this,arguments);C.occ*=accLeverSys(sys).sell;return C;}],
+  ["buyPriceFor",  O=>function(sys,k){return accCounter(sys,k,O.apply(this,arguments));}],
+  ["watchNpcRate", O=>function(S){const p=O.apply(this,arguments);return p>0?Math.min(.9,p+accLeverSys(S).npc):p;}],
+  ["gaugeRead",    O=>function(key){
+    const g=O.apply(this,arguments),xy=gaugeKeyXY(key),L=accLever(xy[0],xy[1]);
+    if(L.sFloor)g.s=Math.max(g.s,L.sFloor);
+    if(L.mFloor)g.m=Math.max(g.m,L.mFloor);
+    if(L.oFloor)g.o=Math.max(g.o,L.oFloor);
+    return g;}],
+  ["dispIssue",    O=>function(kind,S){const it=O.apply(this,arguments);if(it){const m=accLeverSys(S).disp;if(m!==1)it.pay=dispR10(it.pay*m);}return it;}],
+  /* снабжение: нужда, наряд, привоз диспетчера */
+  ["needClose",    O=>function(sys){const r=O.apply(this,arguments);if(r)accSupply(sys);return r;}],
+  ["orderDeliver", O=>function(){const sys=G.sys,r=O.apply(this,arguments);if(r)accSupply(sys);return r;}],
+  ["dispDone",     O=>function(it){
+    const r=O.apply(this,arguments);
+    if(it&&(it.kind==="haul"||it.v==="tri"||it.v==="dvoynaya")){const S=dispSysOf(it.legs[it.legs.length-1].key);if(S)accSupply(S);}
+    return r;}],
+  /* разнарядка по норме (28j) — право на корпуса второй ступени */
+  ["watchAllot",   O=>function(){const r=O.apply(this,arguments);if(r)accSt().allot=1;return r;}],
+  /* ворота: корпус (дело с державой, 04c, — своя причина, она главнее) и цех по норме */
+  ["yardGate",     O=>function(id,S){const g=O.apply(this,arguments),a=accGate(id,S);return (!a||(g&&g.lock))?g:{mul:g?g.mul:1,lock:a,why:a};}],
+  ["bldWhy",       O=>function(sys,def){
+    const w=O.apply(this,arguments);
+    if(w||!ACC_TIER2(def))return w;
+    return accNormOk()?"":"ярус дают по норме: нужна сводка участка не ниже "+ACC_NORM+" %";}],
+  /* запись */
+  ["snapshot",     O=>function(){const s=O.apply(this,arguments);s.acc=G.acc||null;return s;}],
+  ["applySave",    O=>function(s){const r=O.apply(this,arguments);if(r)accRestore(s);return r;}]
+];
+for(const [n,mk] of ACC_HOOKS){const O=window[n];if(typeof O!=="function")throw new Error("доступ: нет крючка "+n);window[n]=mk(O);}

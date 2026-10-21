@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 624 · top-level symbols: 8837
+Files: 624 · top-level symbols: 8820
 
 ## SYMBOLS
 
@@ -52,23 +52,10 @@ ABIL_HOLD                    src/16c-abil.js:29
 ABIL_KEY                     src/16c-abil.js:126
 ABIL_ST                      src/16c-abil.js:30
 ACC_FREE                     src/28n-access.js:20
+ACC_HOOKS                    src/28n-access.js:118-150
 ACC_NEVER_TIERS              src/28n-access.js:21
-ACC_OLD_ALLOT                src/28n-access.js:115
-ACC_OLD_APPLY                src/28n-access.js:160
-ACC_OLD_BUYP                 src/28n-access.js:75
-ACC_OLD_BWHY                 src/28n-access.js:151
-ACC_OLD_CTX                  src/28n-access.js:72
-ACC_OLD_DISP                 src/28n-access.js:91
-ACC_OLD_DONE                 src/28n-access.js:108
-ACC_OLD_FUEL                 src/28n-access.js:68
-ACC_OLD_GREAD                src/28n-access.js:83
-ACC_OLD_NEED                 src/28n-access.js:104
-ACC_OLD_NPC                  src/28n-access.js:81
-ACC_OLD_ORDER                src/28n-access.js:106
-ACC_OLD_REPAIR               src/28n-access.js:70
-ACC_OLD_SNAP                 src/28n-access.js:158
-ACC_OLD_YARD                 src/28n-access.js:143
 ACC_RUNG                     src/28n-access.js:23-46
+ACC_TIER2                    src/28n-access.js:116
 ACTION_RU                    src/15-input.js:144
 ACT_WEEK_MS                  src/05e-clearance.js:36
 ADJ                          src/21a4-base-adj.js:17-27
@@ -562,20 +549,11 @@ DIR_VEIN                     src/21a5-base-dir.js:29
 DIR_WORTH                    src/21a5-base-dir.js:25
 DIR_WORTH_CAP                src/21a5-base-dir.js:26
 DISP_ACC                     src/28m-dispatch.js:29
-DISP_DOCKING                 src/28m-dispatch.js:321
+DISP_DOCKING                 src/28m-dispatch.js:323
+DISP_HOOKS                   src/28m-dispatch.js:419-430
 DISP_KINDS                   src/28m-dispatch.js:25
 DISP_LIFE                    src/28m-dispatch.js:24
 DISP_NAMES                   src/28m-dispatch.js:26
-DISP_OLD_APPLY               src/28m-dispatch.js:410
-DISP_OLD_ARRIVE              src/28m-dispatch.js:334
-DISP_OLD_BOARD               src/28m-dispatch.js:405
-DISP_OLD_CANT                src/28m-dispatch.js:344
-DISP_OLD_CLOSE               src/28m-dispatch.js:346
-DISP_OLD_KILL                src/28m-dispatch.js:342
-DISP_OLD_MGR                 src/28m-dispatch.js:348
-DISP_OLD_OPEN                src/28m-dispatch.js:332
-DISP_OLD_SNAP                src/28m-dispatch.js:408
-DISP_OLD_SURF                src/28m-dispatch.js:340
 DISP_V                       src/28m-dispatch.js:31-52
 DISP_WIN                     src/28m-dispatch.js:23
 DLID                         src/08bh-gpu-hud.js:14
@@ -2507,14 +2485,16 @@ abilPadRim                   src/16c-abil.js:139-150
 abilReady01                  src/16c-abil.js:35-38
 abilStale                    src/16c-abil.js:118-124
 abilTick                     src/16c-abil.js:127-136
-accGate                      src/28n-access.js:133-142
-accHullNeed                  src/28n-access.js:126-132
+accCounter                   src/28n-access.js:104-108
+accGate                      src/28n-access.js:91-100
+accHullNeed                  src/28n-access.js:84-90
 accLever                     src/28n-access.js:57-66
 accLeverSys                  src/28n-access.js:67
-accNormOk                    src/28n-access.js:150
-accSponsor                   src/28n-access.js:118-124
+accNormOk                    src/28n-access.js:102
+accRestore                   src/28n-access.js:109-115
+accSponsor                   src/28n-access.js:76-82
 accSt                        src/28n-access.js:48-55
-accSupply                    src/28n-access.js:98-103
+accSupply                    src/28n-access.js:69-74
 accTestStation               tests/91zzzw9f-access.js:4-7
 actCouponUse                 src/05e-clearance.js:38
 actCoupons                   src/05e-clearance.js:37
@@ -3905,20 +3885,21 @@ dirGoodShare                 src/21a5-base-dir.js:67-72
 dirPool                      src/21a5-base-dir.js:44-48
 dirWeights                   src/21a5-base-dir.js:55-66
 dispAdvance                  src/28m-dispatch.js:259-267
-dispAlarm                    src/28m-dispatch.js:352-359
+dispAlarm                    src/28m-dispatch.js:336-343
+dispAlarmOff                 src/28m-dispatch.js:345-350
 dispCheck                    src/28m-dispatch.js:268-273
-dispDock                     src/28m-dispatch.js:322-331
-dispDone                     src/28m-dispatch.js:274-289
+dispDock                     src/28m-dispatch.js:324-333
+dispDone                     src/28m-dispatch.js:274-290
 dispFace                     src/28m-dispatch.js:210-215
 dispFill                     src/28m-dispatch.js:243-253
-dispGive                     src/28m-dispatch.js:291-303
+dispGive                     src/28m-dispatch.js:292-304
 dispGood                     src/28m-dispatch.js:83-86
 dispHop                      src/28m-dispatch.js:62
 dispIssue                    src/28m-dispatch.js:219-241
 dispLandable                 src/28m-dispatch.js:81
-dispLane                     src/28m-dispatch.js:361-368
+dispLane                     src/28m-dispatch.js:352-359
 dispLeg                      src/28m-dispatch.js:256
-dispLegWord                  src/28m-dispatch.js:369-378
+dispLegWord                  src/28m-dispatch.js:360-369
 dispMins                     src/28m-dispatch.js:257
 dispMkBring                  src/28m-dispatch.js:89-95
 dispMkCarry                  src/28m-dispatch.js:130-134
@@ -3939,23 +3920,25 @@ dispMkTalk                   src/28m-dispatch.js:140-145
 dispMkTri                    src/28m-dispatch.js:191-197
 dispMkYard                   src/28m-dispatch.js:110-117
 dispNear                     src/28m-dispatch.js:68-80
-dispOn                       src/28m-dispatch.js:318-320
+dispOn                       src/28m-dispatch.js:320-322
 dispPath                     src/28m-dispatch.js:87
 dispPerson                   src/28m-dispatch.js:216
 dispPick                     src/28m-dispatch.js:82
 dispQ                        src/28m-dispatch.js:65
 dispR10                      src/28m-dispatch.js:63
-dispRow                      src/28m-dispatch.js:379-396
+dispRestore                  src/28m-dispatch.js:397-415
+dispRow                      src/28m-dispatch.js:370-387
 dispRu                       src/28m-dispatch.js:64
-dispSection                  src/28m-dispatch.js:397-403
+dispSafe                     src/28m-dispatch.js:418
+dispSection                  src/28m-dispatch.js:388-394
 dispSn                       src/28m-dispatch.js:66
 dispSt                       src/28m-dispatch.js:53-60
 dispSysOf                    src/28m-dispatch.js:61
 dispTestDock                 tests/91zzzw9e-dispatch.js:9-12
 dispTestStations             tests/91zzzw9e-dispatch.js:4-8
 dispThree                    src/28m-dispatch.js:184-190
-dispTick                     src/28m-dispatch.js:305-316
-dispUrg                      src/28m-dispatch.js:351
+dispTick                     src/28m-dispatch.js:306-318
+dispUrg                      src/28m-dispatch.js:335
 dispUrgOk                    src/28m-dispatch.js:255
 dispW                        src/28m-dispatch.js:218
 dispatchEtherLine            src/12ag-holdfx.js:57-76
@@ -10539,7 +10522,7 @@ zoomTo                       src/15-input.js:358
 ## src/28l-gauge.js · 17 KB
   · три шкалы станции и каскад (M906 · DESIGN-game §4.2, §7.1):1
 
-## src/28m-dispatch.js · 28 KB
+## src/28m-dispatch.js · 29 KB
   · диспетчер: дело есть всегда (M907 · DESIGN-game §4.3):1
 
 ## src/28n-access.js · 11 KB
@@ -10721,7 +10704,7 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw9d-gauge.js · 8 KB
 
-## tests/91zzzw9e-dispatch.js · 8 KB
+## tests/91zzzw9e-dispatch.js · 10 KB
 
 ## tests/91zzzw9f-access.js · 8 KB
 

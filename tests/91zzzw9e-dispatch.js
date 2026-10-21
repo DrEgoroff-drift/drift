@@ -103,6 +103,33 @@ TEST_SUITES.push(()=>suite("диспетчер: шаги исполняются,
   D.it=[];const Q=dispIssue("long",S,{}),left=Q.due-now();
   dispTick();watchHand();clockAdvance(2*3600000);dispTick();watchBack();dispTick();
   ok(D.it.indexOf(Q)>=0&&Math.abs((Q.due-now())-left)<120000,"смена сдана два часа — наряд жив, осталось "+Math.round((Q.due-now())/60000)+" мин из "+Math.round(left/60000));
+  /* сданная смена переживает запись: простой до и после загрузки часов пункта не ест (Контроль 22.10) */
+  {
+    const left2=Q.due-now();
+    dispTick();watchHand();dispTick();
+    const sv=JSON.parse(JSON.stringify(snapshot()));
+    clockAdvance(3600000);G.disp=null;applySave(sv);
+    ok(watchHanded(),"смена сдана и после загрузки");
+    dispTick();clockAdvance(1800000);dispTick();watchBack();dispTick();
+    const q=dispSt().it.find(x=>x.id===Q.id);
+    ok(q&&Math.abs((q.due-now())-left2)<120000,"сдана → запись → полтора часа → загрузка: осталось "+(q?Math.round((q.due-now())/60000):"—")+" мин из "+Math.round(left2/60000));
+    const sv2=JSON.parse(JSON.stringify(snapshot()));delete sv2.disp.lt;G.disp=null;applySave(sv2);
+    ok(isFinite(dispSt().lt),"запись без отметки такта — часы с загрузки, не NaN");
+    G.disp=Object.assign(D,dispSt());   /* D — снова живой объект для проверок ниже */
+  }
+  /* табличка срочного гаснет, когда срочного больше нет */
+  {
+    const keep=D.it.slice();D.it=[];
+    const Uu=dispIssue("urg",S,{});
+    HANG.t.push({id:"disp.urg",lines:["x"],kind:"ship",n:420,n0:420,mode:"system",o:{urg:true,disp:Uu.id}});
+    dispDone(Uu);
+    ok(!HANG.t.some(x=>x.id==="disp.urg"),"срочное закрыто — табличка снята");
+    const Uv=dispIssue("urg",S,{});
+    HANG.t.push({id:"disp.urg",lines:["x"],kind:"ship",n:420,n0:420,mode:"system",o:{urg:true,disp:Uv.id}});
+    clockAdvance(Uv.due-now()+1000);dispTick();
+    ok(!HANG.t.some(x=>x.id==="disp.urg"),"срочное просрочено — табличка снята");
+    D.it=keep;
+  }
   /* запись */
   const s=JSON.parse(JSON.stringify(snapshot()));G.disp=null;applySave(s);
   ok(dispSt().it.length===1&&dispSt().it[0].legs.length===3&&dispSt().done===D.done&&dispSt().vb.length>0,"пункты, счёт и окно глаголов пережили запись");

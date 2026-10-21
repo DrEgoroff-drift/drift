@@ -285,6 +285,7 @@ function dispDone(it){
   if(S&&S.station&&(it.kind==="haul"||it.v==="tri")&&typeof watchHas==="function"&&watchHas(S)&&!watchHanded()){watchTick();watchSt().ord++;}
   tell("money",it.f.name+": «Спасибо. Записано на вас.» +"+got+" кр","ДЕЛО ЗАКРЫТО\n+"+got+" кр");
   if(it.kind==="urg"||it.kind==="long")recordAdd(it.f.name,it.kind==="urg"?"успели, когда было нужно":"наряд на три станции закрыт");
+  if(it.kind==="urg")dispAlarmOff();
   return got;
 }
 /* сдать груз кнопкой: купленное у этой же стойки — по цене приёмки (как наряд, 12aa) */
@@ -312,6 +313,7 @@ function dispTick(){
     const F=dispSysOf(it.from),cls=DISP_V[it.v]?DISP_V[it.v].cls:"";
     if(F&&F.station&&typeof gaugeAdd==="function")gaugeAdd(F,cls==="s"?-.1:0,cls==="m"?-.06:cls===""?-.03:0,cls==="o"?-.06:0);
     logAdd("dim",it.f.name+": «"+(it.kind==="urg"?"Не успели. Ладно.":"Не дождались. Отдали другим.")+"»");
+    if(it.kind==="urg")dispAlarmOff();
   }
 }
 /* ── обёртки: каждый шаг ловится настоящей функцией ── */
@@ -329,24 +331,6 @@ function dispDock(sys){
   }catch(e){logAdd("warn","СБОЙ · диспетчер: "+(e&&e.message));}
   finally{DISP_DOCKING=false;}
 }
-const DISP_OLD_OPEN=openStation;
-openStation=function(){if(G.sys)dispDock(G.sys);return DISP_OLD_OPEN.apply(this,arguments);};
-const DISP_OLD_ARRIVE=arriveSystem;
-arriveSystem=function(){
-  const r=DISP_OLD_ARRIVE.apply(this,arguments);
-  try{if(G.sys){dispTick();dispOn("arrive",G.sys.key);dispAlarm();}}catch(e){logAdd("warn","СБОЙ · диспетчер: "+(e&&e.message));}
-  return r;
-};
-const DISP_OLD_SURF=enterSurface;
-enterSurface=function(){const r=DISP_OLD_SURF.apply(this,arguments);try{if(G.sys)dispOn("land",G.sys.key);}catch(e){}return r;};
-const DISP_OLD_KILL=killPirate;
-killPirate=function(p){const k=G.sys&&G.sys.key;const r=DISP_OLD_KILL.apply(this,arguments);try{if(k&&!(p&&p.dummy))dispOn("kill",k);}catch(e){}return r;};
-const DISP_OLD_CANT=cantHall;
-cantHall=function(){const r=DISP_OLD_CANT.apply(this,arguments);try{if(G.sys&&G.mode==="dock")dispOn("cant",G.sys.key);}catch(e){}return r;};
-const DISP_OLD_CLOSE=closeStation;
-closeStation=function(){const r=DISP_OLD_CLOSE.apply(this,arguments);try{if(G.mode!=="dock")dispAlarm(true);}catch(e){}return r;};
-const DISP_OLD_MGR=mgrTick;
-mgrTick=function(){try{dispTick();}catch(e){logAdd("warn","СБОЙ · диспетчер: "+(e&&e.message));}return DISP_OLD_MGR.apply(this,arguments);};
 /* табличка тревоги (M803/M826b): срочное в полёте — у корабля, середина её по праву */
 function dispUrg(){return dispSt().it.find(x=>x.kind==="urg")||null;}
 function dispAlarm(force){
@@ -355,7 +339,14 @@ function dispAlarm(force){
   if(!force&&D.al===U.id)return false;
   D.al=U.id;
   const L=dispLeg(U);
-  return hangSay("disp.urg",["СРОЧНО · "+dispMins(U)+" мин",U.txt.split(". ")[0]+(L?" · "+dispSn(L.key):"")],"ship",420,{urg:true});
+  return hangSay("disp.urg",["СРОЧНО · "+dispMins(U)+" мин",U.txt.split(". ")[0]+(L?" · "+dispSn(L.key):"")],"ship",420,{urg:true,disp:U.id});
+}
+/* табличка гаснет, когда её срочного больше нет: сдано, просрочено или сменилось другим */
+function dispAlarmOff(){
+  if(typeof HANG==="undefined"||!HANG.t)return 0;
+  const U=dispUrg(),T=HANG.t;let n=0;
+  for(let i=T.length-1;i>=0;i--)if(T[i].id==="disp.urg"&&(!U||(T[i].o&&T[i].o.disp)!==U.id)){T.splice(i,1);n++;}
+  return n;
 }
 /* ── полоса К ВАМ: что на ней сейчас (для доски, бота и ворот) ── */
 function dispLane(){
@@ -402,20 +393,14 @@ function dispSection(){
   if(A.length){secHead("ДИСПЕТЧЕР",{count:A.length});for(const it of A)$body.appendChild(dispRow(it));}
 }
 LANE_RX.unshift([/^(СРОЧНО|ДИСПЕТЧЕР)/i,"you"]);
-const DISP_OLD_BOARD=stTabBoard;
-stTabBoard=function(){try{dispSection();}catch(e){logAdd("warn","СБОЙ · диспетчер: "+(e&&e.message));}return DISP_OLD_BOARD.apply(this,arguments);};
 /* ── запись ── */
-const DISP_OLD_SNAP=snapshot;
-snapshot=function(){const s=DISP_OLD_SNAP.apply(this,arguments);s.disp=G.disp||null;return s;};
-const DISP_OLD_APPLY=applySave;
-applySave=function(s){
-  const r=DISP_OLD_APPLY.apply(this,arguments);
-  if(!r)return r;
+function dispRestore(s){
   const b=s&&s.disp;G.disp=null;
   if(b&&typeof b==="object"){
     const D=dispSt();
     D.seq=b.seq|0;D.done=b.done|0;D.lost=b.lost|0;
-    if(isFinite(b.lt))D.lt=+b.lt;
+    /* без отметки такта часы берут начало с загрузки: простой под сданной сменой не теряется и не удваивается */
+    D.lt=isFinite(b.lt)&&b.lt!==null?+b.lt:now();
     if(Array.isArray(b.vb))D.vb=b.vb.filter(v=>DISP_V[v]).slice(-12);
     if(Array.isArray(b.it))for(const x of b.it){
       if(!x||!DISP_V[x.v]||!Array.isArray(x.legs)||!x.legs.length||!x.f)continue;
@@ -427,5 +412,20 @@ applySave=function(s){
         f:{seed:x.f.seed>>>0,name:String(x.f.name||DISP_NAMES[0]),who:String(x.f.who||""),acc:Array.isArray(x.f.acc)?x.f.acc.slice(0,3):null,age:x.f.age|0}});
     }
   }
-  return r;
-};
+}
+/* ── крючки: все обёртки диспетчера — одной таблицей (Контроль 22.10). Имя → обёртка над прежней
+   функцией; цикл ставит их через window, промах по имени — громкая ошибка загрузки, а не тишина ── */
+function dispSafe(f){try{f();}catch(e){logAdd("warn","СБОЙ · диспетчер: "+(e&&e.message));}}
+const DISP_HOOKS=[
+  ["openStation", O=>function(){if(G.sys)dispDock(G.sys);return O.apply(this,arguments);}],
+  ["arriveSystem",O=>function(){const r=O.apply(this,arguments);dispSafe(()=>{if(G.sys){dispTick();dispOn("arrive",G.sys.key);dispAlarm();}});return r;}],
+  ["enterSurface",O=>function(){const r=O.apply(this,arguments);dispSafe(()=>{if(G.sys)dispOn("land",G.sys.key);});return r;}],
+  ["killPirate",  O=>function(p){const k=G.sys&&G.sys.key,r=O.apply(this,arguments);dispSafe(()=>{if(k&&!(p&&p.dummy))dispOn("kill",k);});return r;}],
+  ["cantHall",    O=>function(){const r=O.apply(this,arguments);dispSafe(()=>{if(G.sys&&G.mode==="dock")dispOn("cant",G.sys.key);});return r;}],
+  ["closeStation",O=>function(){const r=O.apply(this,arguments);dispSafe(()=>{if(G.mode!=="dock")dispAlarm(true);});return r;}],
+  ["mgrTick",     O=>function(){dispSafe(()=>{dispTick();dispAlarmOff();});return O.apply(this,arguments);}],
+  ["stTabBoard",  O=>function(){dispSafe(dispSection);return O.apply(this,arguments);}],
+  ["snapshot",    O=>function(){const s=O.apply(this,arguments);s.disp=G.disp||null;return s;}],
+  ["applySave",   O=>function(s){const r=O.apply(this,arguments);if(r){G.disp=null;dispRestore(s);}return r;}]
+];
+for(const [n,mk] of DISP_HOOKS){const O=window[n];if(typeof O!=="function")throw new Error("диспетчер: нет крючка "+n);window[n]=mk(O);}
