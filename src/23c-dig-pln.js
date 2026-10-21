@@ -98,11 +98,11 @@ function dig3HeadBody(m,F,o,park){
    ствол над клетью светлый и холодный, на сотне метров от неба остаётся тонкая нить. Огонь стоит над
    верхним краем окна (за кадром, как само устье), его разлив виден на стенах ствола, проводниках и
    канате; там, где ещё светит день у устья (dayK), этот свет уступает ему. */
-const DIG3_SHAFT={fall:24,k:3.2,r:9,lamp:[.5,.33,.15]};
+const DIG3_SHAFT={fall:30,k:5.1,r:9,lamp:[.5,.33,.15]};
 /* сила света устья на глубине d м под ним: квадрат расстояния, смягчённый отскоком от стен ствола */
-function dig3ShaftK(d){return 1/(1+Math.pow(Math.max(0,d)/DIG3_SHAFT.fall,2));}
+function dig3ShaftK(d){return 1/(1+Math.pow(Math.max(0,d)/DIG3_SHAFT.fall,3));}
 function dig3ShaftLight(F,Ls,sY,night,skyLo,dayK,my){
-  const CM=DIG3_CM,Z=DIG3_SHAFT,top=Math.min(Ls.t+1.5,sY-1),low=Math.max(Ls.b,my+3.2);
+  const CM=DIG3_CM,Z=DIG3_SHAFT,top=Math.min(Ls.t-.5,sY-1),low=Math.max(Ls.b,my+3.2);
   DIG3.stat.shaft=0;
   if(sY-top<=0||top<=low||dayK>.99)return;
   const day=1-plnSmooth(.2,.9,night),zc=DIG3_ROOM.zd*.5;
