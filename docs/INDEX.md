@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 628 · top-level symbols: 8865
+Files: 630 · top-level symbols: 8892
 
 ## SYMBOLS
 
@@ -586,8 +586,8 @@ DRONE_SEEN_DAYS              src/12-economy.js:293
 DRONE_SEG                    src/16ga-gpu-trail.js:147
 DRONE_TAIL                   src/12e-drone-flight.js:233
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
-DR_ALSO                      tests/91zzzw9h-doors.js:30
-DR_DO                        tests/91zzzw9h-doors.js:15-28
+DR_ALSO                      tests/91zzzw9h-doors.js:31
+DR_DO                        tests/91zzzw9h-doors.js:15-29
 DR_P                         tests/91zzzw9h-doors.js:5
 DS_BAD                       src/12p1-doublespeak.js:18-25
 DS_DELAY                     src/12p1-doublespeak.js:26
@@ -696,6 +696,8 @@ FOE_KINDS                    src/24a-mode-raid.js:17-22
 FOLK                         src/12u-folk.js:31-80
 FOLK_IDS                     src/12u-folk.js:81
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
+FORK_HOOKS                   src/28q-fork.js:200-213
+FORK_SHARE                   src/28q-fork.js:18
 FRAME_IN                     src/08-state.js:378
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
@@ -2899,6 +2901,15 @@ billTier                     src/27ib-bill.js:46-49
 billUnlend                   src/27ib-bill.js:61-65
 bioMark                      src/20e-species.js:310-314
 bioScan                      src/20e-species.js:315-329
+bladeArrive                  src/28q-fork.js:161-169
+bladeCost                    src/28q-fork.js:136
+bladeHop                     src/28q-fork.js:135
+bladeOn                      src/28q-fork.js:151
+bladeSt                      src/28q-fork.js:133
+bladeTarget                  src/28q-fork.js:138-150
+bladeTick                    src/28q-fork.js:152-160
+bladeTow                     src/28q-fork.js:172-185
+bladeTowOk                   src/28q-fork.js:171
 bldAdd                       src/12ac-bld.js:30-33
 bldAddFx                     src/12ac-bld.js:35-37
 bldAtWhy                     src/12ad-site.js:118-132
@@ -4005,7 +4016,7 @@ doorWd                       src/28p-doors.js:25
 doorYearOk                   src/28p-doors.js:109
 doorsDispLine                src/28p-doors.js:84-89
 doorsShut                    src/11ar-doors.js:27-31
-drAt                         tests/91zzzw9h-doors.js:31-35
+drAt                         tests/91zzzw9h-doors.js:32-36
 drOutside                    tests/91zzzw9h-doors.js:6-12
 drSeed                       tests/91zzzw9h-doors.js:14
 draftAll                     src/27jb-kb.js:133
@@ -4395,6 +4406,8 @@ fitPart                      src/05-parts.js:389-406
 fittedGuns                   src/05-parts.js:323-334
 fittedOfKind                 src/05-parts.js:314-317
 fittedParts                  src/05-parts.js:344-348
+fkAll                        tests/91zzzw9i-fork.js:9-17
+fkHand                       tests/91zzzw9i-fork.js:5-8
 flagOf                       src/12al-powers.js:94-100
 flakCatch                    src/13a-guns.js:431-445
 flakTick                     src/13a-guns.js:379-398
@@ -4449,6 +4462,20 @@ folkShut                     src/11ah-offer.js:96-103
 folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
 foregroundGpu                src/21e3-surface-stand-gpu.js:116-145
+forkAccess                   src/28q-fork.js:96-112
+forkBusy                     src/28q-fork.js:23
+forkGoods                    src/28q-fork.js:27
+forkHands                    src/28q-fork.js:24
+forkHave                     src/28q-fork.js:114-116
+forkMins                     src/28q-fork.js:25
+forkNotch                    src/28q-fork.js:117-131
+forkRestore                  src/28q-fork.js:187-198
+forkRow                      src/28q-fork.js:83-94
+forkSend                     src/28q-fork.js:37-46
+forkSides                    src/28q-fork.js:29-36
+forkSt                       src/28q-fork.js:19-22
+forkTick                     src/28q-fork.js:56-81
+forkWage                     src/28q-fork.js:48-55
 foundBase                    src/21a-mode-base.js:101-115
 frame                        src/28-loop.js:674-720
 frameBody                    src/28-loop.js:472-606
@@ -10578,6 +10605,9 @@ zoomTo                       src/15-input.js:358
 ## src/28p-doors.js · 12 KB
   · двери глав — дела на участке (M910, DESIGN-game §7.3, §7.4):1
 
+## src/28q-fork.js · 14 KB
+  · развилки: дело — сам или рукой; засечки; Клинок (M911, DESIGN-game §7.2, §7.4):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10761,6 +10791,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9g-firstwatch.js · 5 KB
 
 ## tests/91zzzw9h-doors.js · 12 KB
+
+## tests/91zzzw9i-fork.js · 9 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

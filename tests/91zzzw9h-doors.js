@@ -20,13 +20,14 @@ const DR_DO={
   door:()=>folkShut("тест:"+(++drSeed)),
   notch:()=>{const pOn=PLN.on,pBad=PLN.bad;PLN.on=true;PLN.bad=0;
     const q={k:"obelisk",ru:"ЗАРУБКА",x:6000,y:0,h:150,sc:1,seed:(0x0BE1+(++drSeed))>>>0};
-    plnActDo(q,"read",{d:.3});const r=plnActDo(q,"carve",{d:.3});PLN.on=pOn;PLN.bad=pBad;return r;},
+    const r=plnActDo(q,"read",{d:.3});PLN.on=pOn;PLN.bad=pBad;return r;},
   mark:()=>{const pOn=PLN.on,pBad=PLN.bad;PLN.on=true;PLN.bad=0;
-    const r=plnActDo({k:"obelisk",ru:"ЗАРУБКА",x:6000,y:0,h:150,sc:1,seed:(0x0CE1+(++drSeed))>>>0},"read",{d:.3});PLN.on=pOn;PLN.bad=pBad;return r;},
+    const r=plnActDo({k:"obelisk",ru:"ЗАРУБКА",x:6000,y:0,h:150,sc:1,seed:(0x0CE1+(++drSeed))>>>0},"carve",{d:.3});PLN.on=pOn;PLN.bad=pBad;return r;},
   hull:()=>hullLost(G.shipId,"тест"),
+  blade:()=>{G.blade={st:1,sx:G.sx+1,sy:G.sy,nm:"тест",at:now()};bladeArrive(G.sx+1,G.sy);return G.blade.st===2;},
   handover:()=>{watchHand();clockAdvance(60000);return watchBack();}
 };
-/* что ещё пишет дело-водитель: срыв пережит с нормой ≥ 90 % — это и норма; засечка — и знак */
+/* что ещё пишет дело-водитель: срыв пережит с нормой ≥ 90 % — это и норма; прочитанная засечка — и знак */
 const DR_ALSO={srv:["norm"],notch:["mark"]};
 function drAt(n){
   resetWorld();G.flownMs=2*FIRST_HOUR_MS;

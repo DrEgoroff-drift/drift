@@ -644,6 +644,9 @@ nav.tabs.solo{display:none}
 .row.sub .nm s{margin-top:0}
 #dealview .sec.note{padding-top:12px}
 #dealview .sec.note b{font-weight:400;color:var(--amber)}
+/* развилка дела (28q, M911): сам или рукой — две кнопки столбиком, одной ширины */
+.row .fork{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+.row .fork .act{width:100%}
 .row .chev{flex:0 0 16px;font-style:normal;color:var(--dim);font-size:17px;line-height:1;text-align:center;margin-left:-2px}
 /* заголовок группы внутри списка: воздух и подпись вместо сплошной ленты */
 .sec{padding:20px var(--pad) 8px;color:var(--dim);font-size:9px;letter-spacing:.18em;line-height:1.7;
