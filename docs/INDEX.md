@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 617 · top-level symbols: 8661
+Files: 617 · top-level symbols: 8657
 
 ## SYMBOLS
 
@@ -2345,6 +2345,15 @@ WALL_KIND_RU                 src/11ah-wall.js:42
 WALL_MAX                     src/11ah-wall.js:40
 WALL_POEMS                   src/11ae-concert.js:16-21
 WALL_S                       src/11ah-wall.js:41
+WAN3                         src/29re-wander-r3.js:19
+WAN3_BRASS                   src/29re-wander-r3.js:27
+WAN3_CZ                      src/29re-wander-r3.js:21
+WAN3_HANG                    src/29re-wander-r3.js:26
+WAN3_L                       src/29re-wander-r3.js:20
+WAN3_LAMP                    src/29re-wander-r3.js:23
+WAN3_M                       src/29re-wander-r3.js:24
+WAN3_TURN                    src/29re-wander-r3.js:32
+WAN3_WIN                     src/29re-wander-r3.js:22
 WANDER_BY_ID                 src/12v-wander-shop.js:70
 WANDER_CAT                   src/12v-wander-shop.js:27-69
 WANDER_LINES                 src/12v-wander-shop.js:255-262
@@ -2357,16 +2366,6 @@ WANDER_STOP                  src/12v-wander.js:28
 WANDER_T0                    src/12v-wander.js:27
 WAND_BAKE                    src/12v-wander.js:287
 WAND_SAIL_WGSL               src/12v-wander.js:183
-WAN_AIR_WGSL                 src/24c-mode-wanderer-draw.js:469
-WAN_BK                       src/24c-mode-wanderer-draw.js:126
-WAN_C                        src/24c-mode-wanderer-draw.js:16-20
-WAN_HANG                     src/24c-mode-wanderer-draw.js:388
-WAN_ICON                     src/24c-mode-wanderer-draw.js:37-71
-WAN_LIT_HEAD                 src/24c-mode-wanderer-draw.js:422
-WAN_LIT_U                    src/24c-mode-wanderer-draw.js:409
-WAN_LIT_WGSL                 src/24c-mode-wanderer-draw.js:431
-WAN_SKY_U                    src/24c-mode-wanderer-draw.js:206
-WAN_SKY_WGSL                 src/24c-mode-wanderer-draw.js:215
 WARM_GLOW_U                  src/22c-cave-gpu.js:198
 WARM_GLOW_WGSL               src/22c-cave-gpu.js:183
 WARRANTY_SHIFTS              src/05b1-warranty.js:12
@@ -4028,7 +4027,7 @@ drawVan                      src/21ac3-base-van.js:71-137
 drawVanSmall                 src/21ac3-base-van.js:139-145
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
-drawWanderRoom               src/24c-mode-wanderer-draw.js:134-155
+drawWanderRoom               src/29re-wander-r3.js:278-281
 drawWanderer                 src/12v-wander.js:339-443
 drawWater                    src/21e-surface-draw.js:221-309
 drawWear                     src/12s-wear.js:102-171
@@ -8461,28 +8460,25 @@ wallSpot                     src/11ah-wall.js:132-147
 wallStone                    src/11ah-wall.js:189-221
 wallStore                    src/11ah-wall.js:81-90
 wallWrap                     src/11ae-concert.js:72-80
+wan3Cam                      src/29re-wander-r3.js:231-239
+wan3Canvas                   src/29re-wander-r3.js:215-222
+wan3Case                     src/29re-wander-r3.js:33
+wan3Frame                    src/29re-wander-r3.js:241-262
+wan3Hide                     src/29re-wander-r3.js:269-274
+wan3Item                     src/29re-wander-r3.js:37-86
+wan3Keeper                   src/29re-wander-r3.js:174
+wan3Mesh                     src/29re-wander-r3.js:89-171
+wan3Ok                       src/29re-wander-r3.js:240
+wan3Scene                    src/29re-wander-r3.js:178-212
+wan3Station                  src/29re-wander-r3.js:224-230
+wan3Tags                     src/29re-wander-r3.js:264
 wanAll                       src/24c-mode-wanderer.js:21
-wanBake                      src/24c-mode-wanderer-draw.js:127-133
-wanCaseAt                    src/24c-mode-wanderer-draw.js:30-36
-wanCases                     src/24c-mode-wanderer-draw.js:332-385
-wanCol                       src/24c-mode-wanderer-draw.js:21
-wanCounter                   src/24c-mode-wanderer-draw.js:326-330
 wanCur                       src/24c-mode-wanderer.js:50
-wanGeom                      src/24c-mode-wanderer-draw.js:24-28
-wanHanging                   src/24c-mode-wanderer-draw.js:389-407
-wanItemIcon                  src/24c-mode-wanderer-draw.js:72-100
-wanKeeper                    src/24c-mode-wanderer-draw.js:101-116
-wanLitUni                    src/24c-mode-wanderer-draw.js:410-421
 wanLots                      src/24c-mode-wanderer.js:49
-wanMid                       src/24c-mode-wanderer-draw.js:259-324
 wanPanel                     src/26d-ui-wanderer.js:12-20
 wanPanelSync                 src/26d-ui-wanderer.js:21-77
 wanPrevL                     src/24c-mode-wanderer.js:20
-wanRgba                      src/24c-mode-wanderer-draw.js:22
-wanShell                     src/24c-mode-wanderer-draw.js:157-199
 wanSig                       src/26d-ui-wanderer.js:11
-wanSkyUni                    src/24c-mode-wanderer-draw.js:207-214
-wanSlot                      src/24c-mode-wanderer-draw.js:201-204
 wanStep                      src/24c-mode-wanderer.js:51-57
 wanderAngle                  src/12v-wander.js:107-114
 wanderAreaChart              src/12v-wander-shop.js:184-197
@@ -8805,7 +8801,7 @@ zoomTo                       src/15-input.js:358
 ## src/08b-gpu.js · 54 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08b0-gpu-pipe.js · 11 KB
+## src/08b0-gpu-pipe.js · 10 KB
   · конвейеры: одна воронка и прогрев (DESIGN-gpu §G):1
   · поздний прогрев: конвейеры режимов:86
 
@@ -10094,9 +10090,6 @@ zoomTo                       src/15-input.js:358
 ## src/24be-belt-rock-gpu.js · 19 KB
   · камни пояса в настоящем 3D (G8):1
 
-## src/24c-mode-wanderer-draw.js · 38 KB
-  · «Сорока» изнутри: коридор к стойке (M343):1
-
 ## src/24c-mode-wanderer.js · 5 KB
   · режим: на борту «Сороки» (M343):1
 
@@ -10395,6 +10388,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/29rd-spa-r3.js · 21 KB
   · санаторий на движке (M850d, docs/DESIGN-rooms.md §4):1
+
+## src/29re-wander-r3.js · 26 KB
+  · «Сорока» на движке (M851, docs/DESIGN-rooms.md §4):1
 
 ## src/29rz-snap-over.js · 1 KB
   · дом на движке — в снимок кадра (Контроль, 15.10):1

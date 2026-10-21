@@ -85,8 +85,8 @@ spa, a jacket at home, the suit's underlayer in HQ); the live face reads the roo
 
 The old room painters (`drawHqRoom`, the 2D `drawHomeIn`, `hinFigure`, `drawWinter`, `winFigure`,
 `drawSpa`, `spaFolk`) are deleted (22.10). `hqFigure` stays in `27f` for the panels that still
-call it (`11w-vega`, `27e-ui-home`); `drawHomeRoom` (`27e`) and `wanKeeper` (`24c`) are other
-screens. `mgrFace(` loses its last caller (M802's gate closes).
+call it (`11w-vega`, `27e-ui-home`); `drawHomeRoom` (`27e`) is another screen. «Сорока»'s 2D painter
+(`24c-mode-wanderer-draw`, with `wanKeeper`) is deleted too: the room is `29re-wander-r3` on the engine. `mgrFace(` loses its last caller (M802's gate closes).
 
 ## 5. What stays, what goes
 
@@ -111,8 +111,8 @@ screens. `mgrFace(` loses its last caller (M802's gate closes).
   `lie`, the sleep glide. Gate: day 17 at full and low power (the balance seen, not read).
 - **M850d Spa** — the veranda, the sun by slot, `recline`, the board on its post. Gate: the
   three slots of one day.
-- **M851 «Сорока» and the road** — the keeper's face and body, the leader to his head, the
-  road's hull and sky. Gate: the room and the road at 1920 and 390.
+- **M851 «Сорока» and the road** — the room is on the engine (`29re`: angled cases, the keeper
+  behind the counter, the slit window); left: the leader to his head, the road's hull and sky. Gate: the room and the road at 1920 and 390.
 
 ## 7. Tests
 
