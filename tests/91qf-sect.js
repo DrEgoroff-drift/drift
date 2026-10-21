@@ -83,5 +83,15 @@ TEST_SUITES.push(()=>suite("база в разрезе: объективы, до
     const wo=glowOf(off,SECT_MAT_WALL);
     ok(wo.n>0&&wo.g===0,"без энергии стены отсеков тёмные");
     eq(glowOf(off,PLN_MAT.glow).g,0,"без энергии под землёй ни одна лампа не горит (копёр и ворота — на своей батарее)");
+
+    /* убранство (M632b): у каждого рода своё, и ни одна вещь не стоит на линии хода (z 1.1–2.0 над полом) */
+    const F=sectFloor(1),bad=[],none=[];
+    for(const k of Object.keys(BUILD)){
+      const m=plnMesh(1<<10);sectKit(m,k,.5,8.5,F,F+M.room,M.deep,true,1,7);
+      if(m.nv<8)none.push(k);
+      for(let i=0;i<m.nv;i++){const o=i*PLN_VS,y=m.v[o+1],z=m.v[o+2];if(y>F+.05&&z>1.1&&z<2.0){bad.push(k+"@"+z.toFixed(2));break;}}
+    }
+    eq(none.join(","),"","у каждого рода отсека есть вещи");
+    eq(bad.join(","),"","вещи не стоят на линии хода");
   }finally{SECT.b=b0;SECT.lens=l0;PLN.cam=cam0;}
 }));
