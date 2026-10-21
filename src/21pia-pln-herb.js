@@ -344,7 +344,9 @@ function plnHerbMesh(sp,si,ac,T){
 }
 
 /* ── то, что растёт на этой посадке ── */
-function plnHerbs(L,S,p){
+/* lim — бюджет кадра в мс (заход, 21pz plnWarmStep): тела видов строятся, пока он не кончится;
+   не все готовы — null, следующий вызов продолжит. Без lim — всё разом, как прежде */
+function plnHerbs(L,S,p,lim){
   let Q=L.herbs;
   if(Q&&Q.gen!==PLN_GPU.gen){plnHerbDrop(L);Q=null;}
   const list=S.plants||[];
@@ -353,7 +355,6 @@ function plnHerbs(L,S,p){
   if(Q&&Q.sig===sig)return Q;
   const t0=wallMs(),M=PLN_M,lake=L.lake,T=plnRgb(PLN_HERB.teal);
   if(!Q)Q=L.herbs={gen:PLN_GPU.gen,geo:{},inst:null,a:new Float32Array(16*64),cap:0,n:0,sig:-1,parts:[],blots:[],ms:0};
-  Q.sig=sig;
   const sps=floraOf(p),by={};
   let n=0;
   for(const q of list){
@@ -364,6 +365,11 @@ function plnHerbs(L,S,p){
     (by[key]=by[key]||[]).push(q);
     n++;
   }
+  for(const key in by)if(!Q.geo[key]){
+    Q.geo[key]=plnGeo(plnHerbMesh(by[key][0].sp,(key/3)|0,key%3));
+    if(lim!=null&&wallMs()-t0>lim){Q.ms+=wallMs()-t0;return null;}
+  }
+  Q.sig=sig;
   /* краска вида: зелень мира по номеру вида — та же, что у диких куртин (21pgd); акцент — цветочным частям */
   const tint=sps.map((s,i)=>PLN_HERB.tints[i%3]);
   if(n*16>Q.a.length)Q.a=new Float32Array(n*16);
