@@ -72,7 +72,9 @@ TEST_SUITES.push(()=>suite("доступ: ни одна из тридцати с
     let prev=P();
     for(R=1;R<=30;R++){const p=P();if(p===prev)silent.push(R+" "+RUNGS[R].id);prev=p;}
     /* рычаги читаются настоящими функциями: на 30-й всё дешевле и щедрее, чем на нулевой */
-    const k=TRADE_KEYS.filter(k=>S.station.prices[k]).sort((x,y)=>(marketFor(S)[y]|0)-(marketFor(S)[x]|0))[0];   /* дешёвый упрётся в пол «дороже сдачи» */
+    /* товар с самым широким спредом: на узком прилавок упрётся в пол «сдача × 1.03» — и это верно */
+    const sp=k=>(S.station.prices[k]||0)/Math.max(1,marketFor(S)[k]|0);
+    const k=TRADE_KEYS.filter(k=>(S.station.prices[k]|0)>=60).sort((x,y)=>sp(y)-sp(x))[0];
     const probe=()=>{rungOfCached.t=undefined;const D=dispSt();D.it=[];D.vb=[];
       return {fuel:fuelPriceHere(),rep:repairCost(),sell:marketCtx(S).occ,buy:buyPriceFor(S,k),npc:watchNpcRate(S),
         disp:(dispIssue("haul",S,{})||{}).pay,g:gaugeRead(S.key)};};
@@ -82,10 +84,14 @@ TEST_SUITES.push(()=>suite("доступ: ни одна из тридцати с
     if(!(b.fuel<a.fuel))read.push("заправка "+a.fuel+"→"+b.fuel);
     if(!(b.rep<a.rep))read.push("ремонт "+a.rep+"→"+b.rep);
     if(!(b.sell>a.sell))read.push("скупка");
-    if(!(b.buy<a.buy))read.push("прилавок "+a.buy+"→"+b.buy);
+    if(!(b.buy<=a.buy))read.push("прилавок дороже на 30-й: "+a.buy+"→"+b.buy);
     if(!(b.npc>a.npc))read.push("баржи");
     if(!(b.g.s>=.5&&b.g.m>=.5&&b.g.o>=.6))read.push("полы шкал "+JSON.stringify(b.g));
-    ok(b.buy>(marketFor(S)[k]|0),"прилавок на 30-й всё равно дороже сдачи: "+b.buy+" > "+(marketFor(S)[k]|0));
+    const m=marketFor(S)[k]|0,fl=Math.max(m+1,Math.min(a.buy,Math.round(m*ACC_SPREAD)));
+    ok(b.buy>=fl&&b.buy>m,"прилавок на 30-й держит спред: "+b.buy+" ≥ "+fl+" (сдача "+m+", без ступеней "+a.buy+")");
+    /* рычаг прилавка доходит до цены: там, где скупка его не съедает (спред станции широкий) */
+    const wide=Math.round(m*1.4);
+    ok(accCounter(S,k,wide)<wide,"широкий спред: прилавок на 30-й дешевле — "+wide+" → "+accCounter(S,k,wide));
     ok(isFinite(a.disp)&&isFinite(b.disp),"плата диспетчера считается на обеих ступенях");
   }finally{rungOf=O;rungOfCached.t=undefined;}
   ok(!silent.length,"ступени без эффекта: "+(silent.join(", ")||"нет"));
