@@ -145,7 +145,9 @@ function dig3Frame(){
   const sY=dig3Ground(Fd,CM*.5),land=Ls.t>sY-4;
   /* куски: окно на глубине, до которой видно (у поверхности — до гряды) */
   const zv=land?DIG3_CH.zcap:6,sp=(zv-Ls.eye[2])/Ls.D,hw=Ls.w/2*sp,hh=Ls.Hf/2*sp,mid=(Ls.b+Ls.t)/2;
-  const list=dig3Chunks(Fd,[cx-hw-2,cx+hw+2,mid-hh-2,mid+hh+2],mx,my,first);
+  /* бюджет: вход съездом держит объектив у поверхности, пока порода не достроена (23cd dig3HandU) */
+  const hd=DIG3_TOP.hand,lim=hd?(hd.t0?DIG3_CH.ms:DIG3_CH.hold):first?DIG3_CH.first:DIG3_CH.ms;
+  const list=dig3Chunks(Fd,[cx-hw-2,cx+hw+2,mid-hh-2,mid+hh+2],mx,my,lim);
   const F={batches:[],lamps:[],draw:[],lights:[],glows:[]};
   const S={walkPhase:D.walkPhase,walkAmp:D.walkAmp,on:true,jetOn:false,vy:0,mining:!!D.target,suit:G.surf?G.surf.suit:100};
   plnManFrame(F,[mx,my,DIG3_Z],face,0,{S,lamp:0});
