@@ -278,6 +278,28 @@ fn outside(w:vec3f)->vec3f{
     let veil=fb2(vec2f(q.x*2.2+tt*.06*(.6+st),e*3.+tt*.09));
     col=mix(col,vec3f(.62,.68,.76),clamp(veil*(.18+.32*st),0.,.5));
     c=col+vec3f(.8,.86,.94)*clamp(sn,0.,1.)*.75;}
+  else if(kind==9){   /* море санатория (M850d): небо по высоте солнца, диск и облака, мыс слева в дымке, волны в перспективе,
+                        дорожка блеска к солнцу; фаза дня — дробная часть win2.z, солнце то же, что ключ в 29rd */
+    let s=fract(u.win2.z);let hi=sin(3.14159*s);let az=(s-.5)*.5;let el=.02+.9*hi*hi*hi;
+    let sd=vec3f(sin(az)*cos(el),sin(el),-cos(az)*cos(el));let wm=1.-clamp(hi*1.6-.45,0.,1.);
+    let zen=mix(vec3f(.1,.26,.58),vec3f(.18,.24,.46),wm);let hor=mix(vec3f(.5,.66,.82),vec3f(1.,.64,.4),wm);
+    let sdt=max(dot(rd,sd),0.);
+    var col=mix(hor,zen,pow(clamp(rd.y*3.6,0.,1.),.45))+mix(vec3f(1.,.92,.75),vec3f(1.,.6,.3),wm)*(pow(sdt,8.)*.3+pow(sdt,90.)*.7);
+    col=mix(col,mix(vec3f(1.,.96,.86),vec3f(1.,.6,.3),wm*wm)*3.2,smoothstep(.9995,.99968,sdt));
+    if(rd.y>0.){let cp=rd.xz/max(rd.y,.02)*.22+vec2f(tt*.003,0.);let cl=smoothstep(.52,.82,fb2(cp*vec2f(1.,2.6)));
+      col=mix(col,mix(vec3f(.98,.97,.95),vec3f(1.,.74,.56),wm)*(.82+.4*pow(sdt,3.)),cl*.6*smoothstep(.0,.1,rd.y));}
+    let ax=atan2(rd.x,-rd.z);let ch=(.012+.05*smoothstep(-.3,-.95,ax))*(.65+.35*fb2(vec2f(ax*7.,2.)));
+    col=mix(col,mix(vec3f(.3,.38,.44),hor,.5+.3*wm),step(0.,rd.y)*step(rd.y,ch)*step(ax,-.28));
+    if(rd.y<0.){let dd=-rd.y;let sp=rd.xz/dd;let am=smoothstep(.0,.09,dd);
+      let w1=fb2(sp*vec2f(.7,2.2)+vec2f(0.,tt*.12));let w2=fb2(sp*vec2f(2.2,6.)-vec2f(tt*.04,tt*.26));
+      let n=normalize(vec3f(((w1-.5)*.35+(w2-.5)*.22)*am,1.,((w2-.5)*.5+(w1-.5)*.2)*am));
+      let r=reflect(rd,n);let fr=.03+.97*pow(1.-clamp(dot(-rd,n),0.,1.),5.);
+      let sk=mix(hor,zen,pow(clamp(r.y*3.6,0.,1.),.45));
+      var sea=mix(mix(vec3f(.02,.09,.15),vec3f(.05,.06,.1),wm),sk,fr);
+      let rs=max(dot(r,sd),0.);sea+=mix(vec3f(1.,.95,.85),vec3f(1.,.66,.36),wm)*(pow(rs,60.)*.5+pow(rs,500.)*6.)*(.35+.65*am);
+      sea+=vec3f(.7,.75,.78)*smoothstep(.8,.9,w2)*am*am*.12;
+      col=mix(sea,hor,exp(-dd*55.)*.7);}
+    c=col;}
   else{   /* док и стапель: корпус у причала в прожекторах, фермы с освещённой кромкой, маяки — тело дока, не сетка */
     c+=vec3f(.035,.05,.08)*(1.-smoothstep(-.05,.5,q.y))*1.6;   /* дымка дока снизу: свет причала в пыли */
     if(!pon){   /* планета без своей текстуры: диск с терминатором и кромкой воздуха */
@@ -393,7 +415,8 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
   else if(pat==4u){   /* шлифованный металл: риски вдоль x */
     let s=(vn3(W*vec3f(2.,420.,420.))-.5)*clamp(1.6-fpW*420.*2.,0.,1.)+.5;a*=.9+.2*s;sp*=.7+.6*s;}
   else if(pat==5u){   /* окно: вид наружу своим светом, сверху — стекло ловит лампы */
-    a=vec3f(.012);ex3=outside(W);fres=.08;sp=.9;gl=14.;}
+    let op=i32(u.win2.y+.5)==9;   /* море санатория — открытый проём, стекла нет: ламп не ловит */
+    a=vec3f(.012);ex3=outside(W);fres=select(.08,0.,op);sp=select(.9,0.,op);gl=14.;}
   else if(pat==6u){   /* вывеска: неон по маске текста, фон — тёмная плата */
     let r=u.sgn;let uv=vec2f((W.x-r.x)/(r.z-r.x),(r.w-W.y)/(r.w-r.y));
     let tx=textureSampleLevel(tsg,smp,clamp(uv,vec2f(0.),vec2f(1.)),0.);
