@@ -886,6 +886,8 @@ function geoSettle(){for(const a of document.getAnimations()){try{const t=a.effe
   /* заход собирается за несколько кадров (21pz plnWarmStep): пока строится, спуск стоит и чип корабля
      ждёт на прежней сцене — два снимка (DPR 1 и 3) заставали разные стадии сборки. Достраиваем кадрами */
   if(G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone){for(let i=0;i<80&&!G.land.warmDone;i++)geoFrame1();}
+  /* зал пешком (27f4l, M816a): пилот идёт к месту по wallMs — ставим его в цель, объектив на нём */
+  if(G.mode==="dock"&&typeof HALL==="object"&&HALL&&HALL.walk)hallWalkSettle();
   if(typeof SECT==="object"&&SECT&&G.base&&G.mode==="base"){const S=G.base;
     /* и сам человек: сцена ставит его в ряд, а к клетке он идёт 3.2 м/с кадрами — второй снимок
        заставал его на полпути, и объектив (он ведёт по x) стоял иначе */

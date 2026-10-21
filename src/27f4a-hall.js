@@ -28,6 +28,7 @@ const HALL_XB=10;          /* бар: кантина 27f4, сдвинутая в
 const HALL_B=-2.8;         /* задняя стена (та же, что у кантины, C3_BACK) */
 const HALL_L=-7.2;         /* левая стена */
 const HALL_F=6.5;          /* передняя стена — за камерой, с дверью в док */
+const HALL_FCUT=3.8;       /* M816: срез на ходу — 2,3 м перед линией хода, а не пустые пять метров пола до камеры */
 const HALL_HERO=.4;        /* доля ширины кадра под зал на ПК: остальное — плита */
 const HALL_STRIP=.36;      /* телефон: доля высоты под полосу зала */
 /* пилот — сам игрок у места раздела, первым планом спиной на три четверти: мерило человека в кадре.
@@ -139,7 +140,7 @@ function hallLum(c){return .3*c[0]+.59*c[1]+.11*c[2];}
 function hallLayout(st,lazy){
   const T=hallT(st),seed=((G.sys&&G.sys.seed)^0x4A11)>>>0,CS=CANT_STYLE[st]||CANT_STYLE.trade;
   const acc=hex2rgb(CS.acc),bar=hallHasBar(st),R=rng(seed^0x77);
-  const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st)};
+  const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st),cut:hallWalkOn()};   /* M816: срез ближней стены на ходу */
   /* хозяин стойки: клерк (M814) — рубашка, жилет, галстук и бирка в цвет зала; стоит за стойкой лицом в зал */
   const keep={seed:hashi(seed,0xC0E,1)>>>0,role:"clerk",acc,loy:64,xp:0,traits:[]};
   /* волосы, а не бритая голова, и тёмные на коже не светлее средней: светлые на светлом рядом с пилотом читались манекеном */
@@ -176,7 +177,7 @@ function hallLayout(st,lazy){
         x:s[0]+(R()-.5)*.5,z:s[1]+side*.95,yaw:side>0?Math.PI+(R()-.5)*.6:(R()-.5)*.6,lod:0,kind:"crowd"});}}
   L.people=gaugeHallCrowd(L.people).slice(0,R3_MAXI-2);   /* последний экземпляр — пилот; толпа — по людям станции (M906) */
   if(!lazy)for(const P of L.people)if(!P.mesh)P.mesh=cpMesh(P.m,P.pose,P.lod);   /* lazy — заготовка (hallPrepStep) мешает по одному */
-  L.rkey=st+"|"+seed+"|"+L.seats.length+"|"+L.bx.toFixed(2)+"|"+L.stories.map(s=>(s.props||[]).join(",")+":"+s.seat).join(";");
+  L.rkey=st+"|"+seed+"|"+(L.cut?"w|":"")+L.seats.length+"|"+L.bx.toFixed(2)+"|"+L.stories.map(s=>(s.props||[]).join(",")+":"+s.seat).join(";");
   return L;
 }
 /* ── заготовка зала ──
@@ -274,9 +275,9 @@ function hallScene(L,cam,t){
     hallManMark(ii,P.x,P.z,P.kind==="keep"?.34:.3,dm>.2?.35:1.15);   /* притушенным за столиками — вполсилы */
     draws.push([P.mesh,ii,1]);P.ii=ii;ii++;}
   /* пилот: у места раздела, стоит, дышит; голова — к вещи места, не к камере */
-  const pa=hallPilotAt(HALL.place);
+  const pa=hallWalkPilot()||(hallWalkOn()?null:hallPilotAt(HALL.place));   /* M816: на ходу — с линии хода */
   if(pa&&ii<R3_MAXI){hallRigPose(M,ii*R3_PART,r3Xf([pa[0],0,pa[1]],pa[2]),pa[3],t);   /* M814: пилот — риг планеты (27f4j) */
-    hallManMark(ii,pa[0],pa[1],HALL_RIG_SEAT[pa[3]]!=null?.4:.32,.5);
+    hallManMark(ii,pa[0],pa[1],typeof pa[3]==="string"&&HALL_RIG_SEAT[pa[3]]!=null?.4:.32,.5);
     draws.push([hallRigMesh(),ii,1]);ii++;}
   /* свет смены. ДЕНЬ: ключ — окно и свет дока: холодное небо заливает зал (стены 25–35 % тона, потолок
      отсветом пола 15–20 %), луч окна с пылью кладёт пятно и тени людей; лампы — вторые.
@@ -336,7 +337,9 @@ function hallScene(L,cam,t){
   if(nk>.05)for(const x of [HALL_WIN[0]-.45,HALL_WIN[1]+.45])lights.push({p:[x,Math.min(hc-.5,2.3)-.02,HALL_B+.32],range:3.4,c:r3Sc(r3Lin([255,196,130]),(dk?.9:1.4)*nk),vol:0});
   /* рассеянный: небо — свет дока сквозь окна (сверху и со стен), земля — отсвет пола (потолок, низы балок) */
   /* ночью рассеянный не падает в черноту: value ≥ .08 на всех плоскостях (потолок, дальняя стена, пол) */
-  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.49+.51*day),ptc=hallPlanetTone();
+  /* на ходу (M816) рассеянный тише: зал держат лампы мест — лужи на полу, а не ровный серый */
+  const wk=hallWalkOn()&&HALL.walk&&!HALL.walk.eng&&HALL.walk.fk<.5?.62:1;
+  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.49+.51*day)*wk,ptc=hallPlanetTone();
   const sky=mx(mixc(mixc(T.wall,T.day||[146,178,232],.62),ptc,.08),mixc(T.wall,[66,84,140],.5)),gnd=mx(mixc(T.wall,[204,164,118],.6),mixc(T.wall,[92,106,140],.58));
   const fog=mx(mixc(T.wall,[150,165,190],.4),[30,38,64]);
   const pl=HALL.orb&&HALL.orbTex?HALL.orb:null;
@@ -375,8 +378,9 @@ function hallTagsDraw(L,cam,sz){
   const box=HALL.tags;if(!box)return;
   const ui=(typeof UIK==="number"&&UIK>0)?UIK:1,mv=hallMoving();
   /* поле табличек: на ПК — герой без запаса под ширину таблички, на телефоне — верх полосы над наездом плиты */
-  const xr=sz.wide?hallHero(sz.cw)*sz.cw-200*ui:sz.cw-170,yr=sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8;
-  const list=mv?[]:hallTagList(L,HALL.place),key=list.map(x=>x.t+"/"+x.s).join("|");
+  const W=hallWalkOn()?HALL.walk:null,full=!!W&&!W.eng;
+  const xr=full?sz.cw-200*ui:W?(sz.wide?.64*sz.cw-200*ui:sz.cw-170):sz.wide?hallHero(sz.cw)*sz.cw-200*ui:sz.cw-170,yr=full?sz.ch-60*ui:W?(sz.wide?sz.ch-60*ui:sz.ch*.45-8):sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8;
+  const list=mv?[]:full?hallWalkTagList():hallTagList(L,HALL.place),key=list.map(x=>x.t+"/"+x.s).join("|");
   if(box.__key!==key){box.__key=key;box.textContent="";
     for(const g of list){const e=document.createElement("i"),b=document.createElement("b");e.className="ht";b.textContent=g.t;e.appendChild(b);
       if(g.s){const s=document.createElement("s");s.textContent=g.s;e.appendChild(s);}if(g.dn)e.classList.add("dn");box.appendChild(e);}}
@@ -404,7 +408,7 @@ function hallDrawW(cw,wide){const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;return
 /* размер: на ПК кадр — весь экран, холст — его левая часть (rw); на телефоне — полоса */
 function hallSize(cn){
   const wide=hallWide(),vw=innerWidth,vh=innerHeight,ui=(typeof UIK==="number"&&UIK>0)?UIK:1;
-  const cw=vw,ch=wide?vh:Math.round(vh*HALL_STRIP),rw=hallDrawW(cw,wide),dpr=hallDpr(rw,ch,window.devicePixelRatio);
+  const wk=hallWalkOn(),cw=vw,ch=wide||wk?vh:Math.round(vh*HALL_STRIP),rw=wk?cw:hallDrawW(cw,wide),dpr=hallDpr(rw,ch,window.devicePixelRatio);   /* M816: на ходу — весь экран */
   const pw=Math.max(2,Math.round(rw*dpr)),ph=Math.max(2,Math.round(ch*dpr));
   if(cn.width!==pw||cn.height!==ph){cn.width=pw;cn.height=ph;}
   cn.__dpr=pw/rw;cn.style.width=(rw/ui)+"px";cn.style.height=(ch/ui)+"px";
@@ -419,13 +423,13 @@ function hallOpen(){
   $body.querySelectorAll(".cant-stage").forEach(n=>n.remove());
   if(!$body.__hallScroll){$body.__hallScroll=1;
     $body.addEventListener("scroll",()=>{if(HALL.open)$st.classList.toggle("up",$body.scrollTop>8);},{passive:true});}
-  hallGo(hallPlaceOf(tab),true);hallSize(cn);hallGoodsWire();
+  hallGo(hallPlaceOf(tab),true);if(hallWalkOn())hallWalkInit();hallWalkCls();hallSize(cn);hallGoodsWire();
   if(!HALL.raf&&typeof requestAnimationFrame==="function")HALL.raf=requestAnimationFrame(hallLoop);
 }
 function hallClose(){
   HALL.open=false;if(HALL.raf&&typeof cancelAnimationFrame==="function")cancelAnimationFrame(HALL.raf);HALL.raf=0;
   if(typeof document==="undefined"||!$st)return;
-  $st.classList.remove("hall","up");
+  $st.classList.remove("hall","up","walk","eng","lock");
   if(HALL.tags){HALL.tags.textContent="";HALL.tags.__key="";}
   if(HALL.cn){r3Free(HALL.cn);}r3Drop(HALL.room);HALL.room=null;HALL.rkey="";hallGoodsDrop();hallInstrDrop();hallBoardDrop();hallHoldDrop();hallRigDrop();
   if(HALL.orbTex&&HALL.orbTex.dev===GPU.dev)GPU.trash.push(HALL.orbTex.tex);HALL.orbTex=null;HALL.orb=null;
@@ -434,7 +438,8 @@ function hallClose(){
 function hallTab(){
   if(!HALL.open)return;
   $body.querySelectorAll(".cant-stage").forEach(n=>n.remove());
-  const p=hallPlaceOf(tab);if(p!==HALL.place)hallGo(p,false);
+  if(hallWalkOn()&&HALL.walk){const p=hallWalkPlaceCam();if(p&&p!==HALL.place)hallGo(p,false);hallWalkTabs();}   /* M816: камера ходит по месту, а не по вкладке */
+  else{const p=hallPlaceOf(tab);if(p!==HALL.place)hallGo(p,false);}
   if(HALL.L&&HALL.L.st!==((G.st&&G.st.stype)||"trade"))HALL.L=null;
 }
 /* телефон: сообщение (say) уходит в полосу эфира — там его место (M826); то же сообщение второй раз не идёт,
@@ -448,7 +453,9 @@ function hallLoop(){
   HALL.raf=0;
   if(!HALL.open||!HALL.cn||!HALL.cn.isConnected)return;
   const tw=wallMs();hallMsgEther(hallWide());
-  if(hallMoving()||hallLensMoving()||tw-HALL.last>=1000/12-2){HALL.last=tw;
+  /* M816: шаг — по настоящим часам, каждый кадр; кадр — на ходу каждый, в покое 12 в секунду */
+  let wm=false;if(hallWalkOn()&&HALL.walk){const W=HALL.walk,dt=W.ts?Math.min(.1,(tw-W.ts)/1000):0;W.ts=tw;wm=hallWalkStep(dt)||hallWalkMoving();hallWalkUi();}
+  if(wm||hallMoving()||hallLensMoving()||tw-HALL.last>=1000/12-2){HALL.last=tw;
     try{hallFrame();}catch(e){HALL.err++;HALL.open=false;console.error("зал станции: кадр упал",e);return;}}
   HALL.raf=requestAnimationFrame(hallLoop);
 }
@@ -467,7 +474,10 @@ function hallFrame(){
   L.room=HALL.room;
   if(L.bar)c3SignTex(L.S);
   hallOrbUp(L);
-  const c=hallLens(hallGlideAt(wallMs())||HALL_CAMS.trade,L,hallLensStep(wallMs())),cam=hallCam(c,sz.cw,sz.ch,sz.wide),t=wallMs()/1000;
+  const W=hallWalkOn()?HALL.walk:null;
+  if(W)HALL.place=hallWalkPlaceCam()||(W.at==null?"walk":W.at);   /* свет и люди места — по месту под ногами */
+  const c1=hallLens(hallGlideAt(wallMs())||HALL_CAMS.trade,L,hallLensStep(wallMs()));
+  const cam=W?hallWalkCam(L,sz,W.eng||W.fk>0?c1:null):hallCam(c1,sz.cw,sz.ch,sz.wide),c=W?cam.c:c1,t=wallMs()/1000;
   const S=hallScene(L,cam,t);S.vp=hallCrop(cam.vp,sz.rw/sz.cw);
   const lab=rpgBake(R,"r3lab","hall|"+cn.width+"x"+cn.height,cn.width,cn.height,()=>{});
   const U=new Float32Array(60);
@@ -479,8 +489,10 @@ function hallFrame(){
   const oq=r3Proj(cam.vp,c.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   /* холст — левая доля кадра: виньетка и хроматика считаются по всему кадру, как до среза */
   U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL.sharp==null?HALL_SHARP:HALL.sharp,1],52);
+  /* на ходу дальний конец зала уходит в темноту, а не режется кромкой: сила и x пилота на экране (M816) */
+  if(W&&!W.eng){const pw=hallWalkPilot(),q=pw&&r3Proj(cam.vp,[pw[0],1,pw[1]],sz.cw,sz.ch);U.set([.6*(1-W.fk),q?q[0]/sz.cw:.5,0,1],56);}
   HALL.frames++;HALL.stat=hallLimits(S);HALL.vp=cam.vp;
-  const k0=L.people[0],pa=hallPilotAt(HALL.place),f=sz.wide?sz.ch:sz.ch;
+  const k0=L.people[0],pw=W?hallWalkPilot():null,pa=pw?[pw[0],pw[1]]:W?null:hallPilotAt(HALL.place),f=sz.wide?sz.ch:sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};
   hallTagsDraw(L,cam,sz);
   return r3Frame(cn,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));

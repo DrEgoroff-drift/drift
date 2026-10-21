@@ -680,6 +680,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   c=pow(acesP(c*fu.v[6].w),vec3f(1./2.2));
   let vd=length((vu-.5)*vec2f(1.,ar)*1.6);
   c*=1.-.42*smoothstep(.45,1.15,vd);
+  /* v[14].x > 0 (зал на ходу, M816): от героя к дальней кромке кадра — в темноту */
+  if(fu.v[14].x>0.){c*=1.-fu.v[14].x*smoothstep(.3,.75,abs(vu.x-fu.v[14].y));}
   let gp=floor(p*k);let t=fu.v[10].w;
   let gr=fract(sin(dot(gp+vec2f(fract(t*.37)*91.,fract(t*.53)*57.),vec2f(127.1,311.7)))*43758.5453)-.5;
   c=c*(1.+.05*gr*fu.v[11].x)+(fract(sin(dot(gp*1.37,vec2f(12.9,78.2)))*43758.5)-.5)/255.;

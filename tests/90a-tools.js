@@ -309,6 +309,7 @@ const T=(()=>{
         return R(G.mode==="dock","ДЕЙСТВИЕ у причала не открыло станцию: "+G.mode+" · "+G.prompt.split("\n")[0]);}
       case "undock":{
         if(G.mode!=="dock")return R(false,"не на станции: "+G.mode);
+        if(HALL.walk&&HALL.walk.eng)tap("stWalkBack");   /* M816: из карточки места — назад в зал, как игрок */
         const c=tap("ОТСТЫКОВ")||tap("undock");
         /* кнопки нет — это провал, а не повод уйти leave() мимо экрана: иначе
            цель не могла покраснеть никогда (0.438.0) */
@@ -319,7 +320,13 @@ const T=(()=>{
         if(!TRADE_KEYS.some(k=>G.cargo[k]>0))return R(false,"трюм пуст — продавать нечего");
         const cr=G.credits;
         /* раздел — кнопкой, как игрок: запись (15c-rec) видит тычок, а не присваивание */
-        if(!tap("ТОРГОВЛЯ"))return R(false,"раздела ТОРГОВЛЯ на этой станции нет");
+        /* M816: зал на ходу — разделов нет, есть места: стойка в полосе, шаги (часов у стенда нет — шаг 0,1 с), глагол сам */
+        const walk=!!(HALL.walk&&HALL.open&&hallWalkOn());
+        if(walk){if(!tap("stWalk-trade"))return R(false,"места СТОЙКА в полосе зала нет");
+          for(let i=0;i<200&&HALL.walk.eng!=="trade";i++)hallWalkStep(.1);
+          if(HALL.walk.eng!=="trade")return R(false,"до стойки не дошёл: x "+HALL.walk.x.toFixed(2));
+          step();}   /* карточка места строится в шаге входа; кадр — чтобы прилавок был на экране до тычка */
+        else if(!tap("ТОРГОВЛЯ"))return R(false,"раздела ТОРГОВЛЯ на этой станции нет");
         const c=tap("ПРОДАТЬ ВСЁ");
         if(!c)return R(false,"кнопки ПРОДАТЬ ВСЁ нет на прилавке");
         return R(G.credits>cr,"кнопка нажата, а кредиты те же: "+cr);}
