@@ -17,7 +17,7 @@ const HALL_WALK_D={pc:10,ph:11.7,fy:.8,ey:1.9,ty:1.55};   /* объектив х
 /* места: id, x на линии, вкладки карточки, глагол, имя в полосе, куда смотрит стоя (yaw), табличка (точка, имя, строка) */
 const HALL_PLACES=[
   {id:"lock", x:-6.45,tabs:[],verb:"ОТСТЫКОВАТЬСЯ",ru:"ШЛЮЗ",yaw:-Math.PI/2,tag:[-7.15,2.3,HALL_WZ],tn:"ШЛЮЗ",ts:"борт у причала"},
-  {id:"trade",x:-4.45,tabs:["market","barter","flea","scrip"],verb:"ТОРГОВАТЬ",ru:"СТОЙКА",yaw:-Math.PI/2-.35,tag:[-4.77,1.05,.2],tn:"СТОЙКА",ts:""},
+  {id:"trade",x:-4.45,tabs:["market","barter","flea","scrip"],verb:"ТОРГОВАТЬ",ru:"СТОЙКА",yaw:-Math.PI/2-.35,tag:[-5.3,1.9,-1.4],tn:"СТОЙКА",ts:""},
   {id:"board",x:-2.85,tabs:["board"],verb:"ДОСКА",ru:"ДОСКА",yaw:Math.PI,tag:[-3.35,2.5,HALL_B+.05],tn:"ДОСКА",ts:"объявления станции"},
   {id:"ship", x:-.15, tabs:["yard","mods","fuse","site"],verb:"ВЕРФЬ",ru:"ВЕРФЬ",yaw:Math.PI+.25,tag:[.6,2.6,HALL_B],tn:"ОКНО",ts:"верфь и стройка"},
   {id:"know", x:1.95, tabs:["lab","instr"],verb:"ПРИБОРЫ",ru:"ВЕРСТАК",yaw:Math.PI-.2,tag:[1.0,1.12,-2.25],tn:"ВЕРСТАК",ts:"наука и приборы"},
@@ -177,7 +177,7 @@ function hallWalkUi(){
 function hallWalkTagList(){
   const W=HALL.walk,P=hallPlacesHere();let i=P.findIndex(p=>p.id===W.at);
   if(i<0){let d=1e9;P.forEach((p,j)=>{const e=Math.abs(p.x-W.x);if(e<d){d=e;i=j;}});}
-  return P.slice(Math.max(0,i-1),i+2).map(p=>({p:p.tag,t:p.tn,s:p.id==="trade"?((ST_TYPES.find(x=>x.id===(G.st&&G.st.stype))||{}).ru||""):p.ts,dn:p.id==="trade"?1:0}));
+  return P.slice(Math.max(0,i-1),i+2).map(p=>({p:p.tag,t:p.tn,s:p.id==="trade"?((ST_TYPES.find(x=>x.id===(G.st&&G.st.stype))||{}).ru||""):p.ts,dn:0}));
 }
 /* клавиши: действие входит, назад выходит, 1–7 — к месту по полосе */
 if(typeof addEventListener==="function")addEventListener("keydown",e=>{
