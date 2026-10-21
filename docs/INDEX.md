@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 620 · top-level symbols: 8752
+Files: 621 · top-level symbols: 8755
 
 ## SYMBOLS
 
@@ -2090,6 +2090,7 @@ SEC_RELAY_GOAL               src/12b2-fx-sec.js:27
 SEC_SPY                      src/12b2-fx-sec.js:25
 SEC_SPY_CACHE                src/12b2-fx-sec.js:88
 SEC_SPY_MAX                  src/12b2-fx-sec.js:26
+SEED_KNOWN                   tests/91qm-seeds.js:12-29
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -7858,6 +7859,8 @@ sectWith                     tests/91qf-sect.js:17-20
 sectWordsOn                  src/21ae-base-sect.js:409
 sectX                        src/21ae-base-sect.js:38
 sectY                        src/21ae-base-sect.js:39
+seedLand                     tests/91qm-seeds.js:30-36
+seedWorlds                   tests/91qm-seeds.js:17-29
 sellCargo                    src/12-economy.js:181-209
 sellDroneYield               src/12-economy.js:210-218
 sellQuote                    src/12ab-hold.js:134-152
@@ -10586,6 +10589,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91ql-light.js · 3 KB
   · свет без рывков (Зрение 2.0, закон «свет»):1
+
+## tests/91qm-seeds.js · 7 KB
+  · сиды: законы земли на многих мирах (лаборатория, 15.10):1
 
 ## tests/91qn-arb.js · 3 KB
 
