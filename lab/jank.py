@@ -20,6 +20,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "docs"))
 import shot  # WS, ev, CHROMES, BLOCK, CATCH, stand_tail
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import noise  # сторож шума: чужие хромы и процессор
 
 SCENES = ["surface", "landing", "things", "night", "cave", "dig", "shaft", "map", "system", "dock", "hq", "raid"]
 ENTRY_MS, RUN_MAX, LONG, LONG_SHARE, ENTRY_MAX = 2000, 100, 33.4, .02, 250
@@ -277,12 +279,14 @@ def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
 # Запас шире — 25 % и абсолютный порог: headless шумит; база — медиана пяти прошлых записей сцены ──
 FRAMES_LOG = os.path.join(os.environ.get("LAB_DATA") or os.path.join(os.path.expanduser("~"), "drift-data", "lab"), "frames.jsonl")
 ENTRY_SEEN = {}
+NOISE = {"on": False}   # соседи грузят машину: замер не пишется в базу регресса и не красит прогон
 REGRESS = {"entry": (1.5, 100, "вход в сцену, мс"), "low1": (1.25, 3, "1% low, мс"), "gpums": (1.25, .5, "видеокарта, мс/кадр"), "main": (1.25, .05, "поток, доля"),
            "hitch": (2.0, 4, "заминки")}
 
 
 def regress(sc, row, out, ver):
     row.setdefault("entry", ENTRY_SEEN.get(sc))
+    if NOISE["on"]: return
     hist = []
     try:
         for ln in open(FRAMES_LOG, encoding="utf-8"):
@@ -557,10 +561,12 @@ def main():
     ap.add_argument("--w", type=int, default=1280)
     ap.add_argument("--h", type=int, default=800)
     ap.add_argument("--secs", type=float, default=16)
-    ap.add_argument("--port", type=int, default=9692)
+    ap.add_argument("--port", type=int, default=0, help="0 = a free port (sessions share this script)")
     ap.add_argument("--cpu", default="surface,cave", help="scenes walked again with the CPU throttled ×4 (empty = none)")
     ap.add_argument("--root", default=ROOT, help="the checkout whose drift.html and stand scenes are measured")
+    ap.add_argument("--quiet-wait", type=float, default=0, help="seconds to wait before each scene for neighbours' Chromes to go and the CPU to fall under 40 %%")
     a = ap.parse_args()
+    if not a.port: a.port = noise.free_port()
     shot.HERE = os.path.join(a.root, "docs")   # stand_tail() reads docs/mkview.ps1 of that checkout
     chrome = next((c for c in shot.CHROMES if os.path.exists(c)), None)
     if not chrome: print("FAILED 1 · passed 0 · suites 1 of 1\n\n  ✗ кадры · нет Chrome"); return 1
@@ -572,17 +578,27 @@ def main():
                              "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--mute-audio",
                              "--enable-unsafe-webgpu", "--enable-precise-memory-info", "--window-size=%d,%d" % (a.w, a.h), "about:blank"],
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    bad, ok = [], 0
+    bad, ok, hushed = [], 0, []
     try:
         for _ in range(60):
             try: urllib.request.urlopen("http://127.0.0.1:%d/json/version" % a.port, timeout=2); break
             except Exception: time.sleep(.25)
+        def guarded(name, fn):
+            # сторож шума (lab/noise.py): чужие хромы или процессор > 40 % до или после — провалы уходят в заметки
+            s0 = noise.wait_quiet(prof, a.quiet_wait); NOISE["on"] = noise.noisy(s0)
+            n0 = len(bad); r = fn()
+            s1 = noise.sample(prof)
+            if noise.noisy(s0) or noise.noisy(s1):
+                print("  " + name + " · " + noise.tag(s0 if noise.noisy(s0) else s1))
+                hushed.extend(bad[n0:]); del bad[n0:]
+            NOISE["on"] = False
+            return r
         for sc in [s for s in a.scenes.split(",") if s]:
-            n0 = len(bad); run_scene(a, pg, sc, bad)
+            n0 = len(bad); guarded(sc, lambda: run_scene(a, pg, sc, bad))
             if len(bad) == n0: ok += 1
-        if not a.no_trans: ok += run_trans(a, pg, bad)
+        if not a.no_trans: ok += guarded("переходы", lambda: run_trans(a, pg, bad))
         for sc in [s for s in a.cpu.split(",") if s]:
-            n0 = len(bad); run_scene(a, pg, sc, bad, cpu=4)
+            n0 = len(bad); guarded(sc + " ×4", lambda: run_scene(a, pg, sc, bad, cpu=4))
             if len(bad) == n0: ok += 1
         # подсадка: поверхность, где герой раз в полсекунды прыгает на 40, видеокарта «ошибается» и куча течёт по 8 МБ/с — все три закона
         # обязаны это увидеть, иначе законы живого кадра слепы (как подсадки зрения)
@@ -594,12 +610,14 @@ def main():
             for law in ("герой рывком", "ошибки видеокарты", "память растёт", "шейдер собирается на ходу"):
                 if law not in got: bad.append(("кадры · подсадка", "СЛЕПО: закон «%s» не поймал подсаженный брак" % law))
     finally:
-        proc.kill()
+        noise.kill_tree(proc)
         import shutil; shutil.rmtree(tmp, ignore_errors=True)
     n = len(a.scenes.split(","))
     print()
     print(("FAILED %d · passed %d · suites %d of %d" % (len(bad), ok, n, n)) if bad else ("ALL GREEN · passed %d · suites %d of %d" % (ok, n, n)))
     for s, m in bad: print("  ✗ %s · %s" % (s, m))
+    if hushed: print("\n  в шуме (не считаются, перемерить в тишине):")
+    for s, m in hushed: print("  ~ %s · %s" % (s, m))
     return 1 if bad else 0
 
 

@@ -9,6 +9,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import jank
+import noise  # kill_tree: свой хром со всеми детьми
 shot = jank.shot
 CATS = ("devtools.timeline,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.frame,"
         "blink.user_timing,gpu,cc,viz,blink,disabled-by-default-devtools.timeline.invalidationTracking")
@@ -28,8 +29,9 @@ def main():
     ap.add_argument("--h", type=int, default=900)
     ap.add_argument("--dpr", type=float, default=1)
     ap.add_argument("--mobile", action="store_true")
-    ap.add_argument("--port", type=int, default=9703)
+    ap.add_argument("--port", type=int, default=0, help="0 = a free port (sessions share this script)")
     a = ap.parse_args()
+    if not a.port: a.port = noise.free_port()
     shot.HERE = os.path.join(a.root, "docs")
     chrome = next((c for c in shot.CHROMES if os.path.exists(c)), None)
     tmp = tempfile.mkdtemp(prefix="drift-trace-")
@@ -101,7 +103,7 @@ def main():
                 for nm, d in who.items():
                     print("      %s ← %s" % (nm, ", ".join("%s×%d" % kv for kv in sorted(d.items(), key=lambda kv: -kv[1])[:6])))
     finally:
-        proc.kill()
+        noise.kill_tree(proc)
         import shutil; shutil.rmtree(tmp, ignore_errors=True)
 
 

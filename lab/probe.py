@@ -9,6 +9,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import jank   # page(), shot (CDP)
+import noise  # kill_tree: свой хром со всеми детьми
 shot = jank.shot
 
 
@@ -22,11 +23,12 @@ def main():
     ap.add_argument("--dpr", type=float, default=1)
     ap.add_argument("--mobile", action="store_true")
     ap.add_argument("--wait", type=float, default=3, help="seconds of steady mode before the snippet")
-    ap.add_argument("--port", type=int, default=9702)
+    ap.add_argument("--port", type=int, default=0, help="0 = a free port (sessions share this script)")
     ap.add_argument("--profile", type=float, default=0, help="seconds of JS profile after the snippet: who eats frames over 33 ms")
     ap.add_argument("--all", action="store_true", help="--profile counts every sample, not only frames over 33 ms")
     ap.add_argument("--ws", type=float, default=300, help="CDP socket timeout, seconds: a long snippet needs more")
     a = ap.parse_args()
+    if not a.port: a.port = noise.free_port()
     if a.js.startswith("@"): a.js = open(a.js[1:], encoding="utf-8").read()   # сниппет файлом: кавычки консоли его не портят
     shot.HERE = os.path.join(a.root, "docs")
     chrome = next((c for c in shot.CHROMES if os.path.exists(c)), None)
@@ -97,7 +99,7 @@ def main():
             print("с детьми в долгих: " + " · ".join("%s %.0f" % kv for kv in sorted(inc.items(), key=lambda kv: -kv[1])[:14]))
         print(json.dumps({"mode": shot.ev(ws, "G.mode"), "gpu": shot.ev(ws, "!!GPU.ok"), "out": r}, ensure_ascii=False))
     finally:
-        proc.kill()
+        noise.kill_tree(proc)
         import shutil; shutil.rmtree(tmp, ignore_errors=True)
 
 
