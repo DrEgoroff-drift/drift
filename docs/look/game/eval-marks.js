@@ -4,7 +4,7 @@
   return {on:PLN.on,bad:PLN.bad,err:PLN.err,over:PLN_OVER.err,extra:window.__EXTRA||null,
     marks:st.marks||null,
     poi:(tr.poi||[]).map(function(q){return {k:q.k,x:Math.round(q.x),h:Math.round(q.h),sc:+(q.sc||1).toFixed(2)};}),
-    man:{x:Math.round(S.x||0),glide:+(PLN.glide||0).toFixed(2),at:plnAtThing(S,S.p)},
+    man:{x:Math.round(S.x||0),glide:+(PLN.glide||0).toFixed(2),at:plnAtThing(S,S.p),cave:S.cave?Math.round(S.cave.x):null,pad:Math.round(tr.padX||0)},
     cam:C&&{ex:+C.ex.toFixed(2),D:+C.D.toFixed(2),hw:+C.hw.toFixed(2)},
     stat:{cpu:st.cpu,tris:st.tris,calls:st.calls},
     act:(function(){

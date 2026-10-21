@@ -111,6 +111,7 @@ snapshot=function(){const s=INS_OLD_SNAP.apply(this,arguments);s.ins=G.ins||null
 const INS_OLD_APPLY=applySave;
 applySave=function(s){
   const r=INS_OLD_APPLY.apply(this,arguments);
+  if(!r)return r;   /* отказ: мир не тронут (91qo) */
   const b=s&&s.ins;G.ins=null;
   if(b&&typeof b==="object"){
     const I=insAll();

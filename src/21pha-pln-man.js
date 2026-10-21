@@ -23,7 +23,7 @@
 const PLN_MAN={gen:-1,geo:null,inst:null,a:new Float32Array(16),
   parts:null,V:null,nv:0,ni:0,ib:null,
   key:"",                              /* палитра и заряд, под которые собраны части */
-  k:{air:0,jet:0,fall:0,drill:0},      /* сглаженные доли поз: воздух, факел, падение, бур в руках */
+  k:{air:0,jet:0,fall:0,drill:0,sit:0}, /* сглаженные доли поз: воздух, факел, падение, бур в руках, сидя */
   W:[],                                /* кости в мире на этот кадр */
   lamp:[0,0,0],jet:[0,0,0]};           /* где фонарь и сопло ранца в мире (для ламп кадра) */
 /* кости: родитель и место в системе родителя (м). 0 таз, 1 корпус, 2 голова,
@@ -42,7 +42,11 @@ const PLN_MAN_POSE={
   fall:[0,-.15,-.15, .35,-.50,.10, -.30,-.30,.05, 1.6,.3, 1.3,.3],
   swim:[0,-.05,-.06, .60,-1.1,.20, .40,-.90,.20, .6,.9, .5,.8],
   /* бурение (M624): стойка — ноги врозь, корпус вперёд, обе руки держат бур перед собой */
-  drill:[0,.20,.26, -.28,.22,.05, .30,-.30,0, 1.10,-.20, 1.00,-.28]};
+  drill:[0,.20,.26, -.28,.22,.05, .30,-.30,0, 1.10,-.20, 1.00,-.28],
+  /* сидя (M632a, разрез базы): бёдра вперёд, голени вниз, руки на коленях; таз опускается на сиденье
+     (PLN_MAN_SIT м) — риг садится впервые */
+  sit:[0,-.06,.05, 1.50,-1.50,0, 1.42,-1.42,0, .75,.55, .62,.62]};
+const PLN_MAN_SIT=.42;
 const PLN_MAN_FLAME={rings:7,sides:8};
 
 /* цвет комплекта: «#rrggbb» или «rgb(r,g,b)» (mixHex) → линейный */
@@ -164,6 +168,7 @@ function plnManPose(st){
   K.jet+=((st.jet?1:0)-K.jet)*.25;
   K.fall+=(((!st.on&&!st.jet&&st.vy>.4)?1:0)-K.fall)*.15;
   K.drill+=((st.drill?1:0)-K.drill)*.2;
+  K.sit+=((st.sit?1:0)-K.sit)*.12;if(st.sitPin!=null)K.sit=st.sitPin;
   const sw=st.swim,a=st.amp*(1-K.air)*(1-sw),ph=st.phase,t=st.t,sN=Math.sin(ph),sF=-sN,breath=Math.sin(t*.026);
   const kneeW=p=>Math.pow(Math.max(0,Math.sin(p+1.77)),1.2),toe=p=>Math.max(0,-Math.sin(p+.3)),heel=p=>Math.max(0,Math.sin(p-.3));
   const A=[0,a*.10+.015*breath,-.04+a*.04*Math.cos(2*ph)+.01*breath,
@@ -173,12 +178,12 @@ function plnManPose(st){
   A[8]=-(A[6]+A[7])*.75-a*.7*toe(ph+Math.PI)+a*.2*heel(ph+Math.PI);
   for(let i=0;i<13;i++){
     let v=lerp(A[i],PS.air[i],K.air);
-    v=lerp(v,PS.jet[i],K.jet);v=lerp(v,PS.fall[i],K.fall);v=lerp(v,PS.swim[i],sw);v=lerp(v,PS.drill[i],K.drill*(1-K.air));
+    v=lerp(v,PS.jet[i],K.jet);v=lerp(v,PS.fall[i],K.fall);v=lerp(v,PS.swim[i],sw);v=lerp(v,PS.drill[i],K.drill*(1-K.air));v=lerp(v,PS.sit[i],K.sit*(1-K.air));
     A[i]=v;
   }
   /* бур в руках дрожит: плечи и чуть корпус (M624) */
   if(K.drill>.02){const vb=K.drill*.022*Math.sin(t*2.7);A[9]+=vb;A[11]+=vb*.9;A[1]+=vb*.25;}
-  const bob=a*.028*Math.cos(2*ph)+(1-a)*.006*breath,W=Q.W;
+  const bob=a*.028*Math.cos(2*ph)+(1-a)*.006*breath-PLN_MAN_SIT*K.sit,W=Q.W;
   for(let k=0;k<13;k++){
     const B=PLN_MAN_BONES[k],o=B.o,P=B.p<0?null:W[B.p],w=W[k]||(W[k]={c:1,s:0,x:0,y:0,z:0,a:0});
     if(P){w.a=P.a+A[k];w.x=P.x+P.c*o[0]-P.s*o[1];w.y=P.y+P.s*o[0]+P.c*o[1];w.z=P.z+o[2];}
@@ -222,7 +227,7 @@ function plnMan(st){
 }
 function plnManState(S,lampK,swim){
   return {phase:S?S.walkPhase||0:0,amp:S?clamp(S.walkAmp||0,0,1):0,on:S?S.on!==false:true,jet:!!(S&&S.jetOn),
-    vy:S?S.vy||0:0,swim:clamp(swim||0,0,1),t:G.t||0,lamp:lampK||0,drill:!!(S&&S.mining),low:!!(S&&S.suit!=null&&S.suit<25)};
+    vy:S?S.vy||0:0,swim:clamp(swim||0,0,1),t:G.t||0,lamp:lampK||0,drill:!!(S&&S.mining),sit:!!(S&&S.sit),sitPin:S&&S.sitPin!=null?S.sitPin:null,low:!!(S&&S.suit!=null&&S.suit<25)};
 }
 /* Ставит человека в кадр: поза по состоянию, вершины в буфер, запись, лампы фонаря и факела.
    pos — место ног в метрах, face — куда смотрит, swim — насколько он в круге, o — {S, lamp} */

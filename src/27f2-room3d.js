@@ -243,6 +243,40 @@ fn outside(w:vec3f)->vec3f{
   else if(kind==4){   /* пыль: бурая мгла и тусклое солнце */
     let sm=fb2(q*2.2+vec2f(tt*.004,0.));c=mix(vec3f(.16,.09,.05),vec3f(.42,.26,.14),sm)*(.8-q.y*.3);
     c+=vec3f(1.,.7,.4)*exp(-length(q-vec2f(.7,.45))*9.)*1.6;}
+  else if(kind==7){   /* двор дома (M850b): поле, дальние холмы, забор, мачта маяка с дыханием огня; днём небо планеты,
+                        ночью звёзды и великан серпом; ночь — дробная часть win2.z */
+    let nt=fract(u.win2.z);let e=rd.y/max(length(rd.xz),.05);let hz=-.085+.018*fb2(vec2f(q.x*1.6,7.));
+    let ds=mix(vec3f(.8,.74,.6),vec3f(.26,.42,.7),clamp((e-hz)*2.2,0.,1.));
+    let gp=vec2f(q.x*.5+.06,e-.16);let gl=length(gp)/.075;
+    var nsk=c*.7+mix(vec3f(.05,.058,.1),vec3f(.018,.022,.048),clamp((e-hz)*2.2,0.,1.));
+    if(gl<1.){let lm=clamp(dot(gp/.075,vec2f(.8,.45))*1.2,0.,1.);nsk=mix(nsk,vec3f(.03,.03,.04)+vec3f(.5,.42,.32)*lm*fb2(gp*90.+3.),1.);}
+    nsk+=vec3f(.25,.3,.4)*exp(-abs(gl-1.)*30.)*.25;
+    var col=mix(ds*1.25+vec3f(1.,.86,.6)*exp(-length(vec2f(q.x*.5-.5,e-.05))*14.)*.8,nsk,nt);
+    let hl=hz+.035*fb2(vec2f(q.x*2.4,1.))+.01;let hill=step(e,hl);
+    col=mix(col,mix(mix(vec3f(.36,.42,.4),vec3f(.62,.64,.6),.4),vec3f(.045,.04,.072),nt),hill*(1.-step(e,hz)));
+    let gd=clamp((hz-e)*6.,0.,1.);let gn=fb2(vec2f(q.x*9.,e*60.));
+    col=mix(col,mix(mix(vec3f(.42,.38,.22),vec3f(.24,.28,.14),gn)*(1.-.4*gd),vec3f(.02,.03,.032)*(1.+gn),nt),step(e,hz));
+    let ft=hz-.012;let fb=hz-.05;let fx=fract(q.x*7.);
+    let fen=step(fb,e)*step(e,ft)*max(step(fx,.07),max(step(abs(e-ft+.008),.003),step(abs(e-fb-.012),.003)));
+    col=mix(col,mix(vec3f(.16,.12,.08),vec3f(.004,.004,.004),nt),fen);
+    let mx=q.x*.5-.31;let mt=step(abs(mx),.0012+.0022*clamp((hz+.13-e)/.14,0.,1.))*step(hz-.01,e)*step(e,hz+.13);
+    col=mix(col,mix(vec3f(.12,.12,.13),vec3f(.006,.006,.008),nt),mt);
+    let bp=vec2f(mx,e-hz-.135);col+=vec3f(1.,.3,.16)*exp(-length(bp)*420.)*(1.6+1.2*sin(tt*.9))*(.4+.6*nt);
+    col+=vec3f(1.,.3,.16)*exp(-length(bp)*40.)*.08*nt*(1.+.6*sin(tt*.9));
+    c=col;}
+  else if(kind==8){   /* зимовка (M850c): низкое небо, гряда в снегу, метель в три глубины по ветру; сила метели — дробная часть win2.z */
+    let st=fract(u.win2.z);let e=rd.y/max(length(rd.xz),.05);
+    var col=mix(vec3f(.2,.24,.3),vec3f(.06,.08,.13),clamp((e+.02)*2.4,0.,1.));
+    let hz=-.05+.06*fb2(vec2f(q.x*1.1,3.))+.025*sin(q.x*2.3+1.);
+    col=mix(col,vec3f(.36,.41,.48)*(.75+.35*fb2(vec2f(q.x*7.,e*26.))),step(e,hz));
+    let hz2=-.13+.02*fb2(vec2f(q.x*3.,9.));col=mix(col,vec3f(.5,.55,.62),step(e,hz2));
+    let dir=normalize(vec2f(-.55,-.84));var sn=0.;
+    for(var i=0;i<3;i++){let fi=f32(i);let sc=30.-fi*9.;let p=vec2f(q.x*1.6,e)*sc-dir*tt*(1.1+fi*.7)*(.6+st);
+      let cg=floor(p);let o=fract(p)-.5-vec2f(h2(cg+1.7+fi)-.5,h2(cg+3.3+fi)-.5)*.6;let a=step(h2(cg+fi*5.),.18+.4*st);
+      let al=dot(o,dir);let pp=length(o-dir*al);sn+=a*(1.-smoothstep(.03,.09,pp))*(1.-smoothstep(.05,.2+.25*st,abs(al)))*(.45+fi*.3);}
+    let veil=fb2(vec2f(q.x*2.2+tt*.06*(.6+st),e*3.+tt*.09));
+    col=mix(col,vec3f(.62,.68,.76),clamp(veil*(.18+.32*st),0.,.5));
+    c=col+vec3f(.8,.86,.94)*clamp(sn,0.,1.)*.75;}
   else{   /* док и стапель: корпус у причала в прожекторах, фермы с освещённой кромкой, маяки — тело дока, не сетка */
     c+=vec3f(.035,.05,.08)*(1.-smoothstep(-.05,.5,q.y))*1.6;   /* дымка дока снизу: свет причала в пыли */
     if(!pon){   /* планета без своей текстуры: диск с терминатором и кромкой воздуха */

@@ -45,7 +45,7 @@ function plnDescent(){
     /* окно: земля под кораблём на той же доле кадра, что и у поверхности (1−f от верха), пока корабль
        не поднялся до 24 % — выше окно идёт за ним; так касание и первый кадр поверхности — одно окно.
        Окно спуска запоминается (PLN.hand, M830): первый кадр поверхности стоит в нём же */
-    lens:plnDescLens(L,gyw,near),near,
+    warm:1,lens:plnDescLens(L,gyw,near),near,
     /* опоры выходят с четырнадцати метров и стоят к пяти; жар сопел гаснет с отсчётом касания */
     ship:{x:L.x/PLN_M,alt,gear:Math.max(L.gear||0,plnSmooth(14,5,alt)),sq:L.sq||0,thr,
       hot:(L.hot||0)*(touched?clamp(L.over/70,0,1):0),tilt:-(L.a||0),yaw:.2,down:true},
@@ -211,6 +211,7 @@ hud=function(){
 };
 const PLN_OLD_ULAND=updateLanding;
 updateLanding=function(){
+  if(PLN.on&&G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone)return;   /* заход ещё собирается (21pz) — спуск стоит */
   PLN_OLD_ULAND.apply(this,arguments);
   const L=G.land;
   if(PLN.on&&G.mode==="landing"&&L&&L.tr&&!(L.over>0))G.prompt=plnLandRead(L);
@@ -219,16 +220,24 @@ updateLanding=function(){
 /* ── переключатель ── */
 const PLN_OLD_LANDING=drawLanding;
 drawLanding=function(){
-  let ok=false;
+  let ok=false,warm=false;
   if(PLN.on&&PLN.bad<3&&G.land&&G.land.tr&&G.land.p){
     try{
       plnQualAuto();
-      ok=plnGpuReady()&&plnDescent();
-      if(ok)PLN.bad=0;
+      const r=plnGpuReady()&&plnDescent();
+      warm=r==="warm";ok=!!r&&!warm;
+      if(ok||warm)PLN.bad=0;
     }catch(e){
       PLN.bad++;PLN.err=String((e&&e.stack)||e).slice(0,600);plnLog("спуск: "+PLN.err);
       if(GPU.on&&GPU.dev){GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.scene3D=false;}
     }
+  }
+  if(warm){
+    /* пока собирается: прежняя сцена — система с кораблём, не пустой кадр */
+    BLOOM_K.landing=BLOOM_K.system||0;PLN_DESC.live=false;
+    const m=G.mode;G.mode="system";
+    try{drawSystem();}finally{G.mode=m;}
+    return;
   }
   BLOOM_K.landing=ok?0:PLN_DESC.bloom;
   PLN_DESC.live=ok;

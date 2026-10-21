@@ -65,7 +65,12 @@ function cpPose(kind){
     stool2:{pel:.80,seat:1,lean:-.02,knee:[.13,.79,.40],ank:[.12,.36,.36],elb:S([.21,1.01,.12],[-.21,1.01,.12]),wr:S([-.09,1.10,.17],[.09,1.07,.19])},
     stool3:{pel:.80,seat:1,lean:.32,knee:[.15,.79,.40],ank:[.14,.36,.38],elb:S([.15,.92,.33],[-.15,.92,.33]),wr:S([.04,.90,.46],[-.04,.90,.46])},
     chair:{pel:.52,seat:1,lean:.02,knee:[.12,.50,.42],ank:[.13,.08,.46],elb:S([.22,.72,.10],[-.22,.72,.10]),wr:S([.15,.57,.31],[-.15,.57,.31])},
-    table:{pel:.52,seat:1,lean:.12,knee:[.12,.50,.42],ank:[.13,.08,.46],elb:S([.23,.80,.24],[-.23,.80,.24]),wr:S([.13,.79,.45],[-.14,.79,.44])}
+    table:{pel:.52,seat:1,lean:.12,knee:[.12,.50,.42],ank:[.13,.08,.46],elb:S([.23,.80,.24],[-.23,.80,.24]),wr:S([.13,.79,.45],[-.14,.79,.44])},
+    /* шаг (M850b): четыре кадра — левая вперёд, перенос, правая вперёд, перенос; kneeR/ankR — правая нога своя, руки навстречу ногам */
+    walk0:{pel:.93,lean:.05,knee:[.10,.50,.10],ank:[.11,.09,.22],kneeR:[.10,.47,-.08],ankR:[.11,.15,-.24],elb:S([.24,1.12,-.09],[-.24,1.12,.05]),wr:S([.25,.89,-.15],[-.24,.9,.16])},
+    walk1:{pel:.96,lean:.04,knee:[.10,.50,.03],ank:[.11,.085,-.02],kneeR:[.10,.56,.10],ankR:[.11,.23,-.08],elb:S([.25,1.13,-.04],[-.25,1.13,-.01]),wr:S([.27,.88,-.04],[-.27,.88,.04])},
+    walk2:{pel:.93,lean:.05,knee:[.10,.47,-.08],ank:[.11,.15,-.24],kneeR:[.10,.50,.10],ankR:[.11,.09,.22],elb:S([.24,1.12,.05],[-.24,1.12,-.09]),wr:S([.24,.9,.16],[-.25,.89,-.15])},
+    walk3:{pel:.96,lean:.04,knee:[.10,.56,.10],ank:[.11,.23,-.08],kneeR:[.10,.50,.03],ankR:[.11,.085,-.02],elb:S([.25,1.13,-.01],[-.25,1.13,-.04]),wr:S([.27,.88,.04],[-.27,.88,-.04])}
   };
   return P[kind]||P.stand;
 }
@@ -109,7 +114,8 @@ function cpBand(K,TA,pts,k,w,t,M,n){
 /* краска — холоднее и глуше, чем кажется: под тёплыми лампами коричневое становится деревом, серо-синее — сукном */
 const CP_KIT={cmd:{jac:[50,56,64],mix:.1,coll:1},keep:{jac:[62,78,70],mix:.16,coll:1},fact:{jac:[86,40,46],mix:.1,coll:0},
   sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[142,140,132],mix:.04,coll:1,vest:[40,44,52]}};
-function cpBody(m,lod,poseK){
+function cpBody(m,lod,poseK){return cpRun(cpBodyGen(m,lod,poseK));}
+function* cpBodyGen(m,lod,poseK){
   const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=cpPose(poseK);
   const wB=.86+(g.build-.7)*.36,hs=g.hs,pel=[0,J.pel,0],ln=J.lean;
   const ai=g.ai,rc=m.acc||(g.role?hex2rgb(g.role.col):[150,160,170]),rk=!ai&&m.role&&CP_KIT[m.role]?m.role:"",KT=rk?CP_KIT[rk]:null;
@@ -244,7 +250,7 @@ function cpBody(m,lod,poseK){
   }
   /* ноги: таз → колено → лодыжка, ботинок по стопе */
   K.part=0;
-  for(let k=0;k<2;k++){const s=k?-1:1,Hh=[s*.095*wB,J.pel-.03,0],Kn=[s*J.knee[0],J.knee[1],J.knee[2]],A=[s*J.ank[0],J.ank[1],J.ank[2]];
+  for(let k=0;k<2;k++){const s=k?-1:1,kn=k&&J.kneeR?J.kneeR:J.knee,an=k&&J.ankR?J.ankR:J.ank,Hh=[s*.095*wB,J.pel-.03,0],Kn=[s*kn[0],kn[1],kn[2]],A=[s*an[0],an[1],an[2]];
     const m1=[(Hh[0]+Kn[0])/2,(Hh[1]+Kn[1])/2+.01,(Hh[2]+Kn[2])/2],m2=[(Kn[0]+A[0])/2,(Kn[1]+A[1])/2,(Kn[2]+A[2])/2-.012];
     K.tube([Hh,m1,Kn,m2,[A[0],A[1]+.08,A[2]]],[.088*wB,.078*wB,.06,.062,.052],Mp,TN);
     K.tube([[A[0],A[1]+.13,A[2]],[A[0],A[1],A[2]]],[.054,.05],Mb,TN);
@@ -258,7 +264,8 @@ function cpBody(m,lod,poseK){
   const hc=[neck[0],neck[1]+.155*hs,neck[2]+.022+Math.sin(ln)*.04];
   K.tube([[neck[0],neck[1]-.02,neck[2]-.005],[neck[0],neck[1]+.05,neck[2]+.004],[hc[0],hc[1]-.06,hc[2]-.012]],[.058,.054,.05],ai?Msk:K.mt(mixc(g.skin,[40,24,20],.2),.3,5,P.skin),TN);   /* шея темнее лица: под челюстью тень */
   K.push(hc,0,-ln*.6,0,hs);
-  const rig=cpHead(K,g,lod,cl,m.seed);
+  yield;
+  const rig=yield* cpHeadGen(K,g,lod,cl,m.seed);
   K.pop();
   K.part=0;
   const M=K.pack();
@@ -271,11 +278,32 @@ function cpBody(m,lod,poseK){
 /* кэш сеток людей: зерно, поза, подробность, уровень (нашивки), роль и наряд. Настроение в сетку не входит — его
    играет cpRig */
 const CP_MESH=new Map();
+function cpMeshKey(m,pose,lod){
+  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"");
+}
+function cpMeshPut(key,M){
+  if(CP_MESH.size>=48){const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
+  CP_MESH.set(key,M);
+}
 function cpMesh(m,pose,lod){
-  const key=(m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age);
+  const key=cpMeshKey(m,pose,lod);
   let M=CP_MESH.get(key);
   if(M){CP_MESH.delete(key);CP_MESH.set(key,M);return M;}
   M=cpBody(m,lod,pose);
-  if(CP_MESH.size>=48){const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
-  CP_MESH.set(key,M);return M;
+  cpMeshPut(key,M);return M;
+}
+/* то же по шагам: простой зала берёт тело частями, пока шаги укладываются в бюджет кадра. null — ещё строится */
+const CP_JOBS=new Map();
+function cpMeshPump(m,pose,lod,budget){
+  const key=cpMeshKey(m,pose,lod);
+  const M=CP_MESH.get(key);
+  if(M)return M;
+  let it=CP_JOBS.get(key);
+  if(!it){it=cpBodyGen(m,lod,pose);CP_JOBS.set(key,it);}
+  const t0=wallMs();
+  for(;;){
+    const r=it.next();
+    if(r.done){CP_JOBS.delete(key);cpMeshPut(key,r.value);return r.value;}
+    if(wallMs()-t0>=budget)return null;
+  }
 }

@@ -426,3 +426,38 @@ scavengers that come to a wreck whose beacon is left on; the settlement reacting
 gun's flare; the survey as HUD markers (text now); the lift's cab seen from inside; an
 online count of notches (the postcard rule: no names, no free text — a count would be
 allowed, the server is not touched here).
+
+## 7. Built (15.10.2026)
+
+Five local passes on `planet`: `2c7342eb` the engine and the wreck; `d52fa011` the wreck
+remade and the quiet five; `74a01ed2` the monolith's glyphs, the altar at the waist, the
+observatory's own light; `4b6900b3` the moving five and the cave mouth off landmarks;
+`37a9c41e` the lift's ride. The table and the machine are `21pif`; the kinds are
+`21pif` (wreck), `21pifa` (quiet five), `21pifb` (moving five), `21pifc` (lift); the bodies
+`21piea` (wreck), `21pieb` (quiet five), `21piec` (moving five and the lift). Tests:
+`91qa-marks-act`, `91qaa-marks-move`, `91qab-marks-lift` (every spot reachable, every act
+visible in the body a second later, no credits, the seeded rolls and the once-only pays).
+
+The lift as built: the cab is a part 2.6 x 3.2 m that rolls the rail from the station
+to the cone, climbs the cone's front face and then the cable (`plnLiftAt`); the cab's
+geometry is published by the body as `PLN_LIFT_GEO[seed]`, since an item copies only
+parts, hands and lamp anchors. The ride is derived from the memo (`n.last` and the age),
+`S.ride` is set each frame by the kind's tick while the man is in the cab and read by the
+lens window (`plnLiftWin`, 21pz), the cast (the man and his blob are skipped, 21ph) and a
+wrap of `updateSurface` (walking and the jetpack muted, the man pinned to the station,
+▲ in a stopped cab is the jump). The stand snaps the lens to the cab (the game eases it).
+
+**Disputed** — decided by the builder (the author delegated the forks), open to review:
+- the druse's mine spot at dx 6; three sounds rather than three pitches for its keys; its
+  drilled seam still reads whitish at night;
+- the ring's stop and limit levers at -7.6 / -4.4 m;
+- the factory's smoke and the gun's smoke are lit puffs of parts, not a particle system;
+- the anomaly has no headlamp flicker (the frame guard of 21pha was not worth wrapping);
+- the gun stands at z 5; its muzzle flash is applied in `plnMarksFrame`;
+- the cave mouth is moved off a landmark's body and spots (`21pigz`) rather than the
+  landmark moved: the game places the mouth at pad +- keep, which often fell on a band;
+- the hold=1 stand pose does not show the drill;
+- the lift: the camera follows the cab fully (`cam` 1) — the ground leaves the frame,
+  which is the point; the cab is drawn on the cone's face, not inside it; a cab stuck by
+  a jump is back at the station the next day without being seen to come down; the stall's
+  cab is lit only by a blinking red lamp.

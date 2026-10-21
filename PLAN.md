@@ -309,9 +309,6 @@ Check each against the code before building — some may already hold.
 - [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). The day is
   `CEL_DAY` of the sky calendar (`06a-celest`), copied in `21pifa` and `25m-probe`; a longer day moves
   the war chronicle's hashes and the need windows. Decide together with the chronicle, reshoot hashes.
-- [ ] **The headframe stands on a slope or in a dip** (the playtest session, 15.10): the mine's mouth is
-  where the player stood and the land (`plnLandMake`) does not know it. Under its four legs the drop
-  reaches 5.5 m. Level a circle of ~3 mine units round `mineSpotX`, as the ship's pad is levelled.
 - [ ] **`03e-hull-draw.js` grew to 49 KB** with the yard marks: move the hull's marks (scars, transit plate,
   seal, yard mark) to their own module along that seam.
 - [ ] **Old worktrees:** `C:\Claude\drift-refactor` (one WIP commit «stall report names who held the frame»,

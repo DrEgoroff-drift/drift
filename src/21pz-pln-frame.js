@@ -293,6 +293,41 @@ function plnHandWin(S,ws,hs,f,h){
 }
 
 /* ── кадр ── */
+/* ── заход собирается за несколько кадров ──
+   Первый кадр спуска строил землю, расстановку, вещи, метки и травы разом: 90–150 мс. Пока идёт
+   сборка, на экране прежняя сцена (drawLanding рисует систему), спуск стоит; каждый кадр — не больше
+   7 мс работы. Этапы: куски ленты в окне (рядами), посадки, вещи земли, метки, своё, травы.
+   true — ещё собирается; страховка — 4 с (240 кадров) */
+function plnWarmStep(L,S,p,C,V){
+  if(!L.warm){L.warm={st:0,k:0,n:0};return true;}   /* кадр, где заведён лист мира (plnLand), — только он */
+  const w=L.warm;
+  if(++w.n>240){L.warmDone=true;return false;}
+  const B=7;
+  /* набор флоры строится из системы по шагу (plnKitTick); не успел — достраивается здесь, в бюджет кадра */
+  if(!(PLN_FLORA.kit&&PLN_FLORA.gen===PLN_GPU.gen)){
+    const t0=wallMs();
+    while(wallMs()-t0<B&&plnFloraKitStep());
+    return true;
+  }
+  if(w.st===0){
+    plnLandStep(L,C.ex,V,null,B,true);
+    if(!L.jobs.some(J=>!J.done&&plnLandSees(J,C.ex,V,20)))w.st=1;
+    return true;
+  }
+  if(w.st===1){
+    plnPlantStep(L,p,C.ex,V,B);
+    if(++w.k>=3){w.st=2;w.k=0;}
+    return true;
+  }
+  if(S.deposits){
+    if(w.st===2)plnThings(L,S,p);
+    else if(w.st===3){if(PLN_MARK.on&&S.tr&&S.tr.poi&&S.tr.poi.length)plnMarks(L,S);}
+    else if(w.st===4){if(OWN.on&&S.tr&&S.p)plnOwnStep(L,S);}
+    else if(w.st===5)plnHerbs(L,S,p);
+  }
+  if(++w.st>5){L.warmDone=true;return false;}
+  return true;
+}
 function plnSurface(S,o){
   /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам.
      S — состояние поверхности (без него G.surf); o — спуск (21pza): {lens(ws,hs) → {vx,vy},
@@ -307,16 +342,24 @@ function plnSurface(S,o){
   tr.p=p;sunDirSet(p);WIND=windOf(p);
   if(!S.cam)S.cam={x:S.x,y:S.y};
   PLN.y0=tr.padY;
-  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):null),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  /* в клети лифта (21pifc) окно поднимается за клетью: земля уходит вниз */
+  const lw=!fly&&!hd?plnLiftWin(S):null;
+  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):lw),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
-  /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
-  const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
+  /* стройка по бюджету кадра (M614, M630f): кадр без стройки — среднее FRAME_JS прошлых кадров за
+     вычетом их стройки; стройке — что остаётся до PLN_BUILD.frame. Земля берёт своё первой,
+     посадкам — остаток, но не меньше половины low */
+  const B=PLN_BUILD,tb=wallMs(),bs=PLN.bld||(PLN.bld={base:3,ms:0});
+  if(FRAME_JS>0)bs.base+=(Math.max(0,FRAME_JS-bs.ms)-bs.base)*.1;
+  const lim=L.first?clamp(B.frame-bs.base,B.low,B.ms):B.first;
+  if(fly&&o.warm&&!PLN.rush&&!L.warmDone&&plnWarmStep(L,S,p,C,V))return "warm";
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
   /* с заходом, посчитанным заранее (G.land.pre), массивы те же — пересадки нет */
   if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,-1e9,1e9);
-  plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
+  plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));
+  bs.ms=wallMs()-tb;
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
      перед объективом со своей стороны — дорожка по воде становится героем кадра; выше часа закон
@@ -363,7 +406,7 @@ function plnSurface(S,o){
     /* корабль стоит на плите площадки (21pza); плита — тело и на поверхности */
     const lift=plnPadLift(L,tr,wy,L.shipX),ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ)+lift,L.shipZ];
     PLN.shipW=ship;   /* табличка строки действия у корабля (21pzb) */
-    plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L,floor:lift>0?plnPadTop(L,tr,wy):null});
+    plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L,floor:lift>0?plnPadTop(L,tr,wy):null,hide:!!S.ride});
     plnPadFrame(F,L,tr,0);
     plnThingsFrame(L,F,S,p,C.ex,V);
     plnMarksFrame(L,F,S,p,C.ex,V,lampK);

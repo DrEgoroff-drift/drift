@@ -450,6 +450,12 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
   cantina as the hall itself (M725 composed anew: poses, one hero, the sign off centre), the
   site's silhouette. **M815 The phone reflow** of all of the above.
+- **M816 The station on foot** (the author, 15.10: «хочу ходить по станции, а то справа панель,
+  а слева 3д, и как-то наполовину всё»). Design: `docs/DESIGN-station-walk.md` — it overrides the
+  plate at 60 % and the tab-driven camera of `DESIGN-hall.md`. The hall full screen, side-on; the
+  pilot walks the places (airlock, counter, board, yard window, bench, office, bar); action at a
+  place opens its card (≤ 36 % W on a PC, ≤ 55 % H on a phone) beside the thing. M816a the walk,
+  M816b the cards, M816c cost and the phone. Builder: remake-a3, next after the home's fixes.
 
 ### Stage C — flight (M820–M829)
 

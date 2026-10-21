@@ -275,6 +275,7 @@ snapshot=function(){const s=WATCH_OLD_SNAP.apply(this,arguments);s.uch=G.uch||nu
 const WATCH_OLD_APPLY=applySave;
 applySave=function(s){
   const r=WATCH_OLD_APPLY.apply(this,arguments);
+  if(!r)return r;   /* отказ: мир не тронут (91qo) */
   const b=s&&s.uch;G.uch=null;
   if(b&&typeof b==="object"){
     const W=watchSt();

@@ -18,7 +18,7 @@
    понимал, в каком окне продолжать. Летать в ней по-прежнему можно. */
 let TAB_LIVE=true;
 const TAB_ID=uidRand().toString(36).slice(2)+wallNow().toString(36);
-let TAB_CH=null,TAB_TAKER=null;      /* TAB_TAKER — вкладка, которой мы уступили: уйдёт она — играть снова нам */
+let TAB_CH=null,TAB_TAKER=null,TAB_YIELD_TS=0;      /* TAB_TAKER — вкладка, которой мы уступили: уйдёт она — играть снова нам */
 try{
   TAB_CH=new BroadcastChannel("drift-tabs");
   TAB_CH.onmessage=e=>{
@@ -26,15 +26,24 @@ try{
     if(!d||d.id===TAB_ID)return;
     if(d.k==="hello"&&TAB_LIVE){
       /* пришла новая — уступаем место и замолкаем */
-      TAB_LIVE=false;TAB_TAKER=d.id;
+      TAB_LIVE=false;TAB_TAKER=d.id;TAB_YIELD_TS=wallNow();
       if(typeof say==="function")say("ИГРА ОТКРЫТА В ДРУГОЙ ВКЛАДКЕ\nздесь запись остановлена,\nчтобы не затереть ту",420);
       logShip("Игра открыта в другой вкладке — эта больше не сохраняется.");
     }
     /* новая вкладка закрыта или перезагружена — место свободно: вернуть запись (раньше замолчавшая вкладка
        молчала до конца сеанса, и вечер игры в ней не сохранялся) */
     if(d.k==="bye"&&!TAB_LIVE&&d.id===TAB_TAKER){
-      TAB_LIVE=true;TAB_TAKER=null;
-      if(typeof say==="function")say("Запись возобновлена\nдругая вкладка закрыта",240);
+      TAB_TAKER=null;
+      /* ушедшая вкладка писала позже, чем мы замолчали: наше состояние старее записи, а автосохранение
+         молча вернуло бы его поверх (плейтест 14.10: масштаб 1.25 вернулся). Остаёмся молчать до перезагрузки */
+      let ts=0;
+      try{const o=JSON.parse(stGet(SAVE_KEY)||"null");ts=(o&&o.ts)||0;}catch(e){ts=0;}
+      if(ts>TAB_YIELD_TS){
+        if(typeof say==="function")say("Другая вкладка сохранила новее\nперезагрузите эту — запись остановлена",300);
+      }else{
+        TAB_LIVE=true;
+        if(typeof say==="function")say("Запись возобновлена\nдругая вкладка закрыта",240);
+      }
     }
   };
   TAB_CH.postMessage({k:"hello",id:TAB_ID});
@@ -181,6 +190,10 @@ function cloudBoot(then){
   cloudCall("pull")
     .then(d=>{
       if(!d||!d.ok||!d.save){then&&then(false);return;}
+      /* новее, но нечитаемая (без версии, чужая версия, время не числом) живую местную не стирает:
+         ворота те же, что у applySave (лаборатория 15.10, 91qp-cloudchaos) */
+      const v=d.save.v,ts=d.save.ts;
+      if((v!==4&&v!==5)||typeof ts!=="number"||!isFinite(ts)){then&&then(false);return;}
       let mine=0;
       try{mine=(JSON.parse(stGet(SAVE_KEY))||{}).ts||0;}catch(e){}
       if((d.save.ts||0)>mine){stSet(SAVE_KEY,JSON.stringify(d.save));then&&then(true);}

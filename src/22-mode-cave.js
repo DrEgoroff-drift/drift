@@ -172,8 +172,10 @@ function caveBuild(C){
   for(let cy=0;cy<NY;cy++){g[cy*NX]=1;g[cy*NX+1]=1;g[cy*NX+NX-1]=1;g[cy*NX+NX-2]=1;}
   C.flo=new Float32Array(NX).fill(NaN);C.cei=new Float32Array(NX).fill(NaN);
 }
-function enterCave(){
-  const S=G.surf,p=S.p,r=rng(p.seed^0xCA5E);
+/* пещера из зерна планеты — всё, что делает вход до смены режима. Зерно у неё свое, от места
+   игрока не зависит; ждать касания устья незачем (caveTick считает её заранее и лепит куски) */
+function caveMake(S){
+  const p=S.p,r=rng(p.seed^0xCA5E);
   const plants=[],fauna=[];
   /* вход под третьим светом (11g): та же пещера с другим зерном, без кусачих */
   const ancient=!!S.ancient;
@@ -220,6 +222,14 @@ function enterCave(){
      обратно поднимаются ранцем */
   C.findX=340;C.findY=caveScanDown(C,340,caveLowY(C,340));
   caveDeco(C,p);
+  return C;
+}
+function enterCave(){
+  const S=G.surf,p=S.p,P=S.cavePre;
+  /* заготовка годится, если мир тот же: те же «древность» и дозор, что считались при её лепке */
+  const C=P&&P.C&&P.C.ancient===!!S.ancient&&P.C.watch===((typeof settleWatch==="function")?settleWatch(p):0)?P.C:caveMake(S);
+  S.cavePre=null;
+  const watch=C.watch;
   G.cave=C;G.mode="cave";
   const cl=(typeof storyGroundLine==="function")?storyGroundLine("cave"):null;
   if(cl)logAdd("dim",cl);

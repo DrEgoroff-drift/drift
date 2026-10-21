@@ -53,13 +53,17 @@ function plnQualSet(name){
 /* ярус по обстановке: явный выбор (G.opts.gfx.pln), иначе телефон — low, спущенное движком
    разрешение (28-loop: RES_AUTO<2 — кадр три секунды не укладывался) — mid, иначе high.
    Густота посадок (plK) берётся при посадке: смена яруса на ходу пересаживать не заставляет */
-function plnQualAuto(){
+function plnQualWant(){
   const Q=PLN_GPU;
   let want=null;try{want=G.opts.gfx.pln||null;}catch(e){}
   if(!PLN_QUAL[want]){
     if(Q.phone==null){Q.phone=false;try{Q.phone=Math.min(window.innerWidth,window.innerHeight)<=760&&matchMedia("(pointer:coarse)").matches;}catch(e){}}
     want=Q.phone?"low":(typeof RES_AUTO==="number"&&RES_AUTO<2)?"mid":"high";
   }
+  return want;
+}
+function plnQualAuto(){
+  const Q=PLN_GPU,want=plnQualWant();
   if(want!==Q.qual)plnQualSet(want);
   return Q.qual;
 }
@@ -108,6 +112,28 @@ function plnRec(a,k,p,scale,yaw,hk,seed,ca,mode,cb,ride){
   a[o+12]=cb?cb[0]:0;a[o+13]=cb?cb[1]:0;a[o+14]=cb?cb[2]:0;a[o+15]=ride?1:0;
 }
 
+/* раскладки привязок: те же и у устройства (plnGpuDev, plnGpuTier), и у позднего прогрева (08b0) —
+   конвейер, собранный по равной раскладке, годится любой привязке с ней: «group-equivalent» */
+function plnLayouts(d){
+  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
+  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
+  const sh={sampleType:"depth",viewDimension:"2d-array"};
+  return {scene:d.createBindGroupLayout({entries:[
+      {binding:0,visibility:VF,buffer:{type:"uniform"}},
+      {binding:1,visibility:FR,texture:sh},{binding:2,visibility:FR,sampler:{type:"comparison"}},
+      tx(3),{binding:4,visibility:FR,sampler:{type:"filtering"}},
+      {binding:5,visibility:FR,buffer:{type:"uniform"}}]}),
+    shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]})};
+}
+function plnLayPost(d,ms){
+  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
+  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
+  return d.createBindGroupLayout({entries:[
+    {binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
+    tx(2),tx(3),tx(4),tx(5),{binding:6,visibility:FR,sampler:{type:"filtering"}},
+    {binding:7,visibility:FR,texture:{sampleType:"depth",multisampled:ms>1}},
+    {binding:8,visibility:FR,texture:{sampleType:"depth",viewDimension:"2d-array"}},{binding:9,visibility:FR,sampler:{type:"comparison"}}]});
+}
 /* ── то, что живёт с устройством ── */
 function plnGpuDev(){
   const Q=PLN_GPU,d=GPU.dev;
@@ -115,16 +141,8 @@ function plnGpuDev(){
   Q.dev=d;Q.gen++;Q.w=0;Q.h=0;Q.T=null;Q.V=null;Q.B=null;Q.pp=null;Q.P={};Q.D=null;Q.tierGen=-1;
   /* промах в шейдере или привязке виден здесь же, а не только в журнале сбоев движка */
   d.addEventListener("uncapturederror",e=>plnLog("gpu "+String((e.error&&e.error.message)||e.error)));
-  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
-  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
-  const sh={sampleType:"depth",viewDimension:"2d-array"};
-  Q.L={
-    scene:d.createBindGroupLayout({entries:[
-      {binding:0,visibility:VF,buffer:{type:"uniform"}},
-      {binding:1,visibility:FR,texture:sh},{binding:2,visibility:FR,sampler:{type:"comparison"}},
-      tx(3),{binding:4,visibility:FR,sampler:{type:"filtering"}},
-      {binding:5,visibility:FR,buffer:{type:"uniform"}}]}),
-    shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]}),
+  const lay=plnLayouts(d);
+  Q.L={scene:lay.scene,shadow:lay.shadow,
     post:null};   /* привязка свёртки — в plnGpuTier: её глубина многовыборочная или нет по ярусу */
   Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
     cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
@@ -143,13 +161,7 @@ function plnGpuDev(){
 /* ── то, что живёт с ярусом: привязка свёртки, карта теней, конвейеры ── */
 function plnGpuTier(){
   const Q=PLN_GPU,d=GPU.dev;
-  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
-  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
-  Q.L.post=d.createBindGroupLayout({entries:[
-    {binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
-    tx(2),tx(3),tx(4),tx(5),{binding:6,visibility:FR,sampler:{type:"filtering"}},
-    {binding:7,visibility:FR,texture:{sampleType:"depth",multisampled:Q.ms>1}},
-    {binding:8,visibility:FR,texture:{sampleType:"depth",viewDimension:"2d-array"}},{binding:9,visibility:FR,sampler:{type:"comparison"}}]});
+  Q.L.post=plnLayPost(d,Q.ms);
   if(Q.D&&Q.D.shadow)Q.D.shadow.destroy();
   const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
   const shadow=d.createTexture({size:[Q.shn,Q.shn,2],format:PLN_DEP,usage:RT});
@@ -159,17 +171,15 @@ function plnGpuTier(){
   /* цели и привязки — заново: они держат карту теней и размеры яруса */
   Q.tierGen=Q.tier;Q.w=0;Q.h=0;
 }
-/* конвейеры: через воронку движка (непрогретый ключ она строит на месте и пишет в GPU_PIPES.lazy),
-   а держим сами — воронка непрогретое не хранит */
-function plnGpuPipes(){
-  const Q=PLN_GPU,d=GPU.dev,L=Q.L,ms=Q.ms;
+/* дескрипторы конвейеров яруса: [ключ воронки, дескриптор]. Ключи несут сглаживание (sky1/sky4, blur4):
+   свёртка и её раскладка у яруса со сглаживанием другие. Тот же список строит поздний прогрев (08b0) —
+   до первой посадки, по раскладкам, равным тем, что заведёт устройство */
+function plnPipeDescs(d,L,ms){
   const mS=gpuShader(PLN_WGSL_SCENE+PLN_WGSL_WX+PLN_WGSL_WATER),mP=gpuShader(plnWgslPost(ms));   /* осадки — в шейдере сцены (21pk) */
-  for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
-    for(const x of i.messages)if(x.type==="error")plnLog("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
   const lS=d.createPipelineLayout({bindGroupLayouts:[L.scene]}),lH=d.createPipelineLayout({bindGroupLayouts:[L.shadow]}),
     lP=d.createPipelineLayout({bindGroupLayouts:[L.post]});
-  const prim={topology:"triangle-list",cullMode:"none"};
-  const mk=(key,desc)=>{Q.P[key]=gpuPipeline("pln."+key,()=>desc);};
+  const prim={topology:"triangle-list",cullMode:"none"},out=[];
+  const mk=(key,desc)=>out.push([key,desc]);
   mk("shadow",{layout:lH,vertex:{module:mS,entryPoint:"vs_shadow",buffers:PLN_VB},primitive:prim,
     depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"less",depthBias:2,depthBiasSlopeScale:2.2}});
   const blend={color:{srcFactor:"src-alpha",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}};
@@ -188,7 +198,25 @@ function plnGpuPipes(){
   mk("blur",post("fs_blur"));mk("down",post("fs_down"));mk("up",post("fs_up"));mk("shafts",post("fs_shafts"));
   /* свёртка пишет в сцену движка; её альфу не трогаем */
   mk("comp",post("fs_comp",{format:PLN_HDR,writeMask:GPUColorWrite.RED|GPUColorWrite.GREEN|GPUColorWrite.BLUE}));
+  return out;
 }
+/* ключ воронки: свёртка и тень зависят от сглаживания яруса, сцена несёт его в имени (sky1/sky4) */
+const plnPipeKey=(k,ms)=>"pln."+k+(/^(shadow|sky|body|water|wx)/.test(k)?"":"."+ms);
+/* конвейеры: через воронку движка (непрогретый ключ она строит на месте и пишет в GPU_PIPES.lazy),
+   а держим сами — воронка непрогретое не хранит. Q.P — по короткому имени: shadow, sky1, body4, blur … */
+function plnGpuPipes(){
+  const Q=PLN_GPU,d=GPU.dev,ms=Q.ms;
+  const mS=gpuShader(PLN_WGSL_SCENE+PLN_WGSL_WX+PLN_WGSL_WATER),mP=gpuShader(plnWgslPost(ms));
+  for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
+    for(const x of i.messages)if(x.type==="error")plnLog("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
+  for(const [k,desc] of plnPipeDescs(d,Q.L,ms))Q.P[k]=gpuPipeline(plnPipeKey(k,ms),()=>desc);
+}
+/* поздний прогрев (08b0): конвейеры того яруса, что выберет ближайшая посадка */
+GPU_LATE_GROUPS.push(()=>{
+  const d=GPU.dev,ms=PLN_QUAL[plnQualWant()].ms,lay=plnLayouts(d);
+  lay.post=plnLayPost(d,ms);
+  return plnPipeDescs(d,lay,ms).map(([k,desc])=>[plnPipeKey(k,ms),{desc}]);
+});
 
 /* ── то, что живёт с размером кадра ── */
 function plnGpuSize(){

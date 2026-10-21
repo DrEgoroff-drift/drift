@@ -95,6 +95,7 @@
       {type:"desert", size:big*.11, x:W*.56,y:H*.14, vx:.0082,vy:.0033,
        spin:.03, seed:4410, ring:false, depth:1, alpha:.66, glow:"rgba(226,178,120,.1)"});
 
+    if(window.SKY_QUIET)spec.length=0;   /* заглавная 15.10: кадры игры вместо нарисованных планет */
     planets=spec.map(s=>({
       body:makePlanet({type:s.type,size:s.size,seed:s.seed,ring:s.ring}),
       glow:bakeGlow(s.size,s.glow),

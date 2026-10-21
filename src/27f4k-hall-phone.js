@@ -24,18 +24,20 @@ function hallNavSync(){
    страницы шагают руками — CPU тогда по настоящим часам съёмщика (__STEP.real). Без замера ничего не создаётся */
 function hallClk(){return (typeof window!=="undefined"&&window.__STEP&&window.__STEP.real)?window.__STEP.real():wallMs();}
 const HALL_COST={on:false,qs:null,res:null,rb:[],acc:null};
-async function hallCost(sec){
-  const d=GPU.dev;if(!d||!GPU.tsOk||!HALL.open)return null;
+/* fn/cn — чужой кадр на том же движке (комнаты 29r); без них — зал */
+async function hallCost(sec,fn,cn){
+  const d=GPU.dev;if(!d||!GPU.tsOk||(!fn&&!HALL.open))return null;
+  fn=fn||(()=>hallFrame());
   const C=HALL_COST;
   if(!C.qs){C.qs=d.createQuerySet({type:"timestamp",count:3});C.res=d.createBuffer({size:24,usage:GPUBufferUsage.QUERY_RESOLVE|GPUBufferUsage.COPY_SRC});}
   C.acc={gpu:[],cpu:[]};C.on=true;
-  try{for(let i=Math.round(sec*60);i>0;i--){await new Promise(r=>requestAnimationFrame(r));hallFrame();}}
+  try{for(let i=Math.round(sec*60);i>0;i--){await new Promise(r=>requestAnimationFrame(r));fn();}}
   finally{C.on=false;}
   await new Promise(r=>setTimeout(r,300));
   const q=a=>{const s=a.slice().sort((x,y)=>x-y);return s.length?{med:+s[s.length>>1].toFixed(2),p90:+s[Math.floor(s.length*.9)].toFixed(2),n:s.length}:null;};
-  return {gpu:q(C.acc.gpu),cpu:q(C.acc.cpu),px:HALL.cn?[HALL.cn.width,HALL.cn.height]:null};
+  return {gpu:q(C.acc.gpu),cpu:q(C.acc.cpu),px:(cn=cn||HALL.cn)?[cn.width,cn.height]:null};
 }
-{const f0=hallFrame;hallFrame=function(){
+function hallCostWrap(f0){return function(){
   const C=HALL_COST;if(!C.on)return f0();
   const d=GPU.dev,qu=d.queue,sub=w=>{const e=d.createCommandEncoder();e.beginComputePass({timestampWrites:w}).end();
     if(w.endOfPassWriteIndex===2){const rb=C.rb.find(b=>b.mapState==="unmapped")||(C.rb.length<6?(C.rb.push(d.createBuffer({size:24,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST})),C.rb[C.rb.length-1]):null);
@@ -46,3 +48,4 @@ async function hallCost(sec){
   const t0=hallClk();const r=f0();C.acc.cpu.push(hallClk()-t0);
   sub({querySet:C.qs,beginningOfPassWriteIndex:1,endOfPassWriteIndex:2});
   return r;};}
+hallFrame=hallCostWrap(hallFrame);

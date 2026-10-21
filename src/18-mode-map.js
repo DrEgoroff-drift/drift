@@ -1,5 +1,6 @@
 /* ══════════════ карта ══════════════ */
 const PAD_SAFE=104;   // полоса экранных кнопок снизу: запасной ответ, см. mapDeck
+const MAP_DRY_INK="rgba(176,188,198,.92)";   /* серый «не хватит топлива»: цель по радиусу есть, по баку нет (красный — вне радиуса) */
 /* ══════════════ где у карты пол и где правый борт ══════════════
    Карта рисует карточку системы и строки прыжка на канве, а подсказка,
    эфирная строка, пульт и правый борт — это DOM со своей вёрсткой. Пока карта
@@ -313,7 +314,8 @@ function drawMapIn(){
   const selV=vis.find(q=>q.gx===G.sel.x&&q.gy===G.sel.y);
   for(const v of vis){
     /* глубина тьмой: дальний сектор тусклее, недостижимый — вполовину */
-    v.fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near?1:.5);
+    const dryV=v.near&&(v.gx!==G.sx||v.gy!==G.sy)&&mapJumpCost(Math.hypot(v.gx-G.sx,v.gy-G.sy))>G.fuel;   /* дотягивается радиус, не бак — как недостижимый */
+    v.fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near&&!dryV?1:.5);
     v.rr=(1.8+v.s.cls.t*2.2)*gk;
     /* под пиратами: заливка изнутри — свет под звездой, не поверх неё */
     const ol=occLvl(v.gx,v.gy);
@@ -478,7 +480,7 @@ function drawMapIn(){
   /* сколько машин работает на тебя в этой системе (M237) */
   if(typeof drawDronesMap==="function")drawDronesMap(vis);
   /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
-  const {cost,bad}=mapJump();   /* один расклад на кадр и на шаг мира (updateMap) */
+  const {cost,bad,dry}=mapJump();   /* один расклад на кадр и на шаг мира (updateMap) */
   mpWeight(MAP_W.you);
   /* табличка у выбранной системы этого кадра (M822): строки о ней — у неё, подвал их не повторяет */
   const hung=!!sel&&!G.mapClean&&!mapOverOn()&&hangIn();
@@ -498,10 +500,10 @@ function drawMapIn(){
     /* выбрана станция следующего плеча — прыжок так и называется (M289, R2) */
     const NX=(typeof routeNext==="function"&&routeOf().legs.length>=2)?routeNext():null;
     const onRoute=NX&&NX.sys.sx===G.sel.x&&NX.sys.sy===G.sel.y;
-    if(!shown)L.push([bad?"rgba(255,107,87,.85)":"#f2b25c",
+    if(!shown)L.push([dry?MAP_DRY_INK:bad?"rgba(255,107,87,.85)":"#f2b25c",
       dsel===0?"ТЕКУЩАЯ СИСТЕМА":
       (dsel>st.jump+.02?"ВНЕ РАДИУСА · примерно "+Math.ceil(dsel/Math.max(.5,st.jump))+" "+pl3(Math.ceil(dsel/Math.max(.5,st.jump)),"прыжок","прыжка","прыжков"):
-       (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":"")),1]);
+       (dry?mapDryWord(cost):(onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива")),1]);
     /* карточка стала строкой (M298): первый вопрос — «что это и дотянусь ли» — отвечается тут;
        описание — вторым тапом по той же звезде. На телефоне 31.7% экрана было интерфейсом */
     const ss=sel?sel.s:null;
@@ -552,7 +554,7 @@ function drawMapIn(){
   if(cur&&sel&&dsel>0){
     const x0=cur.x,y0=cur.y,x1=sel.x,y1=sel.y;
     const far=dsel>st.jump+.02, poor=!far&&cost>G.fuel;
-    const col=far?"rgba(255,107,87,.5)":poor?"rgba(255,107,87,.75)":"rgba(242,178,92,.8)";
+    const col=far?"rgba(255,107,87,.5)":poor?"rgba(176,188,198,.7)":"rgba(242,178,92,.8)";
     ctx.save();
     mapCourseDash(cur,sel,youR,far,col);   /* от кромки вашего кольца и из-за вашей плашки (18l) */
     hangAt("course",x0+(x1-x0)*2/3,y0+(y1-y0)*2/3,5);   /* строка сообщения — у дальней трети курса (M826b) */
@@ -570,13 +572,13 @@ function drawMapIn(){
     const mx=(x0+x1)/2,my=(y0+y1)/2;
     if(!shown){
     const c0=MAP_INK.length;
-    const label=far?"ВНЕ РАДИУСА":(cost+" ТОПЛИВА"+(poor?" · НЕ ХВАТАЕТ":""));
+    const label=far?"ВНЕ РАДИУСА":(poor?mapDryWord(cost):cost+" ТОПЛИВА");
     const U=mapU();
     mapFont(10);ctx.textAlign="center";ctx.textBaseline="middle";
     const tw=ctx.measureText(label).width;
     mpRect(mx-tw/2-7*U,my-9*U,tw+14*U,18*U,"rgba(6,10,16,.82)");mapInkBox(mx-tw/2-7*U,my-9*U,tw+14*U,18*U);
     mpFrame(mx-tw/2-6.5*U,my-8.5*U,tw+13*U,17*U,1,col);
-    mpText(label,mx,my+.5,far||poor?"rgba(255,150,135,.95)":"#f2b25c");
+    mpText(label,mx,my+.5,far?"rgba(255,150,135,.95)":poor?MAP_DRY_INK:"#f2b25c");
     /* сколько останется в баке — вторая строка, мельче: это уже подробность */
     if(!far&&!poor){
       mapFont(8);
@@ -663,22 +665,31 @@ function drawMapIn(){
    ДЕЙСТВИЮ прыгает. Прежде прыжок жил внутри drawMap — мир менялся в
    рисовании, и без кадра (свёрнутая вкладка, набор без картинки, бот) карта
    не прыгала вовсе (0.438.0) */
+/* цена прыжка на расстояние в секторах — одна формула и для курса, и для каждой звезды листа */
+function mapJumpCost(dsel){
+  /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
+  return Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
+}
+/* причина словами, с числами: видно, сколько не дотянуть (развилка 3, 14.10) */
+function mapDryWord(cost){return "НЕ ХВАТИТ ТОПЛИВА: "+cost+" из "+Math.floor(G.fuel);}
 function mapJump(){
   const st=stat();
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
-  /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
-  const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
+  const cost=mapJumpCost(dsel);
+  /* радиус дотягивается, а бак — нет: цель серая, в подписи причина, прыжок не начинается */
+  const dry=dsel>0&&dsel<=st.jump+.02&&cost>G.fuel;
   /* в пустую клетку курса нет (M347): выбрать можно, прыгнуть — некуда */
   const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0||!starAt(G.sel.x,G.sel.y);
-  return {dsel,cost,bad};
+  return {dsel,cost,bad,dry};
 }
 function updateMap(dt){
   if(!G.sel)return;
   G.prompt=G.mapClean?"":mapOverOn()?"ОБЗОР ГАЛАКТИКИ · ТАП — ТУДА · ЩИПОК — БЛИЖЕ":(G.mapPeek?"ТАП — ВЫБОР · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
-    const {dsel,cost,bad}=mapJump();
+    const {dsel,cost,bad,dry}=mapJump();
     if(G.mapPeek)say("Сначала отстыкуйтесь");
     else if(!bad)jump(cost);
+    else if(dry)say(mapDryWord(cost));
     else if(dsel>0)say("Прыжок невозможен");
     /* выбран свой же сектор: подсказка обещает ПРЫЖОК, и молчать в ответ нельзя —
        у отказа есть голос (нашёл набор подсказки, когда карта стала шагать

@@ -35,7 +35,7 @@ function gosDeliver(){
   const P=gosPlan();if(!P||P.done)return false;
   if((G.cargo[P.k]|0)<P.n){say("Не хватает до плана\nнужно "+P.n+" ед.",90);return false;}
   const Y=gosPay(P);
-  G.cargo[P.k]-=P.n;
+  G.cargo[P.k]-=P.n;appetiteHereUse(G.sys,P.k,P.n);
   earn(Y.pay,"plan");
   if(!G.gosDone)G.gosDone={};G.gosDone[P.key]=1;
   const R=(typeof recordAll==="function")?recordAll():null;if(R)R.udar=(R.udar|0)+1;

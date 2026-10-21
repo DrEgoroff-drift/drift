@@ -29,7 +29,7 @@ const PLN_MARK={on:true,
   kinds:{wreck:{z:3,zH:.31,fz:.4,yaw:.06,w:2.6,s:.7,who:1,hMin:7},temple:{z:30,yaw:.3,w:1.7,s:1.3,who:2},elevator:{z:34,yaw:.2,w:.4,s:.8,who:1},
     crystals:{z:15,yaw:0,w:1.9,s:.55,who:0},ring:{z:36,yaw:.5,w:1.1,s:.85,who:2},anomaly:{z:22,yaw:0,w:1.0,s:1.3,who:2},
     monolith:{z:8,yaw:0,w:.5,s:1.2,who:2},factory:{z:34,yaw:.25,w:2.3,s:.8,who:1},portal:{z:28,yaw:.2,w:1.3,s:1,who:2},
-    observ:{z:30,yaw:.3,w:1.6,s:1.6,who:1},obelisk:{z:5,yaw:0,w:.5,s:.7,who:1,hMax:11},battery:{z:22,yaw:.35,w:1.1,s:1.2,who:1}}};
+    observ:{z:30,yaw:.3,w:1.6,s:1.6,who:1},obelisk:{z:5,yaw:0,w:.5,s:.7,who:1,hMax:11},battery:{z:5,yaw:.2,w:1.4,s:1.2,who:1,hMin:6,hMax:7.5}}};
 const PLN_MARK_COL={steel:plnHex("#7c8594"),steelDk:plnHex("#3c434d"),steelLt:plnHex("#aab2bd"),orange:plnHex("#e07a2c"),
   rust:plnHex("#6a3e26"),concrete:plnHex("#8d897f"),soot:plnHex("#24252a"),old:plnHex("#2a3040"),oldLt:plnHex("#4e566c"),
   warm:[1,.72,.42],red:[1,.16,.08],white:[1,.96,.9]};
@@ -97,104 +97,7 @@ function plnMarkMesh(kind,H,sd,gy,P,oldCol,W,mound,o){
   const T={C,r,MAN,ROCK,GLOW,m,lm,mv,out,part,hand,noise,P3,N3,steel,stone,ground,box,rod,post,skirt,lamp,seam,pane,night,pulse,old,H,sd,gy,P,W,oz,kind};
   if(kind==="wreck")plnMarkWreck(T);
   else if(plnMarkStone(kind,T)){}
-  else if(kind==="elevator"){
-    /* станция, конус, трос в небо с хомутами и красными огнями; вагон ползёт вверх */
-    const Rb=H*.06,hb=H*.035;
-    plnTube(m,{path:[[0,0,0],[0,hb,0]],rad:Rb,sides:18,col:steel(C.concrete,.2),mat:MAN,cap:true});
-    plnTube(m,{path:[[0,hb,0],[0,hb+H*.14,0]],rad:t=>lerp(Rb*.7,Rb*.2,t),sides:14,col:(t,a,p)=>steel(t>.3&&t<.4?C.orange:C.steel,.2)([0,0,0],p,[0,0,0]),mat:MAN});
-    plnTube(m,{path:[[0,hb+H*.12,0],[0,H*4,0]],rad:H*.004,sides:6,col:C.steelDk,mat:MAN});
-    for(let i=1;i<=8;i++){const y=hb+H*.12+i*H*.1;
-      plnTube(m,{path:[[0,y-.6,0],[0,y+.6,0]],rad:H*.011,sides:8,col:steel(C.steelLt,.1),mat:MAN,cap:true});
-      lamp([0,y+.9,0],[.35,.35,.35],C.red,2.6);}
-    for(let i=0;i<3;i++){const a=i/3*TAU+.5,d=Rb*2.6;
-      rod([0,hb+H*.11,0],[Math.cos(a)*d,gy(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d],H*.002,C.steelDk,{sides:5});}
-    box([Rb*1.8,H*.03,-Rb*.4],[Rb*1.1,H*.03,Rb*.8],steel(C.steel,.2),{box:.25});
-    box([-Rb*1.9,H*.02,Rb*.3],[Rb*.8,H*.02,Rb*.6],steel(C.steel,.3),{box:.25});
-    pane([Rb*1.8,H*.035,-Rb*1.22],Rb*.5,H*.005,C.warm,1.6);
-    plnBlob(mv,{c:[0,0,0],r:[H*.014,H*.03,H*.014],sub:2,box:.3,col:steel(C.steelLt,.1),mat:MAN});
-    plnBlob(mv,{c:[0,-H*.02,-H*.012],r:[H*.004,H*.004,H*.004],sub:1,col:C.warm,mat:GLOW,glow:2.4,x:1});
-    out.move=mv;out.moveAt=t=>({y:hb+H*.15+H*.9*(.5-.5*Math.cos(((t*.012+sd*.01)%1)*TAU)),yaw:0});
-    out.light=lm;out.pulse=night;
-    out.lamp={p:[Rb*1.8,H*.05,-Rb*1.3],r:H*.22,c:[1,.62,.3],k:3};
-    skirt(Rb*2.6,6,.9);out.blots.push([0,0,Rb*2.2,.55]);
-  }
-  else if(kind==="crystals"){
-    /* лес призм: грани делит свет (камень), цвет — акцент мира со снегом по верху; слабо светятся изнутри */
-    const W=H*1.9,base=plnMix3(P.heather,P.clover,.4),N=15;
-    for(let i=0;i<N;i++){
-      const a=r()*TAU,d=W*.5*Math.sqrt(r()),lx=Math.cos(a)*d,lz=Math.sin(a)*d*.7,hh=H*(i<3?.7+r()*.3:.2+r()*.4),w=hh*(.14+r()*.1),y0=gy(lx,lz);
-      const col=(u,p,n)=>plnMix3(plnMix3(P.crag,base,plnSmooth(-.2,.6,(p[1]-y0)/hh)),P.snow,.35*Math.max(0,n[1])*plnSmooth(.3,1,(p[1]-y0)/hh));
-      plnBlob(m,{c:[lx,y0+hh*.75,lz],r:[w,hh,w*.8],sub:2,box:.42,seed:sd+i,yaw:r()*TAU,lean:(r()-.5)*.5,pitch:(r()-.5)*.4,col,mat:ROCK,glow:.3});
-    }
-    for(let i=0;i<10;i++){const a=r()*TAU,d=W*(.3+.3*r()),lx=Math.cos(a)*d,lz=Math.sin(a)*d*.7,hh=H*(.06+r()*.1);
-      plnBlob(m,{c:[lx,gy(lx,lz)+hh*.5,lz],r:[hh*.3,hh,hh*.25],sub:1,box:.45,seed:sd+40+i,yaw:r()*TAU,lean:(r()-.5)*.9,col:plnMix3(P.crag,base,.6),mat:ROCK,glow:.3});}
-    skirt(W*.45,8,.6);out.blots.push([0,0,W*.4,.5]);
-  }
-  else if(kind==="ring"){
-    /* кольцо на ребре, нижняя четверть в земле; восемь узлов света; труба подачи уходит вдоль */
-    const R=H*.5,rad=R*.085,yc=R*.72,pts=[];
-    for(let k=0;k<=48;k++){const a=k/48*TAU;pts.push([R*Math.cos(a),yc+R*Math.sin(a),0]);}
-    plnTube(m,{path:pts,rad,sides:12,col:stone,mat:ROCK});
-    for(let k=0;k<8;k++){const a=k/8*TAU+Math.PI/8,x=R*Math.cos(a),y=yc+R*Math.sin(a);if(y<rad)continue;
-      plnBlob(m,{c:[x,y,0],r:[rad*1.45,rad*1.45,rad*1.45],sub:1,box:.5,yaw:a,col:stone,mat:ROCK});}
-    const band=[];
-    for(let k=0;k<=48;k++){const a=k/48*TAU,Ri=R-rad*.9;band.push([Ri*Math.cos(a),yc+Ri*Math.sin(a),-rad*.35]);}
-    seam(band,rad*.22,old,2.4);
-    for(const sx of [-1,1])box([sx*R*.86,gy(sx*R*.86,0)+R*.06,0],[R*.12,R*.1,R*.14],stone,{box:.25,mat:ROCK});
-    plnTube(m,{path:[[-R*1.9,gy(-R*1.9,R*.3)+rad*.9,R*.3],[R*.1,gy(R*.1,R*.3)+rad*.9,R*.3]],rad:rad*.75,sides:10,col:stone,mat:ROCK,cap:true});
-    skirt(R*1.1,6,.5);out.light=lm;out.pulse=(t,nk)=>.6+.4*Math.pow(.5+.5*Math.sin(t*2.1+sd),3);
-    out.lamp={p:[0,yc,-rad],r:R*1.3,c:old,k:1.4,always:true};
-    out.blots.push([0,0,R*.9,.5]);
-  }
-  else if(kind==="anomaly"){
-    /* чёрный шар висит на высоте, вокруг — кольцо света и кружащие осколки камня мира */
-    const yc=H*.62,Rv=H*.21,Ro=H*.42;
-    plnBlob(m,{c:[0,yc,0],r:[Rv,Rv,Rv],sub:3,col:[0,0,0],mat:GLOW,glow:0,x:1});
-    const halo=[];
-    for(let k=0;k<=40;k++){const a=k/40*TAU;halo.push([Ro*.78*Math.cos(a),yc+Ro*.2*Math.sin(a)*.5,Ro*.78*Math.sin(a)]);}
-    seam(halo,H*.016,old,2.4);
-    for(let i=0;i<10;i++){const a=i/10*TAU+r()*.4,d=Ro*(.8+r()*.4),s=H*(.04+r()*.06);
-      plnBlob(mv,{c:[Math.cos(a)*d,yc+(r()-.5)*H*.5,Math.sin(a)*d],r:[s*1.3,s,s*.8],sub:1,box:.5,seed:sd+i,yaw:r()*TAU,lean:r()*2,pitch:r()*2,
-        col:plnMix3(P.rockCool,P.crag,r()),mat:ROCK});}
-    for(let i=0;i<8;i++){const a=i/8*TAU+r()*.5,d=Ro*(.5+r()*.6),s=H*(.02+r()*.03),lx=Math.cos(a)*d,lz=Math.sin(a)*d*.8;
-      plnBlob(m,{c:[lx,gy(lx,lz)+s*.4,lz],r:[s*1.4,s*.5,s],sub:1,bump:.3,seed:sd+30+i,yaw:r()*TAU,col:plnMix3(P.rockCool,P.crag,.5),mat:ROCK});}
-    out.move=mv;out.moveAt=t=>({y:0,yaw:t*.11+sd});
-    out.light=lm;out.pulse=pulse;out.blots.push([0,0,Ro*.9,.4]);
-    out.lamp={p:[0,yc,0],r:Ro*2.2,c:old,k:1.6,always:true};
-  }
-  else if(kind==="factory"){
-    /* длинный цех с зубчатой крышей, две трубы с поясом, бак и трубопроводы; окна тёплые ночью */
-    const W=H*2.3,hh=H*.3;
-    box([0,hh*.5,0],[W*.5,hh*.5,W*.26],steel(C.concrete,.35),{box:.2});
-    for(let i=0;i<4;i++){const x=(i-1.5)/1.5*W*.33;
-      plnBlob(m,{c:[x,hh+H*.07,0],r:[W*.11,H*.09,W*.25],sub:2,box:.25,lean:.5,col:steel(C.steel,.3),mat:MAN});}
-    for(const x of [W*.3,W*.42]){
-      plnTube(m,{path:[[x,0,W*.12],[x,H,W*.12]],rad:H*.045,sides:12,col:(t,a,p)=>steel(t>.62&&t<.7?C.orange:(t>.93?C.soot:C.steel),.4)([0,0,0],p,[0,0,0]),mat:MAN,cap:true});
-      plnTube(m,{path:[[x,H*.4,W*.12],[x,H*.44,W*.12]],rad:H*.055,sides:12,col:steel(C.steelDk,.3),mat:MAN,cap:true});}
-    plnTube(m,{path:[[-W*.58,H*.14,-W*.05],[-W*.36,H*.14,-W*.05]],rad:H*.12,sides:14,col:steel(C.steel,.45),mat:MAN,cap:true});
-    for(let i=0;i<3;i++)rod([-W*.4,H*.2+i*H*.03,-W*.05+i*W*.03],[-W*.5+i*W*.04,hh*.9,-W*.26+i*W*.02],H*.014,steel(C.steelDk,.4));
-    rod([W*.3,H*.5,W*.12],[W*.42,H*.5,W*.12],H*.02,steel(C.steelDk,.3));
-    for(let j=0;j<2;j++)for(let i=0;i<9;i++)pane([(i-4)/4*W*.42,hh*(.38+.3*j),-W*.26-.05],W*.016,hh*.055,C.warm,1.6);
-    pane([-W*.42,hh*.3,-W*.26-.05],W*.04,hh*.3,C.warm,1.8);
-    out.light=lm;out.pulse=night;
-    out.lamp={p:[-W*.42,hh*.62,-W*.26-1.5],r:H*.9,c:[1,.62,.3],k:3};
-    skirt(W*.42,8,.7);out.blots.push([0,0,W*.45,.6]);
-  }
-  else if(kind==="battery"){
-    /* шесть ячеек в раме, шины поверху, одна ячейка вывалилась; одна ещё мигает изредка */
-    const cw=H*.15,ch=H*.3,cd=H*.14;
-    for(let i=0;i<2;i++)for(let j=0;j<3;j++){const x=(j-1)*cw*2.3,z=(i-.5)*cd*2.4,fall=i===0&&j===2;
-      box([x+(fall?cw*.5:0),H*.1+ch*(fall?.6:1),z+(fall?-cd*.6:0)],[cw,ch,cd],steel(C.steelDk,.6),{box:.2,lean:fall?.45:0,pitch:fall?.2:0});
-      if(!fall)rod([x,H*.1+ch*2+H*.02,z],[x,H*.1+ch*2+H*.1,z],H*.02,steel(C.rust,.7));}
-    for(const z of [-cd*1.2,cd*1.2])rod([-cw*2.6,H*.1+ch*2+H*.1,z],[cw*2.6,H*.1+ch*2+H*.1,z],H*.025,steel(C.rust,.6));
-    for(const x of [-cw*2.6,cw*2.6])for(const z of [-cd*1.6,cd*1.6])post(x,z,H*.1+ch*2+H*.1,H*.02,steel(C.steelDk,.5));
-    box([0,H*.05,0],[cw*3,H*.05,cd*2],steel(C.concrete,.3),{box:.2});
-    for(let i=0;i<6;i++){const lx=(r()-.5)*H*1.2,lz=(r()-.5)*H*.9;
-      plnBlob(m,{c:[lx,gy(lx,lz)+H*.015,lz],r:[H*.03,H*.015,H*.03],sub:1,col:steel(C.steelLt,.5),mat:MAN});}
-    pane([-cw*2.3,H*.1+ch,-cd*1.2-cd-.05],cw*.5,ch*.25,[.45,.9,.6],1.6);
-    out.light=lm;out.pulse=(t,nk)=>Math.max(0,Math.sin(t*.7+sd)*Math.sin(t*2.3)-.55)*2.2;
-    skirt(H*.6,6,.6);out.blots.push([0,0,H*.6,.55]);
-  }
+  else if(plnMarkMove(kind,T)){}   /* подвижная пятёрка (21piec) */
   if(out.light&&!lm.nv)out.light=null;
   return out;
 }
@@ -278,7 +181,8 @@ function plnMarksFrame(L,F,S,p,ex,V,nk){
     const lk=it.light?(dr&&dr.light!=null?dr.light:(it.pulse?it.pulse(t,nk):1)):0;
     plnRec(it.a,1,pos,1,it.yaw,1,0,[lk,lk,lk]);
     if(it.move){
-      const mv=it.moveAt?it.moveAt(t):{y:0,yaw:0};
+      /* привод может вести круг сам (аномалия кружит быстрее, когда человек близко) */
+      const mv=dr&&dr.move?dr.move:it.moveAt?it.moveAt(t):{y:0,yaw:0};
       plnRec(it.a,2,[it.x,it.y+mv.y,it.z],1,it.yaw+mv.yaw,1,0);
     }
     let sk=0;
@@ -294,7 +198,8 @@ function plnMarksFrame(L,F,S,p,ex,V,nk){
       /* to — где часть ложится (меряно по земле при сборке), go — доля пути туда от привода */
       const o2=pt.to,g=o2?clamp(d.go||0,0,1):0,ro=(d.roll||0)+(o2?(o2.roll||0)*g:0);
       const w=plnMarkWorld(it,pt.pv[0]+(d.x||0)+(o2?(o2.x||0)*g:0),pt.pv[1]+(d.y||0)+(o2?(o2.y||0)*g:0),pt.pv[2]+(d.z||0)+(o2?(o2.z||0)*g:0));
-      plnRec(it.a,4+i,w,ro?-s:s,it.yaw+pt.yaw0+(d.yaw||0)+(o2?(o2.yaw||0)*g:0),d.hk==null?1:d.hk,ro,[k,k,k]);
+      /* c — свой цвет части (груз, что летит в аномалию), k — яркость */
+      plnRec(it.a,4+i,w,ro?-s:s,it.yaw+pt.yaw0+(d.yaw||0)+(o2?(o2.yaw||0)*g:0),d.hk==null?1:d.hk,ro,d.c?[d.c[0]*k,d.c[1]*k,d.c[2]*k]:[k,k,k]);
       pt.on=!d.hide&&!(pt.glow&&k<.01);
     }
     plnInstSet(it.inst,it.a,4+P.length);
@@ -307,8 +212,13 @@ function plnMarksFrame(L,F,S,p,ex,V,nk){
     const lK=dr&&dr.lampK!=null?dr.lampK:1;
     if(it.lamp&&lK>.01&&(it.lamp.always||nk>.02)){const w=plnMarkWorld(it,it.lamp.p[0],it.lamp.p[1],it.lamp.p[2]);
       F.lamps.push({p:w,r:it.lamp.r,c:it.lamp.c,k:it.lamp.k*lK*(it.lamp.always?1:nk)});}
-    for(const l of (dr&&dr.lamps)||[]){const at=it.lampAt&&it.lampAt[l.id];if(!at||!(l.k>.01)||ln>=2)continue;ln++;
+    /* p — лампа на ходу (ракета пушки), в местных метрах; иначе — своё место тела */
+    for(const l of (dr&&dr.lamps)||[]){const at=l.p||(it.lampAt&&it.lampAt[l.id]);if(!at||!(l.k>.01)||ln>=2)continue;ln++;
       F.lamps.push({p:plnMarkWorld(it,at[0],at[1],at[2]),r:l.r,c:l.c||(it.lamp&&it.lamp.c)||[1,1,1],k:l.k});}
+    /* вспышка выстрела: ключ и небо белеют, как от молнии (21pk), без тела разряда */
+    if(dr&&dr.flash>0){const f=dr.flash,mk=1+3*f,lk=F.look;
+      F.key=[F.key[0]*mk,F.key[1]*mk,F.key[2]*mk*1.05];
+      if(lk&&lk.ambSky)for(let j=0;j<3;j++)lk.ambSky[j]*=1+1.5*f;}
     for(const q of it.blots){if(n>=64)break;const w=plnMarkWorld(it,q[0],0,q[1]);b.set([w[0],w[2],q[2],q[3]],4+n*4);n++;}
   }
   b[0]=n;

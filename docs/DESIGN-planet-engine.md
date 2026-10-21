@@ -527,6 +527,17 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     (blob `(u,p,n)`, tube `(t,ang,p)`, loft `(t,s,p,c)`): one callback used across kit
     calls gives NaN colours (white parts); `P3`/`N3` take the point and the normal from
     any of them.
+55. **Landmarks are places to act** (`21pif*`; M627b, `docs/DESIGN-marks.md`). A kind is
+    `PLN_ACT.kinds[k]`: dims from the height, spots at metres along the walk line (tap or
+    hold, on the ground or in the air with the jetpack), `got` (the state's word), `drive`
+    (the body's light, lamps and parts from the memo and the age), an optional `tick` (what
+    the landmark keeps in the world while seen) and `line2`. The memo (`plnActMemo`) is the
+    only thing saved: state, branch, counters, the last act and its time — the body is
+    derived from it every frame, so a landing restores a landmark as it was left. Moving
+    pieces are parts of the body (`part`, offsets and a `to` pose), hands are named anchors
+    for the spark and lamps; chance is seeded (`plnActRoll`), dailies by `celDay`.
+    The lift's ride is the one act that holds the man: `S.ride`, set by the kind's tick, is
+    read by the lens window, the cast and a wrap of `updateSurface` (`21pifc`).
 
 ## 3. The family
 
@@ -559,6 +570,10 @@ with `pln` or `PLN`: the game is one scope.
 | `21pic-pln-drill` | the drill in the hand, its beam, the flare and the chips at the bite, the lamp of the bite |
 | `21pid-pln-tracks` | footprints as bodies: the ground's colour, fading by age |
 | `21pie-pln-marks` | the landmarks: the twelve POI of the game as bodies behind the crest with a mound, the three grammars, the light and move records, their lamps |
+| `21piea` `21pieb` `21piec` | the bodies remade for acting: the wreck; the quiet five; the moving five and the lift (stations, parts, hands) |
+| `21pif-pln-marks-act` | landmarks as places to act: the table, spots, the prompt and the hold bar, the memo, the dailies and rolls, the wreck's kind |
+| `21pifa` `21pifb` `21pifc` | the kinds: the quiet five; the moving five; the space lift and its ride (lens window, the man in the cab) |
+| `21pigz-cave-room` | the cave mouth moved off a landmark's body and spots |
 | `21pj-pln-over` | what lies over the frame in 2D, and the stickers of the old painters |
 | `21pk-pln-weather` | the precipitation as cards in the scene's air: drops, flakes, embers, spores, dust grains, lamp drops, lightning, sheets (dust veils, fog banks, far rain curtains); the wet of the ground |
 | `21pz-pln-frame` | the lens, the five acts of the hour, the bodies of the sky, the weather's look, what is built when, the frame, the wrap |
@@ -617,6 +632,9 @@ with `pln` or `PLN`: the game is one scope.
   grammars, the ring's band of light, the obelisk's notch (§2.52); 3 — the night: the
   ancients' light always on with a lamp, people's windows and lamps by the night key, the
   light and move records (§2.53–§2.54).
+- **M627b** landmarks as places to act. **Done** 15.10 in five local passes (§2.55,
+  `docs/DESIGN-marks.md` §7): the engine and the wreck; the quiet five; the monolith's
+  glyphs and the observatory's light; the moving five and the cave off landmarks; the lift.
 
 ## 5. What is not done here
 
@@ -666,6 +684,16 @@ pixels (−18 %). At the phone's pixel count every cut buys .1–.3 of 3.1 and t
 own passes are a fixed .8; the shadow map matters there (the pass .16 → .05 at 1024)
 while the taps, the wing, the bloom and the density do not; at 1600 × 900 `low` is 3.3
 (−45 %).
+
+**M630f** (14.10) is the JS side of the same frame. With everything built it is ~2 ms, as
+with `?pln=0`; the tester's 15–19 ms were the build after touchdown, where one strip of
+near land or far hills was a single 9–14 ms call. The strips are generators now (yield per
+row, `21pfb`, the water in `21pw`), the strip in hand lives in `L.gj`, and the build's
+budget is `PLN_BUILD.frame` (5 ms) minus the frame's own JS. Measured by
+`perf_probe.js` (FRAME_JS on the real clock, no wrappers): build phase median/p90
+10.7/18.8 → 5.0/5.9, walking 3.5/6.2 → 2.6/3.0, standing unchanged at ~2.2; the land
+completes in ~11 s instead of ~4. Left: the touchdown frame (~210 ms, the flora kit
+~150 of it) — a kit built over the descent's frames would remove it.
 
 **M620** (the man) went in three passes, uncommitted between them. The rig costs nothing
 measurable: ~2.5k vertices posed on the CPU in well under a millisecond and one
@@ -749,6 +777,16 @@ frame; the size law is per kind now. The cost with the factory in view: 3.85 ms 
 against 5.45 ms with the old sticker (the sticker is 1.7 ms of the 2D front pass; the
 bodies add .03 ms to the scene).
 
+**M627b** (places to act) went in five local passes (`docs/DESIGN-marks.md` §7). The
+cost by `cost.py js=g_mark_…` (RTX 5070, each kind on its own world, the moving states
+pinned): the lift idle 4.25 ms at 1600 × 900 and .93 at the S23's pixels, riding at the
+top 3.24 / .70 (the land leaves the frame); the factory running 1.89 / .70; the ring
+spinning 2.62 / .70; the gun after a burst 4.39 / .61. One run of the gun read 5.3 ms in
+the 2D front copy (`front2`) and the next .9 with the same 2D canvas (only the cave's
+label on it) — a stall of the copy, not a drawing; another run of the same snippet got no
+GPU marks at all. A part is one more record of the landmark's instance set and one draw
+when it is shown; the acts add no geometry.
+
 **Known weak spots** — named, not hidden:
 - M620: at the far lens the man is a dot in the squint — the far lens is the game's own
   scale (§8.4 of the plan) and the near lens at a thing is the answer, not a bigger man;
@@ -796,6 +834,11 @@ bodies add .03 ms to the scene).
   crest; the mound reaches 26 m on rough worlds and reads as a hill of its own; the
   ancients' day lamps add nothing visible; there is no far sign of a landmark beyond the
   frame's edge; the «find» at a landmark keeps the game's old flow;
+- M627b: the cave no longer stands on a landmark (`21pigz`); the lift's cab is small at
+  the far lens and its stall is dark but for a red lamp; the ride shows no inside of the
+  cab and the survey is a text line, not markers; the gun's and the factory's smoke are a
+  few puffs; the druse's drilled seam reads whitish at night; the disputed choices are
+  listed in `docs/DESIGN-marks.md` §7;
 - the base, the home and the settlement are stickers of the old painters (M628–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;

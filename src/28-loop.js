@@ -183,7 +183,7 @@ function quantSplit(acc,prev){
 }
 let quantAcc=0;                        /* недошаганный остаток, мс */
 let quantPrev=0;                       /* сколько квантов нёс прошлый кадр — для гистерезиса */
-function loopReset(){last=wallMs();lastDroneTick=0;capPrev=0;capN=0;quantAcc=0;tactGood=0;tactBad=0;
+function loopReset(){last=wallMs();lastDroneTick=0;capPrev=0;capN=0;capDue=0;quantAcc=0;quantPrev=0;tactGood=0;tactBad=0;
   lastFuelWarn=0;lastHullWarn=0;sndWalk=0;
   for(const f of LOOP_PHASE)f();}
 /* ── потолок кадров ──
@@ -548,6 +548,9 @@ function frameBody(now){
   /* особая система корпуса (M484): долгое ДЕЙСТВИЕ — до кадра, пока на экране
      ещё подсказка, которую игрок видел в миг нажатия */
   if(G.mode==="system"&&typeof abilTick==="function")abilTick();
+  if(G.mode==="system")hallPrepTick();   /* зал станции — заранее, по шагу (27f4a) */
+  if(G.mode==="system")plnKitTick();   /* набор флоры планеты — заранее, по шагу (21pg) */
+  if(G.mode==="surface")caveTick();   /* пещера у устья — заранее, по куску (22d) */
   if(G.running){
     G.t+=dt;
     /* налёт для допуска (M363, 05e): настоящими миллисекундами и только в

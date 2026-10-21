@@ -55,11 +55,32 @@ function appetiteAte(sys,k){
    повторялось каждую смену: тест намерил +46 кр за круг там, где по замыслу
    (M289) круг обязан быть в минус. Надбавка — плата за ПРИВОЗ, поэтому норма
    смены уменьшается ровно на то, что игрок здесь же и купил. Привезённое
-   издалека получает надбавку целиком, как и было. */
-function appetiteGotHere(sys,k){
-  const h=G.hold&&G.hold[sys.key];
+   издалека получает надбавку целиком, как и было.
+   Норма смены лишь уменьшалась на купленное — а сам купленный товар всё равно шёл с надбавкой, пока
+   норма не кончилась: перебор лаборатории (15.10, 91qn-arb) нашёл +7…+46 кр за «купил — сдал» на 284
+   кругах. Теперь купленное здесь сдаётся здесь по цене приёмки (sellQuote m), и книга живёт, пока товар
+   лежит в трюме: смена её не стирает («купил — подождал смену — сдал» было тем же краном), сдача где
+   угодно её списывает (appetiteHereUse), а покупка у другой стойки обрезает её до того, что было в трюме. */
+function appetiteHereRaw(key,k){
+  const h=G.hold&&G.hold[key];
   const a=h&&h.here&&h.here[k];
-  return (Array.isArray(a)&&a[1]===holdShift())?(a[0]|0):0;
+  return Array.isArray(a)?Math.max(0,a[0]|0):0;
+}
+function appetiteGotHere(sys,k){
+  return Math.min(appetiteHereRaw(sys.key,k),(G.cargo&&G.cargo[k])|0);
+}
+/* сдано qty товара k (у sys или по наряду): сначала списывается купленное у этой стойки, остаток —
+   с книг других стоек (товар в трюме один; в пользу игрока считается, что увезли купленное) */
+function appetiteHereUse(sys,k,qty){
+  const H=G.hold;let n=qty|0;
+  if(!H||n<=0)return;
+  const use=key=>{
+    const a=H[key]&&H[key].here&&H[key].here[k];
+    if(n<=0||!Array.isArray(a)||!(a[0]>0))return;
+    const d=Math.min(n,a[0]|0);a[0]-=d;n-=d;
+  };
+  if(sys)use(sys.key);
+  for(const key in H)if(!sys||key!==sys.key)use(key);
 }
 /* одна книга «куплено здесь в эту смену» на всех, кто платит за привоз (§12): аппетит,
    госзаказ, наряд. Купленное у этой же стойки идёт по цене приёмки, а не по надбавке —
@@ -71,13 +92,17 @@ function boughtHereSplit(sys,k,n){
 }
 function appetiteBought(sys,k,qty){
   if(!sys||!(qty>0))return;
+  /* до этой покупки в трюме лежало had: ни одна книга не помнит больше */
+  const H=holdAll(),had=Math.max(0,((G.cargo&&G.cargo[k])|0)-(qty|0));
+  for(const key in H){const a=H[key]&&H[key].here&&H[key].here[k];if(key!==sys.key&&Array.isArray(a)&&a[0]>had)a[0]=had;}
   const h=holdOf(sys.key);h.here=h.here||{};
-  h.here[k]=[appetiteGotHere(sys,k)+(qty|0),holdShift()];
+  h.here[k]=[Math.min(had,appetiteHereRaw(sys.key,k))+(qty|0),holdShift()];
 }
+/* норма смены: купленное здесь её больше не ест — оно сдаётся отдельно, по цене приёмки */
 function appetiteLeft(sys,k){
   const A=appetiteOf(sys);
   if(!A||!A[k])return 0;
-  return Math.max(0,A[k]-appetiteAte(sys,k)-appetiteGotHere(sys,k));
+  return Math.max(0,A[k]-appetiteAte(sys,k));
 }
 /* съесть: сколько из qty пойдёт с надбавкой — и запомнить это */
 function appetiteEat(sys,k,qty){
@@ -109,18 +134,21 @@ function normsOf(sys){
 function sellQuote(sys,k,qty){
   qty=Math.max(0,qty|0);
   const base=marketFor(sys)[k]||0;
-  const nA=Math.min(qty,appetiteLeft(sys,k));
+  /* купленное у этой же стойки и ещё лежащее в трюме — назад по цене приёмки: без надбавки и мимо
+     бункера; остальное q — привоз */
+  const m=Math.min(qty,appetiteGotHere(sys,k)),mRev=m*base,q=qty-m;
+  const nA=Math.min(q,appetiteLeft(sys,k));
   const pA=nA?appetitePrice(sys,k):base;
-  const nB=(typeof bldWant==="function")?Math.min(qty-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
+  const nB=(typeof bldWant==="function")?Math.min(q-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
   /* остаток без надбавки — ломтями (аудит A2, M351): каждые десять единиц на три процента дешевле, не ниже .7 */
   const sl=(p,n)=>(typeof coopSellSlice==="function")?coopSellSlice(p,n):n*p;
   /* кран (M905, DESIGN-game §10.4): то, что станция ЕСТ, сверх нормы смены идёт сразу
      по дну давления — минус 35 % к прейскуранту, а не за семьдесят единиц, как раньше.
      Аппетит — кран, а не слив: излишек везут туда, где этот товар не ели. Чего станция
      не ест — по-старому. Бункер своего цеха (nB) излишком не считается. */
-  const A=appetiteOf(sys),nF=(A&&A[k])?Math.max(0,qty-nA-nB):0,pF=nF?faucetPrice(sys,k):0;
-  const rest=nF?nB*base+sl(pF,nF):sl(base,qty-nA);
-  return{revenue:Math.round(nA*pA+rest),nA,nB,nF,priceA:pA,priceF:pF,base};
+  const A=appetiteOf(sys),nF=(A&&A[k])?Math.max(0,q-nA-nB):0,pF=nF?faucetPrice(sys,k):0;
+  const rest=nF?nB*base+sl(pF,nF):sl(base,q-nA);
+  return{revenue:Math.round(mRev+nA*pA+rest),nA,nB,nF,m,mRev,priceA:pA,priceF:pF,base};
 }
 /* цена сверх нормы: тот же marketPrice, давление поставлено на дно */
 const FAUCET_FLOOR=-.35;

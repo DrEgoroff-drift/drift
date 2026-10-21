@@ -257,11 +257,11 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
   HALL.from=HALL.to=null;
 
   /* ?hall=0: прежний стол — ни класса, ни холста */
-  /* зал мог остаться открытым от набора раньше (?shuffle): закрываем, иначе проверка видит чужое */
-  const was=HALL.on;hallClose();HALL.on=false;HALL.cn=null;
+  /* зал мог остаться открытым от чужого набора (порядок раздачи по частям): закрыт — и проверяем, что не откроется */
+  const was=HALL.on,open0=HALL.open;HALL.on=false;HALL.cn=null;HALL.open=false;
   hallOpen();
   ok(!HALL.open&&!HALL.cn,"с выключенным залом hallOpen ничего не открывает");
-  HALL.on=was;
+  HALL.on=was;HALL.open=open0;
 }));
 
 /* подсказка say() в зале на ПК — плашкой на плите, не полосой через зал (окно ≥ 900) */

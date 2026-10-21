@@ -13,6 +13,8 @@ function depRoomBlockers(S){
   const wx=settleWallHereX(p,tr);if(wx!=null)out.push({x:wx,r:30+DEP_ROOM_PAD});
   const sx=settleSpotX(p,tr);if(sx!=null)out.push({x:sx,r:44+DEP_ROOM_PAD});
   for(const q of (tr&&tr.poi)||[])out.push({x:q.x,r:Math.max(36,q.h*.22*(q.sc||1))+DEP_ROOM_PAD});
+  /* устье, отодвинутое от ориентира (21pigz), уже не расчищено посадкой — залежь у него ловила бы подсказку */
+  if(S.cave&&isFinite(S.cave.x))out.push({x:S.cave.x,r:34+DEP_ROOM_PAD});
   return out;
 }
 /* глушители сливаются в отрезки: стена и место посёлка стоят рядом и перекрываются,
