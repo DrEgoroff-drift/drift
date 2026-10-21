@@ -50,6 +50,11 @@ biters were a 2D brush unrelated to the planet's beasts.
 - **Day column** (22.10): the shader's moss and daylight fall inside the mouth's ellipse in plan;
   with the man more than a few metres down it narrows to the shaft — rock above the frame is not in
   the shadow map, and a wide column put moss on the drift floor through a roof that was not there.
+- **No 2D** (22.10, the author: get rid of 2D). The mine's frame is the engine's only: the old flat
+  frame (`23a`, `23aa`) is no longer a fallback — before the pipelines are ready the frame is empty,
+  a failed frame is named «СБОЙ · … · шахта» and retried next frame, `?dig=0` is gone. The impulse
+  is a glowing ring in the scene (`23ce dig3ZapFrame`, in front of the sheet, to the stun radius)
+  with a cold flash on the rock; the drill's progress bar is the engine's shapes, no canvas branch.
 - **Sinking:** at the bottom of the shaft S drills the shaft down and the cage follows the face;
   reaching a level row opens the level.
 - **Up and down off a drift only along ore** (an ore cell or one beside an ore body): that is how
