@@ -379,7 +379,7 @@ function hallTagsDraw(L,cam,sz){
   const ui=(typeof UIK==="number"&&UIK>0)?UIK:1,mv=hallMoving();
   /* поле табличек: на ПК — герой без запаса под ширину таблички, на телефоне — верх полосы над наездом плиты */
   const W=hallWalkOn()?HALL.walk:null,full=!!W&&!W.eng;
-  const xr=full?sz.cw-200*ui:W?(sz.wide?.64*sz.cw-200*ui:sz.cw-170):sz.wide?hallHero(sz.cw)*sz.cw-200*ui:sz.cw-170,yr=full?sz.ch-60*ui:W?(sz.wide?sz.ch-60*ui:sz.ch*.45-8):sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8;
+  const xr=full?sz.cw-200*ui:W?(sz.wide?hallWalkFree(sz.cw)*sz.cw-200*ui:sz.cw-170):sz.wide?hallHero(sz.cw)*sz.cw-200*ui:sz.cw-170,yr=full?sz.ch-60*ui:W?(sz.wide?sz.ch-60*ui:sz.ch*.45-8):sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8;
   const list=mv?[]:full?hallWalkTagList():hallTagList(L,HALL.place),key=list.map(x=>x.t+"/"+x.s).join("|");
   if(box.__key!==key){box.__key=key;box.textContent="";
     for(const g of list){const e=document.createElement("i"),b=document.createElement("b");e.className="ht";b.textContent=g.t;e.appendChild(b);

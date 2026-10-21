@@ -93,6 +93,10 @@ function hallWalkPose(W){
    конторы и шлюза — свои. Подход идёт вместе с наездом (W.fk): с линии к точке, поза точки — в конце */
 const HALL_WALK_SPOT={lock:[-6.75,HALL_WZ,-Math.PI/2,"stand"],board:[-3.05,-1.75,Math.PI,"stand"],hold:[4.3,-1.0,Math.PI-.4,"stand"]};
 const HALL_WALK_POV={board:1,hold:1};
+/* ПК, в месте: карточка справа — 36 % ширины, но не уже 560 px (таблицы рынка и верфи), зал уступает;
+   доля зала слева — та же, что в style.css (#station.hall.walk.eng padding-left) */
+const HALL_CARD_MIN=560;
+function hallWalkFree(cw){const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;return Math.max(0,Math.min(.64,1-HALL_CARD_MIN*ui/Math.max(1,cw)));}
 function hallWalkSpot(id){return id?HALL_WALK_SPOT[id]||HALL_PILOT_AT[id==="ship"&&tab==="site"?"site":id]||null:null;}
 function hallWalkPilot(){
   const W=HALL.walk;if(!W||!hallWalkOn()||HALL.pilot===false)return null;
@@ -139,7 +143,7 @@ function hallWalkCam(L,sz,c0){
   const pc=pl?hallWalkPhCam(pl,asp):c0?{eye:c0.eye,tgt:c0.tgt,fy:c0.fy}:wl;
   const m=(a,b)=>a.map((v,i)=>v+(b[i]-v)*k);
   const c={eye:m(wl.eye,pc.eye),tgt:m(wl.tgt,pc.tgt),fy:wl.fy+(pc.fy-wl.fy)*k};
-  const cx=.5+((ph?.5:.32)-.5)*k,c0y=ph?.6:.5,cy=c0y+((ph?.225:.5)-c0y)*k;   /* телефон на ходу: цель ниже середины — сцена под полосой мест, а не над пустым срезом */
+  const cx=.5+((ph?.5:hallWalkFree(sz.cw)/2)-.5)*k,c0y=ph?.6:.5,cy=c0y+((ph?.225:.5)-c0y)*k;   /* телефон на ходу: цель ниже середины — сцена под полосой мест, а не над пустым срезом */
   const cam=hallCamFr(c,sz.cw,sz.ch,cx,cy);cam.c=c;return cam;
 }
 function hallWalkMoving(){const W=HALL.walk;return !!W&&(Math.abs(W.v)>.01||W.goal!=null||(W.fk>0&&W.fk<1)||(W.cx!=null&&Math.abs(W.cx-W.x)>.02&&Math.abs(W.v)>0));}

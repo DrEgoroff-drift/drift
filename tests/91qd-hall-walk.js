@@ -50,7 +50,8 @@ TEST_SUITES.push(()=>suite("станция пешком: места, ход, к�
     for(const sz of [PC,PH]){
       W.tl=0;const cam=hallWalkCam(HALL.L,sz,c0),q=r3Proj(cam.vp,p.tag,sz.cw,sz.ch);
       ok(!!q&&q.every(Number.isFinite),"«"+p.id+"» "+sz.cw+": вещь места в проекции");if(!q)continue;
-      if(sz.wide)ok(q[0]>=0&&q[0]<=sz.cw*.64,"«"+p.id+"» ПК: вещь x "+q[0].toFixed(0)+" — левее карточки ("+(sz.cw*.64).toFixed(0)+")");
+      const fx=hallWalkFree(sz.cw)*sz.cw;
+      if(sz.wide)ok(q[0]>=0&&q[0]<=fx,"«"+p.id+"» ПК: вещь x "+q[0].toFixed(0)+" — левее карточки ("+fx.toFixed(0)+")");
       else ok(q[1]>=0&&q[1]<=sz.ch*.45,"«"+p.id+"» телефон: вещь y "+q[1].toFixed(0)+" — над листом ("+(sz.ch*.45).toFixed(0)+")");
     }
     hallWalkBack();ok(!W.eng,"«"+p.id+"»: назад выходит");
@@ -66,7 +67,7 @@ TEST_SUITES.push(()=>suite("станция пешком: карточка — с
   hallWalkEngage("trade");
   const b=$st.querySelector(".body"),r=b&&b.getBoundingClientRect(),w=innerWidth,h=innerHeight;
   ok(!!r&&r.width>0,"тело карточки на экране");
-  if(r&&w>760)ok(r.left>=w*.64-2&&r.width<=w*.36+2,"ПК: карточка x "+r.left.toFixed(0)+", ширина "+r.width.toFixed(0)+" ≤ 36 % из "+w);
+  if(r&&w>760)ok(r.left>=Math.min(w*.64,w-560*UIK)-2&&r.width>=Math.min(w,560*UIK)-40,"ПК: карточка x "+r.left.toFixed(0)+", ширина "+r.width.toFixed(0)+" — 36 % из "+w+", не уже 560");
   else if(r)ok(r.top>=h*.45-1,"телефон: лист от y "+r.top.toFixed(0)+" ≥ 45 % из "+h);
   ok($st.classList.contains("eng"),"зал помечен «в месте»");
   hallWalkBack();ok(!$st.classList.contains("eng"),"назад снимает метку");
