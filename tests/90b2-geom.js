@@ -883,8 +883,15 @@ function geoSettle(){for(const a of document.getAnimations()){try{const t=a.effe
   /* разрез базы (21ae) везёт объектив по настоящим часам: въезд, ход за человеком, дальний на первые
      1.4 с. Номера ярусов стоят в этом объективе — DPR 1 и 3 снимали разные мгновения въезда, и сверка
      DPR краснела раз в восемь прогонов (15.10). Зрение берёт объектив осевшим, как его видит игрок */
-  if(typeof SECT==="object"&&SECT&&G.base&&SECT.b===G.base){const S=G.base;
-    SECT.ent=0;SECT.cx=null;SECT.t0=-1e9;SECT.far=W<=760?0:(S.menu||(S.cur|0)<0)?1:0;}}
+  /* заход собирается за несколько кадров (21pz plnWarmStep): пока строится, спуск стоит и чип корабля
+     ждёт на прежней сцене — два снимка (DPR 1 и 3) заставали разные стадии сборки. Достраиваем кадрами */
+  if(G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone){for(let i=0;i<80&&!G.land.warmDone;i++)geoFrame1();}
+  if(typeof SECT==="object"&&SECT&&G.base&&G.mode==="base"){const S=G.base;
+    /* и сам человек: сцена ставит его в ряд, а к клетке он идёт 3.2 м/с кадрами — второй снимок
+       заставал его на полпути, и объектив (он ведёт по x) стоял иначе */
+    S.x=cellX(S.cur);S.y=cellY(S.row);
+    if(SECT.b!==S){SECT.b=S;SECT.t=wallMs();SECT.idle=0;SECT.lens0={cx:0,cy:0,Hf:1};}
+    SECT.ent=0;SECT.cx=null;SECT.cageY=null;SECT.t0=-1e9;SECT.far=W<=760?0:(S.menu||(S.cur|0)<0)?1:0;}}
 /* главный вход: {vp, font, self, screens, clicks, findings, errs, ms}. Сеть, окна и диалоги — заглушки */
 function geoRun(o){
   o=o||{};const t0=performance.now();
