@@ -23,6 +23,7 @@ def main():
     ap.add_argument("--mobile", action="store_true")
     ap.add_argument("--wait", type=float, default=3, help="seconds of steady mode before the snippet")
     ap.add_argument("--port", type=int, default=9702)
+    ap.add_argument("--profile", type=float, default=0, help="seconds of JS profile after the snippet: who eats frames over 33 ms")
     a = ap.parse_args()
     if a.js.startswith("@"): a.js = open(a.js[1:], encoding="utf-8").read()   # сниппет файлом: кавычки консоли его не портят
     shot.HERE = os.path.join(a.root, "docs")
@@ -57,8 +58,41 @@ def main():
             if m != m0: m0, ts = m, time.time()
             elif time.time() - ts >= 1: break
             time.sleep(.1)
+        if a.profile:
+            # профайлер с первой секунды после «режим держится»: кто ест кадры дольше 33 мс
+            ws.call("Profiler.enable"); ws.call("Profiler.setSamplingInterval", interval=250)
+            shot.ev(ws, "window.__PF=[];window.__PT0=performance.now();(function f(t){if(window.__PL)__PF.push([__PL-__PT0,t-__PL,(typeof FRAME_JS!=='undefined'?FRAME_JS:-1)]);window.__PL=t;requestAnimationFrame(f);})()")
+            ws.call("Profiler.start"); off = shot.ev(ws, "performance.now()-__PT0") or 0
         time.sleep(a.wait)
         r = shot.ev(ws, a.js)
+        if a.profile:
+            time.sleep(a.profile)
+            P = ws.call("Profiler.stop")["profile"]
+            fr = shot.ev(ws, "JSON.stringify(__PF)")
+            fr = json.loads(fr) if isinstance(fr, str) else []
+            nodes = {n["id"]: n["callFrame"] for n in P["nodes"]}
+            par = {c: n["id"] for n in P["nodes"] for c in n.get("children", [])}
+            nm = lambda cf: (cf.get("functionName") or "(анон)") + (" :%d" % (cf.get("lineNumber", 0) + 1) if cf.get("url") else "")
+            longs = [(f[0], f[0] + f[1]) for f in fr if f[1] > 33]
+            ts, own, inc = P["startTime"], {}, {}
+            ROOTS = {"(root)", "(program)", "(анон)", "frame", "frameBody"}
+            for nid, dt in zip(P["samples"], P["timeDeltas"]):
+                ts += dt; t = off + (ts - P["startTime"]) / 1000.0
+                if not any(a0 - 2 <= t <= a1 for a0, a1 in longs): continue
+                n0 = nm(nodes.get(nid, {}))
+                if n0 == "(idle)": continue
+                own[n0] = own.get(n0, 0) + .25
+                x, seen = nid, set()
+                while x is not None:
+                    c = nm(nodes.get(x, {}))
+                    if c not in seen and c.split(" ")[0] not in ROOTS: inc[c] = inc.get(c, 0) + .25; seen.add(c)
+                    x = par.get(x)
+            ds = sorted(f[1] for f in fr)
+            print("кадров %d · p50 %.1f p99 %.1f макс %.0f · дольше 33 мс: %d (сумма %.0f мс), JS в них: %s" % (
+                len(fr), ds[len(ds) // 2] if ds else 0, ds[int(len(ds) * .99)] if ds else 0, ds[-1] if ds else 0, len(longs),
+                sum(b - a0 for a0, b in longs), ",".join("%d" % f[2] for f in fr if f[1] > 33)[:200]))
+            print("своё в долгих: " + " · ".join("%s %.0f" % kv for kv in sorted(own.items(), key=lambda kv: -kv[1])[:10]))
+            print("с детьми в долгих: " + " · ".join("%s %.0f" % kv for kv in sorted(inc.items(), key=lambda kv: -kv[1])[:14]))
         print(json.dumps({"mode": shot.ev(ws, "G.mode"), "gpu": shot.ev(ws, "!!GPU.ok"), "out": r}, ensure_ascii=False))
     finally:
         proc.kill()

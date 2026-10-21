@@ -35,6 +35,8 @@ __J.q=[];
 try{[["submit",function(a){return (a[0]||[]).length;}],["writeBuffer",function(a){var d=a[2];return d&&(a[4]!=null?a[4]*(d.BYTES_PER_ELEMENT||1):d.byteLength)||0;}],
   ["writeTexture",function(a){var s=a[3]||{};return (s.width||s[0]||0)*(s.height||s[1]||1)*4;}],["copyExternalImageToTexture",function(a){var s=a[2]||{};return (s.width||s[0]||0)*(s.height||s[1]||1)*4;}]].forEach(function(p){
   var o=GPUQueue.prototype[p[0]];if(!o)return;GPUQueue.prototype[p[0]]=function(){if(__J.on){var s=performance.now(),r=o.apply(this,arguments);__J.q.push([s-__J.t0,p[0],p[1](arguments),performance.now()-s]);return r;}return o.apply(this,arguments);};});}catch(e){}
+try{["beginRenderPass","beginComputePass"].forEach(function(n){var o=GPUCommandEncoder.prototype[n];if(!o)return;
+  GPUCommandEncoder.prototype[n]=function(){if(__J.on)__J.q.push([performance.now()-__J.t0,n,0,0]);return o.apply(this,arguments);};});}catch(e){}
 /* долгий кадр с виновником (Long Animation Frames): какая функция из какого файла съела кадр */
 try{new PerformanceObserver(function(l){if(__J.on)l.getEntries().forEach(function(e){
   __J.la.push([e.startTime-__J.t0,e.duration,e.blockingDuration||0,(e.scripts||[]).slice().sort(function(a,b){return b.duration-a.duration;}).slice(0,3).map(function(s){
@@ -354,7 +356,7 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
             time.sleep(3)   # после разрыва — ещё ход: хвосту нужна длина, чтобы законы плавности судили его
         key(ws, "ArrowLeft", False)
         time.sleep(2)   # остановка — тоже кадр игры: герой встал, камера тормозит, зум доезжает (рывок 15.10 жил тут)
-        st = shot.ev(ws, "__J.on=false;JSON.stringify({f:__J.f,lt:__J.lt,pp:__J.pp,la:__J.la,pz:__J.pz,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
+        st = shot.ev(ws, "__J.on=false;JSON.stringify({f:__J.f,lt:__J.lt,pp:__J.pp,la:__J.la,pz:__J.pz,q:__J.q,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
                          "errs:(window.__errs||[]).filter(function(e){return e[0]!=='W'}).slice(0,4)})")
         if not isinstance(st, str):
             bad.append(("кадры · " + sc, "запись не прочиталась: %s" % st)); return
@@ -378,6 +380,17 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
             finally: RUN_MAX, LONG, ENTRY_MAX = keep
             return
         judge(sc, d["f"], bad, d.get("pz"))
+        # очередь видеокарты на кадр хода (после входа): отправки, загрузки буферов и текстур
+        R = [f for f in d["f"] if f["t"] >= ENTRY_MS]
+        if R and d.get("q"):
+            nf = len(R); qa = {}
+            for q in d["q"]:
+                if q[0] >= ENTRY_MS:
+                    e = qa.setdefault(q[1], [0, 0]); e[0] += 1; e[1] += q[2]
+            js = sorted(max(f["js"], 0) for f in R); gg = sorted(f["g"] for f in R if f.get("g", -1) >= 0)
+            print("%-8s на кадр: %s · JS p50 %.1f p99 %.1f · ГП-ожидание p50 %s p99 %s" % (sc, " · ".join(
+                "%s %.1f (%.0f КБ)" % (k, v[0] / nf, v[1] / nf / 1e3) for k, v in sorted(qa.items())),
+                js[len(js) // 2], js[int(len(js) * .99)], "%.1f" % gg[len(gg) // 2] if gg else "?", "%.1f" % gg[int(len(gg) * .99)] if gg else "?"))
         row = heavy(sc, d, res0, res1, p0, p1, w1 - w0, gms, bad)
         if not plant: regress(sc, row, bad, shot.ev(ws, "typeof VER!=='undefined'?VER:'?'"))
     finally:
