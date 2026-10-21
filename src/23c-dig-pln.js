@@ -15,7 +15,7 @@ try{if(typeof location!=="undefined"&&/[?&]dig=0\b/.test(location.search))DIG3.o
 const DIG3_Z=1.1;
 /* доля роста человека в высоте кадра: высокий — широкий; линия ходьбы от низа; даль объектива;
    глаз над полом; догон кадра и шага человека, с; забег кадра по ходу проходки, клеток */
-const DIG3_LENS={man:[.077,.085],walk:[.38,.34],dist:[18,32],eye:2.6,tau:.4,step:.12,lead:.5};   /* телефон: пол выше строки подсказки */
+const DIG3_LENS={man:[.11,.2],walk:[.38,.34],dist:[12.6,13.6],eye:2.6,tau:.4,step:.12,lead:.5};   /* телефон: пол выше строки подсказки */
 
 function dig3Lens(asp,cx,floorY){
   const L=DIG3_LENS,k=plnSmooth(.6,1.5,asp);
@@ -161,7 +161,9 @@ function dig3Frame(){
      его гасит карта тени: камень над выработкой закрывает солнце, открыт только ствол */
   const Hr=PLN.sun,night=Hr?clamp(Hr.night||0,0,1):0,dayK=(1-plnSmooth(.2,.9,night))*(1-plnSmooth(8*CM,12*CM,sY-my));
   const sx=Hr&&Hr.dir&&Hr.dir[0]>0?1:-1,sun=plnNorm([.18*sx,1,.1]),lean=[-sun[0]/sun[1],sun[2]/sun[1]];
-  const mouth=[CM*.5,DIG3_ROOM.zd*.5,40,12];
+  /* столб дня во всю ширину — пока человек у земли; ниже — только ствол: камня над кадром нет в карте тени
+     (куски строятся по окну), и широкий столб светил в штрек сквозь кровлю, которой нет, — мох на почве в 12 м */
+  const mouth=[CM*.5,DIG3_ROOM.zd*.5,lerp(40,CM*.5+.3,plnSmooth(sY-1.5,sY-4,my)),12];
   const day=cave3DayBox(sun,[cx-Ls.w*.6-4,cx+Ls.w*.6+4,sY-8*CM,sY+6,-1,DIG3_CH.zcap+1]);
   const lk=Hr&&Hr.look,skyLo=lk?lk.skyHor:[.62,.78,.95],skyHi=lk?lk.skyZen:[.13,.33,.78];
   /* огни без теней: разлив фонаря, лужа там, куда он смотрит, отсвет на человеке, свод, задняя стена */

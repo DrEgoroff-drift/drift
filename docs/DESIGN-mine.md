@@ -33,12 +33,23 @@ biters were a 2D brush unrelated to the planet's beasts.
   of the old mine in the body: a trough wider at the top, a steel rim with rivets, a rib across the
   end, two wheels with flanges on the cage's own rail; the ore heap rises over the rim with the load,
   tinted by the heaviest ore.
-- **Ore shows in the section** (22.10). An ore body is a patch of its ore's colour in the sheet's
-  paint (`23ca`), a few short seams in the cave's vein language (`CAVE3_MAT.vein`: a wet light ridge
-  over a dark undercut) and faceted nuggets crowding its heart (`23cb dig3OreSeams`). The tone is
-  half the ore's colour, half the cave's mineral band, so iron is not ice. Seams and nuggets break at
-  workings and half a metre off them. Only bodies within seven cells of a working (twelve under the
-  shaft's bottom) are built — what the player can see from the workings.
+- **Ore shows in the section** (22.10, reworked the same day). An ore body reads from the drift's
+  distance as a field of grain: faceted nuggets of the ore's colour scattered over the whole lens,
+  denser and larger towards its heart (`23cb dig3OreBodies`, `DIG3_ORE`), sunk into the sheet so only
+  a cap shows (grain in the rock, not gravel in front of it), and on the back wall of a working the
+  body crosses. Under them the sheet's paint darkens towards the ore's colour (`23ca`). The tone is
+  three quarters ore, a quarter the cave's mineral band, so iron is not ice. Grain stops half a metre
+  off a working. Only bodies within seven cells of a working (twelve under the shaft's bottom) are
+  built. The first try — short seams in the cave's vein language — read as sticks up close and as
+  nothing from the drift.
+- **Lens** (22.10, `DIG3_LENS`): the working is the hero — the man is about a tenth of the frame's
+  height on PC and a fifth on the phone, the drift about a third (PC). The section's lip
+  (`DIG3_LIP`) is scaled to that lens: the cave shader burns half a metre off the void, which at the
+  mine's lens drew a white rim round every working; the sheet now hands it its distance multiplied,
+  leaving the stand's soft glow (~.45 m) and a 6 cm rim.
+- **Day column** (22.10): the shader's moss and daylight fall inside the mouth's ellipse in plan;
+  with the man more than a few metres down it narrows to the shaft — rock above the frame is not in
+  the shadow map, and a wide column put moss on the drift floor through a roof that was not there.
 - **Sinking:** at the bottom of the shaft S drills the shaft down and the cage follows the face;
   reaching a level row opens the level.
 - **Up and down off a drift only along ore** (an ore cell or one beside an ore body): that is how
@@ -114,7 +125,7 @@ spot within 90 px of the man (`mineLaySpot`); with none near, the prompt says «
 | 72 m, cage | 1.9 / 4.7 | 0.79 / 0.86 | 1.4 / 3.3 | 0.46 / 0.48 |
 
 Down to the first level the planet frame over the cut is most of the GPU bill; below the window's
-reach of the ground the mine costs under a millisecond. Ore bodies (§2) add 28–57 seams per scene,
+reach of the ground the mine costs under a millisecond. Ore bodies (§2) add up to a few hundred nuggets per scene,
 inside these numbers. The face row was measured before the chunk budget below; with it, a cell dug at
 the face costs JS max 4.9 ms on PC (was 712).
 
