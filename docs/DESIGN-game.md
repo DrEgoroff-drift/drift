@@ -526,6 +526,26 @@ drawn from the chapter table (`12ud-smena-text`, `SMENA_TITLE`) by part, not wri
 table above as its test (a save at part N opens N+1 only through the named door, and the probe
 drives the deed); M911 adds the Blade as a scripted once-per-game run. Nothing else grows.
 
+**Built 22.10 (M910, `28p-doors`).** A landing is now only the *place* a chapter is lived; the
+door is a deed done after the previous chapter opened. A deed log (`G.wd`) is fed by hooks on
+what the game already does: a сводка ≥ 90 % (`norm`), a сводка ≥ 60 % right after a срыв
+(`srv`), a hull lost, a door shut (`folkShut`), a ransom or a storm that frees hands, a named
+offer taken, a landmark acted on (`mark`), one's own notch on an obelisk (`notch`), a watch
+handed over and taken back, a story turned by a deed. The part doors follow the table above
+(chapter 55 takes `blade` or `hull` until M911 scripts the Blade). Inside a part the door is drawn
+once per chapter, weighted 1/(1+times done); any two different deeds also open it, so nobody is
+stuck. Part I stays on landings. The диспетчер's 72 lines come from `SMENA_TEXT`: the chapter's
+first journal line, else its first spoken line without a «сказал» tag, cut at a sentence to 120
+characters. When a chapter opens, she says it on the ether, and for ten minutes it replaces her
+line on the participation plate. Thirty stories with no turns of their own get one: after their
+first trace, a deed of the watch (`norm`, `srv`, `notch`, `handover`, 7–8 stories each) done
+*after* meeting the story sets `wd`, and the last trace waits for it. Act 2: the circular's good
+is demanded only on the participation's boards, barges with people leave from its stations (mood
+−0.1 each), the sixth (`sixth_report`) has the new address `watch`, and «Есть место» is offered
+at a participation station once the run of ≥ 90 % сводки is 365 sky days old and holds at least
+two. Not done: the rivals' traces at your landmarks, «a face gone from the hall», the `bill`
+deed (no stranger's bill exists yet). The door table is `tests/91zzzw9h-doors.js`.
+
 ---
 
 ## 8. Combat — measured, fixed, and what «good» means
@@ -757,7 +777,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M907 | the dispatcher generator (§4.3) **done 22.10 (`28m-dispatch`)** | at every dock К ВАМ has ≥ 2 addressed + 1 urgent; verbs vary over five |
 | M908 | access gates and the 30 rungs (§4.4) **done 22.10 (`28n-access`)** | no rung silent; «Мамонт» refused without clearance III + sponsor |
 | M909 | the first watch (§10.7) **done 22.10 (`28o-firstwatch`)** | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
-| M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) | chapter N+1's door is a deed; the sixth is met on the watch |
+| M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) **done 22.10 (`28p-doors`)** | chapter N+1's door is a deed; the sixth is met on the watch |
 | M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) | every order has both sides; a found notch gives one access line |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
