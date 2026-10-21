@@ -21,7 +21,7 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 `docs/DESIGN-remake.md` (M800+, built by the three builder sessions, judged by the designer); the
 game's logic — the shift, the bill, the dispatcher, loss, the three rails, combat — is
 `docs/DESIGN-game.md` (M900+; queue in its §10.8, the author's forks in §10.9). Where a stage below
-and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907 is built (`28m-dispatch`, unreleased); next is M908.
+and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M908 are built (`28m-dispatch`, `28n-access`, unreleased); next is M909.
 
 Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
 bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,

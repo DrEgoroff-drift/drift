@@ -333,6 +333,21 @@ And the 30 rungs: every rung from 1 to 30 gets one line of consequence (a price,
 right), no rung is silent. The table is the builder's (M905); the rule is: a rung is a thing the
 *system* does for you, never a stat.
 
+**Built 22.10 (M908, `28n-access`).** Hull gates ride on `yardGate`, so the dock row shows the
+reason instead of a buy button («допуск II или разнарядка», «допуск III и поручитель», «нужен
+поручитель», «только по разнарядке»); a hull you own is never locked. Catalogue hulls follow the
+same ladder by price: up to «Скат»'s price free, up to «Топор»'s clearance II, above that III plus
+a sponsor; rare, legend and proto hulls are never sold for credits. An allocation by norm
+(`watchAllot`) sets a lasting right to the clearance-II hulls. The sponsor is a manager at level 3
+or higher, a house you had an episode with, or a station supplied on 8 separate visits (a need
+closed, an order delivered or a dispatcher haul handed in — once per visit). The 22 rungs without
+a ★ get a lever each — dispatcher pay, fuel, repair, the buyer's bid, the counter, gauge floors,
+barge rate — read inside the real price functions, and the lever's line is appended to the rung's
+note so the board and the dock moment say it in words. Tier-2 and tier-3 workshops (the slipway
+excepted) also need the last сводка at 75 % or more. Not built: the second participation (the
+watch has one participation). Test `tests/91zzzw9f-access.js` walks rungs 0→30 against a stub
+and holds that every step changes what the system does.
+
 ### 4.5 Seasons — the weather of demand
 
 Ninety days (90 min of play) per season, four per year. A season sets the demand weather for the
@@ -729,7 +744,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) **done 14.10 (0.497.0)**: `28j-watch`, `28k-offline`, the faucet in `12ab-hold` | the bot's norm moves with filled needs; handover stops every clock |
 | M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) **done 15.10 (0.498.0)**: `28l-gauge` | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
 | M907 | the dispatcher generator (§4.3) **done 22.10 (`28m-dispatch`)** | at every dock К ВАМ has ≥ 2 addressed + 1 urgent; verbs vary over five |
-| M908 | access gates and the 30 rungs (§4.4) | no rung silent; «Мамонт» refused without clearance III + sponsor |
+| M908 | access gates and the 30 rungs (§4.4) **done 22.10 (`28n-access`)** | no rung silent; «Мамонт» refused without clearance III + sponsor |
 | M909 | the first watch (§10.7) | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
 | M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) | chapter N+1's door is a deed; the sixth is met on the watch |
 | M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) | every order has both sides; a found notch gives one access line |

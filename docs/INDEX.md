@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 622 · top-level symbols: 8810
+Files: 624 · top-level symbols: 8837
 
 ## SYMBOLS
 
@@ -51,6 +51,24 @@ ABIL_CONE_WGSL               src/16c-abil.js:156
 ABIL_HOLD                    src/16c-abil.js:29
 ABIL_KEY                     src/16c-abil.js:126
 ABIL_ST                      src/16c-abil.js:30
+ACC_FREE                     src/28n-access.js:20
+ACC_NEVER_TIERS              src/28n-access.js:21
+ACC_OLD_ALLOT                src/28n-access.js:115
+ACC_OLD_APPLY                src/28n-access.js:160
+ACC_OLD_BUYP                 src/28n-access.js:75
+ACC_OLD_BWHY                 src/28n-access.js:151
+ACC_OLD_CTX                  src/28n-access.js:72
+ACC_OLD_DISP                 src/28n-access.js:91
+ACC_OLD_DONE                 src/28n-access.js:108
+ACC_OLD_FUEL                 src/28n-access.js:68
+ACC_OLD_GREAD                src/28n-access.js:83
+ACC_OLD_NEED                 src/28n-access.js:104
+ACC_OLD_NPC                  src/28n-access.js:81
+ACC_OLD_ORDER                src/28n-access.js:106
+ACC_OLD_REPAIR               src/28n-access.js:70
+ACC_OLD_SNAP                 src/28n-access.js:158
+ACC_OLD_YARD                 src/28n-access.js:143
+ACC_RUNG                     src/28n-access.js:23-46
 ACTION_RU                    src/15-input.js:144
 ACT_WEEK_MS                  src/05e-clearance.js:36
 ADJ                          src/21a4-base-adj.js:17-27
@@ -2489,6 +2507,15 @@ abilPadRim                   src/16c-abil.js:139-150
 abilReady01                  src/16c-abil.js:35-38
 abilStale                    src/16c-abil.js:118-124
 abilTick                     src/16c-abil.js:127-136
+accGate                      src/28n-access.js:133-142
+accHullNeed                  src/28n-access.js:126-132
+accLever                     src/28n-access.js:57-66
+accLeverSys                  src/28n-access.js:67
+accNormOk                    src/28n-access.js:150
+accSponsor                   src/28n-access.js:118-124
+accSt                        src/28n-access.js:48-55
+accSupply                    src/28n-access.js:98-103
+accTestStation               tests/91zzzw9f-access.js:4-7
 actCouponUse                 src/05e-clearance.js:38
 actCoupons                   src/05e-clearance.js:37
 actPressT                    src/15-input.js:94
@@ -10319,7 +10346,7 @@ zoomTo                       src/15-input.js:358
 ## src/25n-chess.js · 18 KB
   · шахматы по почте:1
 
-## src/26-ui-station.js · 53 KB
+## src/26-ui-station.js · 54 KB
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):355
   · настройки:741
@@ -10515,6 +10542,9 @@ zoomTo                       src/15-input.js:358
 ## src/28m-dispatch.js · 28 KB
   · диспетчер: дело есть всегда (M907 · DESIGN-game §4.3):1
 
+## src/28n-access.js · 11 KB
+  · доступ: кредиты покупают вещи, допуск — нужные (M908 · DESIGN-game §4.4):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10692,6 +10722,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9d-gauge.js · 8 KB
 
 ## tests/91zzzw9e-dispatch.js · 8 KB
+
+## tests/91zzzw9f-access.js · 8 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
