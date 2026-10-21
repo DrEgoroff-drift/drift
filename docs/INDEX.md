@@ -486,24 +486,23 @@ DIAL_RU                      src/21a8-base-world.js:26
 DIAL_WORLD                   src/21a8-base-world.js:14-24
 DIG3                         src/23c-dig-pln.js:13
 DIG3B                        src/23ce-dig-pln-beasts.js:10
+DIG3Z                        src/23ce-dig-pln-beasts.js:79
 DIG3_BEAST                   src/23ce-dig-pln-beasts.js:8
-DIG3_BLOOM                   src/23c-dig-pln.js:253
 DIG3_CH                      src/23ca-dig-pln-rock.js:27
 DIG3_CM                      src/23ca-dig-pln-rock.js:18
 DIG3_DR                      src/23cb-dig-pln-dress.js:8
 DIG3_HAND                    src/23cd-dig-pln-top.js:18
-DIG3_HF                      src/23c-dig-pln.js:46
-DIG3_LENS                    src/23c-dig-pln.js:18
+DIG3_HF                      src/23c-dig-pln.js:45
+DIG3_LENS                    src/23c-dig-pln.js:17
 DIG3_LIP                     src/23ca-dig-pln-rock.js:26
 DIG3_NOSCENE                 src/23cd-dig-pln-top.js:361
-DIG3_OLD_DRAW                src/23c-dig-pln.js:252
-DIG3_OLD_WALK                src/23c-dig-pln.js:273
+DIG3_OLD_WALK                src/23c-dig-pln.js:268
 DIG3_ORE                     src/23cb-dig-pln-dress.js:99
 DIG3_PLANT_GROUP             src/23cd-dig-pln-top.js:156
 DIG3_PPM                     src/23ca-dig-pln-rock.js:17
 DIG3_ROOM                    src/23ca-dig-pln-rock.js:20
 DIG3_SEG                     src/23cb-dig-pln-dress.js:16
-DIG3_SHAFT                   src/23c-dig-pln.js:101
+DIG3_SHAFT                   src/23c-dig-pln.js:100
 DIG3_TOP                     src/23cd-dig-pln-top.js:13
 DIG3_TOP_DRAWSURF            src/23cd-dig-pln-top.js:394
 DIG3_TOP_ENTER               src/23cd-dig-pln-top.js:375
@@ -513,7 +512,8 @@ DIG3_TOP_SURF                src/23cd-dig-pln-top.js:373
 DIG3_TOP_WGSL                src/23cd-dig-pln-top.js:276
 DIG3_TUB                     src/23cb-dig-pln-dress.js:146
 DIG3_VZ                      src/23ca-dig-pln-rock.js:79
-DIG3_Z                       src/23c-dig-pln.js:15
+DIG3_Z                       src/23c-dig-pln.js:14
+DIG3_ZAP                     src/23ce-dig-pln-beasts.js:78
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_DARK_WGSL                src/23b-dig-gpu.js:150
 DIG_EMIT                     src/23b-dig-gpu.js:176
@@ -3771,46 +3771,46 @@ dialWords                    src/21a8-base-world.js:125-130
 dig3BeastDrop                src/23ce-dig-pln-beasts.js:25-32
 dig3BeastFrame               src/23ce-dig-pln-beasts.js:35-73
 dig3BeastGeo                 src/23ce-dig-pln-beasts.js:13-18
-dig3Box                      src/23c-dig-pln.js:48-52
+dig3Box                      src/23c-dig-pln.js:47-51
 dig3CageBody                 src/23cb-dig-pln-dress.js:234-252
 dig3CageMesh                 src/23cb-dig-pln-dress.js:229-232
 dig3ChunkGen                 src/23ca-dig-pln-rock.js:187-286
 dig3Chunks                   src/23ca-dig-pln-rock.js:291-339
 dig3Den                      src/23ca-dig-pln-rock.js:99-118
 dig3DepthBoard               src/23cb-dig-pln-dress.js:17-34
-dig3Dir                      src/23c-dig-pln.js:38-42
+dig3Dir                      src/23c-dig-pln.js:37-41
 dig3DressFrame               src/23cb-dig-pln-dress.js:270-297
 dig3DressMesh                src/23cb-dig-pln-dress.js:35-93
 dig3Dug                      src/23ca-dig-pln-rock.js:30
 dig3EyesMesh                 src/23ce-dig-pln-beasts.js:20-24
 dig3Field                    src/23ca-dig-pln-rock.js:37-66
 dig3Floor                    src/23cb-dig-pln-dress.js:12
-dig3Frame                    src/23c-dig-pln.js:120-228
+dig3Frame                    src/23c-dig-pln.js:119-228
 dig3Ground                   src/23ca-dig-pln-rock.js:68
 dig3Hall                     src/23ca-dig-pln-rock.js:32
 dig3HandU                    src/23cd-dig-pln-top.js:61-71
 dig3Hash                     src/23ca-dig-pln-rock.js:29
-dig3HeadBody                 src/23c-dig-pln.js:59-93
-dig3HeadMesh                 src/23c-dig-pln.js:53-56
+dig3HeadBody                 src/23c-dig-pln.js:58-92
+dig3HeadMesh                 src/23c-dig-pln.js:52-55
 dig3HeapMesh                 src/23cb-dig-pln-dress.js:209-220
 dig3HeapTint                 src/23cb-dig-pln-dress.js:222-227
 dig3Hex                      src/23cb-dig-pln-dress.js:148-154
 dig3Land                     src/23ca-dig-pln-rock.js:71-77
-dig3Lens                     src/23c-dig-pln.js:20-27
+dig3Lens                     src/23c-dig-pln.js:19-26
 dig3LensMk                   src/23cd-dig-pln-top.js:52-55
 dig3LensOf                   src/23cd-dig-pln-top.js:56-60
-dig3ManShare                 src/23c-dig-pln.js:29
+dig3ManShare                 src/23c-dig-pln.js:28
 dig3Nodes                    src/23ca-dig-pln-rock.js:120-131
 dig3OreBodies                src/23cb-dig-pln-dress.js:100-143
-dig3Over                     src/23c-dig-pln.js:232-249
+dig3Over                     src/23c-dig-pln.js:232-244
 dig3Paint                    src/23ca-dig-pln-rock.js:133-172
-dig3PanX                     src/23c-dig-pln.js:32-36
+dig3PanX                     src/23c-dig-pln.js:31-35
 dig3PlantView                src/23cd-dig-pln-top.js:170-195
 dig3RibView                  src/23cd-dig-pln-top.js:105-129
 dig3RopeMesh                 src/23cb-dig-pln-dress.js:254-259
 dig3RopeSet                  src/23cb-dig-pln-dress.js:260-267
-dig3ShaftK                   src/23c-dig-pln.js:103
-dig3ShaftLight               src/23c-dig-pln.js:104-119
+dig3ShaftK                   src/23c-dig-pln.js:102
+dig3ShaftLight               src/23c-dig-pln.js:103-118
 dig3Smax                     src/23ca-dig-pln-rock.js:34
 dig3Smin                     src/23ca-dig-pln-rock.js:33
 dig3Span                     src/23ca-dig-pln-rock.js:174-183
@@ -3833,7 +3833,7 @@ dig3TopSkirt                 src/23cd-dig-pln-top.js:141-154
 dig3TopTab                   src/23cd-dig-pln-top.js:29-34
 dig3TubBody                  src/23cb-dig-pln-dress.js:157-206
 dig3Void                     src/23ca-dig-pln-rock.js:80-97
-dig3ZapRing                  src/23ce-dig-pln-beasts.js:76-82
+dig3ZapFrame                 src/23ce-dig-pln-beasts.js:80-97
 digBedding                   src/23aa-dig-rock.js:118-145
 digCell                      src/23-mode-dig.js:30-50
 digCun                       src/23aa-dig-rock.js:158-182
@@ -10160,7 +10160,7 @@ zoomTo                       src/15-input.js:358
 ## src/23cd-dig-pln-top.js · 24 KB
   · рудник: планета над ним (M631):1
 
-## src/23ce-dig-pln-beasts.js · 5 KB
+## src/23ce-dig-pln-beasts.js · 6 KB
   · рудник на движке: кусачие — звери планеты (M631):1
 
 ## src/24-mode-belt.js · 23 KB

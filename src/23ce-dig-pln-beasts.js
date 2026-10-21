@@ -4,7 +4,7 @@
    злой, оглушён. В выработке зверь — тело на полу хода, за плоскостью человека; над пустотой (ствол,
    лестница) висит у задней стены. В камне тела не видно: на листе разреза горят два его глаза и идут
    за ним, моргают; у оглушённого — тусклее. Мерка — грызун: чуть больше половины наземного роста.
-   Импульс остаётся кольцом поверх кадра (23c dig3Over). ?digbeast=0 — старая плоская кисть. */
+   Импульс — кольцо в сцене и холодная вспышка по скале (dig3ZapFrame). ?digbeast=0 — без зверей. */
 const DIG3_BEAST={on:true,k:.55,z:.55,cap:8,geoCap:64,blink:3.7};
 try{if(typeof location!=="undefined"&&/[?&]digbeast=0\b/.test(location.search))DIG3_BEAST.on=false;}catch(e){}
 const DIG3B={geo:new Map(),gen:-1,inst:[],eyes:null,a:null};
@@ -72,11 +72,26 @@ function dig3BeastFrame(F,Fd,D,gy){
   return tris;
 }
 
-/* импульс: кольцо от человека, как у старой кисти (23-mode-dig drawDigFauna) */
-function dig3ZapRing(camx,camy){
-  const D=G.dig;
-  if(!(D.zapT>0))return;
-  const px=D.col*DIG_CELL+DIG_CELL/2-camx,py=D.row*DIG_CELL+DIG_CELL/2-camy,k=1-D.zapT/16;
-  ctx.strokeStyle="rgba(150,225,255,"+((1-k)*.85).toFixed(2)+")";ctx.lineWidth=3-k*2;
-  ctx.beginPath();ctx.arc(px,py,ZAP_R*k,0,TAU);ctx.stroke();
+/* импульс: от человека расходится светящееся кольцо до края досягаемости (ZAP_R — кого оглушит) и холодная
+   вспышка, что бьёт по граням скалы и гаснет. Кольцо — перед листом разреза: его видно и над породой,
+   где сидят глаза зверей, которых оно накрывает. Кольцо одно на рудник: единичное, растёт масштабом */
+const DIG3_ZAP={r:.012,seg:72,col:[.62,.9,1],glow:4,light:[.35,.62,.85],lk:4};
+const DIG3Z={geo:null,inst:null,a:new Float32Array(16),gen:-1};
+function dig3ZapFrame(F,D,gy){
+  if(!(D.zapT>0))return 0;
+  const Z=DIG3_ZAP,Q=DIG3Z;
+  if(Q.gen!==PLN_GPU.gen){if(Q.geo)plnGeoFree(Q.geo);if(Q.inst)plnInstFree(Q.inst);Q.geo=null;Q.inst=null;Q.gen=PLN_GPU.gen;}
+  if(!Q.geo){
+    const m=plnMesh(Z.seg*16),path=[];
+    for(let i=0;i<=Z.seg;i++){const a=i/Z.seg*TAU;path.push([Math.cos(a),Math.sin(a),0]);}
+    plnTube(m,{path,rad:Z.r,sides:6,col:Z.col,mat:PLN_MAT.glow,glow:Z.glow});
+    Q.geo=plnGeo(plnMeshDone(m));Q.inst=plnInst(new Float32Array(16),0,1);
+  }
+  const k=1-D.zapT/16,f=(1-k)*.85,R=ZAP_R/DIG3_PPM;
+  const x=(D.col*DIG_CELL+DIG_CELL/2)/DIG3_PPM,y=gy(D.row*DIG_CELL+DIG_CELL/2);
+  plnRec(Q.a,0,[x,y,-.05],Math.max(1e-3,R*k),0,1,0,[f,f,f]);
+  plnInstSet(Q.inst,Q.a,1);
+  F.draw.push({geo:Q.geo,inst:Q.inst,lamp:false,sun:false,refl:false});
+  F.lights.unshift({p:[x,y,DIG3_Z+.4],r:1.5+R*k,c:Z.light.map(v=>v*Z.lk*f)});
+  return Q.geo.n/3;
 }
