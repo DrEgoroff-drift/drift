@@ -6,7 +6,22 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## Unreleased - the base as a lit section on the engine, the space lift you ride, the moving five as places to act, cave wings, the aerial ramp, the lake's own light, water that moves
+## 0.499.4 - landing without a hitch: the world is built on the way down; the cave while you walk to it; the playtest's six forks
+- **Landing (qa).** The surface is generated during the approach, a slice per frame while the system stays on screen (`fa31bc21`, `0a503042`); the descent draws the same land, and touchdown no longer replants it. The cave and its entry rock are built while the player walks to the mouth (`caveTick`), the station hall and the cantina people in idle system frames (`hallPrepTick`, person meshes in budgeted slices), the planet's flora kit in steps (`plnKitTick`). Late, non-gating pipeline warm-up for mode entries (mines, base, home, scoop, map, wanderer, rooms, raid, planet, cave).
+- **Determinism (qa).** The gauge window lives in `G.gaugeW`: `GAUGE_W` survived `resetWorld` since 0.498.0. Reading a gauge no longer creates `G.gauge`; hall prep from an idle system leaves story pins untouched. The base frame goes from 5 to 3 queue submits.
+- **Playtest 14.10 fixes (qa).** An unarmed ship meets no raiders in the quiet ring around home (danger < .1; power pickets stay; suite `91a7`). A jump target the tank cannot reach is grey and says why («НЕ ХВАТИТ ТОПЛИВА: 48 из 30»; `91a8`). The star corona loop never repairs above 45 % of the hull (`91a9`). «НА КАРТУ» from the dock keeps the dock: НАЗАД returns to the same station tab (`91aa`). The station wallet follows the world while its screen is open; a hard landing writes its touch numbers to the journal; the surface says the base entry exists when an organism masks it.
+- **Disputed (six playtest forks, cautious variants taken).** No weapon at the start stays (a merchant, by design). Endless drift stays: the brake exists (S / ArrowDown / C, the ТОРМОЗ pad). A jump over the tank is not offered, only explained. The corona is no repair above 45 %. The dock peek keeps the dock. The interface scale stays in the menu only; on a phone `--ui` is always 1.
+- **The lab at home.** `lab/lab-local.py` runs the lab on this machine with a control panel (`lab-ui.py` + `lab-ui.html`): settings, start/stop, live tiles, new errors, the log with filters. The seeded bot walk (`91zzzzzzzzb-hunt`) replaces the fuzzer.
+- **Home and HQ framing (remake-a3).** On a 390 x 844 phone the home's cut section sits between the HUD and the ether, the bushes under the pads, and the camera follows the man along x. An empty HQ (no managers) frames the whole table instead of the first domain's chair.
+- **Control, at the merge.** The even-frame pacing of 0.499.3 kept; the qa idle ticks taken into the loop; the jacket kept in the person mesh key.
+
+## 0.499.3 - the home and the HQ ops room as engine scenes; even frames on fast screens
+- **M850b (remake-a3).** The home is an engine scene (`29rb-home-r3`, `29rba-home-shell`) after the stand's grammar: a cream seamed body with the orange belt on legs and skids, the vaulted roof cut in section, a porch; plaster rooms with doorways, joists and lamps, the loft with rafters. The yard behind runs in three lanes (a dark wing of tussocks, the fence, a banded mast with its light; the porch lantern is the night key), with its own sun and moon. Own canvas `#home3d`; a throw falls back to the 2D home. Cost at 1920 and 390: GPU 0.9-1.6 ms, CPU 0.2-0.4 ms.
+- **M850a (remake-a3).** The HQ is a room on the interior renderer (`29r-rooms-r3`): day and night by the station clock, a dim sign on each dark screen of a free domain, the hint on the empty chair. The 3D winter room (`29rc`, M850c) is built but waits behind `?win3=1`.
+- **Even frames on 144/165 Hz (the lab).** The 60 cap used to land on the second or third vsync in turn (2-3-2-3 on 144 Hz); now a frame goes every n-th vsync (144 -> 72 even frames, 120/240 -> 60) and the world steps in 1/1440 s quanta with hysteresis. Law: `91a1-quant`.
+- **Control, at the merge.** The engine home is now part of the frame snapshot (`GPU_SNAP_OVER`, `29rz-snap-over`): look() and the detectors used to read the «дом» scene as 100 % empty. On a wide window the receiver moves over the room as it does over the station hall, instead of lying across «ШТАБ». Two test leaks shown by the new order of the full run are closed (`91qe-rack` set its own HUD frame, `91qc-hall` its own closed hall).
+
+## 0.499.2 - the base as a lit section on the engine, the space lift you ride, the moving five as places to act, cave wings, the aerial ramp, the lake's own light, water that moves
 - **M632a.** The base is drawn on the engine as a cross-section through the ground (`21ae-base-sect`, the cave renderer with its cut sheet), after the author's reference (Fallout Shelter, «only in our 3D»): rooms 9 x 4 m under 1.2 m slabs (the man is under half the room's height), 3.6 m deep, near-orthographic lens (eye at 3 window heights). The frame is near-black slab and rock (no rim light inside the base's body); every powered room glows evenly from a baked fill (`mat 18` in `22dbw`: the ground plus vertex glow) with two pendant lamps whose live lights add on top near the man; walls by family (living cream with blue tile, machines steel, gardens green and soil), chamfered top corners, doors cut in the end walls on the walk line, the level's hall only in the gaps. The shaft has a cage that follows the man; up top the headframe, the gatehouse and solar panels over solar cells.
 - **M632a.** Lenses: entry starts from the walking lens on the ground and settles; the far lens (menu, shaft, the first 1.4 s) holds every row, the shaft and the gate with the sky above; the near lens centres the man's room; a phone keeps the near one. In a habitat, lab, med bay or shop the man sits down after 2.5 s still (`sit` pose in `21pha`). The room line hangs as a plate on its room, the old prompt line is hidden while the section is live (`body.basewords`). Without power rooms are dark and the key light is the man's helmet. Three failures fall back to the old 2D frame; `?sect=0` keeps it. `21ac-base-draw` split into `baseDrawAdj`/`baseDrawBoard`/`baseDrawNote` (same output) for the overlay. `tests/91qf-sect`; stand `docs/look/game/sect.py` + `eval-sect.js`.
 - **M627b pass 5.** The space lift is a place to act (`21pifc`, its body moved to `21piec`): a station by the walk line with a lit door and a console, a rail on sleepers to the foot of the cone, and a cab that rolls along the rail and climbs the cable. The console calls the cab down (12 s down the cable, 4 s along the rail); in the cab the man is not drawn, walking and the jetpack are off and the lens climbs with the cab, so the ground drops away. At the top clamp the cab waits 6 s: a survey from height (+24 data, once) names the cave, the nearest deposits and other landmarks with distance and side.
@@ -18,6 +33,35 @@ could ever save.
 - **M630e.** The cave frame gets a foreground: dark stone wings 2-3.4 m in front of the cut (`22di-cave-pln-wing`, mat 17) every ~9 m in both galleries, none by the mouth: low floor ridges whose tops stay at the floor line (whatever walks the floor reads over them) and teeth from the vault; a cold rim, no light of their own, the man cut out where he stands behind one. At the near stop (dive, close look) they slide out of the frame by instance offset, no rebuild. The fog colour is a cool blue ramp (`CAVE3_K.fogC`), so far stone falls back by air. The nearest lake lights its own glade with a teal lamp (`CAVE3_LAKE`), strength by width and distance.
 - **M630e.** The lake dive reframes toward the water and drops the eye (`CAVE3_LENS.dvS/dvDrop`, halved on high ledges): `docs/look/game/cavewater.py` is all green (mirror >= .50, spread >= .08, rings 3..5); `91qg-cave` checks the drop and the wing spacing.
 - **M630e.** Cave water is no longer a flat slab: three travelling waves (`caveWave`, ~8 cm crest to trough) lift the surface grid and the body's top edge in the vertex stage, the light blades under the surface drift with them, and the shore thread shimmers with running glints.
+- **Control, at the merge.** A cave with no lake drew an empty frame: the dive's eye drop was taken from the water's height, which such a cave lacks, came out NaN, and NaN x 0 in `cave3Lens` blanked the eye and every pixel (look scene «пещера»: 100 % flat, 50 % before M630e). `23cf-cave-guard` wraps `cave3DiveFrame` until the line is fixed in `22d`. `91qb-rig-card` now turns the base section off the way it already turned the engine cave off (both draw the rig as a body), and expects the new `sit` card.
+- **Control.** The action pad no longer ends on a preposition: «НАЗАД НА», «ВЗЯТЬ НА» took the first two words of the prompt. With a preposition second, the pad takes the third word when the three fit in 20 letters («Назад на поверхность»), otherwise drops the preposition.
+
+## 0.499.1 - no money from one counter; a refused save leaves the world alone; a new shaft where the headframe stands
+
+These come from the lab's new laws (15.10). Its suites `91qn-arb`, `91qo-savefuzz`, `91qp-cloudchaos`,
+`91qj-pace`, `91qk-ground` and `91ql-light` now run in the gate.
+
+- **Buy and sell at one counter printed money.** The lab tried every good at forty stations, three ways
+  each, and 284 of those loops ended in profit: +7 to +46 cr a round, buying ice and handing it straight
+  back. The shift's appetite norm was cut by what you bought here, but the bought goods themselves still
+  sold with the +35 % premium. Now goods bought at a counter sell back to it at the plain price, outside
+  the premium, the bunker and the blockade's double pay.
+  - The «bought here» book lasts while the goods are in the hold. A new shift no longer clears it, so
+    «buy, wait a shift, sell» is closed too.
+  - Any sale or delivery (sale, order, plan) writes it off, and a purchase at another counter trims it
+    to what the hold held.
+  - Goods brought from elsewhere get the full norm, as before (`12ab-hold`).
+- **A refused save half-loaded the world.** Four `applySave` wrappers (bill, watch, insurance, gauge) ran
+  their own part even when the save was refused, so a corrupt record left a mixed world behind. They
+  now step aside on refusal.
+- **A newer but unreadable cloud record overwrote a good local one.** This was a record without a
+  version, with a foreign version, or with a version as a string. `cloudBoot` now takes it only through
+  the same gate as `applySave`: `v` 4 or 5 and a numeric `ts`.
+- **A new shaft goes where the headframe stands.** The author: «если ноги у него одна короче другой на
+  перепаде — норм». The headframe now checks its legs, its brace and its shaft ring against the ground.
+  A new shaft is laid at the nearest spot within two steps where it fits. Where none is near, the
+  prompt says so and points to level ground, and a known mouth is levelled at landing (0.499.0). On the
+  lab's test world every one of 34 spots found its place.
 
 ## 0.499.0 - the mine is a working rudnik under the planet it is dug in
 

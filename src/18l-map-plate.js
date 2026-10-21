@@ -26,7 +26,7 @@ function mapSelHang(sel,dsel,cost,st){
   if(dsel===0){L=["ВЫ ЗДЕСЬ · "+nm,what,"тап по звезде — курс"];verb=undefined;}
   else if(far){const n=Math.ceil(dsel/Math.max(.5,st.jump));
     L=[nm,what,"ВНЕ РАДИУСА · "+n+" "+pl3(n,"прыжок","прыжка","прыжков"),pk+more];verb=2;}
-  else if(poor)L=[nm,what,"НЕ ХВАТАЕТ ТОПЛИВА · "+cost,"в баке "+Math.round(G.fuel)+" · "+pk+more],verb=2;
+  else if(poor)L=[nm,what,mapDryWord(cost),pk+more],verb=2;   /* «НЕ ХВАТИТ ТОПЛИВА: 48 из 30» — числа в самой причине */
   else L=[nm,what,(onRoute?"ПРЫЖОК ПО МАРШРУТУ · ":"ПРЫЖОК · ")+cost+" топлива","останется "+Math.round(G.fuel-cost)+" · "+pk+more],verb=2;
   /* телефон: имя и глагол с ценой — две строки встают сбоку от выбора; подробности — в подвале нет,
      во второй тап (карточка) */

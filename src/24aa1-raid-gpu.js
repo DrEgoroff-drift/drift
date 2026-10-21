@@ -80,6 +80,8 @@ function raidSprDesc(){
     primitive:{topology:"triangle-list"},
     depthStencil:{format:"depth24plus",depthWriteEnabled:true,depthCompare:"less"}};
 }
+GPU_PIPE_ONE["raid3d"]=()=>raidGpuDesc();      /* поздний прогрев (08b0): рейд входит не с первой секунды */
+GPU_PIPE_ONE["raid3d.spr"]=()=>raidSprDesc();
 /* общее: числа кадра, проекция, свет в точке мира (рассеянный, фонарь, лампы, тени на полу) */
 const RAID_WGSL_COMMON=`
 struct RU{cam:vec4f,fwd:vec4f,rgt:vec4f,up:vec4f,prj:vec4f,ply:vec4f,misc:vec4f,tor:vec4f,

@@ -190,12 +190,14 @@ function sellCargo(sys,k,qty){
   if(Q.nA&&typeof appetiteEat==="function")appetiteEat(sys,k,Q.nA);
   /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
      двигает только то, чего никто не съел */
-  Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
-  Q.revenue=Math.round(Q.revenue*blockEff(sys,k));   /* блокада платит вдвое за еду, воду, топливо (M498) — не поверх нужды (§12) */
+  Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA-(Q.m|0)):0;
+  /* блокада платит вдвое за еду, воду, топливо (M498) — не поверх нужды (§12) и не за купленное здесь же */
+  Q.revenue=Math.round((Q.mRev||0)+(Q.revenue-(Q.mRev||0))*blockEff(sys,k));
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
   earn(revenue,"trade");G.cargo[k]-=qty;
+  if(typeof appetiteHereUse==="function")appetiteHereUse(sys,k,qty);   /* книга «куплено здесь» (12ab) */
   if(typeof routeEarn==="function")routeEarn(sys,k,qty,revenue,!!(N&&N.k===k));
   if(typeof needClose==="function")needClose(sys,k);   /* нужда закрыта этим привозом (M152e) */
   G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки

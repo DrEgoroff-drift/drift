@@ -22,8 +22,9 @@ function rcRaid(){
 TEST_SUITES.push(()=>suite("риг карточкой: позы, потолок кэша, три режима",{tier:"browser"},()=>{
   resetWorld();
   if(!ok(GPU.ok&&!!GPU.dev,"видеокарта поднялась"))return;
-  /* пещера на движке (M630a) рисует риг телом: карточку кладёт старая рисовалка, её и проверяем */
-  const R=RIG_CARD,on0=R.on,cap0=R.cap,cv0=CAVE3.on;CAVE3.on=false;
+  /* пещера (M630a) и база разрезом (M632a) на движке рисуют риг телом: карточку кладёт старая
+     рисовалка, её и проверяем */
+  const R=RIG_CARD,on0=R.on,cap0=R.cap,cv0=CAVE3.on,sc0=SECT.on;CAVE3.on=false;SECT.on=false;
   try{
     R.on=true;
     /* ── каждая поза книги: карточка есть, тело в рамке ── */
@@ -36,7 +37,7 @@ TEST_SUITES.push(()=>suite("риг карточкой: позы, потолок 
       ok(b.x0>=B.x0&&b.x1<=B.x1&&b.y0>=B.y0&&b.y1<=B.y1,"поза «"+pose+"» в рамке карточки: "+JSON.stringify(b));
     }
     eq(rigCard({pose:"jump",ppm:40}).pose,"air","прыжок — поза воздуха рига");
-    eq(rigCard({pose:"sit",ppm:40}),null,"сидеть риг не умеет — карточки нет, режим рисует сам");
+    eq(rigCard({pose:"sit",ppm:40}).pose,"sit","сидеть риг умеет (M632a) — своя карточка");
     /* ── шаг — восемь ступеней; тот же спрос — та же карточка ── */
     const keys=new Set();
     for(let i=0;i<32;i++)keys.add(rigCard({pose:"walk",phase:i/32*TAU,ppm:40}).key);
@@ -59,5 +60,5 @@ TEST_SUITES.push(()=>suite("риг карточкой: позы, потолок 
       R.on=false;const b1=R.by[m];drawWorld();
       eq(R.by[m],b1,"«"+m+"»: при RIG_CARD.off карточки нет — старая кисть");
     }
-  }finally{R.on=on0;R.cap=cap0;CAVE3.on=cv0;}
+  }finally{R.on=on0;R.cap=cap0;CAVE3.on=cv0;SECT.on=sc0;}
 }));

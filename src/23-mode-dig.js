@@ -139,7 +139,7 @@ function suitFailure(){
   const S=G.surf;
   S.suit=0;
   if(G.dig)mineSave(G.dig,G.dig.p);
-  G.dig=null;G.mode="surface";
+  G.dig=null;G.cave=null;G.mode="surface";   /* укус в пещере: пещера не остаётся висеть в режиме поверхности */
   S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;
   say("СКАФАНДР РАЗРУШЕН\nаварийный возврат к кораблю");
   logAdd("warn","Скафандр разрушен на "+S.p.name+" · аварийный возврат к кораблю");

@@ -1,5 +1,9 @@
 # The lab — tests that run without us
 
+> **Since 14.10.2026 the lab runs at home** (`lab/lab-local.py`, section «Local lab» at the end). The
+> server lab below was stopped on 11.09 (the host's CPU cap) and its fuzz step points at a suite
+> pruned on 06.10; its text stays as the design the home lab inherits.
+
 The lab is a long test session on the game's own server. It runs the same `tests.html` the
 laptop runs, but for hours instead of seconds, writes what it finds into a deduplicated error
 log, and publishes everything at **https://drift-game.ru/lab/**. It never touches the deploy:
@@ -116,3 +120,36 @@ five oracles, scenarios, mutants — are the next milestones and will run here w
 the lab is the place, not the content. Until then its value is three things the laptop never
 does: the phone and tall windows every session, the heavy nets every session, and a fuzz hunt on
 new seeds every session.
+
+## Local lab (14.10.2026)
+
+**Without Claude:** the desktop shortcut «Drift Lab» (made by `lab/lab-shortcut.ps1`) opens the control panel `lab/lab-ui.py` — a local server on 127.0.0.1:8791 shown as an Edge app window: settings, START / STOP (stop.flag: the lab finishes its current runs and closes the session) / KILL (process tree and the lab's own Chromes), tiles (done, ahead, green, red, new errors), the units running now with timers, new errors of the session, and the live log with filters and search. The lab publishes its live state to `drift-data\lab\run.json`, so the panel also sees a run started from the console. The console menu is `lab/lab-start.ps1` — a menu for copies, minutes, mode (full / quick / hunt only), branch and hunt steps, remembered in `%USERPROFILE%\drift-data\lab\launcher.json`. Enter runs; the log scrolls with times, a line per finished unit and «!! НОВАЯ ОШИБКА» for each new key, and is appended to `drift-data\lab\logs\lab-<date>.log`. Ctrl+C kills only the lab's own runs. P opens the results page (serves it on 8790).
+
+The same lab on the author's machine (32 threads, 61 GB, RTX 5070): real GPU, no memory cap, no
+CPU tariff. `lab/lab-local.py` replaces `lab.sh`; `lab.py` is shared (its paths come from
+`LAB_DATA`, `LAB_WEB`, `LAB_BUILD` when set, the server defaults otherwise).
+
+```bash
+python lab/lab-local.py --budget 240 --jobs 6        # a night: the round, then the hunt to the end
+python lab/lab-local.py --quick --budget 10          # node, vision, light shards only
+python lab/lab-local.py --hunt-only --budget 60      # seeds only
+python lab/lab-local.py --serve 8790                 # the page at http://127.0.0.1:8790/lab/
+```
+
+- **Its own checkout.** `--ref` (default `planet-main`) is checked out detached into `--src`
+  (default `C:\Claude\drift-labrun`, created on first run) and built there; no working tree is touched.
+- **The round.** Node tier (`--full`, shuffled), the vision, light shards at 1280×800, phone 390×844,
+  tall 1440×1440 and the author's 2000×1000 in four parts each (one shuffle seed per session),
+  every heavy suite alone, the flight tour (`docs/tour.py`). Then the **hunt** fills free places
+  seed after seed until the budget ends.
+- **The hunt** (`tests/91zzzzzzzzb-hunt.js`, tier `hunt`: only `?only=охота`) replaces the fuzzer.
+  It walks the bot's goals (`T.bot`) along a path drawn from `?fseed=N`, the goal chosen by the
+  mode it stands in (one step in seven from all goals), every step judged by all detectors. A
+  bot refusal is not a failure; an exception, a frame crash, a detector finding, a non-finite or
+  negative purse number, or a save that reads back other money or cargo is. The failure names the
+  seed and the whole path, so `tests.html?only=охота&fseed=N&hsteps=60` repeats it step for step.
+- **Manners.** Every process at below-normal priority; every Chrome has its own profile under
+  `%TEMP%\drift-lab\<session>`, and a timeout kills only processes holding that profile. Do not
+  measure frame times while a session runs.
+- **Reading it.** `%USERPROFILE%\drift-data\site\lab\errors.txt` or the page; `lab.py fix <key> [ver]`
+  and `lab.py drop <key> -- why` work as before with `LAB_DATA` set to `%USERPROFILE%\drift-data\lab`.

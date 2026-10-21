@@ -73,6 +73,13 @@ untouched. The planet land is built from that line, so the apron's drop falls to
 land's own rake and grain). The first descent into a new shaft does not rebuild the land: the
 mouth is level from the next landing on.
 
+A new shaft is laid only where the headframe stands (0.499.1, `mineLayFits`, the lab's law
+`91qk`). The author: legs of different length on a step are fine. It does not stand where the long
+leg is over twice the short one, where the brace (g0 + 1.1q) runs into the hill, or where the shaft
+ring climbs the slope higher than the shaft is deep (.9 m). The mouth goes to the nearest fitting
+spot within 90 px of the man (`mineLaySpot`); with none near, the prompt says «ЗДЕСЬ КОПЁР НЕ ВСТАНЕТ
+— КРУТО» and points to level ground up to 600 px away.
+
 ## 6. Cost (PC 1600×900 / phone 390×844 @1.5, real clock and GPU timestamps)
 
 | where | CPU frame | GPU per frame |
@@ -95,7 +102,10 @@ snippets from `mk_digcost.py`.
 - Biters in rock are eyes only; bodies appear in the void. Scale .55.
 - A/D at the collar leaves the cage onto the surface.
 - The first descent into a new shaft keeps the slope until the next landing (a land rebuild in
-  view would pop the whole ground).
+  view would pop the whole ground); the lay rule keeps that slope within what the legs take.
+- The lab's law `91qk` was reworded by Control: the headframe is judged where the game puts it, and
+  refusals may be at most a third of the spots.
+- The lab's `91qm-seeds` waits outside the gate: it calls `surfGen` from the unmerged `qa-1014` work.
 - The surface labels count px as «м» — older than this work, left alone.
 
 ## 8. Open

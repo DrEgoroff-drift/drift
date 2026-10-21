@@ -282,6 +282,59 @@ function mineFlatten(tr,x){
   }
   if(tr.rocks)for(let i=tr.rocks.length-1;i>=0;i--)if(Math.abs(tr.rocks[i].x-x)<C.core)tr.rocks.splice(i,1);
 }
+/* ── где копёр встаёт (15.10, закон «опора», 91qk) ──
+   Автор: «если ноги у него одна короче другой на перепаде — норм». Ноги копра тянутся до земли (21pi),
+   верх ровный от центра; не встаёт он там, где нижняя нога вдвое длиннее верхней, распорка уходит в
+   гору или кольцо ствола лезет по склону выше, чем ствол глубок (.9 м). Новый ствол закладывается в
+   ближайшем месте, где копёр встаёт, в паре шагов от человека; нет такого рядом — отказ словами и
+   стрелка к ровному. Известное устье и так ровное — его ровняет посадка (mineFlatten). */
+const MINE_LAY={near:90,far:600,step:10,memo:null};
+function mineLayFits(L,xu){
+  const q=PLN_THINGS.mineQ,zf=PLN_THINGS.mineZ,xm=xu/PLN_M,gy=(x,z)=>plnLandRibAt(L,xm+x,z),g0=gy(0,zf),top=g0+2.15*q;
+  let lo=1e9,hi=0;
+  for(const sx of [-1,1])for(const sz of [-1,1]){
+    const dx=sx*1.05*q,dz=zf+sz*.85*q,len=top-gy(dx,dz);
+    if(gy(dx*.67,dz)>g0+1.1*q-.2)return false;
+    lo=Math.min(lo,len);hi=Math.max(hi,len);
+  }
+  if(hi>2*lo)return false;
+  for(let k=0;k<12;k++){const a=k/12*TAU;if(gy(Math.cos(a)*.95*q,zf+Math.sin(a)*.72*q)-g0>.9)return false;}
+  return true;
+}
+/* место устья для нового ствола от точки x (взгляд f): {x} — где встанет, {hint} — до ровного */
+function mineLaySpot(L,x,f){
+  const K=MINE_LAY;
+  for(let d=0;d<=K.near;d+=K.step)for(const s of d?[f,-f]:[f])if(mineLayFits(L,x+s*d))return {x:x+s*d,hint:0};
+  for(let d=K.near+K.step;d<=K.far;d+=2*K.step)for(const s of [f,-f])if(mineLayFits(L,x+s*d))return {x:null,hint:s*d};
+  return {x:null,hint:0};
+}
+function mineLayAt(S){
+  const L=typeof PLN_LAND==="object"&&PLN_LAND.cur;
+  if(!L||L.tr!==S.tr||!L.T)return {x:S.x,hint:0};   /* без земли планеты — как было */
+  const K=MINE_LAY,f=S.face<0?-1:1,key=Math.round(S.x/5)+":"+f;
+  if(!(K.memo&&K.memo.L===L&&K.memo.key===key))K.memo={L,key,r:mineLaySpot(L,S.x,f)};
+  return K.memo.r;
+}
+const MINE_OLD_ENTER=enterDig;
+enterDig=function(){
+  const S=G.surf;
+  if(MINE.on&&S&&S.p&&mineSpotX(S.p)==null){
+    const P=mineLayAt(S);
+    if(P.x==null){say("Здесь копёр не встанет\nкруто — ищите ровное место",120);return;}
+    S.x=P.x;
+  }
+  return MINE_OLD_ENTER.apply(this,arguments);
+};
+const MINE_OLD_SURF=updateSurface;
+updateSurface=function(dt){
+  const r=MINE_OLD_SURF.apply(this,arguments);
+  const S=G.surf;
+  if(MINE.on&&G.mode==="surface"&&S&&/^ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ/.test(G.prompt||"")){
+    const P=mineLayAt(S);
+    if(P.x==null)G.prompt="ЗДЕСЬ КОПЁР НЕ ВСТАНЕТ — КРУТО\n"+(P.hint?"РОВНОЕ МЕСТО — "+Math.abs(Math.round(P.hint))+" м "+(P.hint>0?"▶":"◀"):"ИЩИТЕ РОВНОЕ МЕСТО");
+  }
+  return r;
+};
 const MINE_OLD_POI=genPOI;
 genPOI=function(tr,p){
   const had=!!tr.poi,r=MINE_OLD_POI.apply(this,arguments);

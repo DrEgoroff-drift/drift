@@ -158,41 +158,42 @@ function plnFloraBush(m,r){
   return m;
 }
 
-/* набор этого поколения устройства. Кости у набора свои и всегда одни: набор — словарь стиля */
-function plnFloraKit(){
-  const Q=PLN_FLORA;
-  if(Q.kit&&Q.gen===PLN_GPU.gen)return Q.kit;
-  const t0=wallMs(),W=Q.wide,H=Q.treeH,K={};
-  let nv=0;
-  const geo=m=>{nv+=m.nv;return plnGeo(m);};
+/* набор этого поколения устройства. Кости у набора свои и всегда одни: набор — словарь стиля.
+   Собирается шагами (plnFloraKitJob): первая посадка строила его целиком на кадре захода — 80 мс.
+   Шаг — одна часть набора (дерево, горсть камней); их берёт простой (plnKitTick, из кадра системы),
+   а кто спросил набор раньше времени — достраивает остаток разом, как раньше */
+function plnFloraKitJob(){
+  const Q=PLN_FLORA,W=Q.wide,H=Q.treeH,K={},J={K,i:0,nv:0,ms:0,gen:PLN_GPU.gen,steps:[]},S=J.steps;
+  const geo=m=>{J.nv+=m.nv;return plnGeo(m);};
   /* дерево породы sp; rh — радиус кроны в долях роста, если он задан композицией */
   const tree=(sp,seed,sub,rich,o,rh)=>{
     const r=rng(seed),T=PLN_TREES[sp],R=H*(rh||(T.R[0]+r()*T.R[1]));
     return {geo:geo(PLN_TREE_MAKE[sp](r,H,R,sub,rich,o)),R,sp};
   };
   const add=(list,map,key,t)=>{(map[key]=map[key]||[]).push(list.length);list.push(t);};
-  K.tuft=[0,1,2,3,4,5].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7100+k),{rings:3,w0:.09*W,w1:.06*W,off:.4*W/Q.foot,lean:1.1,wk:.3})));
-  K.reed=[0,1,2].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7150+k),{rings:4,w0:.07,w1:.04,off:.17,lean:1.2,wk:.25})));
-  {const m=plnMesh(32);plnBlob(m,{c:[0,0,0],r:[1,.72,1],sub:0,col:[1.05,1.05,1.05],mat:PLN_MAT.grass,wind:1.1,x:1,glow:.18});K.flower=geo(m);}
+  S.push(()=>{K.tuft=[0,1,2,3,4,5].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7100+k),{rings:3,w0:.09*W,w1:.06*W,off:.4*W/Q.foot,lean:1.1,wk:.3})));});
+  S.push(()=>{K.reed=[0,1,2].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7150+k),{rings:4,w0:.07,w1:.04,off:.17,lean:1.2,wk:.25})));
+    {const m=plnMesh(32);plnBlob(m,{c:[0,0,0],r:[1,.72,1],sub:0,col:[1.05,1.05,1.05],mat:PLN_MAT.grass,wind:1.1,x:1,glow:.18});K.flower=geo(m);}});
   /* камни: три малых и три больших */
-  K.rock=[[11,1,[1.2,.8,1]],[23,1,[1.35,.7,1]],[37,1,[1.05,.75,1.1]],[5,2,[1.2,.8,1]],[17,2,[1.25,.85,1]],[29,2,[1.15,.9,.95]]]
-    .map(q=>geo(plnFloraRock(plnMesh(256),q[0],q[1],q[2])));
+  S.push(()=>{K.rock=[[11,1,[1.2,.8,1]],[23,1,[1.35,.7,1]],[37,1,[1.05,.75,1.1]],[5,2,[1.2,.8,1]],[17,2,[1.25,.85,1]],[29,2,[1.15,.9,.95]]]
+    .map(q=>geo(plnFloraRock(plnMesh(256),q[0],q[1],q[2])));});
   /* скалы-тела для камня покрупнее: рублены гранями — валун-шар читался комом глины (M623).
      Подошва чуть ниже нуля, мерка — единица: запись даёт размер */
-  K.crag=[[41,[1.15,.95,.9],10,.7],[43,[1.0,1.15,.85],12,.6],[47,[1.3,.7,1.0],9,.8],[53,[.95,1.3,.8],13,.55]].map(q=>{
+  S.push(()=>{K.crag=[[41,[1.15,.95,.9],10,.7],[43,[1.0,1.15,.85],12,.6],[47,[1.3,.7,1.0],9,.8],[53,[.95,1.3,.8],13,.55]].map(q=>{
     const m=plnMesh(256),r=rng(q[0]);
     plnFloraCrag(m,r,{c:[0,-.12,0],r:[q[1][0],q[1][1]+.12,q[1][2]],chops:q[2],lean:(r()-.5)*.3,pitch:(r()-.5)*.2,yaw:0,thin:q[3],seed:q[0],ico:1,deep:.42});
     return geo(m);
-  });
+  });});
   /* уступы: зуб, двойня, столб — высокие, им стоять за тропой; гребень, глыба, плита — низкие, они
      лежат и перед ней. Мерки тела — для посадки на склон: top — макушка над нулём, rx и rz — полуоси
      подошвы, low — на сколько подошва ниже нуля */
-  K.ledge=[[[[0,0,.85,2.6,.75],[-.95,-.25,.6,1.3,.55],[.8,.2,.5,.9,.5]],.2],
+  K.ledge=[];
+  [[[[0,0,.85,2.6,.75],[-.95,-.25,.6,1.3,.55],[.8,.2,.5,.9,.5]],.2],
     [[[-.45,0,.7,2.1,.65],[.55,.15,.6,1.5,.6],[1.3,-.2,.45,.7,.45]],-.24],
     [[[0,0,.75,2.9,.65],[.7,.1,.5,1.4,.5]],.16],
     [[[-1.1,0,.7,1.2,.6],[0,.1,.8,1.7,.7],[1.0,-.1,.6,1.0,.55]],-.18],
     [[[0,0,1.2,1.3,.9],[.9,-.35,.5,.7,.45]],.22],
-    [[[0,0,1.4,.8,.9],[-.3,.1,.8,1.2,.6]],-.14]].map((q,k)=>{
+    [[[0,0,1.4,.8,.9],[-.3,.1,.8,1.2,.6]],-.14]].forEach((q,k)=>S.push(()=>{
     const m=plnFloraLedge(plnMesh(4096),7250+k*7,q[0],q[1]);
     let top=0,rx=0,rz=0;
     for(let i=0;i<m.nv;i++){
@@ -200,30 +201,53 @@ function plnFloraKit(){
       top=Math.max(top,m.v[o+1]);
       if(m.v[o+1]<.2){rx=Math.max(rx,Math.abs(m.v[o]));rz=Math.max(rz,Math.abs(m.v[o+2]));}
     }
-    return {geo:geo(m),top,rx,rz,low:.5};
-  });
-  K.ros=[0,1,2].map(k=>geo(plnFloraRosette(plnMesh(1024),rng(7300+k),56)));
-  K.bloom=[2,3].map(n=>geo(plnFloraBloom(plnMesh(256),rng(7350+n),n)));
-  K.bush=[0,1,2].map(k=>geo(plnFloraBush(plnMesh(512),rng(7500+k))));
-  K.pad=[0,1,2].map(k=>geo(plnFloraPad(plnMesh(32),rng(7550+k))));
+    K.ledge.push({geo:geo(m),top,rx,rz,low:.5});
+  }));
+  S.push(()=>{K.ros=[0,1,2].map(k=>geo(plnFloraRosette(plnMesh(1024),rng(7300+k),56)));
+    K.bloom=[2,3].map(n=>geo(plnFloraBloom(plnMesh(256),rng(7350+n),n)));});
+  S.push(()=>{K.bush=[0,1,2].map(k=>geo(plnFloraBush(plnMesh(512),rng(7500+k))));
+    K.pad=[0,1,2].map(k=>geo(plnFloraPad(plnMesh(32),rng(7550+k))));});
   /* деревья (породы — 21pgb). K.tree и K.far — тела подряд, K.sp и K.spFar — какие из них чьей
      породы. «hero» — зонт, что клонится над площадкой: он один и в рощах не растёт */
-  K.tree=[];K.sp={};K.far=[];K.spFar={};
-  add(K.tree,K.sp,"hero",tree("umb",7401,3,true,{lean:-.95,bend:-1.7,thin:.74},.54));
+  S.push(()=>{K.tree=[];K.sp={};K.far=[];K.spFar={};add(K.tree,K.sp,"hero",tree("umb",7401,3,true,{lean:-.95,bend:-1.7,thin:.74},.54));});
+  const T1=(sp,q)=>S.push(()=>add(K.tree,K.sp,sp,tree(sp,q[0],2,q[1],q[2],q[3])));
   [[7411,false],[7413,true],[7414,false,{lean:.55,bend:1.1,thin:.8}],[7415,false,{fork:.62,thin:.8,lean:-.3},.4],[7416,true,{fork:.27,lean:.25,bend:.6}]]
-    .forEach(q=>add(K.tree,K.sp,"umb",tree("umb",q[0],2,q[1],q[2],q[3])));
-  [[7421,false],[7422,true,{thin:.85,wide:.4}],[7423,false,{lean:.5,skirt:.26}]].forEach(q=>add(K.tree,K.sp,"col",tree("col",q[0],2,q[1],q[2])));
+    .forEach(q=>T1("umb",q));
+  [[7421,false],[7422,true,{thin:.85,wide:.4}],[7423,false,{lean:.5,skirt:.26}]].forEach(q=>T1("col",q));
   [[7431,false],[7432,true],[7433,false,{lean:-.6,bend:.9,hs:[.42,.66,.86],taper:.5}],[7434,false,{hs:[.3,.44,.57,.69,.8,.9],taper:.3,thin:.85},.3]]
-    .forEach(q=>add(K.tree,K.sp,"pag",tree("pag",q[0],2,q[1],q[2],q[3])));
-  [[7441,false],[7442,true,{thin:.85,tall:1.05}],[7443,false,{lean:.9,bend:1.4,tall:.72}]].forEach(q=>add(K.tree,K.sp,"orb",tree("orb",q[0],2,q[1],q[2])));
-  [[7451,false],[7452,true],[7453,false,{lean:-.8}]].forEach(q=>add(K.tree,K.sp,"fork",tree("fork",q[0],2,q[1],q[2])));
-  [7461,7462].forEach(s=>add(K.tree,K.sp,"snag",tree("snag",s,2,false)));
+    .forEach(q=>T1("pag",q));
+  [[7441,false],[7442,true,{thin:.85,tall:1.05}],[7443,false,{lean:.9,bend:1.4,tall:.72}]].forEach(q=>T1("orb",q));
+  [[7451,false],[7452,true],[7453,false,{lean:-.8}]].forEach(q=>T1("fork",q));
+  [7461,7462].forEach(sd=>S.push(()=>add(K.tree,K.sp,"snag",tree("snag",sd,2,false))));
   PLN_TREE_ORDER.forEach((sp,i)=>{
-    if(PLN_TREES[sp].far>0)for(let k=0;k<2;k++)add(K.far,K.spFar,sp,tree(sp,7600+i*10+k,1,false));
+    if(PLN_TREES[sp].far>0)for(let k=0;k<2;k++)S.push(()=>add(K.far,K.spFar,sp,tree(sp,7600+i*10+k,1,false)));
   });
   /* кулиса: свои тела, узнаваемые по одной макушке (21pgc) */
-  K.wing=plnWingKit(geo);
-  Q.gen=PLN_GPU.gen;Q.kit=K;
-  PLN.stat.kit={ms:Math.round(wallMs()-t0),verts:nv};
-  return K;
+  S.push(()=>{K.wing=plnWingKit(geo);});
+  return J;
+}
+/* один шаг набора; true — осталось ещё. Устройство — до первой геометрии: поколение берётся с него */
+function plnFloraKitStep(){
+  const Q=PLN_FLORA;
+  if(Q.kit&&Q.gen===PLN_GPU.gen)return false;
+  if(!GPU.ok||!GPU.dev)return false;
+  plnGpuDev();
+  let J=Q.job;if(!J||J.gen!==PLN_GPU.gen)J=Q.job=plnFloraKitJob();
+  const t0=wallMs();J.steps[J.i++]();J.ms+=wallMs()-t0;
+  if(J.i<J.steps.length)return true;
+  Q.gen=PLN_GPU.gen;Q.kit=J.K;Q.job=null;
+  PLN.stat.kit={ms:Math.round(J.ms),verts:J.nv};
+  return false;
+}
+function plnFloraKit(){
+  const Q=PLN_FLORA;
+  if(Q.kit&&Q.gen===PLN_GPU.gen)return Q.kit;
+  while(plnFloraKitStep());
+  return Q.kit;
+}
+/* из кадра системы, раз в восемь кадров: набор планеты готов к первой посадке (steps ~3 мс) */
+let PLN_KIT_N=0;
+function plnKitTick(){
+  if((++PLN_KIT_N&7)!==0)return;
+  try{plnFloraKitStep();}catch(e){PLN_FLORA.job=null;console.error("набор флоры заранее",e);}
 }

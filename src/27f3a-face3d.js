@@ -179,7 +179,10 @@ function cpTeeth(K,yTop,yBot,zf,R,w,lod,up,age){
     return [[R*Math.sin(a),y,zf-th+th*Math.cos(b)-R*(1-Math.cos(a))],col];},K.mt([255,255,255],.55,10,0),{wrap:0});
 }
 /* голова целиком (в своей системе: центр головы, лицо к +z). Возвращает точки оснастки лица для cpRig */
-function cpHead(K,g,lod,cl,seed){
+/* шаги: между частями головы — yield (cpMeshPump берёт по шагу в простое); cpHead гонит до конца */
+function cpRun(it){let r;while(!(r=it.next()).done);return r.value;}
+function cpHead(K,g,lod,cl,seed){return cpRun(cpHeadGen(K,g,lod,cl,seed));}
+function* cpHeadGen(K,g,lod,cl,seed){
   if(g.ai){cpHeadAI(K,g,lod);return null;}
   const P=R3P,H=cpHeadFn(g),F=cpFaceRig(H,g),TH=cpWarpTh(),PH=cpWarpPh();
   const NU=lod>1?168:lod?92:30,NV=lod>1?150:lod?84:24,NUh=lod>1?56:lod?32:14,NVh=lod>1?36:lod?20:10;
@@ -219,6 +222,7 @@ function cpHead(K,g,lod,cl,seed){
     if(brand&&dz>.2){const bx=Math.abs(p[0]-.38*H.a),by=Math.abs(p[1]-.4*H.b);col=r3Mix(col,brd,(bx<.009&&by<.008)?.55:0);}
     return [p,r3Sc(col,ao),o.sk];
   },Msk,{wrap:1});
+  yield;
   /* уши: раковина, завиток по краю, тёмная чаша */
   const er=.85+.3*g.ear;
   for(const s of [-1,1]){K.push([s*H.a*.95,-.012,-.012],-s*.36,0,s*.1);   /* перед уха к щеке, зад отходит от черепа */
@@ -229,6 +233,7 @@ function cpHead(K,g,lod,cl,seed){
       K.ell([s*.003,-.002,.002],[.004,.014*er,.009*er],K.mt(mixc(g.skin,[60,30,25],.35),.1,4,P.skin),4,8);
       K.ell([s*.002,-.021*er,.002],[.0055,.0065*er,.007*er],Me,4,8);}   /* мочка */
     K.pop();}
+  yield;
   /* глаза: яблоко — сфера с полюсом по взгляду (зрачок и радужка — кольцами, ровно), роговица чуть выпуклая;
      ресницы — тёмная лента по кромке верхнего века. Смотрит прямо — взгляд двигает cpRig */
   const iris=r3Lin(g.eye),scl=r3Lin([206,196,184]),pink=r3Lin([206,150,140]),pup=r3Lin([6,6,8]);
@@ -263,15 +268,18 @@ function cpHead(K,g,lod,cl,seed){
     }
     K.part=1;
   }
+  yield;
   /* зубы за губами: верхние стоят с головой (улыбка поднимает губу над ними), нижние ходят с нижней губой */
   if(lod){const zf=cpSkinZ(H,F,0,F.my)+.0016;
     K.part=CPR.teeth;cpTeeth(K,F.my+.0105,F.my-.0004,zf,.026,.0195,lod,1,F.age);
     K.part=CPR.lipL;cpTeeth(K,F.my-.0018,F.my-.0095,zf-.0024,.023,.0135,lod,0,F.age);   /* уже и глубже: края не пробивают кожу под губой */
     K.part=1;}
   rig.mouth=[0,F.my,cpSkinZ(H,F,0,F.my)];
+  yield;
   /* волосы и голова сверху — своя, редкая сетка */
   cpHair(K,g,H,lod,cl,NUh,NVh,skin,hairC,seed);
   /* борода — по коже лица (лежит на губах и подбородке, ходит за ними) */
+  yield;
   if(g.beard)cpBeard(K,g,H,F,lod);
   return rig;
 }
