@@ -11,8 +11,8 @@
       солнце (вторая тень), ночью — холод. Свет ≤ 12, тени ≤ 2.
    4. Палитра: каждая комната — свой тон штукатурки по кругу (охра, тёплый, серый, сиреневый, олива, зелень
       кабинета, терракота, сталь причала), дерево общее; оранжевое — только вещи людей.
-   5. Слова — на вещах: «рассмотреть» — табличка у вещи, выход — тусклая надпись на двери. Старый художник
-      drawHomeIn живёт за ROOM3.on (?room=0). */
+   5. Слова — на вещах: «рассмотреть» — табличка у вещи, выход — тусклая надпись на двери. 2D-дома нет
+      (22.10, автор: «2D не должно быть»): художник 29d удалён вместе с ?room=0; без видеокарты — плашка 08b2. */
 const HOME3={cn:null,tags:null,mesh:null,rkey:"",cx:null,cy:0,tx:null,t0:0,err:0,frames:0,stat:null,vp:null,sz:null,meas:null,stool:null,anch:{},night:null};
 const HOME3_RW=5,HOME3_B=-2.4,HOME3_F=1.7,HOME3_H=2.8,HOME3_UP=3.05,HOME3_MZ=.25;
 const HOME3_M=new Float32Array(R3_MAXI*R3_PART*16),HOME3_OT=new Float32Array(R3_MAXI*R3_PART*4);
@@ -412,14 +412,14 @@ function home3Cam(sz,t){
   const P=r3Persp(c.fy,sz.cw/Math.max(1,sz.ch),.1,90);
   return {eye:e,tgt:c.tgt,fy:c.fy,vp:r3Mul(P,r3Look(e,c.tgt,[0,1,0]))};
 }
-function home3Ok(){return ROOM3.on&&typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok)&&!HOME3.err;}
+function home3Ok(){return typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok);}
 function home3Frame(){
   const cn=home3Canvas(),sz=home3Size(cn),R=rpgGet(cn);if(!R)return false;
   R.dpr=cn.__dpr;
   const up=home3Up(),rk="home|"+(G.home?G.home.tier:0)+"|"+(up?1:0)+"|"+(hinHasUp()?1:0);
   if(!HOME3.mesh||HOME3.rkey!==rk){r3Drop(HOME3.mesh);HOME3.mesh=home3Mesh(up);HOME3.rkey=rk;}
   const t=wallMs()/1000,cam=home3Cam(sz,t),S=home3Scene(cam,t);
-  const lab=rpgBake(R,"r3lab","home3|"+cn.width+"x"+cn.height,cn.width,cn.height,()=>{});
+  const lab=r3Dev()?R3.blank:null;   /* подписей поверх кадра нет: пустой вид движка, а не выпечка 2D (как зал, M816c) */
   const U=new Float32Array(60);
   S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
     if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
@@ -449,8 +449,11 @@ function home3Hide(){
 home3Frame=hallCostWrap(home3Frame);
 function home3Cost(sec){return HOME3.cn&&HOME3.cn.style.display!=="none"?hallCost(sec,()=>home3Frame(),HOME3.cn):Promise.resolve(null);}
 
-/* ── шов с домом (29d) и кадром (28): под ROOM3.on 2D дом не рисуется; кадр упал — назад к 2D, с именем сбоя ── */
-{const f0=drawHomeIn;drawHomeIn=function(){
-  if(!home3Ok()||!G.hin||!hinRooms().length)return f0();
-  try{home3Frame();}catch(e){HOME3.err++;console.error("дом: кадр упал",e);home3Hide();return f0();}};}
+/* ── кадр дома (28): только движок; пустой дом — выход, как было; сбой называет страж кадра ── */
+function drawHomeIn(){
+  if(!G.hin)return;
+  if(!hinRooms().length){exitHomeIn();return;}
+  if(!home3Ok()){home3Hide();return;}
+  try{home3Frame();}catch(e){HOME3.err++;home3Hide();throw e;}
+}
 {const f0=drawWorldIn;drawWorldIn=function(){f0();if(HOME3.cn&&!(G.mode==="homein"&&G.hin&&home3Ok()))home3Hide();};}

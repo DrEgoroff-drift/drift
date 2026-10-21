@@ -37,7 +37,6 @@ const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>G
   "fld.gsky2":()=>GSK_WGSL,"fld.dig.mul":()=>CAVE_MUL_WGSL+DIG_OWN_WGSL,"fld.dig.add":()=>CAVE_ADD_WGSL+DIG_OWN_WGSL,
   "fld.dig.dark":()=>DIG_DARK_WGSL+DIG_OWN_WGSL,"fld.warm.glow":()=>WARM_GLOW_WGSL,
   "fld.baselight":()=>baseLightWgsl(),"fld.baseair":()=>baseAirWgsl(),
-  "fld.hin.light":()=>HIN_LIGHT_WGSL,"fld.hin.haze":()=>HIN_HAZE_WGSL,"fld.hin.air":()=>HIN_AIR_WGSL,"fld.hin.flit":()=>HIN_FLIT_WGSL,
   "fld.scoop.air":()=>SCP_AIR,"fld.scoop.flow":()=>SCP_FLOW,"fld.scoop.obs":()=>SCP_OBS,
   "fld.map.gal":()=>GAL_WGSL,"fld.wansky":()=>WAN_SKY_WGSL,"fld.wanlit":()=>WAN_LIT_WGSL,"fld.wanair":()=>WAN_AIR_WGSL,
   "fld.r3post":()=>R3_POST_WGSL};
