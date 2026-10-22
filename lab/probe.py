@@ -30,7 +30,10 @@ def main():
     ap.add_argument("--all", action="store_true", help="--profile counts every sample, not only frames over 33 ms")
     ap.add_argument("--ws", type=float, default=300, help="CDP socket timeout, seconds: a long snippet needs more")
     ap.add_argument("--headful", action="store_true", help="a real window instead of headless")
+    ap.add_argument("--heapdump", default="", help="with --heap: the raw sampling profile (head node) to this json, for lab/heaptree.py")
+    ap.add_argument("--jsflags", default="", help="V8 flags for the page, e.g. --no-turbo-inlining: the heap sampler then books an inlined callee's allocations on itself, not on its caller")
     ap.add_argument("--pin", type=int, default=0, help="virtual clock from page load and exactly N rAF frames (lab/snippets/pin.js): two builds reach the snippet in one state")
+    ap.add_argument("--chromelog", default="", help="Chrome's own stdout+stderr to this file (with --jsflags=--trace-opt: who V8 optimizes and deopts)")
     a = ap.parse_args()
     if not a.port: a.port = noise.free_port()
     if a.js.startswith("@"): a.js = open(a.js[1:], encoding="utf-8").read()   # сниппет файлом: кавычки консоли его не портят
@@ -41,10 +44,10 @@ def main():
     open(pg, "w", encoding="utf-8").write(jank.page(shot.stand_tail(), a.root))
     prof = os.path.join(tempfile.gettempdir(), "drift-probe-%d" % a.port)
     # --headful: настоящее окно (своё, свой профиль) — сборка конвейеров в headless и в окне идёт разными путями (22.10)
-    proc = subprocess.Popen([chrome] + ([] if a.headful else ["--headless=new"]) + ["--remote-debugging-port=%d" % a.port, "--user-data-dir=" + prof,
+    proc = subprocess.Popen([chrome] + ([] if a.headful else ["--headless=new"]) + (["--js-flags=" + a.jsflags] if a.jsflags else []) + ["--remote-debugging-port=%d" % a.port, "--user-data-dir=" + prof,
                              "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--mute-audio",
                              "--enable-unsafe-webgpu", "--enable-precise-memory-info", "--window-size=%d,%d" % (a.w, a.h), "about:blank"],
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                            stdout=(open(a.chromelog, "wb") if a.chromelog else subprocess.DEVNULL), stderr=subprocess.STDOUT if a.chromelog else subprocess.DEVNULL)
     try:
         for _ in range(160):
             try: urllib.request.urlopen("http://127.0.0.1:%d/json/version" % a.port, timeout=2); break
@@ -83,6 +86,7 @@ def main():
             # что из выделенного за сниппет ещё живо к его концу: своё и с детьми, по функциям
             ws.call("HeapProfiler.collectGarbage")
             H = ws.call("HeapProfiler.stopSampling")["profile"]["head"]
+            if a.heapdump: json.dump(H, open(a.heapdump, "w", encoding="utf-8"))
             own, inc = {}, {}
             def walk(n, path):
                 cf = n["callFrame"]; k = (cf.get("functionName") or "(анон)") + (" %s:%d" % (cf.get("url", "").split("/")[-1].split("?")[0][:20], cf.get("lineNumber", 0) + 1) if cf.get("url") else "")
