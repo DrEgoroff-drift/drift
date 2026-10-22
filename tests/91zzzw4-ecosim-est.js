@@ -56,11 +56,12 @@ function ecoEstate(X){
     const ORE={};for(const q of (home.planets||[]))for(const k of (q.res||[]))ORE[k]=1;
     const fit=id=>{const e=Object.keys(BLD[id].eats);return e.filter(k=>ORE[k]).length/e.length;};
     const ids=Object.keys(BLD).filter(id=>bldIsShop(BLD[id])&&fit(id)>0).sort((a,b)=>fit(b)-fit(a)||(BLD[a].fam<BLD[b].fam?-1:BLD[a].fam>BLD[b].fam?1:0));
+    const NSH=X.shops===false?0:E.shops;
     for(const S of near){
-      if(EST.shops.length>=E.shops)break;
+      if(EST.shops.length>=NSH)break;
       let here=0;
       for(const id of ids){
-        if(EST.shops.length>=E.shops||here>=3)break;
+        if(EST.shops.length>=NSH||here>=3)break;
         const def=BLD[id];
         if(bldRuleWhy(S,def))continue;
         if(EST.shops.some(x=>x.id===id))continue;
@@ -80,12 +81,14 @@ function ecoEstate(X){
           /* люди на базе: без них и без запаса воздуха база за сутки — развалина (21b0, RUIN_AFTER) */
           /* мест в экипаже не хватит на рейсы и базу: игрок третьего яруса купил лицензию на флот (+3) */
           G.tech.add("license");G.techLvl.license=2;
+          /* логист (M913, X.logist): первым — кнопка ЗАБРАТЬ на любой станции (26a), без рейса к базе */
+          const ROLES=X.logist?["logist","driller","engineer","driller"]:["driller","engineer","driller","engineer"];
           let hired=0;
           for(const c of stationMercs(G.sys)){if(hired>=(E.crew|0))break;
             const c0=G.credits;G.credits+=1e6;let ok=false;
             try{ok=hireMerc(c);}finally{G.credits=c0;}
             if(!ok)break;
-            if(assignToBase(G.crew[G.crew.length-1],B,hired%2?"engineer":"driller"))hired++;}
+            if(assignToBase(G.crew[G.crew.length-1],B,ROLES[hired%ROLES.length]))hired++;}
           const P=basePower(B);
           EST.base={B,sys:home.key,name:p.name,mods:n,crew:hired,lay:B.cells.map(c=>c?c.k.slice(0,3):"·").join(" "),heat:baseHeat(B,baseShift(clockNow())),pw:Math.round(P.prod||0)+"/"+Math.round(P.cons||P.load||0),drills:P.drills};}
       }
@@ -95,15 +98,16 @@ function ecoEstate(X){
     if(G.mode!=="dock"||!G.sys||!G.sys.station)return;
     const PH=X.ph;
     try{
-      /* база: доразрешить смены и забрать руду, если стоим в её системе */
-      if(EST.base&&G.sys.key===EST.base.sys){
+      /* база: доразрешить смены и забрать руду, если стоим в её системе — или отсюда, если на ней логист */
+      const LG=EST.base&&baseRoleForce(EST.base.B,"logist")>0;
+      if(EST.base&&(G.sys.key===EST.base.sys||LG)&&(G.sys.key===EST.base.sys||basePoolHeld(EST.base.B)>0)){
         try{baseResolveAll();}catch(e){note("база: "+(e&&e.message));}
         const B=EST.base.B,before={};for(const k in G.cargo)before[k]=G.cargo[k]|0;
         X.ph="база";
         try{baseCollect(B);}catch(e){}
         for(const k in G.cargo){const got=(G.cargo[k]|0)-(before[k]|0);if(got<=0)continue;EST.baseUnits+=got;
           if(TRADE_KEYS.concat(FAR_KEYS).indexOf(k)>=0&&G.sys.station.prices[k]){EST.baseWorth+=sellCargo(G.sys,k,got)||0;}}
-        if(X.human)idle(30,"паузы");
+        if(X.human)idle(LG?5:30,"паузы");   /* логист — одна кнопка; без него — к базе и обратно */
       }
       /* цеха этой станции: забрать пай */
       X.ph="цеха";
@@ -126,7 +130,7 @@ function ecoEstate(X){
     const home=G.sys.key,PH=X.ph;
     try{
       /* база в другой системе (бот ушёл с выработанных планет): забрать руду, когда склад наполовину полон */
-      if(EST.base&&EST.base.sys!==home){const B=EST.base.B;
+      if(EST.base&&EST.base.sys!==home&&!(baseRoleForce(EST.base.B,"logist")>0)){const B=EST.base.B;
         try{baseResolveAll();}catch(e){}
         if(basePoolHeld(B)>=basePower(B).store*.5){X.ph="база";EST.baseTrips++;
           if(!dockAt(EST.base.sys))note("база: рейс не вышел");
@@ -154,7 +158,7 @@ function ecoEstate(X){
     let left=0;for(const k in EST.ind)left+=(EST.ind[k]|0)*indPrice(k);
     const fed={};for(const s of EST.shops){const B=bldEntry(s.key,s.id);if(B)fed[s.id]=Math.round(Object.values(B.got||{}).reduce((a,b)=>a+b,0));}
     return {shops:EST.shops.map(s=>s.id+"@"+s.key+" ("+s.eats+"→"+s.makes+")").join(", "),indSold:Math.round(EST.indSold),
-      indLeft:Math.round(left),indLeftQ:JSON.stringify(EST.ind),base:EST.base?EST.base.name+" · модулей "+EST.base.mods+" · буров "+EST.base.drills+" · энергия "+EST.base.pw+" · людей "+EST.base.crew+" · тепло "+EST.base.heat+" · ["+EST.base.lay+"]"+(EST.base.B.ruin?" · РАЗВАЛИНА":""):"—",
+      indLeft:Math.round(left),indLeftQ:JSON.stringify(EST.ind),base:EST.base?EST.base.name+" · модулей "+EST.base.mods+" · буров "+EST.base.drills+" · энергия "+EST.base.pw+" · людей "+EST.base.crew+" ("+baseStaff(EST.base.B).map(c=>c.role).join("+")+")"+" · тепло "+EST.base.heat+" · ["+EST.base.lay+"]"+(EST.base.B.ruin?" · РАЗВАЛИНА":""):"—",
       baseUnits:EST.baseUnits,baseWorth:Math.round(EST.baseWorth),hauls:EST.hauls,fed:EST.fed,baseTrips:EST.baseTrips,
       dbg:EST.base?(()=>{const B=EST.base.B,P=basePower(B);return "t0 "+B.t0+" смена "+baseShift(clockNow())+" parked "+baseParked(B)+" wake "+B.wake+" eff "+P.eff+" drillEff "+P.drillEff+" store "+P.store+" лог "+JSON.stringify((B.log||[]).slice(-4));})()+" пул "+JSON.stringify(EST.base.B.pool)+" · людей сейчас "+baseStaff(EST.base.B).length+" · жизнь "+JSON.stringify(EST.base.B.life||{}):"",
       hop:EST.shops.map(s=>{const B=bldEntry(s.key,s.id);return s.id+" бункер "+JSON.stringify(B&&B.my)+" пай "+JSON.stringify(B&&B.got);}).join("; ")};
