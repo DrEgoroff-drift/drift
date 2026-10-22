@@ -25,6 +25,7 @@ const HALL={cn:null,open:false,raf:0,last:0,room:null,rkey:"",L:null,lkey:"",
   from:null,to:null,g0:0,gd:600,place:"",orb:null,orbTex:null,orbKey:"",orbTry:0,err:0,frames:0,stat:null};
 const HALL_XB=10;          /* бар: кантина 27f4, сдвинутая вправо на столько метров */
 const HALL_KINO=[HALL_XB+2.57,1.87];   /* кинодень: середина экрана бара (x, y) на задней стене */
+const HALL_PROJ=[HALL_XB-2.1,2.62,4.1];   /* кинопроектор на кронштейне под потолком, слева от линии хода: луч наискось через зал */
 const HALL_B=-2.8;         /* задняя стена (та же, что у кантины, C3_BACK) */
 const HALL_L=-7.2;         /* левая стена */
 const HALL_F=6.5;          /* передняя стена — за камерой, с дверью в док */
@@ -173,7 +174,11 @@ function hallLayout(st,lazy){
     for(;ti<HALL_BAR_SEATS.length;ti++){const s=HALL_BAR_SEATS[ti].s,T2=HALL_BAR_SEATS[ti].T2;
       L.people.push({id:null,m:{seed:hashi(seed,ti,0x7AB1)>>>0,loy:50,traits:[]},pose:"table",x:HALL_XB+s[0],z:s[1],yaw:Math.atan2(T2.x-s[0],T2.z-s[1]),lod:0,kind:"crowd"});}
     /* кинодень: бар смотрит на экран. Стоящие и на табуретах разворачиваются телом, за столиками — головой (P.watch) */
+    /* СР · Визуал 22.10: кинозал — это силуэты против полотна. Сидевшие за столиками встают рядом перед экраном
+       (кружка в руке, шаг вразнобой), табуреты разворачиваются телом; все смотрят на полотно */
+    let ri=0;
     if(L.kino)for(const P of L.people){if(P.x<HALL_XB-.5||P.kind==="keep")continue;
+      if(P.pose==="table"&&ri<4){P.pose=ri%2?"mug":"stand";P.x=HALL_KINO[0]-1.45+ri*.95+(ri===1?-.12:0);P.z=HALL_B+2.35+(ri%2?.4:0);P.mesh=null;ri++;}
       const a=Math.atan2(HALL_KINO[0]-P.x,HALL_B-P.z);
       if(P.pose==="table")P.watch=a;else{P.yaw=a;P.watch=a;}}
   }
@@ -332,9 +337,12 @@ function hallScene(L,cam,t){
   const kn=L.kino?.22:1;   /* кинодень: лампы бара пригашены, свет держат проектор и экран */
   if(L.kino){const kf=.86+.14*Math.sin(t*47)*Math.sin(t*29),ph=(now()%4200)/4200,cut=Math.min(1,ph/.05,(1-ph)/.05);
     /* проектор — будка над входом в бар, луч в пыли к экрану; без тени: она легла бы чужой на полотно */
-    lights.push({p:[HALL_KINO[0],2.85,2.6],range:7.5,c:r3Sc(r3Lin([255,236,200]),1.6*kf),spot:1,d:[0,-.18,-1],cosO:Math.cos(.3),cosI:Math.cos(.22),vol:.7});
-    /* отсвет полотна на зрителях — холодный, дышит вместе с кадром */
-    lights.push({p:[HALL_KINO[0],HALL_KINO[1],HALL_B+.5],range:7,c:r3Sc(r3Lin([170,190,230]),4.2*kf*(.3+.7*cut)),spot:1,d:[0,-.2,1],cosO:Math.cos(1.25),cosI:Math.cos(.5),vol:0});}
+    /* проектор — на кронштейне слева от линии хода (HALL_PROJ), луч идёт через кадр наискось к полотну: конус шириной в экран, пыль густая */
+    {const pp=HALL_PROJ,v=[HALL_KINO[0]-pp[0],HALL_KINO[1]-pp[1],HALL_B-pp[2]],vl=Math.hypot(...v);
+      lights.push({p:pp,range:vl+1.5,c:r3Sc(r3Lin([255,232,196]),2.6*kf),spot:1,d:v.map(x=>x/vl),cosO:Math.cos(.2),cosI:Math.cos(.14),vol:.85});
+      bulbs.push([pp[0],pp[1],pp[2],.6*kf]);}
+    /* отсвет полотна на зрителях — холодный, дышит вместе с кадром: лица и плечи ряда из темноты */
+    lights.push({p:[HALL_KINO[0],HALL_KINO[1],HALL_B+.4],range:7.5,c:r3Sc(r3Lin([190,205,235]),6*kf*(.3+.7*cut)),spot:1,d:[0,-.25,1],cosO:Math.cos(1.3),cosI:Math.cos(.55),vol:0});}
   if(L.bar){const LT=CANT_LIGHT[L.st]||CANT_LIGHT.trade,tone=r3Lin(mixc(mixc(LT.tone,acc,.2),[255,196,130],.35));
     hallLamps(L).forEach((x,i)=>{lights.push({p:[x,2.03+C3_LH,.12],range:4.2,c:r3Sc(tone,(L.st==="sci"?4.2:6)*LT.pow*(.8+.45*nk)*kn),spot:1,d:[0,-1,-.12],
       cosO:Math.cos(.78),cosI:Math.cos(.3),shadow:i<2?1:0,vol:.08});
@@ -361,13 +369,13 @@ function hallScene(L,cam,t){
   /* ночью рассеянный не падает в черноту: value ≥ .08 на всех плоскостях (потолок, дальняя стена, пол) */
   /* на ходу (M816) рассеянный тише: зал держат лампы мест — лужи на полу, а не ровный серый */
   const wk=HALL.walk&&!HALL.walk.eng&&HALL.walk.fk<.5?.62:1;
-  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.49+.51*day)*wk,ptc=hallPlanetTone();
+  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.49+.51*day)*wk*(L.kino?.3:1),ptc=hallPlanetTone();   /* кинодень: зал гасят — светят полотно и луч */
   const sky=mx(mixc(mixc(T.wall,T.day||[146,178,232],.62),ptc,.08),mixc(T.wall,[66,84,140],.5)),gnd=mx(mixc(T.wall,[204,164,118],.6),mixc(T.wall,[92,106,140],.58));
   const fog=mx(mixc(T.wall,[150,165,190],.4),[30,38,64]);
   const pl=HALL.orb&&HALL.orbTex?HALL.orb:null;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
     sky:[...sky,amb],gnd:[...gnd,T.win===1?.045:dk?.04:.03],
-    fog:[...r3Sc(fog,.25),T.win===1?.055:dk?.04:.035],acc:[...r3Lin(acc),1],
+    fog:[...r3Sc(L.kino?[.09,.085,.08]:fog,.25),L.kino?.1:T.win===1?.055:dk?.04:.035],acc:[...r3Lin(acc),1],
     win:[HALL_WIN[0],wy[0],HALL_WIN[1],wy[1]],win2:[HALL_B,T.win,L.seed%47,(T.win===1?1.15:1)*(.38+.62*day)],
     sgn:[HALL_XB+HALL_SGN[0],HALL_SGN[2],HALL_XB+HALL_SGN[1],HALL_SGN[3]],sgn2:[HALL_B,.32+.25*nk,0,0],
     flm:pl?pl.flm:[0,0,1,0],flm2:[HALL_B,L.kino?1+(Math.floor(now()/4200)%KINO_REEL.length)+(now()%4200)/4200:0,pl?1:0,hallSiteW(L)],tsg:L.bar?C3.sign:null,tfl:pl?{view:HALL.orbTex.view}:null,M,ot:OT};
@@ -509,6 +517,12 @@ function hallLoop(){
   HALL.raf=requestAnimationFrame(hallLoop);
 }
 /* кадр: раскладка по станции, сетка по ключу, свет и движение каждый кадр */
+const HALL_BULB_R=48;   /* потолок ореола колбы, px: у ламп зала 3–9, у ламп у самого объектива — до 60 */
+function hallBulbU(U,vp,bulbs,cw,ch){
+  bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(vp,b,cw,ch),q2=r3Proj(vp,[b[0]+.05,b[1],b[2]],cw,ch);
+    if(!q||!q2||!(q[2]>0))return;const r=Math.max(2,Math.abs(q2[0]-q[0])),m=4*r;
+    if(r<HALL_BULB_R&&q[0]>-m&&q[0]<cw+m&&q[1]>-m&&q[1]<ch+m)U.set([q[0],q[1]+2,r,b[3]],i*4);});
+}
 function hallFrame(){
   const cn=HALL.cn,st=(G.st&&G.st.stype)||"trade",sz=hallSize(cn);
   if(!HALL.L||HALL.L.st!==st)HALL.L=hallLayout(st);
@@ -531,8 +545,9 @@ function hallFrame(){
   const S=hallScene(L,cam,t);S.vp=hallCrop(cam.vp,sz.rw/sz.cw);
   const lab=r3Dev()?R3.blank:null;   /* подписей зал не печёт: пустой слой во весь холст тянул пул MSAA 2D (M816c) */
   const U=new Float32Array(60);
-  S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
-    if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
+  /* ореол колбы — только у колбы в кадре и своего размера: на переходе к бару лампы стойки уходили к плоскости
+     объектива (x 2·10⁵ px, ореол 3·10⁵ px) — и ореол ложился ровным жёлтым молоком на весь зал */
+  hallBulbU(U,cam.vp,S.bulbs,sz.cw,sz.ch);
   const tl=r3Lin(L.T.key);U.set([tl[0],tl[1],tl[2],1.0],24);
   U[43]=t;U[44]=1;U[47]=1;
   /* оптический центр — куда смотрит объектив (цель камеры на экране), сила хроматики под планку: ≤ 1 px у центра */

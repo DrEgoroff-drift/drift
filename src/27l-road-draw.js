@@ -230,19 +230,26 @@ function drawRoad(ts){
         for(const a of lanes){const p=a[i],d=(p.x-M[i].x)*nx+(p.y-M[i].y)*ny,w=wid(p,M[i].u);l=Math.max(l,d+w);r=Math.max(r,w-d);}
         Object.assign(M[i],{nx,ny,l,r});
       }
-      /* полоса из четырёхугольников; стыки жёсткие (без шва), кромки сглажены; хвост (старшие пять точек)
-         гаснет всегда — у молодой ленты, пока срок не дотёк, конец иначе обрублен */
-      const lay=(k,cf,af)=>{for(let i=0;i+1<n;i++){const P=M[i],Q=M[i+1];
-        /* звено делится на четыре: цвет и альфа идут ровно, без ступеней на редких точках */
-        const at=f=>{const g=(x,y)=>x+(y-x)*f,x=g(P.x,Q.x),y=g(P.y,Q.y),nx=g(P.nx,Q.nx),ny=g(P.ny,Q.ny),l=g(P.l,Q.l)*k,r=g(P.r,Q.r)*k;
-          return {L:[x+nx*l,y+ny*l],R:[x-nx*r,y-ny*r],u:g(P.u,Q.u),y,j:i+f};};
+      /* кромка — по самой дальней ленте, середина — по среднему лент, и от точки к точке обе скачут: три прохода [1 2 1] — без зубцов */
+      for(let it=0;it<3;it++)for(const key of ["l","r","x","y"]){const v=M.map(p=>p[key]);
+        for(let i=1;i+1<n;i++)M[i][key]=(v[i-1]+2*v[i]+v[i+1])/4;}
+      /* у газа нет контура: поперёк ленты — профиль, нарезанный на узкие полосы с жёсткими стыками (без шва).
+         Слои с кромкой давали на ПК вертикальные ступени (Контроль, 0.499.12); полоса уже пары пикселей
+         света, ступень профиля мельче видимой. Звено делится на четыре — вдоль цвет и альфа идут ровно;
+         хвост гаснет на старших двенадцати точках, у молодой ленты конец иначе обрублен */
+      const ss=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
+      const band=(SW,NS,cf,af,prof)=>{for(let i=0;i+1<n;i++){const P=M[i],Q=M[i+1];
+        const at=f=>{const g=(x,y)=>x+(y-x)*f;return {x:g(P.x,Q.x),y:g(P.y,Q.y),nx:g(P.nx,Q.nx),ny:g(P.ny,Q.ny),l:g(P.l,Q.l),r:g(P.r,Q.r),u:g(P.u,Q.u),j:i+f};};
+        const pt=(E,sv)=>{const w=sv>=0?E.l*sv:E.r*sv;return [E.x+E.nx*w,E.y+E.ny*w];};
         let A=at(0);
-        for(let q=1;q<=4;q++){const B=at(q/4),u=(A.u+B.u)/2,a=af(u)*fade((A.y+B.y)/2)*Math.min(1,(A.j+B.j+1)/10);
-          if(a>=.002)gpuQuad(FX,A.L,B.L,B.R,A.R,cf(u).concat(a),2|8);A=B;}}};
-      /* у газа нет контура: ореол — три слоя шире тела, кромка тает ступенями мельче пикселя света;
-         тело и сердцевина в нём; раскалённая нить — только на разгоне */
-      for(const [k,m] of [[1.95,.09],[1.65,.10],[1.35,.11],[1,.62],[.72,.38]])lay(k,col,u=>alp(u)*m);
-      if(burn>.04)lay(.36-burn*.12,u=>mixc(T.mid,T.core,clamp(u*1.2-.2,0,1)),u=>(u*u*u*.30+Math.pow(u,5)*.26)*burn);
+        for(let q=1;q<=4;q++){const B=at(q/4),u=(A.u+B.u)/2,a0=af(u)*fade((A.y+B.y)/2)*ss(0,12,(A.j+B.j)/2),C=cf(u);
+          if(a0>=.002)for(let j=0;j<NS;j++){const s0=-SW+2*SW*j/NS,s1=-SW+2*SW*(j+1)/NS,a=a0*prof(Math.abs((s0+s1)/2)/SW);
+            if(a>=.002)gpuQuad(FX,pt(A,s1),pt(B,s1),pt(B,s0),pt(A,s0),C.concat(a),15);}
+          A=B;}}};
+      /* тело: ядро, тело и ореол втрое шире (доли — прежних пяти слоёв) */
+      band(1.95,28,col,alp,d=>{d*=1.95;return .62*(1-ss(.7,1.2,d))+.38*(1-ss(.4,.9,d))+.30*(1-ss(.95,1.95,d));});
+      /* раскалённая нить — только на разгоне, круглый профиль без кромки */
+      if(burn>.04)band(.36-burn*.12,10,u=>mixc(T.mid,T.core,clamp(u*1.2-.2,0,1)),u=>(u*u*u*.30+Math.pow(u,5)*.26)*burn,d=>1-ss(.25,1,d));
       /* выход из сопла: ядро с ореолом у каждого сопла — шов между корпусом и лентой */
       for(const ln of lanes){const e1=ln[ln.length-1];if(e1.life<=e1.max-.06)continue;
         const rr2=Math.max(2,e1.r*1.7),f=fade(e1.y);

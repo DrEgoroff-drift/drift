@@ -93,13 +93,16 @@ function gpuAfterWarm(fn,ms){
    набор «входы в режимы не строят конвейеры» (tests/91zzzzzzy5-modepipes.js).
    Ярусные группы (планета, пещера) приносят свои дескрипторы: GPU_LATE_GROUPS.push(() => [[ключ, {desc}]…]) */
 const GPU_LATE_KEYS=[
+  /* интерьерный рендер первым: портрет (27f5) и зал (27f4a) зовут r3Dev уже в полёте — пока эти три
+     не собраны, r3Dev строил их синхронно (3× createRenderPipeline в кадре; набор «конвейеры» краснел) */
+  "r3.main","r3.shadow","r3.down",
   "pipe:fld.gsky2|over","pipe:fld.warm.glow|add",
   "pipe:fld.baselight|mul","pipe:fld.baseair|add",
   "pipe:fld.hin.light|mul","pipe:fld.hin.haze|add","pipe:fld.hin.air|add","pipe:fld.hin.flit|over",
   "pipe:fld.scoop.air|over","pipe:fld.scoop.flow|over","pipe:fld.scoop.obs|over",
   "pipe:fld.map.gal|over","pipe:fld.map.gal|bake",
   "pipe:fld.wansky|over","pipe:fld.wanlit|mul","pipe:fld.wanair|add",
-  "r3.main","r3.shadow","r3.down","pipe:fld.r3post|over","raid3d","raid3d.spr"];
+  "pipe:fld.r3post|over","raid3d","raid3d.spr"];
 const GPU_LATE_GROUPS=[];
 /* по одному ключу за шаг, 30 мс между шагами: компилятор не занят ничем другим, кадр не ждёт.
    GPU_PIPES.late — {n, ms, done, bad} для детектора и лаборатории */

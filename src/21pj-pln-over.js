@@ -70,8 +70,8 @@ function plnOver(){
   }
   /* подписи в пикселях окна: в мерке объектива при ближнем они вырастали вдвое (M624);
      это интерфейс, и он идёт по линейке кадра UIK — иначе на 2560 кегль 8.5 px (M800) */
-  /* кегль — как клал прежний 2D: surfScale() там мерила окно уже в мерке объектива (W/k, H/k) */
-  const u=clamp(Math.min(H/kk/SURF_BASE,W/kk/SURF_WIDE),1,SURF_KMAX)/(G.viewK||1)*UIK*kk;
+  /* surfScale() — вне withScale: внутри неё окно мерилось в мерке объектива, и кегль падал до 8 px */
+  const u=surfScale()*UIK;
   const font=(8*u).toFixed(2)+"px ui-monospace,monospace";
   const PLATE="rgba(5,7,12,.72)",INK="rgba(176,196,208,.95)";
   if(S.cave&&isFinite(S.cave.x)){
@@ -94,8 +94,13 @@ function plnOver(){
   /* подписи залежей рядом с человеком: ближняя стоит на своём месте, соседняя, если легла на неё, поднимается */
   const tags=[];
   ctx.font=font;
+  /* залежь под ногами названа табличкой-словом «ЛЁД · ЗАЛЕЖЬ 3» (08bj hangSurface, то же правило выбора) — второй подписи ей не надо */
+  let said=null;
+  if(typeof hangIn==="function"&&plnWordsOn()&&hangIn()&&String(G.prompt||"").indexOf("ЗАЛЕЖЬ")>=0){
+    let dd=1e9;for(const d of S.deposits||[]){if(d.left<=0)continue;const q=Math.abs(d.x-S.x);if(q<26&&q<dd){dd=q;said=d;}}
+  }
   for(const d of S.deposits||[]){
-    if(!(d.left>0)||!(Math.abs(d.x-S.x)<70))continue;
+    if(!(d.left>0)||!(Math.abs(d.x-S.x)<70)||d===said)continue;
     const x=d.x/M,z=plnThingDepZ(d),q=at([x,gy(x,z)+1.75,z]),txt=RES[d.res].ru.toUpperCase()+" "+d.left;
     tags.push({txt,x:q[0],y:q[1]-(Math.round(d.x/60)%2)*11*u,w:ctx.measureText(txt).width+10*u,col:RES[d.res].col,far:Math.abs(d.x-S.x)});
   }
@@ -114,8 +119,8 @@ function plnOver(){
   }
   for(const d of S.deposits||[]){
     if(!(d.left>0)||S.mining!==d)continue;
-    /* полоса добычи — под подписью, не на поясе человека */
-    const x=d.x/M,z=plnThingDepZ(d),q=at([x,gy(x,z)+1.75,z]),bw=36*u,bh=4*u,by=q[1]+6*u;
+    /* полоса добычи — под подписью, не на поясе человека; подписи нет (её имя — табличка-слово выше) — на земле под залежью */
+    const x=d.x/M,z=plnThingDepZ(d),q=at([x,gy(x,z)+(d===said?-.35:1.75),z]),bw=36*u,bh=4*u,by=q[1]+(d===said?0:6*u);
     ovRect(q[0]-bw/2,by,q[0]+bw/2,by+bh,"rgba(0,0,0,.5)",1);
     ovRect(q[0]-bw/2,by,q[0]-bw/2+bw*clamp(d.prog,0,1),by+bh,RES[d.res].col,1);
   }

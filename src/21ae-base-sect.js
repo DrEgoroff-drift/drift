@@ -374,7 +374,7 @@ function sectOvAdj(B,pj,lit){
     ovCap(mx,my,mx,my,8.8,"rgb(8,11,16)",.85*ga);ovCap(mx,my,mx,my,6,c,.95*ga);
   }
 }
-/* приборная доска (21ac baseDrawBoard) в мерке uiK */
+/* приборная доска в мерке uiK */
 function sectOvBoard(B,lit){
   if(typeof baseLife!=="function"||typeof baseSharp!=="function")return;
   const k=uiK(),hr=(typeof hudRect==="function")?hudRect():null,U=(typeof UIK==="number"&&UIK>0)?UIK:1;
@@ -435,8 +435,8 @@ function sectAvr(S,pj){
 }
 
 /* ── переключатель ──
-   2D-базы под разрезом больше нет (21ac drawBase): кадр не собрался — в нём одни приборы */
-drawBase=function(){
+   2D-базы под разрезом больше нет: кадр не собрался — в нём одни приборы */
+function drawBase(){
   let ok=false;
   if(SECT.on&&SECT.bad<3&&G.base&&G.base.B){
     try{
