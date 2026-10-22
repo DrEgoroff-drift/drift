@@ -132,7 +132,7 @@ const GATE2D=[
      G.rack={on:true};return {};},
    probe:["rackDraw"]},
   {name:"кабина пояса (24bc, 25-cockpit, 25a, 25b): мастер полосами, стекло, приборы, лента",
-   painters:["beltHudPush","drawGlassHUD","drawCockpit","ckgTex","ckgJob","prebake","ckgPaint","ckgSprites","ckgAtlas","ckgLazy","ckgWarm",
+   painters:["beltHudPush","ckgTex","ckgJob","prebake","ckgPaint","ckgSprites","ckgAtlas","ckgLazy","ckgWarm",
              "ckgFrame","ckgGlass","ckgGlint","ckgPanel","ckgLamps","ckgNode","ckgPut","ckgPutRot","ckT","ckLine",
              "cockpitPaint","instrPanel","tapeStrip","tapePaper","drawNodeIcon"],
    place(first){

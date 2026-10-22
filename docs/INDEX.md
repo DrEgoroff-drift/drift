@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 635 · top-level symbols: 8721
+Files: 635 · top-level symbols: 8716
 
 ## SYMBOLS
 
@@ -336,12 +336,11 @@ CIRC_DIALS                   src/12aw-circ.js:19
 CIRC_EVENTS                  src/12aw-circ.js:18
 CIRC_MAX_TEXT                src/12aw-circ.js:20
 CIRC_PAPER                   src/12aw-circ.js:131
-CKG                          src/24bc-belt-hud.js:22
-CKG_BANDS                    src/24bc-belt-hud.js:21
-CKG_FADE                     src/24bc-belt-hud.js:25
-CKG_LAMPS                    src/24bc-belt-hud.js:26
-CKPT                         src/25-cockpit.js:91
-CKPT_STYLE                   src/25-cockpit.js:19-44
+CKG                          src/24bc-belt-hud.js:16
+CKG_BANDS                    src/24bc-belt-hud.js:15
+CKG_FADE                     src/24bc-belt-hud.js:19
+CKG_LAMPS                    src/24bc-belt-hud.js:20
+CKPT_STYLE                   src/25-cockpit.js:20-45
 CLEARANCE                    src/05e-clearance.js:22-27
 CLK_TICKS                    tests/90a-tools.js:49
 CLOCKS                       src/11d-clocks.js:36-52
@@ -2783,8 +2782,8 @@ beltDots                     src/17gc-sys-belt.js:159-165
 beltDust                     src/24ba-belt-gpu.js:237-259
 beltFwd                      src/24-mode-belt.js:145-148
 beltGpuDraw                  src/24ba-belt-gpu.js:91-233
-beltHangAt                   src/24bc-belt-hud.js:437-445
-beltHudPush                  src/24bc-belt-hud.js:447-461
+beltHangAt                   src/24bc-belt-hud.js:431-439
+beltHudPush                  src/24bc-belt-hud.js:442-456
 beltIcy                      src/24-mode-belt.js:70
 beltImpactDmg                src/24-mode-belt.js:172
 beltMaw                      src/24be-belt-rock-gpu.js:279-284
@@ -3289,36 +3288,35 @@ circPaperName                src/12aw-circ.js:133
 circPut                      src/12aw-circ.js:26-30
 circSay                      src/12aw-circ.js:134-138
 circValid                    src/12aw-circ.js:34-80
-ckLine                       src/24bc-belt-hud.js:38-41
-ckT                          src/24bc-belt-hud.js:36
-ckgAtlas                     src/24bc-belt-hud.js:64-88
-ckgDrop                      src/24bc-belt-hud.js:93-98
-ckgFS                        src/24bc-belt-hud.js:32
-ckgFrame                     src/24bc-belt-hud.js:288-350
-ckgFree                      src/24bc-belt-hud.js:92
-ckgGeo                       src/24bc-belt-hud.js:100-106
-ckgGlass                     src/24bc-belt-hud.js:224-279
-ckgGlint                     src/24bc-belt-hud.js:281-285
-ckgJob                       src/24bc-belt-hud.js:178-204
-ckgLab                       src/24bc-belt-hud.js:169-175
-ckgLamps                     src/24bc-belt-hud.js:381-399
-ckgLazy                      src/24bc-belt-hud.js:90
-ckgNode                      src/24bc-belt-hud.js:401-428
-ckgPaint                     src/24bc-belt-hud.js:108-149
-ckgPanel                     src/24bc-belt-hud.js:352-379
-ckgPlan                      src/24bc-belt-hud.js:28-31
-ckgPut                       src/24bc-belt-hud.js:49
-ckgPutRot                    src/24bc-belt-hud.js:56-59
-ckgRot                       src/24bc-belt-hud.js:51-55
-ckgSpr                       src/24bc-belt-hud.js:44-48
-ckgSprites                   src/24bc-belt-hud.js:152-167
-ckgSt                        src/24bc-belt-hud.js:34
-ckgTex                       src/24bc-belt-hud.js:211-222
-ckgUnder                     src/24bc-belt-hud.js:430-435
-ckgW                         src/24bc-belt-hud.js:35
-ckgWarm                      src/24bc-belt-hud.js:206-209
+ckLine                       src/24bc-belt-hud.js:32-35
+ckT                          src/24bc-belt-hud.js:30
+ckgAtlas                     src/24bc-belt-hud.js:58-82
+ckgDrop                      src/24bc-belt-hud.js:87-92
+ckgFS                        src/24bc-belt-hud.js:26
+ckgFrame                     src/24bc-belt-hud.js:282-344
+ckgFree                      src/24bc-belt-hud.js:86
+ckgGeo                       src/24bc-belt-hud.js:94-100
+ckgGlass                     src/24bc-belt-hud.js:218-273
+ckgGlint                     src/24bc-belt-hud.js:275-279
+ckgJob                       src/24bc-belt-hud.js:172-198
+ckgLab                       src/24bc-belt-hud.js:163-169
+ckgLamps                     src/24bc-belt-hud.js:375-393
+ckgLazy                      src/24bc-belt-hud.js:84
+ckgNode                      src/24bc-belt-hud.js:395-422
+ckgPaint                     src/24bc-belt-hud.js:102-143
+ckgPanel                     src/24bc-belt-hud.js:346-373
+ckgPlan                      src/24bc-belt-hud.js:22-25
+ckgPut                       src/24bc-belt-hud.js:43
+ckgPutRot                    src/24bc-belt-hud.js:50-53
+ckgRot                       src/24bc-belt-hud.js:45-49
+ckgSpr                       src/24bc-belt-hud.js:38-42
+ckgSprites                   src/24bc-belt-hud.js:146-161
+ckgSt                        src/24bc-belt-hud.js:28
+ckgTex                       src/24bc-belt-hud.js:205-216
+ckgUnder                     src/24bc-belt-hud.js:424-429
+ckgW                         src/24bc-belt-hud.js:29
+ckgWarm                      src/24bc-belt-hud.js:200-203
 ckptFont                     src/24bc-belt-hud.js:14
-ckptLampNeed                 src/24bc-belt-hud.js:16-20
 clNow                        tests/91zzzzzr-cloud.js:25-28
 clSave                       tests/91zzzzzr-cloud.js:14-18
 clWith                       tests/91zzzzzr-cloud.js:30-43
@@ -3362,10 +3360,9 @@ cloudTok                     src/14a-cloud.js:84
 cloudsOf                     src/19e-clouds.js:34-43
 clrHours                     src/05e-clearance.js:30
 clrTick                      src/05e-clearance.js:97-106
-cockpitPaint                 src/25-cockpit.js:202-404
+cockpitPaint                 src/25-cockpit.js:188-390
 cockpitPlan                  src/25-cockpit.js:92-152
-cockpitStyleKey              src/25-cockpit.js:46-50
-cockpitTex                   src/25-cockpit.js:187-200
+cockpitStyleKey              src/25-cockpit.js:47-51
 combatShots                  src/13-combat.js:155-208
 conT                         src/27j-console.js:19
 concertAll                   src/11ae-concert.js:22
@@ -3935,7 +3932,6 @@ drawBuilt                    src/21c-built.js:64-102
 drawCave                     src/22d-cave-pln.js:345-362
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
-drawCockpit                  src/25-cockpit.js:405-680
 drawCombat                   src/13-pirates.js:378-486
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
@@ -3966,7 +3962,6 @@ drawGesture                  src/17h-sys-gesture.js:92-144
 drawGestureTop               src/17h-sys-gesture.js:148-177
 drawGiant                    src/17o-giants.js:183-212
 drawGiantsMap                src/17o-giants.js:70-82
-drawGlassHUD                 src/24-mode-belt.js:374-461
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-232
 drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
@@ -4571,7 +4566,7 @@ giantRumour                  src/17o-giants.js:257-263
 giantsAll                    src/17o-giants.js:23-53
 giftArrive                   src/11at-gift.js:43-63
 giftDue                      src/11at-gift.js:30-41
-glassOutline                 src/25-cockpit.js:54-90
+glassOutline                 src/25-cockpit.js:55-91
 glazeChunk                   src/18a1-glaze.js:135-160
 glazeGround                  src/18a1-glaze.js:164-167
 glazeIsForm                  src/18a1-glaze.js:127
@@ -10092,7 +10087,7 @@ zoomTo                       src/15-input.js:358
 ## src/23cf-dig-words.js · 5 KB
   · шахта: слова на вещах (как 22d в пещере, 21ae на базе):1
 
-## src/24-mode-belt.js · 23 KB
+## src/24-mode-belt.js · 19 KB
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
 ## src/24a-mode-raid.js · 27 KB
@@ -10120,7 +10115,7 @@ zoomTo                       src/15-input.js:358
 ## src/24bb-belt-poi-gpu.js · 7 KB
   · ориентиры пояса на видеокарте (GPU, ступень 2):1
 
-## src/24bc-belt-hud.js · 30 KB
+## src/24bc-belt-hud.js · 29 KB
   · кабина пояса на слое #ovl (GPU-3; docs/DESIGN-gpu.md):1
 
 ## src/24be-belt-rock-gpu.js · 19 KB
@@ -10132,7 +10127,7 @@ zoomTo                       src/15-input.js:358
 ## src/24d-range.js · 4 KB
   · стрельбище (M363, §3.2):1
 
-## src/25-cockpit.js · 36 KB
+## src/25-cockpit.js · 20 KB
   · кабина: процедурная, статика в offscreen:1
 
 ## src/25a-instr.js · 13 KB
