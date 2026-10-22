@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 633 · top-level symbols: 8702
+Files: 633 · top-level symbols: 8707
 
 ## SYMBOLS
 
@@ -483,8 +483,8 @@ DIG3_HOOKS                   src/23c0-dig-hooks.js:6-10
 DIG3_LENS                    src/23c-dig-pln.js:17
 DIG3_LIP                     src/23ca-dig-pln-rock.js:26
 DIG3_NOSCENE                 src/23cd-dig-pln-top.js:374
-DIG3_OLD_HSURF               src/23cf-dig-words.js:22
-DIG3_OLD_HUD                 src/23cf-dig-words.js:39
+DIG3_OLD_HSURF               src/23cf-dig-words.js:36
+DIG3_OLD_HUD                 src/23cf-dig-words.js:53
 DIG3_OLD_WALK                src/23c-dig-pln.js:278
 DIG3_ORE                     src/23cb-dig-pln-dress.js:101
 DIG3_PAINT_W                 src/23ca-dig-pln-rock.js:142
@@ -504,7 +504,7 @@ DIG3_TOP_SURF                src/23cd-dig-pln-top.js:388
 DIG3_TOP_WGSL                src/23cd-dig-pln-top.js:276
 DIG3_TUB                     src/23cb-dig-pln-dress.js:177
 DIG3_VZ                      src/23ca-dig-pln-rock.js:83
-DIG3_W                       src/23cf-dig-words.js:10
+DIG3_W                       src/23cf-dig-words.js:12
 DIG3_WASH                    src/23ca-dig-pln-rock.js:29
 DIG3_Z                       src/23c-dig-pln.js:14
 DIG3_ZAP                     src/23ce-dig-pln-beasts.js:80
@@ -1034,7 +1034,8 @@ HANGAR                       src/27j1-ui-hangar.js:15
 HANG_ACC                     src/27j1-ui-hangar.js:18
 HANG_ALARM_HOLD              src/08bj-ovl-hang.js:21
 HANG_DIR                     src/08bj-ovl-hang.js:26
-HANG_MSG_AT                  src/08bj-ovl-hang.js:323
+HANG_KEYF                    src/08bj-ovl-hang.js:77
+HANG_MSG_AT                  src/08bj-ovl-hang.js:342
 HAUL_BARGE_K                 src/16c-rescue.js:199
 HAUL_BIT_GAP                 src/16c-rescue.js:202
 HAUL_BIT_TALK                src/16c-rescue.js:209
@@ -3723,6 +3724,8 @@ dig3HeapMesh                 src/23cb-dig-pln-dress.js:240-251
 dig3HeapTint                 src/23cb-dig-pln-dress.js:253-258
 dig3Hex                      src/23cb-dig-pln-dress.js:179-185
 dig3InstPut                  src/23c-dig-pln.js:121-127
+dig3IsKey                    src/23cf-dig-words.js:25
+dig3KeyLine                  src/23cf-dig-words.js:27-35
 dig3Land                     src/23ca-dig-pln-rock.js:75-81
 dig3Lens                     src/23c-dig-pln.js:19-26
 dig3LensMk                   src/23cd-dig-pln-top.js:52-55
@@ -3766,8 +3769,8 @@ dig3TopSkirt                 src/23cd-dig-pln-top.js:141-154
 dig3TopTab                   src/23cd-dig-pln-top.js:29-34
 dig3TubBody                  src/23cb-dig-pln-dress.js:188-237
 dig3Void                     src/23ca-dig-pln-rock.js:84-101
-dig3WordsLines               src/23cf-dig-words.js:13-21
-dig3WordsOn                  src/23cf-dig-words.js:11
+dig3WordsLines               src/23cf-dig-words.js:15-23
+dig3WordsOn                  src/23cf-dig-words.js:13
 dig3ZapFrame                 src/23ce-dig-pln-beasts.js:82-108
 digCell                      src/23-mode-dig.js:30-50
 digFauna                     src/23-mode-dig.js:259-335
@@ -5021,32 +5024,34 @@ handBtnTick                  src/12td-settle-hand.js:123-134
 hangAlarmOn                  src/08bj-ovl-hang.js:63
 hangAt                       src/08bj-ovl-hang.js:41-45
 hangBlock                    src/08bj-ovl-hang.js:48-52
-hangCase                     src/08bj-ovl-hang.js:353-362
-hangCue                      src/08bj-ovl-hang.js:367-381
-hangCueHung                  src/08bj-ovl-hang.js:382
-hangCut                      src/08bj-ovl-hang.js:85-88
-hangDraw                     src/08bj-ovl-hang.js:239-259
+hangCase                     src/08bj-ovl-hang.js:372-381
+hangCue                      src/08bj-ovl-hang.js:386-400
+hangCueHung                  src/08bj-ovl-hang.js:401
+hangCut                      src/08bj-ovl-hang.js:96-99
+hangDraw                     src/08bj-ovl-hang.js:250-278
 hangFont                     src/08bj-ovl-hang.js:74
-hangHex                      src/08bj-ovl-hang.js:233-238
-hangHint                     src/08bj-ovl-hang.js:386-398
-hangHit                      src/08bj-ovl-hang.js:83
+hangHex                      src/08bj-ovl-hang.js:244-249
+hangHint                     src/08bj-ovl-hang.js:405-417
+hangHit                      src/08bj-ovl-hang.js:94
 hangIn                       src/08bj-ovl-hang.js:30
-hangLayout                   src/08bj-ovl-hang.js:185-224
-hangMsg                      src/08bj-ovl-hang.js:324-349
-hangMsgBand                  src/08bj-ovl-hang.js:110-119
-hangMsgHung                  src/08bj-ovl-hang.js:350
-hangNamed                    src/08bj-ovl-hang.js:174-183
-hangObstacles                src/08bj-ovl-hang.js:95-107
+hangLW                       src/08bj-ovl-hang.js:79-85
+hangLayout                   src/08bj-ovl-hang.js:196-235
+hangMsg                      src/08bj-ovl-hang.js:343-368
+hangMsgBand                  src/08bj-ovl-hang.js:121-130
+hangMsgHung                  src/08bj-ovl-hang.js:369
+hangNamed                    src/08bj-ovl-hang.js:185-194
+hangObstacles                src/08bj-ovl-hang.js:106-118
 hangOk                       src/08bj-ovl-hang.js:29
-hangPlace                    src/08bj-ovl-hang.js:127-157
-hangRectAt                   src/08bj-ovl-hang.js:89-93
+hangPlace                    src/08bj-ovl-hang.js:138-168
+hangRectAt                   src/08bj-ovl-hang.js:100-104
+hangRuns                     src/08bj-ovl-hang.js:78
 hangSay                      src/08bj-ovl-hang.js:54-61
-hangSize                     src/08bj-ovl-hang.js:76-81
+hangSize                     src/08bj-ovl-hang.js:87-92
 hangSt                       src/08bj-ovl-hang.js:65
-hangSurface                  src/08bj-ovl-hang.js:283-317
+hangSurface                  src/08bj-ovl-hang.js:302-336
 hangTW                       src/08bj-ovl-hang.js:66-73
-hangTri                      src/08bj-ovl-hang.js:226-229
-hangWrap                     src/08bj-ovl-hang.js:159-172
+hangTri                      src/08bj-ovl-hang.js:237-240
+hangWrap                     src/08bj-ovl-hang.js:170-183
 hasEpisode                   src/03-ships.js:139-142
 hasSave                      src/14a-cloud.js:76
 hashi                        src/01-core.js:23-27
@@ -6299,7 +6304,7 @@ ovEll                        src/08bi-gpu-ovl.js:341-344
 ovFlush                      src/08bi-gpu-ovl.js:229-243
 ovGraph                      src/08bi-gpu-ovl.js:362-366
 ovHang                       src/08bj-ovl-hang.js:34-38
-ovHangFlush                  src/08bj-ovl-hang.js:261-278
+ovHangFlush                  src/08bj-ovl-hang.js:280-297
 ovHushed                     src/08bi-gpu-ovl.js:204
 ovImage                      src/08bi-gpu-ovl.js:290-296
 ovInto                       src/08bi-gpu-ovl.js:90-93
@@ -8864,7 +8869,7 @@ zoomTo                       src/15-input.js:358
 ## src/08bi-gpu-ovl.js · 31 KB
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
-## src/08bj-ovl-hang.js · 30 KB
+## src/08bj-ovl-hang.js · 31 KB
   · Слова на вещах (M803): табличка у вещи, центр кадра пуст:1
 
 ## src/08c-gpu-kit.js · 34 KB
@@ -10069,7 +10074,7 @@ zoomTo                       src/15-input.js:358
 ## src/23ce-dig-pln-beasts.js · 8 KB
   · рудник на движке: кусачие — звери планеты (M631):1
 
-## src/23cf-dig-words.js · 3 KB
+## src/23cf-dig-words.js · 5 KB
   · шахта: слова на вещах (как 22d в пещере, 21ae на базе):1
 
 ## src/24-mode-belt.js · 23 KB
