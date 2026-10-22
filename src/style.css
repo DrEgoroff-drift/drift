@@ -1348,7 +1348,9 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(var(--c-a
    пальцем всё равно не читают, а спорить с дугой за глаз он не должен.
    Кнопки правого борта и пэды не трогаем: в них целятся. */
 body.helmstick #console{opacity:.3;transition:opacity .12s}
-.pads button.off{opacity:.38;pointer-events:none}
+.pads button.off{pointer-events:none}
+/* гаснет надпись, не стекло: прозрачная кнопка пускала мир под свою надпись (щит, вывеска) */
+.pads button.off:not(.abil-ok)>*{opacity:.38}
 .pads button.off::before{border-color:rgba(var(--c-phos),.16)}
 /* фишки комплекта (M167): класс — фишкой, новое — точкой; ничего не переносится */
 .kitchip{font-style:normal;color:var(--void);background:var(--dim);border-radius:6px;
@@ -2593,7 +2595,7 @@ body:not(.mobile) .pads button.on{transform:scale(.97)}
   body:not(.mobile) .pads button[data-k=msl]{color:#ff8f6a;box-shadow:inset 0 0 0 1px rgba(255,143,106,.36),var(--pl-lift)}
   body:not(.mobile) .pads button[data-k=thrust]{color:var(--amber);box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.40),var(--pl-lift)}
   body:not(.mobile) .pads button:is([data-k=fire],[data-k=msl],[data-k=brake],[data-k=thrust]).on::before{width:100%}
-  body:not(.mobile) .pads button.off{opacity:.45}
+  body:not(.mobile) .pads button.off:not(.abil-ok)>*{opacity:.45}
 }
 .pads kbd:empty{display:none}
 
