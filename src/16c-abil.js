@@ -136,6 +136,8 @@ function abilTick(){
 }
 /* обод кнопки ДЕЙСТВИЕ: перезарядка — дуга, готово — ровный круг */
 let ABIL_BTN,ABIL_HINT;
+/* «Долгое · форсаж»: точка — своим элементом; где подсказка в две строки, точка становится переносом */
+function abilHintSet(nm){const h=ABIL_HINT;h.textContent="Долгое";const d=document.createElement("b");d.className="ah-dot";d.textContent=" · ";h.appendChild(d);h.appendChild(document.createTextNode(nm));}
 function abilPadRim(){
   /* кнопку ищем один раз: кадр не читает DOM (15d-domread) */
   if(ABIL_BTN===undefined)ABIL_BTN=(typeof document!=="undefined"&&document.querySelector)?document.querySelector('.pads button[data-k="act"]'):null;
@@ -147,7 +149,7 @@ function abilPadRim(){
   const v=f>=1?"":"conic-gradient(rgba(242,178,92,.75) "+Math.max(0,deg-8)+"deg, #ffd9a0 "+deg+"deg, transparent 0)";
   const ok=f>=1&&G.mode==="system",vk=v+(ok?"|ok":"");
   if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
-    b.classList.toggle("abil-ok",ok);if(ok&&ABIL_HINT)ABIL_HINT.textContent="Долгое · "+abilOf().ru.toLowerCase();}   /* режим входит в ключ: в вагоне подписи нет */
+    b.classList.toggle("abil-ok",ok);if(ok&&ABIL_HINT)abilHintSet(abilOf().ru.toLowerCase());}   /* режим входит в ключ: в вагоне подписи нет */
 }
 /* клин прожектора: радиальный градиент в секторе ±.35, вершина на корабле, ось — курс. Поле, а не
    выпечка: клин на экран шириной 1.2·max(W,H) печь MSAA ×4 вдвое крупнее DPR — на телефоне это
