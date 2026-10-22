@@ -197,7 +197,12 @@ function mapRoseDraw(foot){
      Видит она карточку по её же прямоугольнику — тот уже сообщён (MAP_BOX). */
   if(typeof MAP_BOX!=="undefined"&&MAP_BOX.some(b=>b.s==="карточка системы"))return;
   const U=mapU();
-  const cx=(MAP_RUL+34)*U,cy=deck-16*U*Math.max(1,rows)-46*U,r=16*U;
+  const cx=(MAP_RUL+34)*U,r=16*U;let cy=deck-16*U*Math.max(1,rows)-46*U;
+  /* подсказка #prompt (её рамка прошлого кадра, MAP_DOMR) встаёт поверх угла, когда табличка выбора не
+     висит: роза поднимается над ней, а не лежит под строкой (Контроль 22.10, 390 у пола) */
+  const pr=(typeof MAP_DOMR!=="undefined")&&MAP_DOMR.find(d=>d.sel==="#prompt");
+  if(pr){const p=pr.r,bx0=cx-r-6*U,bx1=cx+r+24*U;
+    if(p.left<bx1&&p.right>bx0&&p.top<cy+r+16*U)cy=Math.min(cy,p.top-r-16*U);}
   if(cy<mapRulerTop()+80*U)return;
   ctx.save();
   const lc="rgba(150,182,212,.5)",tc="rgba(180,200,220,.8)";

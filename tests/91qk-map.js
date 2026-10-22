@@ -4,6 +4,9 @@
    (site/war-backdrop.js). У выбранной системы — ряд её миров шарами 17gab по порядку орбит: в кадре,
    над полом карты, за кольцом прицела, миры не налезают друг на друга и лежат в чернилах карты (их обходят
    подписи мира); табличка выбора главнее ряда — ряд уходит от её рамки.
+   M822c: ряду преграда и «ВЫ» (плашка и кольцо вашей звезды); нет чистого хода полным рядом — плотный
+   (rMin, без колец), но не под табличкой и не под «ВЫ». Табличке выбора у пола телефона — запасной бок
+   через середину (08bj o.spare). Роза карты встаёт над подсказкой #prompt, а не под ней.
    Настоящий G, без видеокарты. */
 TEST_SUITES.push(()=>suite("карта: без 2D, миры выбора шарами",()=>{
   resetWorld();
@@ -19,7 +22,7 @@ TEST_SUITES.push(()=>suite("карта: без 2D, миры выбора шар�
     for(let dy=-3;dy<=3&&!pick;dy++)for(let dx=-3;dx<=3;dx++){if((!dx&&!dy)||!starAt(G.sx+dx,G.sy+dy))continue;
       const s=getSystem(G.sx+dx,G.sy+dy);if(s.planets.length>=4&&Math.hypot(dx,dy)<=2.5){pick={x:G.sx+dx,y:G.sy+dy,s};break;}}
     ok(!!pick,"рядом есть звезда с четырьмя и более мирами");
-    let F=null;mapOrbsDraw=(sl,c)=>(F=sv.od(sl,c));
+    let F=null;mapOrbsDraw=(...a)=>(F=sv.od(...a));
     for(const z of [[1920,1080],[390,844]]){
       W=z[0];H=z[1];HUD_FLOOR=HUD_RAIL=0;G.mode="map";G.mapView=null;G.mapMore=false;G.sel={x:pick.x,y:pick.y};F=null;
       /* счётчик пикселей на ctx игры */
@@ -51,8 +54,33 @@ TEST_SUITES.push(()=>suite("карта: без 2D, миры выбора шар�
     /* табличка главнее ряда: ряд ложится туда, где не задевает её рамку прошлого кадра */
     {const s0={s:pick.s,x:W/2,y:H*.45},dn=mapOrbFan(s0,cell);
       eq(dn[0].dx+","+dn[0].dy,"0,1","390: без таблички ряд — вниз от звезды");
+      ok(!dn[0].flat,"390: место есть — ряд полный, не плотный");
       const av={x0:W/2-60,y0:H*.45+12,x1:W/2+60,y1:H*.45+260},up=mapOrbFan(s0,cell,av);
       ok(!up.some(f=>f.x+f.ext>av.x0&&f.x-f.ext<av.x1&&f.y+f.ext>av.y0&&f.y-f.ext<av.y1),
         "390: табличка под звездой — ряд уходит от неё (ход "+up[0].dx+","+up[0].dy+")");}
+    /* ── у пола телефона: табличка над звездой, «ВЫ» над ней — ряд не под тем и не под другим ── */
+    {const x=W*.4,y=mapDeck()-14,s0={s:pick.s,x,y},hit=(f,A)=>f.x+f.ext>A.x0&&f.x-f.ext<A.x1&&f.y+f.ext>A.y0&&f.y-f.ext<A.y1;
+      const av={x0:x-68,y0:y-80,x1:x+66,y1:y-38},you={x0:x+10,y0:y-120,x1:x+60,y1:y-86},ring={x0:x+14,y0:y-112,x1:x+50,y1:y-76};
+      const L=mapOrbFan(s0,cell,av,[you,ring]);
+      ok(L.every(f=>f.x-f.ext>=0&&f.x+f.ext<=mapRail()&&f.y-f.ext>=0&&f.y+f.ext<=mapDeck()),"390 у пола: ряд в кадре (ход "+L[0].dx.toFixed(2)+","+L[0].dy.toFixed(2)+(L[0].flat?", плотный":"")+")");
+      ok(!L.some(f=>hit(f,av)),"390 у пола: ряд не под табличкой выбора");
+      ok(!L.some(f=>hit(f,you)||hit(f,ring)),"390 у пола: ряд не под «ВЫ» и не на вашем кольце");
+      ok(L.every(f=>!f.flat||f.r===MAP_ORB.rMin),"плотный ряд — все миры по "+MAP_ORB.rMin+" px");}
+    /* ── табличка выбора у пола: без запасного бока не встаёт, с ним — встаёт и в кадре ── */
+    {W=390;H=844;HUD_FLOOR=612;HUD_RAIL=292;
+      const mk=o=>({id:"map.sel",lines:["КВАОМОРА","ПРЫЖОК · 38 топлива"],x:162,y:586,o});
+      const A=mk({r:27,verb:1}),B=mk({r:27,verb:1,spare:1});
+      hangLayout([A],1);hangLayout([B],1);
+      ok(A.hide,"табличка у пола без запасного бока не встаёт (так было: висела подсказка внизу)");
+      ok(!B.hide&&!!B.R,"с запасным боком (spare) табличка встаёт");
+      if(B.R)ok(B.R.x0>=8&&B.R.x1<=HUD_RAIL&&B.R.y0>=0&&B.R.y1<=HUD_FLOOR,"и стоит в кадре, левее борта и над полом ("+[B.R.x0,B.R.y0,B.R.x1,B.R.y1].map(Math.round).join(",")+")");}
+    /* ── роза карты над подсказкой ── */
+    {W=390;H=844;HUD_FLOOR=HUD_RAIL=0;MAP_BOX.length=0;MAP_DOMR.length=0;mapRoseDraw(null);
+      const r0=MAP_BOX.find(b=>b.s==="роза");ok(!!r0,"роза на месте без подсказки");
+      if(r0){const pr={left:10,right:296,top:r0.y+r0.h-10,bottom:r0.y+r0.h+18};
+        MAP_BOX.length=0;MAP_DOMR.push({sel:"#prompt",r:pr});mapRoseDraw(null);
+        const r1=MAP_BOX.find(b=>b.s==="роза");
+        ok(!r1||r1.y+r1.h<=pr.top,"подсказка в углу — роза над ней ("+(r1?Math.round(r1.y+r1.h)+" ≤ "+Math.round(pr.top):"уступила")+")");}
+      MAP_BOX.length=0;MAP_DOMR.length=0;}
   }finally{W=sv.W;H=sv.H;ctx=sv.ctx;G.mode=sv.mode;G.sel=sv.sel;G.mapView=sv.view;G.mapMore=sv.more;mapOrbsDraw=sv.od;HUD_FLOOR=hud0[0];HUD_RAIL=hud0[1];}
 }));

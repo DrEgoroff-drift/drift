@@ -508,6 +508,13 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   would be noise and cost). Suite `91qk-map`: the map frame without a device paints nothing on
   `ctx`, the backdrop names are absent from the game and present in `war.js`, the fan is inside
   the frame and clear of the plate at 1920 and 390.
+  *M822c (22.10):* every world of the selected system is a lit orb on the real GPU (the flat discs
+  were headless virtual time, not the game); orb families absent from the first system (`gor1/2/5/6`)
+  join `GPU_LATE_KEYS`, so the map never waits on a pipeline. The fan also avoids the «ВЫ» plate and
+  your ring, tries 8 directions, and with no clean full row falls back to a compact one (`rMin`, no
+  rings). The selection plate gets a spare side (`o.spare`, map only): beside the star it slides along
+  it into the frame, then wraps narrower (85/72/60 %), breaking at « · » first; the centre band of M803
+  stays forbidden. The map rose rises above `#prompt` when the hint shows.
 - **M823 The nebula far from the star**: inner structure and a depth ramp, no straight streaks
   (the look near the star is the author's and stays). **M824 Belt**: rocks clustered round the
   actor, haze instead of the band. **M825 The orbs' second pass**: crystal, ice, jungle, rocky,
