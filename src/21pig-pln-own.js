@@ -14,7 +14,7 @@
    Дом — на своём месте (homeSpotX), во дворе 19 × 13 м за низким забором (столбы 1.1 м через
    2.5 м, две проволоки, проход к крыльцу открыт): корпус 7 × 4 м с поясом рубочного стекла,
    крыльцо под фонарём, сводчатый гараж, решётчатая мачта 9 м с дышащим маяком; теплица — свод
-   из рёбер на дальней стороне двора, внутри грядки 21g зелёными телами и холодная лампа.
+   из рёбер на дальней стороне двора, внутри четыре гряды 21g, на каждой — тела своего вида (M204), и холодная лампа.
    Двор кончается до человека: передний забор стоит за линией хода и режет его по поясу.
 
    Вымпел (21h) у той базы, что держит его в этот квартал, — полотно на её мачте, по ветру.
@@ -28,6 +28,7 @@ const OWN={on:true,base:null,home:null,gate:null,porch:null,gen:-1,err:"",
 try{OWN.on=!/[?&]own=0(&|$)/.test(location.search||"");}catch(e){}
 /* стёкла ночью (M602): дом #ffc990, база бледнее #f6dcb6. Цвет вершин движок читает как sRGB —
    C.warm выходил на экран лососем, поэтому тёплое задано светлее */
+const OWN_WASH={r:10,k:2.6,y:1.5};   /* лампа кромки на борт отсека: радиус, м, и сила ночью */
 const OWN_WIN={home:[1,.92,.7],base:[.98,.94,.84],lamp:[1,.9,.74],grow:[.78,.9,1]};
 
 /* кожа людей: сталь в пятнах ржавчины и копоти; t — зерно места */
@@ -46,6 +47,15 @@ function plnOwnKit(m,lm){
     lamp:(mm,c,r,col,g)=>plnBlob(mm||lm,{c,r,sub:1,col,mat:GLOW,glow:g||2.2,x:1}),
     /* светлая плоскость к объективу (−z) */
     pane:(mm,c,w,h,col,g)=>plnCard(mm||lm,[c[0]-w,c[1]-h,c[2]],[c[0]-w,c[1]+h,c[2]],[c[0]+w,c[1]+h,c[2]],[c[0]+w,c[1]-h,c[2]],[0,0,-1],col,GLOW,null,g||2,1)
+  };
+  /* стекло ночью (брак M628, 22.10: окна — плоские карточки во весь накал): низ теплее и ярче — свет
+     комнаты с пола, верх тусклее и холоднее, по стеклу тёмный переплёт. g — накал низа */
+  K.glass=(c,w,h,col,g,bar)=>{
+    K.pane(null,[c[0],c[1]-h/2,c[2]],w,h/2,col,g);
+    K.pane(null,[c[0],c[1]+h/2,c[2]],w,h/2,plnMix3(col,[.62,.66,.74],.4),g*.55);
+    if(bar===false)return;
+    K.rod([c[0],c[1]-h,c[2]-.02],[c[0],c[1]+h,c[2]-.02],.022,PLN_MARK_COL.soot,{sides:4,cap:false});
+    K.rod([c[0]-w,c[1]+h*.15,c[2]-.02],[c[0]+w,c[1]+h*.15,c[2]-.02],.022,PLN_MARK_COL.soot,{sides:4,cap:false});
   };
   return K;
 }
@@ -120,18 +130,28 @@ function plnOwnBaseMesh(L,A,sd,batt,penn){
   for(let i=-4;i<=4;i++)for(const s of [-1,1]){
     const lx=i*hx/4.2,lz=s*(hz-.5),g=gy(lx,lz);
     if(g<-.6)K.rod([lx,g-.6,lz],[lx,-.4,lz],.16,dark,{sides:8});
+    /* раскосы крест-накрест к соседней свае ряда: настил на сваях держится, а не стоит столом (брак M628) */
+    if(i<4){const nx=(i+1)*hx/4.2,g2=gy(nx,lz),lo=Math.max(g,g2),gx=le*(hx-10.5);
+      if(lo<-1.1&&!(s<0&&gx>lx-1.2&&gx<nx+1.2)){   /* пролёт с лестницей ворот — без раскоса */const y0=lo+.35,y1=-.5;
+        K.rod([lx,y0,lz],[nx,y1,lz],.05,dark,{sides:5});K.rod([lx,y1,lz],[nx,y0,lz],.05,dark,{sides:5});}}
   }
+  /* поперечные связи свай под настилом */
+  for(let i=-4;i<=4;i+=2){const lx=i*hx/4.2,g=Math.max(gy(lx,-(hz-.5)),gy(lx,hz-.5));
+    if(g<-1.1)K.rod([lx,g+.5,-(hz-.5)],[lx,g+.5,hz-.5],.045,dark,{sides:5});}
   /* поручень по дальней кромке и по торцам */
   const rail=(a,b)=>{K.rod([a[0],.95,a[1]],[b[0],.95,b[1]],.035,steel,{sides:5});
     const n=Math.max(1,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])/2.2));
     for(let k=0;k<=n;k++){const t=k/n;K.rod([lerp(a[0],b[0],t),0,lerp(a[1],b[1],t)],[lerp(a[0],b[0],t),.95,lerp(a[1],b[1],t)],.03,steel,{sides:5,cap:false});}};
   rail([-hx+.2,hz-.2],[hx-.2,hz-.2]);rail([-hx+.2,-hz+.2],[-hx+.2,hz-.2]);rail([hx-.2,-hz+.2],[hx-.2,hz-.2]);
+  /* бортовые огни по ближней кромке настила: ночью настил — линия, а не провал */
+  for(let i=0;i<=10;i++)K.lamp(null,[-hx+.6+i*(2*hx-1.2)/10,-.12,-hz-.04],[.09,.05,.04],OWN_WIN.lamp,1.5);
   /* отсеки: круглым торцом к объективу, пояс оранжевый; пустая клетка — пролёт с поручнем у кромки */
   const sx=c=>le*(hx-10.5-c*O.slot);let mods=0;
   for(let c=0;c<BASE_COLS;c++){
     const x0=sx(c),cell=A.cells[c],k=cell&&cell.k;
     /* батарея — банки на торце (ниже), солнечная клетка — рамы панелей на пролёте, пустая — поручень */
     if(!cell||k==="battery"){if(c)rail([x0-1.9,-hz+.2],[x0+1.9,-hz+.2]);continue;}
+    if(k==="solar"&&c===0)continue;   /* у ворот вместо рам — тамбур (ниже): дверь не стоит одна между панелями */
     if(k==="solar"){
       for(const z of [-2.6,0,2.6]){
         K.rod([x0,0,z+.5],[x0,1.1,z+.5],.05,dark,{sides:5});
@@ -151,16 +171,48 @@ function plnOwnBaseMesh(L,A,sd,batt,penn){
     /* швы и ребро жёсткости по спине, ножки-салазки */
     for(const z of [-2.6,1.4])plnTube(m,{path:[[x0-1.62,1.75,z],[x0,3.48,z],[x0+1.62,1.75,z]],rad:.05,sides:5,col:C.steelDk,mat:PLN_MAT.man});
     for(const s of [-1,1])K.box([x0+s*1.15,.12,0],[.18,.12,3.8],dark,{box:.2});
-    /* окно-иллюминатор на торце; у ворот — дверь */
+    /* огни на спине: ночью силуэт отсека не тонет в холме за ним (брак M628, 22.10) */
+    for(const z of [-3.6,3.6])K.lamp(null,[x0,3.44,z],[.12,.09,.12],z<0?OWN_WIN.lamp:[1,.32,.2],2.2);
+    /* у ворот — дверь (ниже); остальные отсеки — каждый своей приметой (брак M628: все были одной капсулой) */
     if(c===0)continue;
+    if(k==="reactor"){
+      /* реактор: гребёнка радиаторных рёбер на спине и знак на торце, окна нет */
+      for(let i=0;i<6;i++){const z=-2.5+i*1.0;K.box([x0,3.62,z],[1.15,.3,.035],plnOwnSteel(C.steelLt,.1,sd+20+i),{box:.15});}
+      K.rod([x0-1.1,3.36,-2.7],[x0-1.1,3.36,2.7],.04,dark,{sides:5});K.rod([x0+1.1,3.36,-2.7],[x0+1.1,3.36,2.7],.04,dark,{sides:5});
+      K.box([x0,2.05,-4.36],[.36,.36,.05],C.orange,{box:.5});
+      K.box([x0,2.05,-4.41],[.13,.13,.03],C.soot,{box:.5});
+      continue;
+    }
+    if(k==="storage"){
+      /* склад: ворота-жалюзи во весь торец, без окна */
+      K.box([x0,1.15,-4.3],[1.05,1.05,.07],plnOwnSteel(C.steelLt,.35,sd+30),{box:.2});
+      for(let j=1;j<8;j++)K.rod([x0-1,.12+j*.27,-4.4],[x0+1,.12+j*.27,-4.4],.014,C.steelDk,{sides:4,cap:false});
+      K.box([x0,2.3,-4.38],[1.12,.1,.08],dark,{box:.3});
+      K.pane(null,[x0,.08,-4.42],.95,.025,OWN_WIN.lamp,.9);   /* щель под жалюзи — ночью полоска света */
+      continue;
+    }
+    if(k==="habitat"){
+      /* жилой: два окна и люк под ними */
+      for(const s of [-1,1]){K.box([x0+s*.62,2.25,-4.36],[.36,.3,.06],C.soot,{box:.25});
+        K.glass([x0+s*.62,2.25,-4.44],.27,.21,OWN_WIN.home,s<0?1.15:.8);}
+      K.box([x0,.95,-4.34],[.5,.62,.07],dark,{box:.45});
+      K.box([x0,.95,-4.42],[.36,.48,.03],plnOwnSteel(C.steelLt,.3,sd+40),{box:.45});
+      K.rod([x0-.18,1.02,-4.48],[x0+.18,1.02,-4.48],.035,C.steelDk,{sides:5});
+      continue;
+    }
     K.box([x0,2.2,-4.36],[.42,.32,.06],C.soot,{box:.25});
-    K.pane(null,[x0,2.2,-4.44],.32,.22,OWN_WIN.base,1.6);
+    K.glass([x0,2.2,-4.44],.32,.22,OWN_WIN.base,.6+.6*plnHash(c,sd,77));   /* за окнами свет разный */
   }
-  /* ворота: дверь 2.2 м в торце отсека 0, рамка, козырёк, ступени к земле */
-  const g0=sx(0);
-  if(!A.cells[0])plnBlob(m,{c:[g0,1.3,-3.2],r:[1.3,1.3,1.4],sub:2,box:.3,col:steel,mat:PLN_MAT.man});
+  /* ворота: дверь 2.2 м в торце отсека 0, рамка, козырёк, ступени к земле. Дверь — глухое полотно с
+     иллюминатором и щелью света понизу, лампа под козырьком (ночью дверь была пересвеченной карточкой) */
+  const g0=sx(0),k0=A.cells[0]&&A.cells[0].k;
+  if(!k0||k0==="solar"||k0==="battery")plnBlob(m,{c:[g0,1.3,-3.2],r:[1.3,1.3,1.4],sub:2,box:.3,col:steel,mat:PLN_MAT.man});
   K.box([g0,1.15,-4.48],[.72,1.18,.08],C.soot,{box:.2});
-  K.pane(null,[g0,1.12,-4.58],.55,1.08,OWN_WIN.home,1.9);
+  K.box([g0,1.1,-4.56],[.55,1.04,.03],plnOwnSteel(C.steelLt,.25,sd+50),{box:.2});
+  K.box([g0,1.6,-4.6],[.24,.27,.02],C.soot,{box:.4});
+  K.glass([g0,1.6,-4.63],.18,.21,OWN_WIN.home,1.25,false);
+  K.pane(null,[g0,.08,-4.62],.52,.03,OWN_WIN.lamp,1.2);
+  K.lamp(null,[g0,2.4,-4.66],[.2,.04,.08],OWN_WIN.lamp,1.8);
   K.box([g0,2.5,-4.75],[.95,.06,.42],dark,{box:.25});
   {const drop=Math.max(.3,A.y-plnLandRibAt(L,A.gx,A.z-hz-1.5)),ns=clamp(Math.round(drop/.28),2,14),run=Math.min(ns*.3,3.1);
    for(let i=0;i<ns;i++){const f=(i+1)/ns,z=-hz-.15-f*run,y=-f*drop+.09;K.box([g0,y,z],[.8,.06,.17],conc,{box:.25});}
@@ -200,8 +252,12 @@ function plnOwnBaseMesh(L,A,sd,batt,penn){
     plnCard(pm,[mx+le*1.7,fy-.2,mz],[mx+le*1.7,fy+.3,mz],[mx,fy+.45,mz],[mx,fy-.45,mz],[0,0,1],col,PLN_MAT.leaf,[1,1,0,0],0,0);
   }
   void r;
-  return {mods,body:m,light:lm,batt:bm,penn:pm,lampAt:{pier:[px+.25,2.4,pz1-.4],gate:[g0,1.4,-5.2]},
-    blots:[[dx,.5,3.6,.5],[0,0,hx*.8,.25]]};
+  /* свет кромки на борта (замечание Контроля к M628): огни кромки — точки; юбку отсека и низ купола над
+     настилом ночью кладёт одна лампа у кромки против отсека, ближайшего к объективу (plnOwnFrame) */
+  const wash=A.cells.map((cell,c)=>cell&&cell.k&&cell.k!=="solar"&&cell.k!=="battery"?sx(c):null).filter(v=>v!=null);
+  return {mods,body:m,light:lm,batt:bm,penn:pm,lampAt:{pier:[px+.25,2.4,pz1-.4],gate:[g0,1.4,-5.2],wash},
+    /* тень настила — полосой пятен вдоль него, а не одним бледным кругом (брак M628: «стол без тени») */
+    blots:[[dx,.5,3.6,.5]].concat([-3,-2,-1,0,1,2,3].map(i=>[i*hx/3.6,.3,hz*1.15,.42]))};
 }
 
 /* ── дом: место и раскладка ── */
@@ -214,12 +270,67 @@ function plnOwnHomeAt(L,tr,p){
   /* правило памятников (21pie), но строже: подошва не ниже гребня между объективом и двором минус 1 м
      (двор ниже прятался за дюнами переднего плана),
      разницу до земли берёт холм */
-  let lo=1e9,crest=-1e9;
-  for(let i=-3;i<=3;i++)for(const dz of [-6.5,-3,0,3,6])lo=Math.min(lo,plnLandRibAt(L,x+i*3,z+dz));
-  for(let zz=0;zz<=z;zz+=2)for(const dx of [-6,0,6])crest=Math.max(crest,plnLandRibAt(L,x+dx,zz));
+  /* мерить по земле как она есть: срез под двором (plnOwnFlat) сам берёт эту высоту */
+  let lo=1e9,crest=-1e9;const f0=L.flat;L.flat=null;
+  try{
+    for(let i=-3;i<=3;i++)for(const dz of [-6.5,-3,0,3,6])lo=Math.min(lo,plnLandRibAt(L,x+i*3,z+dz));
+    for(let zz=0;zz<=z;zz+=2)for(const dx of [-6,0,6])crest=Math.max(crest,plnLandRibAt(L,x+dx,zz));
+  }finally{L.flat=f0;}
   const y=Math.max(lo-.4,crest-1);
   const door=homeDoorX(tr,p)/PLN_M-x;
   return {x,y,z,door,lo,porchW:[x+door,y+1.2,z-4.2]};
+}
+/* срез земли под двором (21pf plnLandRibH): дюна, что выше двора, не встаёт в нём ямой вокруг дома
+   (брак M628, 22.10: в пустыне двор сидел в чаше, ступени висели над ней). [x, z, rx, rz, y] — эллипс
+   террасы, земля на подошве площадки */
+function plnOwnFlat(L){
+  const tr=L&&L.tr,p=tr&&tr.p;
+  if(!OWN.on||!p||!(typeof homeHereP==="function"&&homeHereP(p)))return null;
+  const A=plnOwnHomeAt(L,tr,p);
+  return A?[[A.x,A.z+.4,10.6,7.4,A.y-.06]]:null;
+}
+/* ── теплица: грядки читают вид (M204) ──
+   Имя вида — его паспорт: в нём форма (PLANT_FORM_K) и признак (plantTraitWord). Тело собирает тот же
+   генератор вида (20e speciesPlant) от потока по имени, форма и признак берутся из самого имени —
+   «грибной, светящийся» растёт грибом и светится, «колючий» несёт шипы. Анатомия — 21pia (plnHerbMesh),
+   краска — мира, где стоит теплица. Рост — доля greenGrow: всход, потом взрослое; старым в теплице не бывает */
+const OWN_GREEN={tx:6.6,tz:2,hl:3,rw:1.6,ky:2.3,bz:i=>2-3+.75+i*1.5};
+const OWN_GREEN_SP=new Map();
+function plnOwnGreenSp(name,p){
+  const key=name+"|"+((p&&p.type)||"");let sp=OWN_GREEN_SP.get(key);
+  if(sp)return sp;
+  let h=2166136261>>>0;
+  for(let i=0;i<name.length;i++){h^=name.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+  const r=rng(h),ws=name.split(","),tw=(ws[1]||"").trim();
+  let kind=PLANT_FORM_K.indexOf(ws[0].trim().split(" ").pop());
+  if(kind<0)kind=Math.floor(r()*PLANT_KINDS);
+  sp=speciesPlant(r,p&&p.T?p:{T:TYPES.terran,type:"terran"},{hueBias:r(),giantChance:0,scale:1},kind);
+  sp.name=name;
+  if(tw){sp.glow=tw==="светящийся";
+    if(!sp.glow){sp.spiny=tw==="колючий"&&plantStemForm(kind);
+      if(/^(цветущий|жёсткий|гибкий)$/.test(tw))sp.bloom=tw==="цветущий";
+      if(tw==="жёсткий")sp.wK=Math.max(sp.wK,2);else if(tw==="гибкий")sp.wK=Math.min(sp.wK,1.8);}}
+  OWN_GREEN_SP.set(key,sp);
+  return sp;
+}
+/* тела грядок записями: на гряду — один вид, три куста (ковровый — четыре, широкая крона — два), рост
+   вида ужат под свод. Гряды занимают по росту: низкий вид — к объективу, высокий — к стене, иначе
+   шляпки передней гряды закрывали остальные три */
+const OWN_GREEN_WIDE=[1,2,7,9];
+function plnOwnGreenBuild(A,beds,p,sd){
+  const {tx}=OWN_GREEN,a=new Float32Array(16*16),parts=[];let n=0;
+  const row=beds.slice(0,GREEN_BEDS).map((b,i)=>{if(!b.name||b.g<.02)return null;
+    const sp=plnOwnGreenSp(b.name,p);return {b,i,sp,hm:clamp(sp.h/PLN_M*.3,.35,1)*(.3+.7*b.g)};}).filter(Boolean);
+  row.sort((u,v)=>u.hm-v.hm||u.i-v.i);
+  row.forEach(({b,i,sp,hm},slot)=>{
+    const geo=plnGeo(plnHerbMesh(sp,i,b.g<.35?0:1)),first=n,z=OWN_GREEN.bz(slot+GREEN_BEDS-row.length);
+    const C=plnHerbTone(PLN_TINTS[PLN_HERB.tints[i%3]],sp.leaf),k=sp.kind===6?4:(OWN_GREEN_WIDE.indexOf(sp.kind)>=0?2:3);
+    for(let j=0;j<k;j++){const hh=hashi(sd,i*7+j,0x6EED),jt=1+(((hh>>>9)&255)/255-.5)*.2;
+      const pos=[A.x+tx+(j-(k-1)/2)*2.1/k,A.y+.33,A.z+z+((hh&255)/255-.5)*.18],yaw=((hh>>>3)&255)/255*TAU;
+      if(sp.kind===4)plnRec(a,n++,pos,hm*jt,yaw,1,n,[jt,jt,jt],0);
+      else plnRec(a,n++,pos,hm*jt,yaw,1,n,plnMul(C.under,jt),2,plnMul(C.top,jt));}
+    parts.push({geo,first,count:n-first});});
+  return n?{parts,inst:plnInst(a,n,n),n}:null;
 }
 function plnOwnHomeMesh(L,A,sd,beds,penn){
   const C=PLN_MARK_COL,P=PLN_PAL,m=plnMesh(1<<14),lm=plnMesh(1<<10),bm=plnMesh(256),gm=plnMesh(512),pm=plnMesh(256);
@@ -235,21 +346,27 @@ function plnOwnHomeMesh(L,A,sd,beds,penn){
     col:(u,p2)=>plnMix3(P.rockWarm,P.rockCool,.5+.3*plnNoise(p2[0]*.3,p2[2]*.3+p2[1]*.3,sd+4)),mat:PLN_MAT.rock});
   /* дорожка от линии хода к проходу в заборе — плиты на земле ступенями, последняя вровень с двором */
   {const z0=-A.z+.3,z1=-6.9,n=3;
-   for(let i=0;i<n;i++){const z=lerp(z0,z1,(i+.5)/n),h=i===n-1?0:Math.min(0,Math.max(gy(dr,z),-1.2)*(1-(i+1)/n));
-     K.box([dr+(i&1?.12:-.1),h-.08,z],[.85,.1,.42],conc,{box:.3});}}
+   /* плита лежит на земле (была доля от высоты — висела над ложбиной, брак M628) */
+   /* ступень — брусок до земли, а не плита в воздухе: от линии хода до двора бывает метр */
+   for(let i=0;i<n;i++){const z=lerp(z0,z1,(i+.5)/n),g=gy(dr,z),h=i===n-1?0:clamp(g,-1.2,0),b=Math.min(h-.18,g-.25);
+     K.box([dr+(i&1?.12:-.1),(h+.02+b)/2,z],[.85,(h+.02-b)/2,.42],conc,{box:.3});}}
   /* корпус 7 × 4: стены, пояс рубочного стекла, крыша-козырёк; оранжевый пояс по цоколю */
   /* днём дом — освещённое тело с одной тёмной гранью: стены светлее, кромки круглее, крыша берёт солнце */
   K.box([0,1.1,1],[3.5,1.1,2],(u,p2,n)=>p2[1]<.35?plnMix3(C.orange,C.rust,.2):steel(u,p2,n),{box:.34,sub:3});
   K.box([0,2.47,1],[3.42,.28,1.94],[.24,.29,.36],{box:.2});
   K.box([0,2.95,1.05],[3.75,.22,2.25],roof,{box:.4});
-  K.pane(null,[.9,2.47,-.98],2.3,.2,OWN_WIN.home,1.5);
-  K.pane(null,[-2.9,2.47,-.98],.42,.2,OWN_WIN.home,1.5);
+  K.glass([.9,2.47,-.98],2.3,.2,OWN_WIN.home,1.25,false);
+  for(let j=-2;j<=2;j++)K.rod([.9+j*.92,2.27,-1],[.9+j*.92,2.67,-1],.022,C.soot,{sides:4,cap:false});
+  K.glass([-2.9,2.47,-.98],.42,.2,OWN_WIN.home,.9,false);
   /* крыльцо 2 м под фонарём: настил, навес на двух стойках, дверь */
   K.box([dr,.1,-2],[1.5,.1,1],conc,{box:.25});
   K.box([dr,2.62,-1.9],[1.65,.07,1.12],roof,{box:.25});
   for(const s of [-1,1])K.rod([dr+s*1.45,.2,-2.9],[dr+s*1.45,2.58,-2.9],.05,dark,{sides:6});
   K.box([dr,1.05,-1.03],[.55,1.05,.05],C.soot,{box:.2});
-  K.pane(null,[dr,1.02,-1.1],.42,.98,OWN_WIN.home,1.2);
+  /* дверь — полотно с окошком и щелью света понизу (ночью была пересвеченной карточкой) */
+  K.box([dr,1.02,-1.09],[.44,.98,.025],plnOwnSteel(C.steelLt,.2,sd+13),{box:.2});
+  K.glass([dr,1.5,-1.13],.26,.2,OWN_WIN.home,1.15,false);
+  K.pane(null,[dr,.06,-1.13],.4,.025,OWN_WIN.lamp,1.1);
   K.lamp(null,[dr+.95,2.38,-2.75],[.13,.15,.13],OWN_WIN.lamp,2.4);
   /* заслонки фонаря (M628b): стойки навеса и передний ряд забора — [a, b, r, сила] в местных метрах */
   const occ=[-1,1].map(s=>[[dr+s*1.45,.2,-2.9],[dr+s*1.45,2.58,-2.9],.07,.8]);
@@ -270,15 +387,18 @@ function plnOwnHomeMesh(L,A,sd,beds,penn){
     plnCard(pm,[mx,fy-.4,mz],[mx,fy+.4,mz],[mx+1.5,fy+.26,mz],[mx+1.5,fy-.18,mz],[0,0,-1],col,PLN_MAT.leaf,[0,0,1,1],0,0);
     plnCard(pm,[mx+1.5,fy-.18,mz],[mx+1.5,fy+.26,mz],[mx,fy+.4,mz],[mx,fy-.4,mz],[0,0,1],col,PLN_MAT.leaf,[1,1,0,0],0,0);}
   /* теплица: рёбра свода на дальней стороне двора, внутри грядки 21g и холодная лампа */
-  const tx=6.6,tz=2,hl=3,rw=1.6;
+  /* свод 2.3 м в коньке (был 1.45 — лампа и прогоны висели над ним); прогоны лежат на рёбрах */
+  const {tx,tz,hl,rw,ky}=OWN_GREEN;
   for(let k=0;k<=6;k++){const z=tz-hl+k;
-    plnTube(m,{path:plnBez([tx-rw,0,z],[tx,2.9,z],[tx+rw,0,z],8),rad:k%6?.045:.075,sides:5,col:C.steelLt,mat:PLN_MAT.man});}
-  for(const s of [-1,0,1])K.rod([tx+s*rw*.8,s?1.35:2.16,tz-hl],[tx+s*rw*.8,s?1.35:2.16,tz+hl],.035,C.steelLt,{sides:4});
+    plnTube(m,{path:plnBez([tx-rw,0,z],[tx,ky*2,z],[tx+rw,0,z],8),rad:k%6?.045:.075,sides:5,col:C.steelLt,mat:PLN_MAT.man});}
+  for(const t of [.2,.5,.8]){const x=tx+rw*(2*t-1),y=4*t*(1-t)*ky;K.rod([x,y,tz-hl],[x,y,tz+hl],.035,C.steelLt,{sides:4});}
   K.box([tx,.12,tz],[rw,.12,hl],conc,{box:.25});
-  plnTube(gm,{path:[[tx,2.05,tz-hl+.4],[tx,2.05,tz+hl-.4]],rad:.05,sides:5,col:[.8,.92,1],mat:PLN_MAT.glow,glow:2.4,x:1,cap:true});
-  beds.forEach((b,i)=>{const z=tz-hl+.75+i*1.5,g=b.g;if(g<.02)return;
-    for(let j=0;j<4;j++){const sx=tx+(j-1.5)*.62,h=.15+.6*g;
-      plnBlob(m,{c:[sx,.24+h/2,z],r:[.18+.12*g,h/2,.22+.1*g],sub:1,bump:.3,seed:sd+i*7+j,col:plnMix3([.22,.45,.2],[.45,.6,.25],(j&1)*.5+.2*g),mat:PLN_MAT.leaf});}});
+  plnTube(gm,{path:[[tx,ky-.25,tz-hl+.4],[tx,ky-.25,tz+hl-.4]],rad:.05,sides:5,col:[.8,.92,1],mat:PLN_MAT.glow,glow:2.4,x:1,cap:true});
+  /* гряды — короба с тёмной землёй, все четыре: пустая читается незасеянной; тела видов — записями (plnOwnGreenBuild) */
+  const soil=(u,p2)=>plnMix3(P.soilDark,[.1,.08,.06],.5+.3*plnNoise(p2[0]*4,p2[2]*4,sd+21));
+  for(let i=0;i<GREEN_BEDS;i++){const z=OWN_GREEN.bz(i);
+    K.box([tx,.2,z],[1.3,.12,.56],conc,{box:.25});
+    K.box([tx,.31,z],[1.2,.04,.47],soil,{box:.3});}
   /* забор: столбы 1.1 м через 2.5 м, две проволоки, проход к крыльцу */
   const fx=9.3,fz=6.3,run=(a,b,gap)=>{const L2=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.round(L2/2.5);
     let prev=null;
@@ -289,7 +409,7 @@ function plnOwnHomeMesh(L,A,sd,beds,penn){
       if(prev)for(const h of [.45,.9])K.rod([prev[0],h,prev[1]],[x,h,z],.008,C.steelLt,{sides:3,cap:false});
       prev=[x,z];}};
   run([-fx,-fz],[fx,-fz],dr);run([-fx,-fz],[-fx,fz]);run([fx,-fz],[fx,fz]);run([-fx,fz],[fx,fz]);
-  return {body:m,light:lm,beacon:bm,grow:gm,penn:pm,occ,lampAt:{porch:[dr+.95,2.3,-2.75],grow:[tx,2,tz]},blots:[[0,1,4.2,.45],[5.8,1.2,2.4,.4]]};
+  return {body:m,light:lm,beacon:bm,grow:gm,penn:pm,occ,lampAt:{porch:[dr+.95,2.3,-2.75],grow:[tx,ky-.3,tz]},blots:[[0,1,4.2,.45],[5.8,1.2,2.4,.4]]};
 }
 
 /* ── сборка: раз на посадку и состав ── */
@@ -297,6 +417,7 @@ function plnOwnFree(it){
   if(!it)return;
   for(const k of ["geo","light","aux","beam","fx"])if(it[k])plnGeoFree(it[k]);
   if(it.inst)plnInstFree(it.inst);
+  if(it.green){for(const q of it.green.parts)plnGeoFree(q.geo);plnInstFree(it.green.inst);it.green=null;}
 }
 function plnOwnItem(kind,A,M,sd,key){
   const g=x=>x&&x.nv?plnGeo(plnMeshDone(x)):null;
@@ -321,9 +442,10 @@ function plnOwnStep(L,S,lim){
   if(made&&lim!=null&&wallMs()-t0>lim)return false;
   const H=(typeof homeHereP==="function"&&homeHereP(p))?plnOwnHomeAt(L,tr,p):null;
   if(H){
-    const beds=greenAll().beds.map(b=>({g:greenGrow(b)})),pn=plnOwnPennHere(p),key=beds.map(b=>Math.round(b.g*8)).join(",")+"|"+pn;
+    const beds=greenAll().beds.map(b=>({g:greenGrow(b),name:b.name})),pn=plnOwnPennHere(p),key=beds.map(b=>b.name+":"+Math.round(b.g*8)).join(",")+"|"+pn;
     if(!O.home||O.home.key!==key){plnOwnFree(O.home);
-      const sd=hashi(G.sx,G.sy,0x40E7);O.home=plnOwnItem("home",H,plnOwnHomeMesh(L,H,sd,beds,pn),sd,key);}
+      const sd=hashi(G.sx,G.sy,0x40E7);O.home=plnOwnItem("home",H,plnOwnHomeMesh(L,H,sd,beds,pn),sd,key);
+      O.home.green=plnOwnGreenBuild(H,beds,p,sd);}
     O.porch=(H.x+H.door)*PLN_M;
   }else{plnOwnFree(O.home);O.home=null;O.porch=null;}
   return true;
@@ -351,6 +473,7 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
     if(it.aux&&ak>.01)F.batches.push({geo:it.aux,inst:it.inst,first:2,count:1,kind:Bk,to:LIT});
     if(it.beam)F.batches.push({geo:it.beam,inst:it.inst,first:3,count:1,kind:Bk,to:LIT});
     if(it.fx)F.batches.push({geo:it.fx,inst:it.inst,first:4,count:1,kind:Bk,to:TO});
+    if(it.green)for(const q of it.green.parts)F.batches.push({geo:q.geo,inst:it.green.inst,first:q.first,count:q.count,kind:Bk,to:TO});
     /* лампы — ночью (§3): фонарь крыльца — ключ двора с тенью, лампа теплицы — второй свет двора без
        тени, фонарь пирса — ключ базы, свет над воротами; в кадр идут две, по старшинству */
     if(nk>.05){
@@ -359,13 +482,18 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
         want.push({o:0,it,l:{p:at(it.lampAt.porch),r:12,c:[1,.68,.38],k:2.6*nk}});
         if(it.lampAt.grow)want.push({o:2,l:{p:at(it.lampAt.grow),r:6.5,c:OWN_WIN.grow,k:1.3*nk}});
       }else{want.push({o:1,l:{p:at(it.lampAt.pier),r:7,c:[1,.68,.38],k:1.8*nk}});
-        if(it.lampAt.gate)want.push({o:1.5,l:{p:at(it.lampAt.gate),r:5,c:[1,.74,.45],k:1.2*nk}});}
+        if(it.lampAt.gate)want.push({o:1.5,l:{p:at(it.lampAt.gate),r:5,c:[1,.74,.45],k:1.2*nk}});
+        const ws=it.lampAt.wash||[];let wx=null;
+        for(const x of ws)if(wx==null||Math.abs(A.x+x-ex)<Math.abs(A.x+wx-ex))wx=x;
+        if(wx!=null)want.push({o:1.2,l:{p:at([wx,OWN_WASH.y,-OWN.deckHZ-1.1]),r:OWN_WASH.r,c:[1,.72,.44],k:OWN_WASH.k*nk}});}
     }
     for(const q of it.blots){if(n>=64)break;b.set([A.x+q[0],A.z+q[1],q[2],q[3]],4+n*4);n++;}
   }
   b[0]=n;
   want.sort((u,v)=>u.o-v.o);
-  for(const w of want.slice(0,2)){
+  /* в кадр — две по старшинству из тех, чей свет до кадра достаёт: пирс за кромкой уступает лампе кромки у ворот */
+  const seen=want.filter(w=>Math.abs(w.l.p[0]-ex)<V.hw*(1+Math.max(0,w.l.p[2])/V.D)+w.l.r);
+  for(const w of seen.concat(want.filter(w=>seen.indexOf(w)<0)).slice(0,2)){
     /* ламп у кадра четыре: занятое место уступает та, что светит за кромкой кадра (огни площадки
        далеко за спиной) */
     let ok=false;
@@ -412,17 +540,21 @@ function plnOwnMark(S){return plnOwnGateX(S);}
 /* табличка строки действия у ворот или у крыльца (21pzb): точка мира и высота вещи */
 function plnOwnWordsAt(S){
   const pr=String(G.prompt||"");
-  if(OWN.base&&/ВОЙТИ В БАЗУ/.test(pr)){const A=OWN.base.A;return {c:[A.gx,A.y+2.4,A.z-OWN.deckHZ+.4],h:2.4,id:"pln.gate"};}
+  if(OWN.base&&/ВОЙТИ В БАЗУ/.test(pr))return {c:plnOwnGateC(),h:2.4,id:"pln.gate",up:true};
   if(OWN.home&&/ВОЙТИ ДОМОЙ/.test(pr)){const A=OWN.home.A;return {c:[A.x+A.door,A.y+2.9,A.z-2],h:2.6,id:"pln.porch"};}
   return null;
 }
-/* у ворот строку забрало другое действие (скан зверя, растения — оно важнее, дизайнер 08.10): ворота
+/* точка ворот для табличек — середина двери (а не её верх), радиус обнимает дверь: табличка встаёт у
+   двери сверху, а не на куполе соседнего отсека; на телефоне дверь в средней полосе кадра — сбоку от неё
+   (брак M628, 22.10: висела на 230 px выше, в небе) */
+function plnOwnGateC(){const A=OWN.base.A;return [A.gx,A.y+1.2,A.z-OWN.deckHZ+.4];}
+/* у ворот строку забрало другое действие (зверь ближе двери, залежь, шаг за радиусом ворот): ворота
    держат свою плашку с расстоянием, чтобы было видно, куда шагнуть */
 function plnOwnGateNote(S){
   const g=plnOwnGateX(S),pr=String(G.prompt||"");
   if(g==null||!OWN.base||!S||Math.abs(S.x-g)>PLN_OWN_GATE_R*1.5||!/ДЕЙСТВИЕ/.test(pr)||/ВОЙТИ В БАЗУ/.test(pr))return null;
   const A=OWN.base.A,B=baseAt(G.sx,G.sy,S.p.idx),m=Math.max(1,Math.round(Math.abs(g-S.x)/PLN_M));
-  return {c:[A.gx,A.y+2.4,A.z-OWN.deckHZ+.4],h:2.4,id:"pln.gatenote",
+  return {c:plnOwnGateC(),h:2.4,id:"pln.gatenote",up:true,
     lines:["ВОРОТА БАЗЫ"+(B&&B.name?" «"+B.name+"»":"")+" · "+m+" М "+(g>S.x?"▶":"◀")]};
 }
 
@@ -458,10 +590,29 @@ enterDig=function(){
   if(PLN_OWN_UPD&&OWN.on&&/^ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ/.test(String(G.prompt||""))&&(plnOwnAtGate(G.surf)||plnOwnInYard(G.surf)||plnOwnUnder(G.surf)))return;
   return PLN_OWN_OLD_DIG.apply(this,arguments);
 };
+/* у ворот ворота важнее скана (брак M628, 22.10: в океане «СКАНИРОВАТЬ ОРГАНИЗМ» забирал жест у двери).
+   Зверь или растение дальше двери на время кадра цепочки 21-mode-surface прячутся от выбора: растения —
+   из списка (в кадре его читает только выбор), звери — флагами scanned+caught (их ходьбу и rnd не трогаем,
+   а ветка «ПОЙМАТЬ» тоже молчит). Ближе двери — скан, как прежде */
+function plnOwnGateHide(S){
+  if(!OWN.on||!S||S.on===false||S.jetOn)return null;
+  const g=plnOwnGateX(S);if(g==null)return null;
+  const dg=Math.abs(S.x-g);if(dg>=PLN_OWN_GATE_R)return null;
+  const P=S.plants||[],keep=P.filter(pl=>pl.scanned||Math.abs(pl.x-S.x)<dg),fl=[];
+  for(const b of S.fauna||[])if(!b.caught&&Math.abs(b.x-S.x)>=dg){fl.push([b,b.scanned]);b.scanned=true;b.caught=true;}
+  if(keep.length===P.length&&!fl.length)return null;
+  const H={P,fl};S.plants=keep;return H;
+}
+function plnOwnGateShow(S,H){
+  if(!H)return;
+  S.plants=H.P;
+  for(const [b,sc] of H.fl){b.scanned=sc;b.caught=false;}
+}
 const PLN_OWN_OLD_UPD=updateSurface;
 updateSurface=function(dt){
   PLN_OWN_UPD=true;
-  try{PLN_OWN_OLD_UPD(dt);}finally{PLN_OWN_UPD=false;}
+  const S0=G.surf,H=plnOwnGateHide(S0);
+  try{PLN_OWN_OLD_UPD(dt);}finally{PLN_OWN_UPD=false;plnOwnGateShow(S0,H);}
   const S=G.surf;
   if(!OWN.on||G.mode!=="surface"||!S||!S.p)return;
   const g=plnOwnGateX(S);

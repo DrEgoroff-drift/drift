@@ -160,9 +160,12 @@ function drawHotel(zx,zy,Z){
   const B=hotelGet(T,Ht.by,sd,col,true);if(!B)return;   /* на экране, а не готов — допекаем сразу (PB_SYNC), не проявляем из пустоты */
   const S=fa>0?hotelNeon(Ht,T,k,col):null;
   const {R:lit,L:lith}=hotelLitRects(B,Ht.by,sd),sx=w/B.w,sy=h/B.h;
-  /* кусок мастера [x0,y0,x1,y1] (px) → прямоугольник на экране той же долей дома */
-  const R=(Q,a)=>Q.map(q=>({x:ox+(q[0]+q[2])/2*sx,y:oy+(q[1]+q[3])/2*sy,w:(q[2]-q[0])*sx,h:(q[3]-q[1])*sy,a,
-    u0:q[0]/B.w,v0:q[1]/B.h,u1:q[2]/B.w,v1:q[3]/B.h})),all=[[0,0,B.w,B.h]];
+  /* кусок мастера [x0,y0,x1,y1] (px) → прямоугольник на экране той же долей дома. Объекты живут при списке
+     кусков (Q._o: доли текстуры постоянны, пока жив мастер B), кадр переписывает место и альфу — а не по два
+     объекта на окно за кадр (охотник, 0.499.17: ≈ 0,9 МБ/с); gpuImage списывает их в буфер сразу */
+  const R=(Q,a)=>{let O=Q._o;if(!O)O=Q._o=Q.map(q=>({x:0,y:0,w:0,h:0,a:1,u0:q[0]/B.w,v0:q[1]/B.h,u1:q[2]/B.w,v1:q[3]/B.h}));
+    for(let i=0;i<Q.length;i++){const q=Q[i],r=O[i];r.x=ox+(q[0]+q[2])/2*sx;r.y=oy+(q[1]+q[3])/2*sy;r.w=(q[2]-q[0])*sx;r.h=(q[3]-q[1])*sy;r.a=a;}
+    return O;},all=B.all||(B.all=[[0,0,B.w,B.h]]);
   const o={lod:HOTEL_LOD},ad={blend:"add",lod:HOTEL_LOD};
   gpuImage(pass,B.cv,R(all,1),{blend:"hull",lod:HOTEL_LOD});   /* краска дома в свечение не идёт (fsDown): светят окна и вывеска */
   if(S)gpuImage(pass,B.sh,R(all,HOTEL_SHEEN*fa),ad);

@@ -66,10 +66,12 @@ function r3Proj(vp,p,w,h){
   return [(x/q*.5+.5)*w,(.5-y/q*.5)*h,q];}
 
 /* ── инструменты сетки ── всё в метрах; T — текущая матрица (стек push/pop) */
+/* пул буфера вершин: один большой Float32Array ходит от тела к телу (до 16 МБ), а не удваивается заново на каждом */
+let R3_VPOOL=null;const R3_VPOOL_MAX=4194304,R3_VNIL=new Float32Array(0);
 function r3Kit(){
   /* вершины — в растущем Float32Array (удвоение), не в JS-массиве через push: заготовка зала сорила ~74 МБ на тело
      (охотник, отчёт 15); VN — занято чисел, 12 на вершину. Снаружи массив никто не читает — только K.pack */
-  let V=new Float32Array(12*2048),VN=0;let T=r3Xf([0,0,0]);const ST=[];
+  let V=R3_VPOOL||new Float32Array(12*2048),VN=0;R3_VPOOL=null;let T=r3Xf([0,0,0]);const ST=[];
   const K={part:0,flags:0,q:1};   /* q — множитель граней: портрет крупным планом гуще; flags: 1 — не бросает тени, 2 — тело под резкостью */
   const P=p=>[T[0]*p[0]+T[4]*p[1]+T[8]*p[2]+T[12],T[1]*p[0]+T[5]*p[1]+T[9]*p[2]+T[13],T[2]*p[0]+T[6]*p[1]+T[10]*p[2]+T[14]];
   const N=n=>{const x=T[0]*n[0]+T[4]*n[1]+T[8]*n[2],y=T[1]*n[0]+T[5]*n[1]+T[9]*n[2],z=T[2]*n[0]+T[6]*n[1]+T[10]*n[2],l=Math.hypot(x,y,z)||1;return [x/l,y/l,z/l];};
@@ -84,15 +86,20 @@ function r3Kit(){
   K.pop=()=>{T=ST.pop();};
   /* вершина: p, n — местные (через T); col — своя краска вершины (иначе материал) */
   /* вершина по составляющим нормали — без массивов на точку (P/N считаются на месте); K.vx — обёртка */
-  const vx3=(p,nx,ny,nzz,M,col,sk)=>{
-    if(VN+12>V.length){const W=new Float32Array(V.length*2);W.set(V);V=W;}
-    const c=col||M.c,wq=sk?Math.round(clamp(sk[1],0,1)*255):0,o=VN,px=p[0],py=p[1],pz=p[2];
-    const x=T[0]*nx+T[4]*ny+T[8]*nzz,y=T[1]*nx+T[5]*ny+T[9]*nzz,z=T[2]*nx+T[6]*ny+T[10]*nzz,l=Math.hypot(x,y,z)||1;
+  /* всё по составляющим: место, нормаль, краска 0..1, sq — вес второй части уже упакованный (2048·часть + 32768·вес 0..255) */
+  const vx3c=(px,py,pz,nx,ny,nzz,M,cr,cg,cb,sq)=>{
+    if(VN+12>V.length){const W=new Float32Array(Math.max(V.length*2,12*2048));W.set(V);V=W;}
+    const o=VN,x=T[0]*nx+T[4]*ny+T[8]*nzz,y=T[1]*nx+T[5]*ny+T[9]*nzz,z=T[2]*nx+T[6]*ny+T[10]*nzz,l=Math.sqrt(x*x+y*y+z*z)||1;
     V[o]=T[0]*px+T[4]*py+T[8]*pz+T[12];V[o+1]=T[1]*px+T[5]*py+T[9]*pz+T[13];V[o+2]=T[2]*px+T[6]*py+T[10]*pz+T[14];
-    V[o+3]=x/l;V[o+4]=y/l;V[o+5]=z/l;V[o+6]=c[0];V[o+7]=c[1];V[o+8]=c[2];
+    V[o+3]=x/l;V[o+4]=y/l;V[o+5]=z/l;V[o+6]=cr;V[o+7]=cg;V[o+8]=cb;
     V[o+9]=Math.round(M.g)+Math.min(M.s,.99);V[o+10]=M.e;
-    V[o+11]=K.part+16*M.p+1024*((M.ns||K.flags&1)?1:0)+(wq?2048*sk[0]+32768*wq:0)+(K.flags&2?8388608:0);
+    V[o+11]=K.part+16*M.p+1024*((M.ns||K.flags&1)?1:0)+sq+(K.flags&2?8388608:0);
     VN+=12;};
+  /* sk — [часть, вес 0..1] или уже число (cpSculpt) */
+  const vx3=(p,nx,ny,nzz,M,col,sk)=>{
+    const c=col||M.c;let sq=0;
+    if(sk){if(typeof sk==="number")sq=sk;else{const wq=Math.round(clamp(sk[1],0,1)*255);if(wq)sq=2048*sk[0]+32768*wq;}}
+    vx3c(p[0],p[1],p[2],nx,ny,nzz,M,c[0],c[1],c[2],sq);};
   K.vx=(p,n,M,col,sk)=>vx3(p,n[0],n[1],n[2],M,col,sk);
   K.tri=(a,b,c,M,n)=>{n=n||nz(cr(sub(b,a),sub(c,a)));K.vx(a,n,M);K.vx(b,n,M);K.vx(c,n,M);};
   K.quad=(a,b,c,d,M,n)=>{n=n||nz(cr(sub(b,a),sub(d,a)));K.vx(a,n,M);K.vx(b,n,M);K.vx(c,n,M);K.vx(a,n,M);K.vx(c,n,M);K.vx(d,n,M);};
@@ -131,26 +138,38 @@ function r3Kit(){
   /* поверхность по сетке параметров: f(u,v) → [p, краска?]; u — по кругу (wrap), v — вдоль. Нормаль — по сетке
      (центральные разности), наружу — cross(dP/du, dP/dv)·flip. keep(u,v) — какие клетки строить (вырезы) */
   /* поверхность по шагам: ms — бюджет шага (yield между рядами), без него — одним куском; K.surf гонит до конца */
-  K.surfG=function*(nu,nv,f,M,o,ms){o=o||{};const G=[],C=[],W=[];let t0=ms?wallMs():0;
+  /* точки, краска и вес — плоскими массивами (ни массива на точку, ни замыкания на треугольник); o.src={P,C?,W?} —
+     готовые плоские массивы вместо f (кожа головы, 27f3a); краска без своей — краска материала */
+  K.surfG=function*(nu,nv,f,M,o,ms){o=o||{};const n=(nu+1)*(nv+1),mc=M.c;let t0=ms?wallMs():0,P,C,Wt;
     const brk=()=>ms&&wallMs()-t0>ms;
-    for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const r=f(i/nu,j/nv);G.push(r[0]);C.push(r[1]||null);W.push(r[2]||null);}
-    const at=(i,j)=>{if(o.wrap)i=(i+nu)%nu;else i=Math.max(0,Math.min(nu,i));j=Math.max(0,Math.min(nv,j));return G[j*(nu+1)+i];};
-    /* нормали — плоским Float32Array, без массивов на точку (та же математика: центральные разности, cross, flip) */
-    const NN=new Float32Array(3*(nu+1)*(nv+1)),sg=o.flip?-1:1;let k3=0;
+    if(o.src){P=o.src.P;C=o.src.C||null;Wt=o.src.W||null;}
+    else{P=new Float32Array(3*n);C=new Float32Array(3*n);Wt=null;
+      for(let j=0,k=0;j<=nv;j++)for(let i=0;i<=nu;i++,k++){const r=f(i/nu,j/nv),p=r[0],c=r[1]||mc,w=r[2];
+        P[3*k]=p[0];P[3*k+1]=p[1];P[3*k+2]=p[2];C[3*k]=c[0];C[3*k+1]=c[1];C[3*k+2]=c[2];
+        if(w){if(!Wt)Wt=new Float32Array(n);
+          if(typeof w==="number")Wt[k]=w;else{const wq=Math.round(clamp(w[1],0,1)*255);if(wq)Wt[k]=2048*w[0]+32768*wq;}}}}
+    const ix=(i,j)=>{if(o.wrap)i=(i+nu)%nu;else i=Math.max(0,Math.min(nu,i));j=Math.max(0,Math.min(nv,j));return 3*(j*(nu+1)+i);};
+    /* нормали — плоским Float32Array (та же математика: центральные разности, cross, flip) */
+    const NN=new Float32Array(3*n),sg=o.flip?-1:1;let k3=0;
     for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){
-      const a=at(i+1,j),b=at(i-1,j),c=at(i,j+1),d=at(i,j-1);
-      const ux=a[0]-b[0],uy=a[1]-b[1],uz=a[2]-b[2];let vx=c[0]-d[0],vy=c[1]-d[1],vz=c[2]-d[2];
+      const a=ix(i+1,j),b=ix(i-1,j),c=ix(i,j+1),d=ix(i,j-1);
+      const ux=P[a]-P[b],uy=P[a+1]-P[b+1],uz=P[a+2]-P[b+2];let vx=P[c]-P[d],vy=P[c+1]-P[d+1],vz=P[c+2]-P[d+2];
       let x=uy*vz-uz*vy,y=uz*vx-ux*vz,z=ux*vy-uy*vx;
-      if(Math.hypot(x,y,z)<1e-14){const e=at(i,j+(j<nv?2:-2)),f=at(i,j),s=j<nv?1:-1;vx=(e[0]-f[0])*s;vy=(e[1]-f[1])*s;vz=(e[2]-f[2])*s;
+      if(Math.sqrt(x*x+y*y+z*z)<1e-14){const e=ix(i,j+(j<nv?2:-2)),g=ix(i,j),s=j<nv?1:-1;vx=(P[e]-P[g])*s;vy=(P[e+1]-P[g+1])*s;vz=(P[e+2]-P[g+2])*s;
         x=uy*vz-uz*vy;y=uz*vx-ux*vz;z=ux*vy-uy*vx;}
-      const l=Math.hypot(x,y,z);if(l>1e-12){NN[k3]=x/l*sg;NN[k3+1]=y/l*sg;NN[k3+2]=z/l*sg;}else{NN[k3]=0;NN[k3+1]=sg;NN[k3+2]=0;}
+      const l=Math.sqrt(x*x+y*y+z*z);if(l>1e-12){NN[k3]=x/l*sg;NN[k3+1]=y/l*sg;NN[k3+2]=z/l*sg;}else{NN[k3]=0;NN[k3+1]=sg;NN[k3+2]=0;}
       k3+=3;
       if(i===nu&&brk()){yield;t0=wallMs();}}
-    const id=(i,j)=>j*(nu+1)+i,put=k=>vx3(G[k],NN[3*k],NN[3*k+1],NN[3*k+2],M,C[k]||null,W[k]);
+    const w1=nu+1;
     for(let j=0;j<nv;j++){for(let i=0;i<nu;i++){
       if(o.keep&&!o.keep((i+.5)/nu,(j+.5)/nv))continue;
-      const q0=id(i,j),q1=id(i+1,j),q2=id(i+1,j+1),q3=id(i,j+1);
-      put(q0);put(q1);put(q2);put(q0);put(q2);put(q3);}
+      const q0=j*w1+i,q1=q0+1,q2=q1+w1,q3=q0+w1;
+      let k=3*q0;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q0]:0);
+      k=3*q1;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q1]:0);
+      k=3*q2;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q2]:0);
+      k=3*q0;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q0]:0);
+      k=3*q2;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q2]:0);
+      k=3*q3;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q3]:0);}
       if(brk()){yield;t0=wallMs();}}};
   K.surf=(nu,nv,f,M,o)=>{const it=K.surfG(nu,nv,f,M,o,0);while(!it.next().done);};
   /* труба по ломаной P с радиусом r (число или массив); N — граней; кольца — параллельным переносом */
@@ -172,7 +191,10 @@ function r3Kit(){
       K.tri([Pp[a][0],Pp[a][1],z0],[Pp[b][0],Pp[b][1],z0],[Pp[d][0],Pp[d][1],z0],M,[0,0,-1]);}
     for(let i=0;i<Pp.length;i++){const q=Pp[i],r=Pp[(i+1)%Pp.length];
       K.quad([q[0],q[1],z0],[r[0],r[1],z0],[r[0],r[1],z1],[q[0],q[1],z1],M);}};
-  K.pack=()=>({v:V.slice(0,VN),n:VN/12,buf:null,dev:null});
+  /* после упаковки буфер уходит в пул для следующего тела (цепочка удвоений — ~2× сетки мусора на тело); набор пуст */
+  K.pack=()=>{const r={v:V.slice(0,VN),n:VN/12,buf:null,dev:null};
+    if(V.length<=R3_VPOOL_MAX&&(!R3_VPOOL||R3_VPOOL.length<V.length))R3_VPOOL=V;
+    V=R3_VNIL;VN=0;return r;};
   return K;
 }
 
