@@ -1,32 +1,17 @@
-/* ══════════════ проба · экономика (M903) ══════════════
-   Экономика измеряется, а не обсуждается. Стенд гоняет настоящий круг игрока
-   под Node — планета → посадка → бурение до полного трюма → взлёт → станция →
-   стыковка → продажа → заправка → ремонт → отстыковка — столько кругов,
-   сколько влезает в заданные часы игры, на четырёх ярусах владения из
-   DESIGN-game §4.1 (T0 «Стриж», T1 «Вьюк» + рука + дрон, T2 «Обод» + три руки +
-   два дрона + два управляющих, T3 «Мамонт» + пять рук + четыре дрона + четыре
-   управляющих; цеха и база ярусов T2–T3 здесь не строятся — это сказано в
-   строке таблицы). Печатает по ярусу: кругов, минут на круг, валовый доход,
-   расход, чистый за час игры, давление U/G, и те же числа против оракула §4.1
-   с отклонением в процентах.
+/* ══════════════ проба · экономика (M903, M912) ══════════════
+   Экономика измеряется, а не обсуждается: настоящий круг игрока под Node (планета → посадка →
+   бурение до полного трюма → взлёт → стыковка → продажа, заправка, ремонт), а между кругами —
+   дела диспетчера настоящими шагами (прыжок, стыковка, посадка, кантина, груз; бой — нет,
+   это 91zzzw-fightsim). Ярусы владения DESIGN-game §4.1, против оракула в процентах; T2–T3 —
+   с цехами и базой (91zzzw4-ecosim-est), «T0 свежий» — свежая запись с покупками и хронологией
+   первого часа. Кредиты ловятся на самом G.credits (аксессор на время набора) и пишутся в
+   книжку под именем текущей фазы. Печать и суд нормы — 91zzzw4-ecosim-rep.
 
-   Каждое движение кредитов ловится на самом G.credits (аксессор на время
-   набора): кто бы ни платил и ни получал — продажа, дроны, жалованье, заправка,
-   ремонт — попадает в книжку под именем текущей фазы. Так не нужно знать все
-   сорок мест earn() и все вычеты.
-
-   Запуск: node test-node.js --only="проба · экономика"
-     ECO_HOURS=3  часов игры на ярус (по умолчанию 1)
-     ECO_TIERS=T0|T2  какие ярусы (регулярное выражение по имени)
-     ECO_DISP=0   без дел диспетчера — один круг добычи, как мерилось 14.10 (§4.1a)
-
-   Дела диспетчера (M912). С 22.10 на каждой стыковке полоса К ВАМ держит четыре бумаги (28m) —
-   это второй кран денег, и бот, что только копает, его не видит. Теперь после продажи бот берёт
-   с полосы всё, что исполнимо настоящими шагами: прыжок, стыковка, посадка, кантина, груз
-   (купленный у стойки, где он есть, — у той же стойки привоз не берут: цена приёмки съедает
-   плату). «Отбить» пирата бот не берёт — бой здесь не меряется (это 91zzzw-fightsim).
-   Ярус «T0 свежий» — свежая запись целиком: налёт копит настоящий clrTick, бумаги и кассы нет,
-   пока не налётан час; печатается хронология первого часа (§10.7). */
+   node test-node.js --only="проба · экономика", окружение:
+     ECO_HOURS часов на ярус (1) · ECO_TIERS регулярка имён · ECO_DISP=0 без дел ·
+     ECO_HUMAN=1 темп человека · ECO_EST=0 без хозяйства · ECO_DRONE=dear дрон на дорогой руде ·
+     ECO_LOGIST=1 логист на базе · ECO_SHOPS=0 база без цехов · ECO_EATER=1 едок промтовара ·
+     ECO_BUY=0 свежий без покупок · ECO_FRESH_H часы свежего · ECO_TRACE подробности */
 suite("проба · экономика",{tier:"probe"},()=>{
   const ENV=(globalThis.process&&globalThis.process.env)||{};
   const HOURS=Math.max(.1,+ENV.ECO_HOURS||1);
@@ -140,29 +125,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     return r;
   }
   /* норма участка (M905): суд этой сводки на копии участка — как есть и без вас (ни нужд, ни нарядов) */
-  function normNow(){
-    const W=watchSt();watchTick();
-    const L0=G.log.slice(),rec0=JSON.stringify(G.record||null);
-    const judge=c=>{const r=watchJudge(c);return r||{norm:null,tot:0,mine:0,ord:0};};
-    const a=judge(JSON.parse(JSON.stringify(W)));
-    const z=JSON.parse(JSON.stringify(W));z.fill={};z.ord=0;
-    const b=judge(z);
-    G.log=L0;G.record=JSON.parse(rec0);
-    return {n:W.n,with:a.norm,without:b.norm,tot:a.tot,btot:b.tot,mine:a.mine,ord:a.ord,win:(W.w1|0)-(W.w0|0)+1};
-  }
-  /* за долгий прогон сводка сменяется: суд каждой — последним замером перед сменой, итог — по нуждам всех */
-  function normFold(acc,s){
-    if(!s||s.with==null)return acc;
-    if(acc.cur&&acc.cur.n!==s.n)acc.done.push(acc.cur);
-    acc.cur=s;return acc;
-  }
-  function normSum(acc){
-    const L=acc.done.concat(acc.cur?[acc.cur]:[]);
-    if(!L.length)return null;
-    let t=0,g=0,bt=0,bg=0,mine=0,ord=0,win=0;
-    for(const s of L){t+=s.tot;g+=s.with*s.tot/100;bt+=s.btot;bg+=s.without*s.btot/100;mine+=s.mine;ord+=s.ord;win+=s.win;}
-    return {with:t?Math.round(100*g/t):100,without:bt?Math.round(100*bg/bt):100,tot:t,mine,ord,win,sv:L.length};
-  }
+  const normNow=ecoNormNow,normFold=ecoNormFold,normSum=ecoNormSum;   /* в 91zzzw4-ecosim-rep.js */
   /* главный приказ каждого домена — тот, без которого он не работает (12c MGR_RULES) */
   const MGR_MAIN={cmd:["repair"],keep:["sell","build"],fact:["run"],sci:[]};
   const MGR_ORDER=["fact","cmd","keep","sci"];
@@ -501,7 +464,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
   }
   /* хозяйство T2–T3 — в 91zzzw4-ecosim-est.js */
   const {EST,estSetup,estDock,estHaul,estReport}=ecoEstate({note,idle,dockAt,sysOf,
-    get ph(){return PHASE;},set ph(v){PHASE=v;},get book(){return BOOK;},get human(){return HUMAN;}});
+    get ph(){return PHASE;},set ph(v){PHASE=v;},get book(){return BOOK;},get human(){return HUMAN;},
+    logist:ENV.ECO_LOGIST==="1",shops:ENV.ECO_SHOPS!=="0",eater:ENV.ECO_EATER==="1"});
   /* ── ярус: корпус, модули, руки, дроны, управляющие ── */
   function setup(tier){
     resetWorld();
@@ -560,7 +524,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
   const rows=[];
   for(const tier of TIERS){
     if(PICK&&!PICK.test(tier.name))continue;
-    setup(tier);
+    setup(tier);const LAD0=ecoLadder(G.sys);
     for(const k in fail)delete fail[k];
     bookOn();
     const t0=G.t,hull0=G.hull;let laps=0,lapF=0,mined=0,bad=0;
@@ -602,59 +566,12 @@ suite("проба · экономика",{tier:"probe"},()=>{
       time:Object.entries(BOOK.time).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+" "+(laps?v/laps/FR/60:0).toFixed(2)).join(", "),
       hull:tier.fresh?G.shipId:tier.hull,credits:G.credits,
       disp:DSTAT.done+" дел · "+Math.round(DSTAT.pay/hrs)+" кр/ч · "+(DSTAT.frames/FR/60/hrs).toFixed(1)+" мин/ч · взято "+JSON.stringify(DSTAT.took)+(Object.keys(DSTAT.skip).length?" · сорвано "+JSON.stringify(DSTAT.skip):"")+" · ушло по сроку "+dispSt().lost+" · не взято (убыток, бак, касса) "+DSTAT.poor.size,
-      tl:TL?Object.assign({},TL):null,norm:NORM,inv,est:estReport(),
+      tl:TL?Object.assign({},TL):null,norm:NORM,inv,est:estReport(),lad:[LAD0,ecoLadder(LAD0.sys,ENV.ECO_SAVE==="1")],
       /* дроны (§3.1 строка запчастей — 6 кр/мин на машину): что каждая приносит в час */
       drn:G.drones.map(d=>({res:d.res,h:Math.max(1e-9,(clockNow()-(d.bornMs||d.t0||clockNow()))/3600000),
         earned:d.earned|0,trips:d.trips|0,down:d.down|0}))});
   }
   stepWorld=sw0;
-  console.log("экономика: "+HOURS+" ч игры на ярус · "+(ENV.ECO_EST==="0"?"цеха и база T2–T3 не строятся":"T2–T3 с цехами и базой")+" · оракул DESIGN-game §4.1"+(HUMAN?" · темп человека (круг ≥ 6 мин, паузы)":" · темп бота"));
-  console.log("| ярус | корпус | кругов | мин/круг | добыто | валовый/ч | расход/ч | чистый/ч | U/G | против §4.1 (в/р/ч) | откуда | куда |");
-  console.log("|---|---|---|---|---|---|---|---|---|---|---|---|");
-  for(const r of rows)console.log("| "+r.tier+" | "+r.hull+" | "+r.laps+" | "+r.minLap.toFixed(1)+" | "+r.mined+" | "+Math.round(r.gross)+" | "+Math.round(r.spend)+" | "+Math.round(r.net)+" | "+r.press.toFixed(2)+" | "+r.dG+"% / "+r.dU+"% / "+r.dN+"% | "+r.gsrc+" | "+r.ssrc+" |");
-  for(const r of rows)console.log("  "+r.tier+" топливо/ч: "+r.fuel+" · корпус/ч: "+r.hullLoss);
-  for(const r of rows)console.log("  "+r.tier+" мин на круг по фазам: "+r.time);
-  for(const r of rows)console.log("  "+r.tier+" продано (шт×кр): "+r.sold);
-  for(const r of rows)if(r.fails)console.log("  "+r.tier+" сбои: "+r.fails);
-  for(const r of rows)console.log("  "+r.tier+" диспетчер: "+r.disp);
-  for(const r of rows)if(r.est){const E=r.est;
-    console.log("  "+r.tier+" хозяйство: цеха "+(E.shops||"—")+" · рейсов в цех "+E.hauls+", в бункеры "+E.fed+" ед · промтовар сдан в цеха "+Math.round(E.indSold/r.hrs)+" кр/ч"+
-      " · не нашёл едока "+E.indLeft+" кр "+E.indLeftQ+" · база "+E.base+": рейсов за рудой "+E.baseTrips+", забрано "+E.baseUnits+" ед, продано на "+Math.round(E.baseWorth/r.hrs)+" кр/ч");
-    if(ENV.ECO_TRACE)console.log("    "+E.dbg+" · "+E.hop);}
-  for(const r of rows)if(r.drn&&r.drn.length){const PARTS=6*60,price=DRONES.miner.price;
-    console.log("  "+r.tier+" дроны (кр/ч за прогон · после запчастей 6 кр/мин · окупаемость "+price+" кр, ч): "+
-      r.drn.map(d=>{const g=Math.round(d.earned/r.hrs);return d.res+" "+g+" → "+(g-PARTS)+" · "+
-        (g>0?(price/g).toFixed(0):"∞")+" / "+(g>PARTS?(price/(g-PARTS)).toFixed(0):"∞")+" ч ("+d.trips+" рейсов)";}).join("; "));}
-  for(const r of rows)if(r.norm){const N=r.norm;
-    console.log("  "+r.tier+" норма участка: "+(N.with==null?"—":N.with+" %")+" · без вас "+(N.without==null?"—":N.without+" %")+
-      " · нужд "+N.tot+", закрыто вами "+N.mine+", нарядов "+N.ord+" · окон "+N.win+" · сводок "+N.sv);}
-  for(const r of rows)if(r.tl){const L=r.tl,f=v=>v==null?"—":v.toFixed(1);
-    console.log("  "+r.tier+" первый час (минуты игры): два адресных "+f(L.addr2)+" · срочное "+f(L.urg)+" · строка участка "+f(L.line)+
-      " · наряд "+f(L.long)+" · первый час прошёл "+f(L.hour1)+" · вахта кончилась "+f(L.fwEnd)+" · бумага стажёра "+f(L.paper)+
-      " · налёт к концу "+L.flown.toFixed(0)+" мин, игры "+L.play.toFixed(0)+" мин · касса взаимопомощи макс "+L.debt+
-      " · кредиты "+[2,6,10,30,60,90,120,180].filter(t=>L["cr"+t]!=null).map(t=>t+"′ "+L["cr"+t]).join(", ")+
-      " · бак кр/ед (цена/репутация/талоны) "+[2,10,60,120,180].filter(t=>L["fp"+t]!=null).map(t=>t+"′ "+L["fp"+t]).join(", "));}
-  /* что игрок успевает за первый час игры — таблица без утверждений (Контроль 22.10, M912) */
-  for(const r of rows)if(r.tl){const L=r.tl,f=v=>v==null?"не успел":v.toFixed(1)+"′";
-    const ev=[["первый выход из дока","undock"],["первая посадка","land"],["первая продажа","sell"],
-      ["первое дело закрыто","deed1"],["третье дело","deed3"],["пятое дело","deed5"],
-      ["касса ≥ первый трюм ("+modCost("hold",0)+")","c900"],["касса ≥ первый бур ("+modCost("drill",0)+")","c1250"],
-      ["касса ≥ два бура ("+2*modCost("drill",0)+")","c2k"],["касса ≥ наём руки ("+(HIRE_FEE<1e9?HIRE_FEE:"—")+")","hire"],
-      ["касса ≥ первый дрон ("+DRONES.miner.price+")","drone"],["оборот 3 000","turn3k"],["разнарядка на «Вьюк»","alloc"],["пересел на «Вьюк»","board"],
-      ["экзамен кооператива","coop"],["допуск II","clr2"],["первая победа в бою","kill"],
-      ["два адресных на стойке","addr2"],["первое срочное","urg"],["наряд на три станции","long"],
-      ["первый час прошёл","hour1"],["бумага стажёра","paper"]];
-    console.log("\n  "+r.tier+" · что игрок успевает за первый час игры (минута игры)");
-    console.log("  | веха | минута |\n  |---|---|");
-    for(const [ru,k] of ev)console.log("  | "+ru+" | "+f(L[k])+" |");
-    const H=L.h1;if(!H)continue;
-    const s=o=>Object.entries(o).filter(e=>Math.round(e[1])).map(([k,v])=>k+" "+Math.round(v)).join(", ")||"—";
-    console.log("  к 60′: касса "+H.cr+" (старт 600) · оборот "+H.turn+" · кругов "+H.laps+" · залежей "+H.mined+
-      " · дел "+H.deeds+" на "+Math.round(H.pay)+" кр "+JSON.stringify(H.took)+" · ушло по сроку "+H.lost+" · не взято "+H.poor+
-      " · прыжков "+H.jumps+" · станций "+H.docks+" · систем "+H.sys+" · допуск "+H.clr+" · побед "+H.kills+
-      " · норма "+(H.norm&&H.norm.with!=null?H.norm.with+" % (без вас "+H.norm.without+" %)":"—"));
-    console.log("  к 60′ валовый: "+s(H.gross)+" · расход: "+s(H.spend));
-    console.log("  покупки: "+(L.bought||"—")+" · на «Вьюке» с "+(L.board==null?"—":L.board.toFixed(1)+"′")+
-      " · вложено за прогон "+r.inv+" кр (не расход: U/G без него)");}
+  ecoPrint(rows,{hours:HOURS,human:HUMAN,env:ENV,hireFee:HIRE_FEE});
   ok(rows.length>=1&&rows.every(r=>r.hrs>0),"экономика прогнана: "+rows.length+" ярусов");
 });

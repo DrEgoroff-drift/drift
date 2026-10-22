@@ -66,9 +66,9 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     const bl=D.lights.filter(l=>l.p[0]>HALL_XB-4.6);
     ok(hallLamps(L).length<=3,"над баром ламп "+hallLamps(L).length+" ≤ 3");
     ok(bl.length>0&&bl.every(l=>(l.vol||0)<=.3),"у света бара нет конусов в дыму (vol ≤ .3)");
-    /* сидящие у стойки — на табуретах лицом к стойке, не к камере */
+    /* сидящие у стойки — на табуретах лицом к стойке, не к камере (позы табурета: stool*, у бара barc/barm — M853) */
     const cand=L.people.filter(P=>P.kind==="cand");
-    ok(cand.every(P=>/^stool/.test(P.pose)&&Math.cos(P.yaw)<-.5),"кандидаты бара ("+cand.length+") сидят лицом к стойке");
+    ok(cand.every(P=>/^(stool\d|barc|barm)$/.test(P.pose)&&Math.cos(P.yaw)<-.5),"кандидаты бара ("+cand.length+") сидят лицом к стойке");
     ok(cand.every(P=>P.x<HALL_XB+HALL_SEAT_PILOT-.3),"табурет пилота у правого конца стойки свободен");}
   /* зал не пуст: кроме хозяина и пилота — ещё люди в работе */
   ok(hallLayout("trade").people.filter(P=>P.kind==="crowd"&&P.x<HALL_XB-4.6).length>=2,"в зале, кроме хозяина, ещё двое");
