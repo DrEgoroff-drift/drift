@@ -291,7 +291,11 @@ function plnManFrame(F,pos,face,swim,o){
   });
   plnInstSet(Q.ib1,Q.ia,Q.bones.length);
   /* налобник светит вперёд по взгляду на землю перед человеком (ночью и в тени затмения) */
-  if(st.lamp>.02)F.lamps.push({p:[Q.lamp[0]+fx*1.0,Q.lamp[1]-.35,Q.lamp[2]-.3],r:8,c:[1,.86,.62],k:2.4*st.lamp});
+  /* в шахте (dig) — теплее и короче: забой в двух шагах, белый длинный луч выжигал породу (mine-a) */
+  if(st.lamp>.02){
+    const dig=G.mode==="dig";
+    F.lamps.push({p:[Q.lamp[0]+fx*(dig?.7:1.0),Q.lamp[1]-.35,Q.lamp[2]-.3],r:dig?5:8,c:dig?[1,.72,.44]:[1,.86,.62],k:(dig?2.0:2.4)*st.lamp});
+  }
   /* факел ранца освещает землю под ним */
   if(Q.k.jet>.03)F.lamps.push({p:[Q.jet[0],Q.jet[1]-.35,Q.jet[2]],r:5.5,c:[1,.58,.26],k:2.2*Q.k.jet});
 }
