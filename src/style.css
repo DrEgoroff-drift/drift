@@ -2574,6 +2574,8 @@ body:not(.mobile) .pads button kbd{order:-1;font-size:10px;padding:4px 6px 3px}
 body:not(.mobile) .pads button[data-k=act] kbd{color:var(--amber);box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.5);background:rgba(var(--c-acc),.1)}
 body:not(.mobile) .pads button:is([data-k=act],[data-k=lock])>span{font-size:15px}
 body:not(.mobile) .pads button.abil-ok>.abil-hint{font-size:11px;line-height:13px;width:auto;margin:0;text-align:left}
+.pads .abil-hint>.ah-dot{display:block;height:0;overflow:hidden;font-weight:inherit}
+body:not(.mobile) .pads .abil-hint>.ah-dot{display:inline;height:auto}
 body:not(.mobile) .pads button[data-k=lock]{color:var(--ink)}
 /* нет действия — глагол тихим кремом, а не тёмным суриком на чёрном: читается, но не зовёт */
 body:not(.mobile) .pads button[data-k=act].off{color:var(--ink2)}
