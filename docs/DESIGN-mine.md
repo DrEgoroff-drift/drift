@@ -147,6 +147,12 @@ spot within 90 px of the man (`mineLaySpot`); with none near, the prompt says «
 | level 1, at the face | 3.2 / 33.8 (max 712) | 4.36 / 6.74 | 1.7 / 4.2 | 1.36 / 1.48 |
 | 72 m, cage | 1.9 / 4.7 | 0.79 / 0.86 | 1.4 / 3.3 | 0.46 / 0.48 |
 
+Phone again, 22.10 evening (after the picture pass: lens, ore instances, sheet plates, impulse wave),
+same tool, JS / GPU p50 / p99: surface 2.2 / 3.8 · 0.92 / 0.94; collar 2.8 / 4.6 · 1.20 / 1.31;
+level 1, gallery 1.4 / 3.2 · 0.42 / 0.44 (the closer lens keeps the ground out of the window, so no
+planet frame); at the face 2.3 / 4.3 · 1.24 / 1.39; 72 m 1.5 / 6.5 · 0.42 / 0.44. One gallery run
+showed a 437 ms gap while neighbours' Chromes loaded the machine; two reruns: max gap 16.8 ms.
+
 Down to the first level the planet frame over the cut is most of the GPU bill; below the window's
 reach of the ground the mine costs under a millisecond. Ore bodies (§2) add up to a few hundred nuggets per scene,
 inside these numbers. The face row was measured before the chunk budget below; with it, a cell dug at
