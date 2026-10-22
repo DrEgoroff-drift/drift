@@ -323,10 +323,10 @@ function mapPriceRows(s,maxW){
     const b=(typeof priceBestOf==="function")?priceBestOf(k):null;
     cells.push({t:RES[k].ru.toLowerCase()+" "+pr.p[k],hot:(G.cargo[k]|0)>0,best:!!b&&!b.heard&&b.s===pr});
   }
-  ctx.font="9px ui-monospace,monospace";
-  const sep=ctx.measureText(" · ").width,rows=[];let row=[],w=0;
+  MPN.font="9px ui-monospace,monospace";
+  const sep=mapTM(" · ").width,rows=[];let row=[],w=0;
   for(const c of cells){
-    const cw=ctx.measureText(c.t).width;
+    const cw=mapTM(c.t).width;
     if(row.length&&w+sep+cw>maxW){rows.push(row);row=[];w=0;}
     row.push(c);w+=(row.length>1?sep:0)+cw;
   }
@@ -334,13 +334,13 @@ function mapPriceRows(s,maxW){
   return rows;
 }
 function mapPriceDraw(PR,x0,y0){
-  const sep=ctx.measureText(" · ").width;
+  const sep=mapTM(" · ").width;
   PR.forEach((row,ri)=>{
     let x=x0;const y=y0+ri*11;
     row.forEach(cell=>{
-      ctx.font=(cell.best?"bold ":"")+"9px ui-monospace,monospace";
-      mpText(cell.t,x,y,cell.hot?"#f2b25c":(cell.mark?"rgba(255,150,135,.85)":"rgba(160,182,192,.62)"));x+=ctx.measureText(cell.t).width+sep;
+      MPN.font=(cell.best?"bold ":"")+"9px ui-monospace,monospace";
+      mpText(cell.t,x,y,cell.hot?"#f2b25c":(cell.mark?"rgba(255,150,135,.85)":"rgba(160,182,192,.62)"));x+=mapTM(cell.t).width+sep;
     });
   });
-  ctx.font="9px ui-monospace,monospace";
+  MPN.font="9px ui-monospace,monospace";
 }

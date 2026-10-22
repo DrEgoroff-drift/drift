@@ -421,7 +421,7 @@ function Bird {
 # летописи в порядке склейки игры. Список явный: страница не должна тянуть
 # шесть мегабайт игры ради трёхсот систем и шести агентов. Имя с косой
 # чертой — от корня (site/war-backdrop.js: 2D-фон живёт только на сайте, M822b).
-$WAR_MODULES = @("01-core.js", "03a-hull-maker.js", "12al-powers.js", "site/war-backdrop.js", "17z4-map-pen.js",
+$WAR_MODULES = @("01-core.js", "03a-hull-maker.js", "12al-powers.js", "site/war-backdrop.js", "site/war-pen.js",
   "12am-chron-agents.js", "12am-chron-director.js", "12am-chron-lines.js", "12am-chron.js",
   "12an-chron-news.js",
   "12at-vote.js", "12au-rites.js", "12av-boss.js", "12aw-circ.js", "12b0-fx-pow.js", "14b-war-net.js")

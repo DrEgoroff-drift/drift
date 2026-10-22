@@ -327,7 +327,6 @@ function drawFleetMap(vis,cell){
   const L=vis.filter(on);
   FLEET_MAP_LEGS=0;
   if(!L.length)return;
-  ctx.save();ctx.lineWidth=1;
   const seen=new Set();
   /* линия — цепочка, не сетка (§14, альманах III 0.314.0): у каждой станции
      плечо только к двум ближайшим соседям с флотом; иначе кучка из пяти
@@ -354,5 +353,4 @@ function drawFleetMap(vis,cell){
     mpFrame(v.x+7,v.y-11,6,6,1,"rgba(236,232,220,.7)");
     mpRect(v.x+8,v.y-10,4,1.5,"rgba(226,120,100,.9)");
   }
-  ctx.restore();
 }

@@ -235,7 +235,7 @@ function loreTake(key){
 function drawLoreMarks(cell){
   const list=loreMarks();if(!list.length)return;
   const cx=W/2, cy=H/2;
-  ctx.save();
+  const MS=mapSave();
   for(const m of list){
     const here=(m.sx===G.sx&&m.sy===G.sy);
     const x=cx+(m.sx-G.sx)*cell, y=cy+(m.sy-G.sy)*cell;
@@ -246,8 +246,8 @@ function drawLoreMarks(cell){
       mpCircle(x,y,9,1.2,lc);
       mpLine(x,y-13,x,y-9,1.2,lc);
       if(here){
-        ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-        ctx.fillStyle="rgba(255,214,120,.9)";
+        MPN.font="8px ui-monospace,monospace";MPN.textAlign="center";
+        MPN.fillStyle="rgba(255,214,120,.9)";
         mapLate("ЗАРУБКА",[[x,y+22],[x,y-17]],3);   /* под кольцом, а занято — над ним (18, mapLate) */
       }
     }else{
@@ -258,5 +258,5 @@ function drawLoreMarks(cell){
         ex+Math.cos(a-2.5)*7,ey+Math.sin(a-2.5)*7],1.2,lc,true);
     }
   }
-  ctx.restore();
+  mapRestore(MS);
 }

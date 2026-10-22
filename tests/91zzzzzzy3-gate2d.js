@@ -293,12 +293,12 @@ const GATE2D=[
      return null;},
    done(){RAIL_ARRIVE=-1e9;},
    warm:30,probe:["railGpu","drawRailArrive"]},
-  /* карта (хвосты переписи M828): перо на видеокарте, регистр текста и мерка строк — мимо ctx */
+  /* карта (хвосты переписи M828): перо на видеокарте, регистр текста — поля пера (M817), мерка строк — мимо ctx;
+     считаются и методы, и сеттеры */
   {name:"карта (18, 18a, 18b): подписи, кольца, линейки, роза, владения — без вызовов на ctx",
    painters:["mapLateFlush","mapOverview","mapRingsDraw","mapRumoursDraw","mapRulersDraw","mapRoseDraw","mapHoldingsDraw","mapHoldingsTop"],
    place(first){if(first){G.mode="map";G.mapView=null;G.mapMore=false;G.sel={x:G.sx+1,y:G.sy};}return {};},
    done(){G.mode="system";},
-   reg:true,   /* регистр текста пера (font, textAlign, textBaseline, fillStyle) — свойства ctx без рисования; меряются методы */
    warm:30,probe:["mapRulersDraw","mapLateFlush","mapRingsDraw"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{

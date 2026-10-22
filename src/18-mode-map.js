@@ -43,15 +43,15 @@ function mapU(){return (typeof UIK==="number"&&UIK>1)?UIK:1;}
 /* регистр текста карты (font, выравнивание, основание, краска): перо на видеокарте читает его с ctx, но
    ничего на ctx не красит — ctx.save/restore ради четырёх полей были пустыми вызовами каждого кадра.
    Без видеокарты перо красит на ctx (17z4) — там прежний save/restore со всем состоянием */
-function mapSave(){return MPN.gpu?{f:ctx.font,a:ctx.textAlign,b:ctx.textBaseline,s:ctx.fillStyle}:(ctx.save(),null);}
-function mapRestore(k){if(!k){ctx.restore();return;}ctx.font=k.f;ctx.textAlign=k.a;ctx.textBaseline=k.b;ctx.fillStyle=k.s;}
+function mapSave(){return {f:MPN.font,a:MPN.textAlign,b:MPN.textBaseline,s:MPN.fillStyle};}
+function mapRestore(k){MPN.font=k.f;MPN.textAlign=k.a;MPN.textBaseline=k.b;MPN.fillStyle=k.s;}
 /* мерка строки нынешним регистром: метрики 2D из кэша источника глифов (08cb), без вызова на ctx */
 const MAP_TMS=new Map();
-function mapTM(t){t=String(t);if(!MPN.gpu)return ctx.measureText(t);
-  const k=ctx.font+"|"+ctx.textAlign+"|"+ctx.textBaseline;let st=MAP_TMS.get(k);
-  if(!st){if(MAP_TMS.size>64)MAP_TMS.clear();MAP_TMS.set(k,st=Object.assign({},GC_DEF,{font:ctx.font,textAlign:ctx.textAlign,textBaseline:ctx.textBaseline}));}
+function mapTM(t){t=String(t);
+  const k=MPN.font+"|"+MPN.textAlign+"|"+MPN.textBaseline;let st=MAP_TMS.get(k);
+  if(!st){if(MAP_TMS.size>64)MAP_TMS.clear();MAP_TMS.set(k,st=Object.assign({},GC_DEF,{font:MPN.font,textAlign:MPN.textAlign,textBaseline:MPN.textBaseline}));}
   return GC_GLYPHS.measure(st,t);}
-function mapFont(px){ctx.font=Math.max(8,px*mapU()).toFixed(1)+"px ui-monospace,monospace";}   /* мельче 8 буква не читается (закон кегля, зрение 06.10.2026) */
+function mapFont(px){MPN.font=Math.max(8,px*mapU()).toFixed(1)+"px ui-monospace,monospace";}   /* мельче 8 буква не читается (закон кегля, зрение 06.10.2026) */
 /* ── чернила карты (зрение 06.10.2026) ──
    Подпись поверх подписи не читается ни одна, а на карте их ставили тринадцать модулей, каждый от своей
    точки. Подписи мира — имена рукавов и туманностей, края слухов, великаны, ценники, бирки, кольца
@@ -71,7 +71,7 @@ function mapInkText(s,x,y){const m=mapTM(s);
 /* подпись мира: запомнить, как её рисовать, и места — [x,y] или [x,y,поворот]; plate — подложка
    [dx,dy,w,h,цвет] от точки строки. Выше prio — раньше выбирает место */
 function mapLate(s,spots,prio,plate){MAP_LATE.push({s,spots,prio:prio||0,plate:plate||null,n:MAP_LATE.length,
-  font:ctx.font,fill:ctx.fillStyle,align:ctx.textAlign,base:ctx.textBaseline,alpha:MPN.al});}   /* прозрачность пера (17z4): ctx.globalAlpha её не знает */
+  font:MPN.font,fill:MPN.fillStyle,align:MPN.textAlign,base:MPN.textBaseline,alpha:MPN.al});}   /* прозрачность пера (17z4): ctx.globalAlpha её не знает */
 /* заходят ли два выпуклых четырёхугольника друг в друга ближе, чем на pad (разделяющие оси) */
 function mapHit(P,Q,pad){
   for(const S of [P,Q])for(let i=0;i<4;i++){const a=S[i],b=S[(i+1)%4];let nx=b[1]-a[1],ny=a[0]-b[0];const l=Math.hypot(nx,ny);if(l<1e-9)continue;nx/=l;ny/=l;
@@ -88,7 +88,7 @@ function mapLateFlush(){
   const MS=mapSave();
   mpWeight(1);   /* q.alpha уже взвешена своим слоем */
   for(const q of MAP_LATE){
-    ctx.font=q.font;ctx.textAlign=q.align;ctx.textBaseline=q.base;
+    MPN.font=q.font;MPN.textAlign=q.align;MPN.textBaseline=q.base;
     const m=mapTM(q.s),pl=q.plate;
     let u0=-m.actualBoundingBoxLeft,v0=-m.actualBoundingBoxAscent,u1=m.actualBoundingBoxRight,v1=m.actualBoundingBoxDescent;
     if(pl){u0=Math.min(u0,pl[0]);v0=Math.min(v0,pl[1]);u1=Math.max(u1,pl[0]+pl[2]);v1=Math.max(v1,pl[1]+pl[3]);}
@@ -117,10 +117,10 @@ function wrapLeft(text,x,y,maxW,lh){
   const words=text.split(" ");let line="",ly=y,n=1;
   for(const w of words){
     const t=line?line+" "+w:w;
-    if(mapTM(t).width>maxW&&line){mpText(line,x,ly,ctx.fillStyle);line=w;ly+=lh;n++;}
+    if(mapTM(t).width>maxW&&line){mpText(line,x,ly,MPN.fillStyle);line=w;ly+=lh;n++;}
     else line=t;
   }
-  if(line)mpText(line,x,ly,ctx.fillStyle);
+  if(line)mpText(line,x,ly,MPN.fillStyle);
   return n;                       /* сколько строк вышло: карточка растёт по ним */
 }
 /* ── сколько строк займёт, если ещё не рисовать ──
@@ -205,7 +205,7 @@ function mapOverview(V,cell,px,py){
   const MS=mapSave();
   mpDashCircle(c0.x,c0.y,CR,1,"rgba(242,178,92,.35)",[3,5]);
   mpDashCircle(c0.x,c0.y,40*cell,1,"rgba(255,107,87,.35)",[2,7]);
-  mapFont(9);ctx.textAlign="center";
+  mapFont(9);MPN.textAlign="center";
   const ink=(s,x,y,c)=>{mpText(s,x,y,c);mapInkText(s,x,y);};   /* свои подписи обзора — в чернила: имена рукавов их обойдут */
   ink("ОБЖИТЫЙ КРУГ",c0.x,c0.y-CR-5,"rgba(242,178,92,.7)");
   ink("КРОМКА · ДАЛЬШЕ ОПАСНО",c0.x,c0.y+40*cell+14,"rgba(255,107,87,.65)");
@@ -266,7 +266,7 @@ function drawMapIn(){
     const S=srch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
     const sr=Math.max(6,S.rad*cell);   /* над кругом, под ним или в середине — где свободно */
     mpDashCircle(sxp,syp,sr,1,"rgba(207,227,234,.45)",[4,5]);
-    ctx.fillStyle="rgba(207,227,234,.7)";mapFont(8);ctx.textAlign="center";
+    MPN.fillStyle="rgba(207,227,234,.7)";mapFont(8);MPN.textAlign="center";
     mapLate("ИСКАТЬ ЗДЕСЬ · "+S.rad+" "+pl3(S.rad,"СЕКТОР","СЕКТОРА","СЕКТОРОВ").toUpperCase(),[[sxp,syp-sr-6],[sxp,syp+sr+14],[sxp,syp+4]],5);
   }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
@@ -349,14 +349,14 @@ function drawMapIn(){
     let tagUp=here&&!youDn?y-rr-28-9*mapU()-4:y-rr-21,tagDn=youDn?y+rr+30+8*mapU():y+rr+13;
     /* строка в стопку: над системой — пока не уходит под линейку X, иначе под неё, зеркально: так же
        далеко от звезды, как стояла над ней, — снаружи своего кольца. Вбок сдвигается с линейки Y и
-       с борта. Строки стопки — по центру (textAlign center); цвет — нынешний ctx.fillStyle, пером */
+       с борта. Строки стопки — по центру (textAlign center); цвет — нынешний MPN.fillStyle, пером */
     const tag=(t,up,pref)=>{
       const m=mapTM(t),hw=m.width/2;
       let b=up?Math.min(tagUp,pref):Math.max(tagDn,pref);
       const A=m.actualBoundingBoxAscent,D=m.actualBoundingBoxDescent;
       if(up&&b-A<FR.y0){up=false;b=Math.max(tagDn,2*y-pref+A-D);}
       const cx=Math.max(FR.x0+hw,Math.min(FR.x1-hw,x));
-      mpText(t,cx,b,ctx.fillStyle);mapInkText(t,cx,b);
+      mpText(t,cx,b,MPN.fillStyle);mapInkText(t,cx,b);
       if(up)tagUp=b-11;else tagDn=b+10;
     };
     mpAlpha(fade);
@@ -382,7 +382,7 @@ function drawMapIn(){
         mpLine(x+Math.cos(ae)*orr,y+Math.sin(ae)*orr,x+Math.cos(ae)*(orr+2.5+ol*.6),y+Math.sin(ae)*(orr+2.5+ol*.6),ow,oco);
       }
       if(ol>=2){
-        ctx.fillStyle=rgba(oc,.95*of);mapFont(8);ctx.textAlign="center";
+        MPN.fillStyle=rgba(oc,.95*of);mapFont(8);MPN.textAlign="center";
         tag(ol>=OCC_MAX?"ПОД ПИРАТАМИ":"БЛОКАДА",false,y+orr+11);
       }
     }
@@ -400,7 +400,7 @@ function drawMapIn(){
       mpCircle(x,y,rr+14,1.4,"rgba(127,230,216,"+(.6+.3*Math.sin(G.t*.06)).toFixed(2)+")");
       if(youDn)mpTri(x,y+rr+24,x-4,y+rr+17,x+4,y+rr+17,"#7fe6d8");
       else mpTri(x,y-rr-24,x-4,y-rr-17,x+4,y-rr-17,"#7fe6d8");
-      mapFace(10,true);ctx.textAlign="center";
+      mapFace(10,true);MPN.textAlign="center";
       /* своя плашка материалом «Борта» (M822): дом стоит в светлом ядре галактики (поле карты, G10),
          голый бирюзовый на нём не читался. Плашка кончается у носика стрелки — метка и указатель одно */
       const youS=W<=760?"ВЫ":"ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),   /* телефон: имя — в шапке, у звезды табличке выбора нужно место */
@@ -428,12 +428,12 @@ function drawMapIn(){
        которые поставил не мир, а сам игрок. Без них до них не долететь. */
     if((G.rogues||[]).some(R=>R.sx===gx&&R.sy===gy)){
       mpCircle(x,y,rr+17,1.4,"#c58ae0");
-      ctx.fillStyle="rgba(197,138,224,.9)";mapFont(8);ctx.textAlign="center";
+      MPN.fillStyle="rgba(197,138,224,.9)";mapFont(8);MPN.textAlign="center";
       tag("РЕНЕГАТ",true,y-rr-21);
     }
     if(G.aiRift&&G.aiRift.sx===gx&&G.aiRift.sy===gy){
       mpCircle(x,y,rr+21,1.2,"#7fb0e6");
-      ctx.fillStyle="rgba(127,176,230,.9)";mapFont(8);ctx.textAlign="center";
+      MPN.fillStyle="rgba(127,176,230,.9)";mapFont(8);MPN.textAlign="center";
       tag("РАСХОЖДЕНИЕ",false,y+rr+21);
     }
     /* «Охота» командира: пиратские базы соседних секторов помечены заранее.
@@ -452,14 +452,14 @@ function drawMapIn(){
       mpAlpha(.75);
       mpArc(x,y,rr+9,-.6,.6,1,NM.col);
       mpArc(x,y,rr+9,Math.PI-.6,Math.PI+.6,1,NM.col);
-      ctx.fillStyle=NM.col;mapFont(8);ctx.textAlign="center";
+      MPN.fillStyle=NM.col;mapFont(8);MPN.textAlign="center";
       tag(NM.what.toUpperCase(),false,y+rr+13);
       mpAlpha(1);
     }
     /* след артефакта: сектор, который вычитал исследователь с «происхождением» */
     if(G.relicHint&&G.relicHint.sx===gx&&G.relicHint.sy===gy){
       mpDashCircle(x,y,rr+25,1,"#c58ae0",[3,3]);
-      ctx.fillStyle="rgba(197,138,224,.85)";mapFont(8);ctx.textAlign="center";
+      MPN.fillStyle="rgba(197,138,224,.85)";mapFont(8);MPN.textAlign="center";
       tag("СЛЕД АРТЕФАКТА",true,y-rr-29);
     }
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
@@ -474,7 +474,7 @@ function drawMapIn(){
     const ex=cx+ddx/m,ey=cyy+ddy/m,an=Math.atan2(ddy,ddx),ca=Math.cos(an),sa=Math.sin(an);
     const P=(u,v)=>[ex+u*ca-v*sa,ey+u*sa+v*ca],A=P(8,0),B=P(-6,-6),C=P(-6,6);
     mpTri(A[0],A[1],B[0],B[1],C[0],C[1],"#7fe6d8");
-    mapFont(8);ctx.textAlign="center";
+    mapFont(8);MPN.textAlign="center";
     mpText("ВЫ",ex-ca*16,ey-sa*16+3,"#7fe6d8");mapInkText("ВЫ",ex-ca*16,ey-sa*16+3);
   }
   /* имя трассы, бирки перемен и ценники (M348) — над звёздами */
@@ -593,7 +593,7 @@ function drawMapIn(){
     const c0=MAP_INK.length;
     const label=far?"ВНЕ РАДИУСА":(poor?mapDryWord(cost):cost+" ТОПЛИВА");
     const U=mapU();
-    mapFont(10);ctx.textAlign="center";ctx.textBaseline="middle";
+    mapFont(10);MPN.textAlign="center";MPN.textBaseline="middle";
     const tw=mapTM(label).width;
     mpRect(mx-tw/2-7*U,my-9*U,tw+14*U,18*U,"rgba(6,10,16,.82)");mapInkBox(mx-tw/2-7*U,my-9*U,tw+14*U,18*U);
     mpFrame(mx-tw/2-6.5*U,my-8.5*U,tw+13*U,17*U,1,col);
@@ -609,7 +609,7 @@ function drawMapIn(){
     for(let i=c0;i<MAP_INK.length;i++)MAP_INK[i].fb=1;   /* запасная к табличке: её раскладку не держит */
     }
     mapRestore(MS);
-    ctx.textBaseline="alphabetic";
+    MPN.textBaseline="alphabetic";
   }
   /* ── карточка выбранной системы ──
      Раньше подпись висела прямо под звездой и на нижнем ряду секторов уезжала
@@ -646,12 +646,12 @@ function drawMapIn(){
     /* карточка — табличкой «Борта» (M822): графит, кайма, срезы; имя цветом прицела, строки лицом табличек */
     mpPlate(cx,cy,cw,ch);
     mapBox("карточка системы",cx,cy,cw,ch);
-    ctx.textAlign="left";
+    MPN.textAlign="left";
     mapFace(15,true);
     mpText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12*U,cy+24*U,"#f2b25c");   /* ваше имя (11u) */
     mapFace(10.5);
     mpText(s.cls.ru+" · "+s.planets.length+" "+pl3(s.planets.length,"планета","планеты","планет")+(s.station?" · станция":"")+(s.belt?" · пояс":""),cx+12*U,cy+41*U,HANG.INK);
-    ctx.fillStyle=HANG.INK2;
+    MPN.fillStyle=HANG.INK2;
     wrapLeft(s.desc,cx+12*U,cy+58*U,cw-24*U,14*U);
     if(PR.length)mapPriceDraw(PR,cx+12*U,cy+(56+dn*14+10)*U);
     }
@@ -668,12 +668,12 @@ function drawMapIn(){
     if(nr)mpPlate(foot.RX-wr-9*U,deck-(nr-1)*16*U-15*U,wr+18*U,(nr-1)*16*U+21*U);}
    foot.rows.forEach((row,i)=>{
      const y=deck-i*16*U;
-     if(row[0]){ctx.textAlign="left";mpText(row[0][1],16,y,row[0][0]);
+     if(row[0]){MPN.textAlign="left";mpText(row[0][1],16,y,row[0][0]);
        mapBox(row[0][2]?"подвал слева · выбор":"подвал слева",16,y-9*U,mapTW(row[0][1]),12*U);}
-     if(row[1]){ctx.textAlign="right";mpText(row[1][1],foot.RX,y,row[1][0]);
+     if(row[1]){MPN.textAlign="right";mpText(row[1][1],foot.RX,y,row[1][0]);
        const w=mapTW(row[1][1]);mapBox("подвал справа",foot.RX-w,y-9*U,w,12*U);}
    });
-   ctx.textAlign="right";
+   MPN.textAlign="right";
    /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */
    if(typeof mapRulersDraw==="function"){mapRulersDraw(V,cell,foot);mapRoseDraw(foot);}
   }
