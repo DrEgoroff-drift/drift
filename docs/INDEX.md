@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 637 · top-level symbols: 8730
+Files: 639 · top-level symbols: 8721
 
 ## SYMBOLS
 
@@ -613,10 +613,9 @@ EXP_GOODS                    src/11x-expedition.js:20
 EXP_PAX_LINES                src/11x-expedition.js:112
 EXP_QUIET                    src/11x-expedition.js:186
 EYES_SUITE                   tests/99-run.js:39-43
-FACE_EYE                     src/12d-mgr-face.js:14
-FACE_HAIR                    src/12d-mgr-face.js:12
-FACE_ROLE_BG                 src/12d-mgr-face.js:15
-FACE_SKIN                    src/12d-mgr-face.js:10
+FACE_EYE                     src/12d-mgr-face.js:18
+FACE_HAIR                    src/12d-mgr-face.js:16
+FACE_SKIN                    src/12d-mgr-face.js:14
 FAIL_IN                      src/05b1-warranty.js:101
 FAME_N                       src/21b3-base-hunt.js:27
 FARM_HOME                    src/21ac2-base-farm.js:22
@@ -950,10 +949,10 @@ H3D_CARGO                    src/17c2a-hull3d.js:22
 H3D_L                        src/17c2a-hull3d.js:16
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
-H3D_PIR                      src/17c2a-hull3d.js:449
+H3D_PIR                      src/17c2a-hull3d.js:494
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
-H3D_WGSL                     src/17c2a-hull3d.js:217
+H3D_WGSL                     src/17c2a-hull3d.js:262
 HAIL_HOLD                    src/12ar-hail.js:20
 HAIL_HOLD_PHONE              src/12ar-hail.js:23
 HAIL_RANGE                   src/12ar-hail.js:25
@@ -1666,7 +1665,7 @@ PLN_GUN                      src/21pifb-pln-marks-act-move.js:345
 PLN_HAND_S                   src/21pz-pln-frame.js:277
 PLN_HDR                      src/21pe-pln-gpu.js:23
 PLN_HERB                     src/21pia-pln-herb.js:30
-PLN_HERB_MAKE                src/21pia-pln-herb.js:135-355
+PLN_HERB_MAKE                src/21pia-pln-herb.js:124-344
 PLN_ICO                      src/21pa-pln-mesh.js:40
 PLN_KIND                     src/21pe-pln-gpu.js:26
 PLN_KIT_N                    src/21pg-pln-flora.js:249
@@ -1693,17 +1692,17 @@ PLN_OLD_HELD                 src/21pzb-pln-words.js:25
 PLN_OLD_HINT                 src/21pzb-pln-words.js:38
 PLN_OLD_HSURF                src/21pzb-pln-words.js:59
 PLN_OLD_HUD                  src/21pza-pln-descent.js:207
-PLN_OLD_HUD2                 src/21pzb-pln-words.js:102
+PLN_OLD_HUD2                 src/21pzb-pln-words.js:100
 PLN_OLD_LANDING              src/21pza-pln-descent.js:221
 PLN_OLD_ULAND                src/21pza-pln-descent.js:212
 PLN_OVER                     src/21pj-pln-over.js:16
-PLN_OWN_GATE_R               src/21pig-pln-own.js:478
-PLN_OWN_OLD_AT               src/21pig-pln-own.js:583
-PLN_OWN_OLD_DIG              src/21pig-pln-own.js:530
-PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:508
-PLN_OWN_OLD_HINT             src/21pig-pln-own.js:576
-PLN_OWN_OLD_UPD              src/21pig-pln-own.js:553
-PLN_OWN_UPD                  src/21pig-pln-own.js:507
+PLN_OWN_GATE_R               src/21pig-pln-own.js:408
+PLN_OWN_OLD_AT               src/21pig-pln-own.js:490
+PLN_OWN_OLD_DIG              src/21pig-pln-own.js:456
+PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:434
+PLN_OWN_OLD_HINT             src/21pig-pln-own.js:483
+PLN_OWN_OLD_UPD              src/21pig-pln-own.js:461
+PLN_OWN_UPD                  src/21pig-pln-own.js:433
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:41-65
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
@@ -2493,7 +2492,6 @@ afterFitChange               src/05-parts.js:408-414
 aiAfford                     src/12f-mgr-ai.js:25-28
 aiCanBuild                   src/12f-mgr-ai.js:24
 aiDrift                      src/12f-mgr-ai.js:52-105
-aiFace                       src/12d-mgr-face.js:229-263
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
@@ -3981,7 +3979,7 @@ drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
 drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
-drawHomeIn                   src/29rb-home-r3.js:455-460
+drawHomeIn                   src/29rb-home-r3.js:454-459
 drawHomeOut                  src/21f-home-out.js:75-263
 drawHotel                    src/17l-hotel.js:147-174
 drawHullMarks                src/03b-hull-paint.js:174-481
@@ -4057,11 +4055,11 @@ drawVan                      src/21ac3-base-van.js:71-137
 drawVanSmall                 src/21ac3-base-van.js:139-145
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
-drawWanderRoom               src/29re-wander-r3.js:359-362
+drawWanderRoom               src/29re-wander-r3.js:360-363
 drawWanderer                 src/12v-wander.js:339-443
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-318
-drawWinter                   src/29rc-winter-r3.js:276-279
+drawWinter                   src/29rc-winter-r3.js:275-278
 drawWorld                    src/28-loop.js:444-447
 drawWorldIn                  src/28-loop.js:448-472
 drawWreck                    src/20aa-poi-shapes.js:8-47
@@ -4195,8 +4193,7 @@ expStart                     src/11x-expedition.js:29-38
 exportCode                   src/14a-cloud.js:77
 f16                          src/08b-gpu.js:471
 faceEl                       src/27c-ui-hq.js:6-12
-facePath                     src/12d-mgr-face.js:19-28
-faceRnd                      src/12d-mgr-face.js:16
+faceRnd                      src/12d-mgr-face.js:19
 factPrices                   src/27c-ui-hq.js:493-510
 failRoll                     src/05b1-warranty.js:103
 failShift                    src/05b1-warranty.js:102
@@ -4851,22 +4848,23 @@ gunsInGroup                  src/05c-arms.js:233-236
 h01                          src/01-core.js:28
 h3dBargeMesh                 src/17c2f-body-barge.js:58-66
 h3dBargeWreck                src/17c2f-body-barge.js:68-90
-h3dCls                       src/17c2a-hull3d.js:333-343
-h3dDesc                      src/17c2a-hull3d.js:315-323
-h3dDev                       src/17c2a-hull3d.js:325-331
-h3dDraw                      src/17c2a-hull3d.js:347-359
-h3dEar                       src/17c2a-hull3d.js:200-215
+h3dCls                       src/17c2a-hull3d.js:378-388
+h3dDesc                      src/17c2a-hull3d.js:360-368
+h3dDev                       src/17c2a-hull3d.js:370-376
+h3dDraw                      src/17c2a-hull3d.js:392-404
+h3dEar                       src/17c2a-hull3d.js:245-260
 h3dKit                       src/17c2a-hull3d.js:27-90
-h3dMesh                      src/17c2a-hull3d.js:101-198
-h3dPack                      src/17c2a-hull3d.js:92-98
+h3dMesh                      src/17c2a-hull3d.js:132-243
+h3dPack                      src/17c2a-hull3d.js:92-100
 h3dParts                     src/17c2b-parts3d.js:158-353
-h3dPirMesh                   src/17c2a-hull3d.js:450-506
-h3dPirate                    src/17c2a-hull3d.js:508-511
-h3dRun                       src/17c2a-hull3d.js:368-430
+h3dPirMesh                   src/17c2a-hull3d.js:495-551
+h3dPirate                    src/17c2a-hull3d.js:553-556
+h3dPlaneHoles                src/17c2a-hull3d.js:107-129
+h3dRun                       src/17c2a-hull3d.js:413-475
 h3dStationMesh               src/17c2g-body-station.js:97-129
 h3dStockGear                 src/17c2b-parts3d.js:374-383
-h3dStudioPt                  src/17c2a-hull3d.js:362-366
-h3dStudioRT                  src/17c2a-hull3d.js:433-443
+h3dStudioPt                  src/17c2a-hull3d.js:407-411
+h3dStudioRT                  src/17c2a-hull3d.js:478-488
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60
@@ -5246,10 +5244,10 @@ holdWorth                    src/27j-ui-opis.js:596-604
 home3Arc                     src/29rba-home-shell.js:11
 home3Cam                     src/29rb-home-r3.js:405-416
 home3Canvas                  src/29rb-home-r3.js:388-395
-home3Cost                    src/29rb-home-r3.js:452
+home3Cost                    src/29rb-home-r3.js:451
 home3FolkM                   src/29rb-home-r3.js:39
-home3Frame                   src/29rb-home-r3.js:418-436
-home3Hide                    src/29rb-home-r3.js:445-450
+home3Frame                   src/29rb-home-r3.js:418-435
+home3Hide                    src/29rb-home-r3.js:444-449
 home3LookAt                  src/29rb-home-r3.js:382
 home3Man                     src/29rb-home-r3.js:322-333
 home3Mesh                    src/29rb-home-r3.js:43-139
@@ -5263,7 +5261,7 @@ home3Skin                    src/29rba-home-shell.js:37-45
 home3StoolMesh               src/29rb-home-r3.js:314
 home3Str                     src/29rb-home-r3.js:38
 home3Stuff                   src/29rb-home-r3.js:141-312
-home3Tags                    src/29rb-home-r3.js:439
+home3Tags                    src/29rb-home-r3.js:438
 home3Under                   src/29rba-home-shell.js:47-64
 home3Up                      src/29rb-home-r3.js:30
 home3UpRooms                 src/29rb-home-r3.js:379
@@ -5303,7 +5301,7 @@ homeStill                    src/29rf-home-still.js:13-22
 homeStillAsp                 src/29rf-home-still.js:23
 homeStillCam                 src/29rf-home-still.js:34-42
 homeStillFlush               src/29rf-home-still.js:24-31
-homeStillPaint               src/29rf-home-still.js:43-71
+homeStillPaint               src/29rf-home-still.js:43-70
 homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
 homeWash                     src/21f-home-out.js:298-323
@@ -5360,7 +5358,7 @@ hq3Layout                    src/29r-rooms-r3.js:29-41
 hq3Mesh                      src/29r-rooms-r3.js:46-136
 hq3Scene                     src/29r-rooms-r3.js:139-179
 hq3Stand                     src/29r-rooms-r3.js:28
-hq3Tags                      src/29r-rooms-r3.js:264
+hq3Tags                      src/29r-rooms-r3.js:263
 hqAiOffer                    src/27c-ui-hq.js:390-410
 hqBtnTick                    src/27c-ui-hq.js:221-227
 hqJobCard                    src/27c-ui-hq.js:450-488
@@ -5368,7 +5366,7 @@ hqMgrAt                      src/27f-hq-room.js:8
 hqRelicSlot                  src/27c-ui-hq.js:416-446
 hqRender                     src/27c-ui-hq.js:228-385
 hqRentOffer                  src/12f1-mgr-rent.js:59-77
-hqScene                      src/29r-rooms-r3.js:307
+hqScene                      src/29r-rooms-r3.js:306
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
@@ -5942,7 +5940,6 @@ mgrDefect                    src/12c-mgr-core.js:349-356
 mgrDomain                    src/12c-mgr-core.js:518-528
 mgrDomainLine                src/27c-ui-hq.js:512-531
 mgrDroneRate                 src/12c-mgr-core.js:220-223
-mgrFace                      src/12d-mgr-face.js:33-224
 mgrFee                       src/12c-mgr-core.js:300
 mgrHas                       src/12c-mgr-core.js:48
 mgrHead                      src/27c-ui-hq.js:24-42
@@ -6724,25 +6721,23 @@ plnGunLaid                   src/21pifb-pln-marks-act-move.js:281
 plnHandAge                   src/21pz-pln-frame.js:278-288
 plnHandWin                   src/21pz-pln-frame.js:290-293
 plnHash                      src/21p-pln.js:55-59
-plnHerbAlgaMesh              src/21pia-pln-herb.js:417-441
-plnHerbAlgae                 src/21pia-pln-herb.js:442-467
-plnHerbBlade                 src/21pia-pln-herb.js:80-92
-plnHerbBranch                src/21pia-pln-herb.js:73-78
-plnHerbDrop                  src/21pia-pln-herb.js:477-484
-plnHerbFrame                 src/21pia-pln-herb.js:468-476
-plnHerbLeaf                  src/21pia-pln-herb.js:57
-plnHerbMesh                  src/21pia-pln-herb.js:320-355
-plnHerbPads                  src/21pia-pln-herb.js:39
-plnHerbPlate                 src/21pia-pln-herb.js:115-118
-plnHerbPod                   src/21pia-pln-herb.js:126-130
-plnHerbRibbon                src/21pia-pln-herb.js:95-112
-plnHerbRing                  src/21pia-pln-herb.js:120-124
-plnHerbSoft                  src/21pia-pln-herb.js:48
-plnHerbStem                  src/21pia-pln-herb.js:59-71
-plnHerbTone                  src/21pia-pln-herb.js:52-55
+plnHerbAlgaMesh              src/21pia-pln-herb.js:405-429
+plnHerbAlgae                 src/21pia-pln-herb.js:430-455
+plnHerbBlade                 src/21pia-pln-herb.js:69-81
+plnHerbBranch                src/21pia-pln-herb.js:62-67
+plnHerbDrop                  src/21pia-pln-herb.js:465-472
+plnHerbFrame                 src/21pia-pln-herb.js:456-464
+plnHerbLeaf                  src/21pia-pln-herb.js:46
+plnHerbMesh                  src/21pia-pln-herb.js:309-344
+plnHerbPlate                 src/21pia-pln-herb.js:104-107
+plnHerbPod                   src/21pia-pln-herb.js:115-119
+plnHerbRibbon                src/21pia-pln-herb.js:84-101
+plnHerbRing                  src/21pia-pln-herb.js:109-113
+plnHerbSoft                  src/21pia-pln-herb.js:37
+plnHerbStem                  src/21pia-pln-herb.js:48-60
+plnHerbTone                  src/21pia-pln-herb.js:41-44
 plnHerbZ                     src/21pia-pln-herb.js:35
-plnHerbZAt                   src/21pia-pln-herb.js:40-46
-plnHerbs                     src/21pia-pln-herb.js:360-412
+plnHerbs                     src/21pia-pln-herb.js:349-400
 plnHex                       src/21p-pln.js:46-49
 plnHour                      src/21pz-pln-frame.js:181-241
 plnIco                       src/21pa-pln-mesh.js:41-58
@@ -6750,40 +6745,40 @@ plnInst                      src/21pe-pln-gpu.js:100-105
 plnInstFree                  src/21pe-pln-gpu.js:117
 plnInstSet                   src/21pe-pln-gpu.js:107-116
 plnKitTick                   src/21pg-pln-flora.js:250-253
-plnLand                      src/21pf-pln-land.js:555-566
+plnLand                      src/21pf-pln-land.js:547-558
 plnLandBare                  src/21pf-pln-land.js:256-259
-plnLandBatches               src/21pf-pln-land.js:543-545
-plnLandBuild                 src/21pf-pln-land.js:501-507
-plnLandCol                   src/21pf-pln-land.js:409-448
+plnLandBatches               src/21pf-pln-land.js:535-537
+plnLandBuild                 src/21pf-pln-land.js:493-499
+plnLandCol                   src/21pf-pln-land.js:401-440
 plnLandCols                  src/21pf-pln-land.js:116
 plnLandE                     src/21pf-pln-land.js:118
 plnLandFarGen                src/21pfb-pln-land-mesh.js:55-90
-plnLandFarH                  src/21pf-pln-land.js:313-393
+plnLandFarH                  src/21pf-pln-land.js:305-385
 plnLandFarMesh               src/21pfb-pln-land-mesh.js:93
 plnLandFarRows               src/21pf-pln-land.js:109-114
-plnLandFree                  src/21pf-pln-land.js:546-553
-plnLandGen                   src/21pf-pln-land.js:496-500
-plnLandJobs                  src/21pf-pln-land.js:451-484
-plnLandLift                  src/21pf-pln-land.js:302
+plnLandFree                  src/21pf-pln-land.js:538-545
+plnLandGen                   src/21pf-pln-land.js:488-492
+plnLandJobs                  src/21pf-pln-land.js:443-476
+plnLandLift                  src/21pf-pln-land.js:294
 plnLandMake                  src/21pf-pln-land.js:121-211
-plnLandMove                  src/21pf-pln-land.js:568-574
+plnLandMove                  src/21pf-pln-land.js:560-566
 plnLandNode                  src/21pfb-pln-land-mesh.js:9-15
-plnLandPath                  src/21pf-pln-land.js:397-406
+plnLandPath                  src/21pf-pln-land.js:389-398
 plnLandPond                  src/21pf-pln-land.js:236-247
 plnLandPondLine              src/21pf-pln-land.js:215-226
 plnLandPondZ                 src/21pf-pln-land.js:228-234
 plnLandRake                  src/21pf-pln-land.js:91
 plnLandRead                  src/21pza-pln-descent.js:173-181
-plnLandRibAt                 src/21pf-pln-land.js:289-296
+plnLandRibAt                 src/21pf-pln-land.js:281-288
 plnLandRibGen                src/21pfb-pln-land-mesh.js:16-54
-plnLandRibH                  src/21pf-pln-land.js:263-287
+plnLandRibH                  src/21pf-pln-land.js:263-279
 plnLandRibMesh               src/21pfb-pln-land-mesh.js:92
 plnLandRim                   src/21pf-pln-land.js:250-253
 plnLandRows                  src/21pf-pln-land.js:95-107
-plnLandSees                  src/21pf-pln-land.js:486-494
-plnLandSpan                  src/21pf-pln-land.js:304-309
-plnLandStep                  src/21pf-pln-land.js:512-542
-plnLandTab                   src/21pf-pln-land.js:298-301
+plnLandSees                  src/21pf-pln-land.js:478-486
+plnLandSpan                  src/21pf-pln-land.js:296-301
+plnLandStep                  src/21pf-pln-land.js:504-534
+plnLandTab                   src/21pf-pln-land.js:290-293
 plnLandUi                    src/21pza-pln-descent.js:198-206
 plnLayPost                   src/21pe-pln-gpu.js:141-149
 plnLayouts                   src/21pe-pln-gpu.js:130-140
@@ -6849,33 +6844,29 @@ plnOver                      src/21pj-pln-over.js:50-128
 plnOverAt                    src/21pj-pln-over.js:19-22
 plnOverOld                   src/21pj-pln-over.js:30-47
 plnOverPlate                 src/21pj-pln-over.js:23-28
-plnOwnAtGate                 src/21pig-pln-own.js:479
-plnOwnBaseAt                 src/21pig-pln-own.js:95-110
-plnOwnBaseMesh               src/21pig-pln-own.js:121-257
-plnOwnBaseX                  src/21pig-pln-own.js:66-91
-plnOwnBattOf                 src/21pig-pln-own.js:112-117
-plnOwnFlat                   src/21pig-pln-own.js:282-287
-plnOwnFrame                  src/21pig-pln-own.js:402-449
-plnOwnFree                   src/21pig-pln-own.js:366-370
-plnOwnGateC                  src/21pig-pln-own.js:492
-plnOwnGateHide               src/21pig-pln-own.js:539-547
-plnOwnGateNote               src/21pig-pln-own.js:495-501
-plnOwnGateShow               src/21pig-pln-own.js:548-552
-plnOwnGateX                  src/21pig-pln-own.js:473-477
-plnOwnHomeAt                 src/21pig-pln-own.js:260-278
-plnOwnHomeMesh               src/21pig-pln-own.js:288-363
-plnOwnInYard                 src/21pig-pln-own.js:515-518
-plnOwnItem                   src/21pig-pln-own.js:371-378
-plnOwnKit                    src/21pig-pln-own.js:41-60
-plnOwnMark                   src/21pig-pln-own.js:481
-plnOwnOcc                    src/21pig-pln-own.js:452-461
-plnOwnPads                   src/21pig-pln-own.js:463-470
-plnOwnPennHere               src/21pig-pln-own.js:118-120
+plnOwnAtGate                 src/21pig-pln-own.js:409
+plnOwnBaseAt                 src/21pig-pln-own.js:86-101
+plnOwnBaseMesh               src/21pig-pln-own.js:112-205
+plnOwnBaseX                  src/21pig-pln-own.js:57-82
+plnOwnBattOf                 src/21pig-pln-own.js:103-108
+plnOwnFrame                  src/21pig-pln-own.js:332-379
+plnOwnFree                   src/21pig-pln-own.js:296-300
+plnOwnGateNote               src/21pig-pln-own.js:421-427
+plnOwnGateX                  src/21pig-pln-own.js:403-407
+plnOwnHomeAt                 src/21pig-pln-own.js:208-223
+plnOwnHomeMesh               src/21pig-pln-own.js:224-293
+plnOwnInYard                 src/21pig-pln-own.js:441-444
+plnOwnItem                   src/21pig-pln-own.js:301-308
+plnOwnKit                    src/21pig-pln-own.js:41-51
+plnOwnMark                   src/21pig-pln-own.js:411
+plnOwnOcc                    src/21pig-pln-own.js:382-391
+plnOwnPads                   src/21pig-pln-own.js:393-400
+plnOwnPennHere               src/21pig-pln-own.js:109-111
 plnOwnSteel                  src/21pig-pln-own.js:34-39
-plnOwnStep                   src/21pig-pln-own.js:380-400
-plnOwnUnder                  src/21pig-pln-own.js:519-522
-plnOwnWordsAt                src/21pig-pln-own.js:483-488
-plnOwnYardPrompt             src/21pig-pln-own.js:523-529
+plnOwnStep                   src/21pig-pln-own.js:310-330
+plnOwnUnder                  src/21pig-pln-own.js:445-448
+plnOwnWordsAt                src/21pig-pln-own.js:413-418
+plnOwnYardPrompt             src/21pig-pln-own.js:449-455
 plnPadBulb                   src/21pza-pln-descent.js:120
 plnPadFrame                  src/21pza-pln-descent.js:134-164
 plnPadGeo                    src/21pza-pln-descent.js:83-105
@@ -7667,8 +7658,8 @@ room3Breath                  src/29r-rooms-r3.js:213
 room3Cams                    src/29r-rooms-r3.js:199
 room3Canvas                  src/29r-rooms-r3.js:182-190
 room3Close                   src/29r-rooms-r3.js:225-231
-room3Cost                    src/29r-rooms-r3.js:295
-room3Frame                   src/29r-rooms-r3.js:240-259
+room3Cost                    src/29r-rooms-r3.js:294
+room3Frame                   src/29r-rooms-r3.js:240-258
 room3GlideAt                 src/29r-rooms-r3.js:200-204
 room3Go                      src/29r-rooms-r3.js:207-211
 room3Loop                    src/29r-rooms-r3.js:232-239
@@ -7676,11 +7667,11 @@ room3Moving                  src/29r-rooms-r3.js:205
 room3Night                   src/29r-rooms-r3.js:214
 room3Ok                      src/29r-rooms-r3.js:215
 room3Open                    src/29r-rooms-r3.js:216-223
-room3Over                    src/29r-rooms-r3.js:289-292
-room3PickHq                  src/29r-rooms-r3.js:298-304
+room3Over                    src/29r-rooms-r3.js:288-291
+room3PickHq                  src/29r-rooms-r3.js:297-303
 room3Place                   src/29r-rooms-r3.js:224
 room3Size                    src/29r-rooms-r3.js:191-198
-room3TagsDraw                src/29r-rooms-r3.js:273-287
+room3TagsDraw                src/29r-rooms-r3.js:272-286
 roomToneTick                 src/09a-roomtone.js:79-99
 routeEarn                    src/12r-route.js:196-204
 routeFork                    src/12r-route.js:64-67
@@ -8427,7 +8418,7 @@ updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
 updateSystem                 src/17-mode-system.js:106-513
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
-updateWinter                 src/29rc-winter-r3.js:296-300
+updateWinter                 src/29rc-winter-r3.js:295-299
 useBeacon                    src/23-mode-dig.js:91-116
 vCloth                       src/18d-verlet.js:41-50
 vDrawCloth                   src/18d-verlet.js:110-133
@@ -8536,8 +8527,8 @@ wallWrap                     src/11ae-concert.js:72-80
 wan3Cam                      src/29re-wander-r3.js:307-315
 wan3Canvas                   src/29re-wander-r3.js:288-298
 wan3Case                     src/29re-wander-r3.js:38
-wan3Frame                    src/29re-wander-r3.js:317-343
-wan3Hide                     src/29re-wander-r3.js:350-355
+wan3Frame                    src/29re-wander-r3.js:317-344
+wan3Hide                     src/29re-wander-r3.js:351-356
 wan3Item                     src/29re-wander-r3.js:42-111
 wan3Keeper                   src/29re-wander-r3.js:244
 wan3Lantern                  src/29re-wander-r3.js:114-123
@@ -8545,7 +8536,7 @@ wan3Mesh                     src/29re-wander-r3.js:126-241
 wan3Ok                       src/29re-wander-r3.js:316
 wan3Scene                    src/29re-wander-r3.js:248-285
 wan3Station                  src/29re-wander-r3.js:300-306
-wan3Tags                     src/29re-wander-r3.js:345
+wan3Tags                     src/29re-wander-r3.js:346
 wanAll                       src/24c-mode-wanderer.js:21
 wanCur                       src/24c-mode-wanderer.js:50
 wanLots                      src/24c-mode-wanderer.js:49
@@ -8659,25 +8650,25 @@ weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
 win3Blanket                  src/29rc-winter-r3.js:128-147
-win3Box                      src/29rc-winter-r3.js:250
+win3Box                      src/29rc-winter-r3.js:249
 win3Cam                      src/29rc-winter-r3.js:212-220
 win3Canvas                   src/29rc-winter-r3.js:200-207
-win3Cost                     src/29rc-winter-r3.js:272
+win3Cost                     src/29rc-winter-r3.js:271
 win3Fade                     src/29rc-winter-r3.js:165
-win3Frame                    src/29rc-winter-r3.js:223-242
-win3Hide                     src/29rc-winter-r3.js:265-270
-win3Hit                      src/29rc-winter-r3.js:262
-win3Hits                     src/29rc-winter-r3.js:254
+win3Frame                    src/29rc-winter-r3.js:223-241
+win3Hide                     src/29rc-winter-r3.js:264-269
+win3Hit                      src/29rc-winter-r3.js:261
+win3Hits                     src/29rc-winter-r3.js:253
 win3LeverX                   src/29rc-winter-r3.js:29
 win3Man                      src/29rc-winter-r3.js:152-162
 win3Mesh                     src/29rc-winter-r3.js:35-124
 win3Ok                       src/29rc-winter-r3.js:222
-win3On                       src/29rc-winter-r3.js:273
+win3On                       src/29rc-winter-r3.js:272
 win3Pilot                    src/29rc-winter-r3.js:150
 win3Scene                    src/29rc-winter-r3.js:167-197
 win3SleepPh                  src/29rc-winter-r3.js:164
 win3Storm                    src/29rc-winter-r3.js:32
-win3Tags                     src/29rc-winter-r3.js:244
+win3Tags                     src/29rc-winter-r3.js:243
 win3Val                      src/29rc-winter-r3.js:30
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72-74
@@ -8687,13 +8678,13 @@ winDiaryToday                src/29f-winter.js:176-191
 winDraw_                     src/29f-winter.js:69
 winEnd                       src/29f-winter.js:193-209
 winFix                       src/29f-winter.js:149-160
-winHit                       src/29rc-winter-r3.js:280
+winHit                       src/29rc-winter-r3.js:279
 winOfferHere                 src/29f-winter.js:76-94
 winOn                        src/29f-winter.js:63
 winOver                      src/29f-winter.js:70
 winShift                     src/29f-winter.js:123-148
 winTake                      src/29f-winter.js:95-111
-winTap                       src/29rc-winter-r3.js:281-293
+winTap                       src/29rc-winter-r3.js:280-292
 winWall                      src/29f-winter.js:162-172
 windOf                       src/19c-light.js:42-48
 withCtx                      src/18c-chunks.js:58-65
@@ -9212,7 +9203,7 @@ zoomTo                       src/15-input.js:358
   · стоящие приказы:374
   · ленивый тик домена:422
 
-## src/12d-mgr-face.js · 14 KB
+## src/12d-mgr-face.js · 2 KB
   · портреты управляющих:1
 
 ## src/12e-drone-flight.js · 21 KB
@@ -9509,7 +9500,7 @@ zoomTo                       src/15-input.js:358
 ## src/17c2-hull-gpu.js · 19 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 43 KB
+## src/17c2a-hull3d.js · 47 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c2b-parts3d.js · 33 KB
@@ -9920,7 +9911,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pe-pln-gpu.js · 29 KB
   · планета: цели, конвейеры и проходы одного кадра (M610):1
 
-## src/21pf-pln-land.js · 35 KB
+## src/21pf-pln-land.js · 34 KB
   · планета: земля (M610):1
 
 ## src/21pfa-pln-worlds.js · 22 KB
@@ -9961,7 +9952,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pi-pln-things.js · 27 KB
   · планета: вещи игры — залежи, вход в пещеру, устье шахты (M611):1
 
-## src/21pia-pln-herb.js · 33 KB
+## src/21pia-pln-herb.js · 32 KB
   · планета: растения игры — двенадцать форм (M611):1
 
 ## src/21pib-pln-beast.js · 18 KB
@@ -10010,7 +10001,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pifc-pln-marks-act-lift.js · 13 KB
   · космический лифт (§4.3, M627b проход 5):1
 
-## src/21pig-pln-own.js · 43 KB
+## src/21pig-pln-own.js · 35 KB
   · планета: свои вещи телами — база, дом, двор (M628a):1
 
 ## src/21pigz-cave-room.js · 3 KB
@@ -10477,7 +10468,7 @@ zoomTo                       src/15-input.js:358
 ## src/29rd-spa-r3.js · 21 KB
   · санаторий на движке (M850d, docs/DESIGN-rooms.md §4):1
 
-## src/29re-wander-r3.js · 35 KB
+## src/29re-wander-r3.js · 36 KB
   · «Сорока» на движке (M851, docs/DESIGN-rooms.md §4):1
 
 ## src/29rf-home-still.js · 6 KB
@@ -10553,7 +10544,10 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd-hall-walk.js · 6 KB
   · станция пешком (M816):1
 
-## tests/91qe-own.js · 13 KB
+## tests/91qd1-hull-plane.js · 4 KB
+  · плоскость краски объёмного корпуса (22.10, «двойной корпус»):1
+
+## tests/91qe-own.js · 11 KB
 
 ## tests/91qe-rack.js · 4 KB
   · стойка уступает телу (M821):1
@@ -10571,6 +10565,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qj-pace.js · 2 KB
   · темп мира: фон не носится (Зрение 2.0, закон «темп»):1
+
+## tests/91qj-rooms.js · 9 KB
+  · комнаты на движке (DESIGN-rooms §7):1
 
 ## tests/91qk-ground.js · 5 KB
   · тела на земле (Зрение 2.0, закон «опора»):1

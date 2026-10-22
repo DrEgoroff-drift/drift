@@ -228,8 +228,7 @@ function win3Frame(){
   const t=wallMs()/1000,cam=win3Cam(sz,t),S=win3Scene(cam,t);
   const lab=r3Dev()?R3.blank:null;   /* подписей поверх кадра нет: пустой вид движка, а не выпечка 2D (как зал, M816c) */
   const U=new Float32Array(60);
-  S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
-    if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
+  hallBulbU(U,cam.vp,S.bulbs,sz.cw,sz.ch);   /* ореол — только у колбы в кадре и своего размера (27f4a, 22.10) */
   U.set([...r3Lin([255,200,140]),1.0],24);
   U[43]=t;U[44]=1;U[47]=1;
   const oq=r3Proj(cam.vp,cam.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
