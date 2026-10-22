@@ -2582,10 +2582,11 @@ body:not(.mobile) .pads button.on{transform:scale(.97)}
 .pads kbd:empty{display:none}
 
 /* ── телефон: те же плиты, тесней ── */
-body.mobile .hud{gap:8px;padding:0 calc(env(safe-area-inset-right) + 10px) 0 calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px)}
+/* панели — от 12 px, как прочие плашки; подпись «СКАФАНДР» 9 px шире 44 px и наезжала на шкалу (Контроль 22.10) */
+body.mobile .hud{gap:8px;padding:0 calc(env(safe-area-inset-right) + 12px) 0 calc(env(safe-area-inset-left) + 12px);top:calc(env(safe-area-inset-top) + 10px)}
 body.mobile .vitals{width:auto;flex:1 1 52%;min-width:0;max-width:200px;padding:7px 10px 9px;gap:6px}
 body.mobile .vh{display:none}
-body.mobile .vitals .v{grid-template-columns:44px 1fr 44px;column-gap:7px}
+body.mobile .vitals .v{grid-template-columns:54px 1fr 44px;column-gap:7px}
 body.mobile .vitals .v b{font-size:9px;letter-spacing:.06em}
 body.mobile .vitals .v u{font-size:12px}
 body.mobile .vitals .v.big u{font-size:15px}
