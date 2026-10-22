@@ -328,8 +328,7 @@ function sectPj(){
 }
 /* M632c: всё, что рисуется каждый кадр, — в слой #ovl (08bi): 2D-холст пуст, и его копия в видеокарту
    (front2, 1.2 мс на ПК, 3.4 на телефоне — дороже всего разреза) не нужна. Меню стройки — по-прежнему 2D:
-   оно открыто редко. Без видеокарты — прежние кисти 21ac */
-function sectOv(){return !!(GPU.ok&&GPU.on&&OVL&&typeof ovText==="function");}
+   оно открыто редко. Кистей 21ac здесь больше нет: разрез без видеокарты не рисуется вовсе */
 const SECT_MONO="ui-monospace,monospace";
 /* обвод прямоугольника в 1 px CSS и штрих — как strokeRect/setLineDash у 2D */
 function sectOvFrame(x0,y0,x1,y1,w,col,al){ovRect(x0,y0,x1,y0+w,col,al);ovRect(x0,y1-w,x1,y1,col,al);ovRect(x0,y0+w,x0+w,y1-w,col,al);ovRect(x1-w,y0+w,x1,y1-w,col,al);}
@@ -338,24 +337,17 @@ function sectOvDash(x0,y0,x1,y1,w,on,off,col,al){
   for(let s=0;s<L;s+=on+off){const e=Math.min(L,s+on);ovCap(x0+ux*s,y0+uy*s,x0+ux*e,y0+uy*e,w,col,al);}
 }
 function sectOver(){
-  const S=G.base,B=S.B,M=SECT_M,P=basePower(B),lit=.55+(P.eff||0)*.45,pj=sectPj(),ov=sectOv();
-  /* px базы → экран на линии ходьбы: по каждой оси отдельно (окно смотрит вдоль z) */
-  const ox=pj([0,0,M.z]),ax=pj([1,0,M.z]),ay=pj([0,1,M.z]);
-  if(!ox||!ax||!ay)return;
-  const kx=ax[0]-ox[0],ky=ay[1]-ox[1];
-  const X=px=>ox[0]+sectX(px)*kx,Y=py=>ox[1]+sectY(py)*ky;
-  if(ov)sectOvAdj(B,pj,lit);else baseDrawAdj(B,X,Y,lit);
+  const S=G.base,B=S.B,M=SECT_M,P=basePower(B),lit=.55+(P.eff||0)*.45,pj=sectPj();
+  sectOvAdj(B,pj,lit);
   /* номера ярусов в стволе */
-  if(!ov){ctx.font=uiFont(8);ctx.textAlign="center";}
   for(let r=0;r<baseRows(B);r++){
     const q=pj([M.sh1-.2,sectFloor(r)+3,0]);if(!q)continue;
     const col="rgba(190,214,232,"+((r===(S.row|0)?.62:.3)+lit*.16).toFixed(2)+")";
-    if(ov)ovText(OVL.uq,q[0],q[1],String(r+1),uiFont(8),col,"center","alphabetic",1,1);
-    else{ctx.fillStyle=col;ctx.fillText(String(r+1),q[0],q[1]);}
+    ovText(OVL.uq,q[0],q[1],String(r+1),uiFont(8),col,"center","alphabetic",1,1);
   }
-  if(!SHOT_CLEAN&&(S.cur|0)>=0)sectCursor(S,B,pj,ov);
-  sectAvr(S,pj,ov);
-  if(ov){sectOvBoard(B,lit);sectOvNote(S);}else{baseDrawBoard(B,lit);baseDrawNote(S);}
+  if(!SHOT_CLEAN&&(S.cur|0)>=0)sectCursor(S,B,pj);
+  sectAvr(S,pj);
+  sectOvBoard(B,lit);sectOvNote(S);
   if(S.menu)drawBuildMenu(S);
 }
 /* патрубки соседства (21ac baseDrawAdj) — капсулами слоя. В 2D-базе клетка была мелкой, и труба от
@@ -418,57 +410,32 @@ function sectOvNote(S){
   N.lines.forEach((s,i)=>ovText(OVL.uq,(cx+12)*k,(cy+29+i*13)*k,s,f9,"rgba(198,216,228,.86)","left","alphabetic",a,k));
 }
 /* курсор: уголки на дыре построенного отсека и имя над ней; под застройку — пунктир по камню */
-function sectCursor(S,B,pj,ov){
+function sectCursor(S,B,pj){
   const M=SECT_M,c=S.cur|0,r=S.row|0,f=sectFloor(r),x0=c*M.cw+.5,x1=x0+M.cw-1;
   const a=pj([x0,f+M.room,0]),b=pj([x1,f,0]);if(!a||!b)return;
   const on=Math.sin(G.t*.12)>0,cell=baseCell(B,c,r);
-  if(ov){
-    const col="rgb(127,230,216)",al=on?.95:.4,u=Math.min(14,(b[0]-a[0])*.12);
-    if(cell){
-      ovCap3(a[0],a[1]+u,a[0],a[1],a[0]+u,a[1],2,col,al);ovCap3(b[0]-u,a[1],b[0],a[1],b[0],a[1]+u,2,col,al);
-      ovCap3(b[0],b[1]-u,b[0],b[1],b[0]-u,b[1],2,col,al);ovCap3(a[0]+u,b[1],a[0],b[1],a[0],b[1]-u,2,col,al);
-    }else{
-      const p0=a[0]+4,q0=a[1]+4,p1=b[0]-4,q1=b[1]-4;
-      sectOvDash(p0,q0,p1,q0,2,7,7,col,al);sectOvDash(p1,q0,p1,q1,2,7,7,col,al);
-      sectOvDash(p1,q1,p0,q1,2,7,7,col,al);sectOvDash(p0,q1,p0,q0,2,7,7,col,al);
-    }
-    return;
-  }
-  ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";ctx.lineWidth=2;
-  const u=Math.min(14,(b[0]-a[0])*.12);
+  const col="rgb(127,230,216)",al=on?.95:.4,u=Math.min(14,(b[0]-a[0])*.12);
   if(cell){
-    ctx.beginPath();
-    ctx.moveTo(a[0],a[1]+u);ctx.lineTo(a[0],a[1]);ctx.lineTo(a[0]+u,a[1]);
-    ctx.moveTo(b[0]-u,a[1]);ctx.lineTo(b[0],a[1]);ctx.lineTo(b[0],a[1]+u);
-    ctx.moveTo(b[0],b[1]-u);ctx.lineTo(b[0],b[1]);ctx.lineTo(b[0]-u,b[1]);
-    ctx.moveTo(a[0]+u,b[1]);ctx.lineTo(a[0],b[1]);ctx.lineTo(a[0],b[1]-u);
-    ctx.stroke();
+    ovCap3(a[0],a[1]+u,a[0],a[1],a[0]+u,a[1],2,col,al);ovCap3(b[0]-u,a[1],b[0],a[1],b[0],a[1]+u,2,col,al);
+    ovCap3(b[0],b[1]-u,b[0],b[1],b[0]-u,b[1],2,col,al);ovCap3(a[0]+u,b[1],a[0],b[1],a[0],b[1]-u,2,col,al);
   }else{
-    ctx.setLineDash([7,7]);ctx.strokeRect(a[0]+4,a[1]+4,b[0]-a[0]-8,b[1]-a[1]-8);ctx.setLineDash([]);
+    const p0=a[0]+4,q0=a[1]+4,p1=b[0]-4,q1=b[1]-4;
+    sectOvDash(p0,q0,p1,q0,2,7,7,col,al);sectOvDash(p1,q0,p1,q1,2,7,7,col,al);
+    sectOvDash(p1,q1,p0,q1,2,7,7,col,al);sectOvDash(p0,q1,p0,q0,2,7,7,col,al);
   }
 }
-function sectAvr(S,pj,ov){
+function sectAvr(S,pj){
   const A=S&&S.avr;if(!A)return;
   const M=SECT_M,f=sectFloor(A.r),x0=A.c*M.cw+.5,a=pj([x0,f+M.room,0]),b=pj([x0+M.cw-1,f,0]);if(!a||!b)return;
   const p=.5+.5*Math.sin(G.t*.25),col=A.k==="fire"?[255,140,60]:(A.k==="vent"?[150,220,255]:(A.k==="grib"?[220,170,80]:[110,180,255]));
-  if(ov){
-    const c="rgb("+col.join(",")+")",kind=AVR_KINDS.find(q=>q.k===A.k)||AVR_KINDS[0];
-    sectOvFrame(a[0]+2.5,a[1]+2.5,b[0]-2.5,b[1]-2.5,2,c,.5+.4*p);
-    ovText(OVL.uq,(a[0]+b[0])/2,a[1]+16*uiK(),kind.ru,uiFont(10),c,"center","alphabetic",.95,1);
-    if(A.hold>0)ovRect(a[0]+12,b[1]-16,a[0]+12+(b[0]-a[0]-24)*clamp(A.hold/AVR_HOLD,0,1),b[1]-12,"rgb(127,230,216)",.85);
-    return;
-  }
-  ctx.strokeStyle="rgba("+col.join(",")+","+(.5+.4*p).toFixed(2)+")";ctx.lineWidth=2;
-  ctx.strokeRect(a[0]+3.5,a[1]+3.5,b[0]-a[0]-7,b[1]-a[1]-7);
-  ctx.fillStyle="rgba("+col.join(",")+",.95)";ctx.font=uiFont(10);ctx.textAlign="center";
-  const kind=AVR_KINDS.find(q=>q.k===A.k)||AVR_KINDS[0];
-  ctx.fillText(kind.ru,(a[0]+b[0])/2,a[1]+16*uiK());
-  if(A.hold>0){ctx.fillStyle="rgba(127,230,216,.85)";ctx.fillRect(a[0]+12,b[1]-16,(b[0]-a[0]-24)*clamp(A.hold/AVR_HOLD,0,1),4);}
+  const c="rgb("+col.join(",")+")",kind=AVR_KINDS.find(q=>q.k===A.k)||AVR_KINDS[0];
+  sectOvFrame(a[0]+2.5,a[1]+2.5,b[0]-2.5,b[1]-2.5,2,c,.5+.4*p);
+  ovText(OVL.uq,(a[0]+b[0])/2,a[1]+16*uiK(),kind.ru,uiFont(10),c,"center","alphabetic",.95,1);
+  if(A.hold>0)ovRect(a[0]+12,b[1]-16,a[0]+12+(b[0]-a[0]-24)*clamp(A.hold/AVR_HOLD,0,1),b[1]-12,"rgb(127,230,216)",.85);
 }
 
-/* ── переключатель ── */
-const SECT_BLOOM=BLOOM_K.base;
-const SECT_OLD_DRAW=drawBase;
+/* ── переключатель ──
+   2D-базы под разрезом больше нет (21ac drawBase): кадр не собрался — в нём одни приборы */
 drawBase=function(){
   let ok=false;
   if(SECT.on&&SECT.bad<3&&G.base&&G.base.B){
@@ -481,9 +448,9 @@ drawBase=function(){
       if(GPU.on&&GPU.dev){GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.scene3D=false;}
     }
   }
-  BLOOM_K.base=ok?0:SECT_BLOOM;
+  BLOOM_K.base=0;
   SECT.live=ok;
-  if(!ok){SECT.b=null;SECT.lens=null;SECT_OLD_DRAW();return;}
+  if(!ok){SECT.b=null;SECT.lens=null;return;}
   sectOver();
 };
 /* выход без среза: поверхность начинает с ближнего и уходит в свой (21pz plnGlide) */
