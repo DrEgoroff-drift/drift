@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 636 · top-level symbols: 8727
+Files: 637 · top-level symbols: 8730
 
 ## SYMBOLS
 
@@ -1926,6 +1926,8 @@ RELAY_KINDS                  src/11ap-relay.js:38-69
 RELAY_NEAR                   src/11ap-relay.js:107
 RELAY_PAY_WIN                src/11ap-relay.js:75
 RELAY_REACH                  src/11ap-relay.js:73
+RELAY_ROCK                   src/11apa-relay-body.js:11
+RELAY_TILT                   src/11apa-relay-body.js:10
 RELIC_KEYS                   src/12h-relic.js:64
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07a-terrain.js:16-34
@@ -4102,7 +4104,6 @@ e2eLate                      tests/91zzzzz-e2e-life.js:384
 e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
-ecoEstate                    tests/91zzzw4-ecosim-est.js:5-163
 econCycleMul                 src/12ax-fx-econ.js:27-34
 econEmbargoOn                src/12ax-fx-econ.js:56-61
 econFairHere                 src/12ax-fx-econ.js:48-54
@@ -7437,12 +7438,14 @@ relayAll                     src/11ap-relay.js:149-152
 relayArrive                  src/11ap-relay.js:179-183
 relayAtFreq                  src/11ap-relay.js:134-145
 relayDial                    src/11ap-relay.js:207-252
-relayDrawSystem              src/11ap-relay.js:376-497
+relayDrawSystem              src/11apa-relay-body.js:102-113
 relayEar                     src/11ap-relay.js:126-130
 relayFreq                    src/11ap-relay.js:99-103
 relayInteract                src/11ap-relay.js:358-371
 relayKnown                   src/11ap-relay.js:153
+relayLights                  src/11apa-relay-body.js:89-100
 relayList                    src/11ap-relay.js:189-199
+relayMesh                    src/11apa-relay-body.js:14-86
 relayOf                      src/11ap-relay.js:81-97
 relayServe                   src/11ap-relay.js:334-357
 relaySpeak                   src/11ap-relay.js:167-174
@@ -8977,9 +8980,11 @@ zoomTo                       src/15-input.js:358
 ## src/11ao-firsthour.js · 6 KB
   · первый час: сменщик в эфире:1
 
-## src/11ap-relay.js · 31 KB
+## src/11ap-relay.js · 25 KB
   · приёмники как места:1
   · у мачты есть тело:303
+
+## src/11apa-relay-body.js · 9 KB
 
 ## src/11aq-late.js · 9 KB
   · поздний час у стойки:1
@@ -10540,6 +10545,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd1-hull-plane.js · 4 KB
   · плоскость краски объёмного корпуса (22.10, «двойной корпус»):1
 
+## tests/91qd2-relay.js · 3 KB
+  · мачта телом (M827 · 11apa):1
+
 ## tests/91qe-own.js · 13 KB
 
 ## tests/91qe-rack.js · 4 KB
@@ -10595,9 +10603,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim-est.js · 12 KB
-
-## tests/91zzzw4-ecosim.js · 48 KB
+## tests/91zzzw4-ecosim.js · 60 KB
   · проба · экономика (M903):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB

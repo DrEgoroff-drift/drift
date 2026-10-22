@@ -515,7 +515,7 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   rings). The selection plate gets a spare side (`o.spare`, map only): beside the star it slides along
   it into the frame, then wraps narrower (85/72/60 %), breaking at « · » first; the centre band of M803
   stays forbidden. The map rose rises above `#prompt` when the hint shows.
-  *M823 relay (22.10; Control's number — the nebula's M823 of 08.10 is another item):* the
+  *M827 The relay mast as a body (22.10; first worked as «M823 relay», renumbered — M823 is the nebula):* the
   transmitter of `11ap` in the system frame is an engine body (`11apa-relay-body.js`), like the
   station and the shuttle: an `h3dKit` mesh per kind (beacon, buoy, relay, post, met post,
   wintering), lit by the star, own lamps as scene points, the call sign as an overlay label. The
