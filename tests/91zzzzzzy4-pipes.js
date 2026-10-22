@@ -61,6 +61,8 @@ function pipeWho(){
 const PIPE_SUITE=()=>suite("конвейеры: после прогрева полёт не компилирует",{tier:"browser"},()=>{
   if(!ok(GPU.ok&&GPU_PIPES.done,"видеокарта поднялась и прогрев кончился ("+GPU_PIPES.n+" из "+GPU_PIPE_KEYS.length+" за "+GPU_PIPES.ms+" мс)"))return;
   eq((GPU_PIPES.bad||[]).join(", "),"","ключи таблицы собираются по рецепту");
+  /* загрузка (99-run) ждёт и позднюю очередь: недостроенный r3.* полёт строил бы сам — это гонка, а не промах таблицы */
+  ok(!!(GPU_PIPES.late&&GPU_PIPES.late.done),"поздняя очередь достроилась до набора ("+(GPU_PIPES.late?GPU_PIPES.late.n+" готово, "+GPU_PIPES.late.ms+" мс":"не начиналась")+")");
   const d=GPU.dev,raw={},lazy0=GPU_PIPES.lazy.length,kinds=["createRenderPipeline","createComputePipeline","createShaderModule"];
   const run0=G.running,loop0=LOOP_OFF,lim0=Error.stackTraceLimit;
   Error.stackTraceLimit=40;
