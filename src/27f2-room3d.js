@@ -80,7 +80,8 @@ function r3Kit(){
   const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
   K.nz=nz;K.cr=cr;K.sub=sub;
   /* материал: c — краска 0..255, s — блик 0..1, g — глянец 0..15, p — узор, e — своё свечение, ns — не бросает тени,
-     m — металл (СР · Визуал 22.10): блик и отражение зала в цвет краски, рассеянного почти нет; в упаковке — +32 к глянцу */
+     m — металл (СР · Визуал 22.10): блик и отражение зала в цвет краски, рассеянного почти нет; в упаковке — +64 к глянцу,
+     глянец до 63 (чужие стёкла и экраны держат g 16–70 — их блик не трогаем, кламп на 15 менял бы их молча) */
   K.mt=(c,s,g,p,e,ns,m)=>({c:r3Lin(c),s:s==null?.3:s,g:g==null?6:g,p:p||0,e:e||0,ns:!!ns,m:!!m});
   K.push=(o,ry,rx,rz,s)=>{ST.push(T);T=r3Mul(T,r3Xf(o,ry,rx,rz,s));};
   K.pushM=M=>{ST.push(T);T=r3Mul(T,M);};
@@ -93,7 +94,7 @@ function r3Kit(){
     const o=VN,x=T[0]*nx+T[4]*ny+T[8]*nzz,y=T[1]*nx+T[5]*ny+T[9]*nzz,z=T[2]*nx+T[6]*ny+T[10]*nzz,l=Math.sqrt(x*x+y*y+z*z)||1;
     V[o]=T[0]*px+T[4]*py+T[8]*pz+T[12];V[o+1]=T[1]*px+T[5]*py+T[9]*pz+T[13];V[o+2]=T[2]*px+T[6]*py+T[10]*pz+T[14];
     V[o+3]=x/l;V[o+4]=y/l;V[o+5]=z/l;V[o+6]=cr;V[o+7]=cg;V[o+8]=cb;
-    V[o+9]=Math.min(Math.round(M.g),15)+(M.m?32:0)+Math.min(M.s,.99);V[o+10]=M.e;
+    V[o+9]=Math.min(Math.round(M.g),63)+(M.m?64:0)+Math.min(M.s,.99);V[o+10]=M.e;
     V[o+11]=K.part+16*M.p+1024*((M.ns||K.flags&1)?1:0)+sq+(K.flags&2?8388608:0);
     VN+=12;};
   /* sk — [часть, вес 0..1] или уже число (cpSculpt) */
@@ -451,7 +452,7 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
   var n=normalize(i.n);if(dot(n,gn)<0.){n=-n;}
   let ndv=max(dot(n,V),0.);
   var a=i.c;var sp=fract(i.m.x);var gl=floor(i.m.x);var em=i.m.y;var wrap=0.;var fres=.04;var ao=1.;var ex3=vec3f(0.);var tg=vec3f(0.);
-  let met=step(32.,gl);gl-=32.*met;   /* металл: F0 — сама краска, блик цветной, рассеянного пятая часть (СР · Визуал 22.10) */
+  let met=step(64.,gl);gl-=64.*met;   /* металл: F0 — сама краска, блик цветной, рассеянного пятая часть (СР · Визуал 22.10) */
   let t=u.cam.w;
   /* ── узоры ── */
   if(pat==1u){   /* обшивка: листы 1.2×0.8, швы, заклёпки, грязь у пола */
