@@ -172,7 +172,6 @@ The largest mode by file count. Grouped by file:
 | `drawBeastAlien`, `drawBeast` | `20f-fauna.js:65-339` | the two fauna painters — **shared with base/cave/dig, see §4** | `gpuBake`+GcCtx |
 | `drawBuilt`, `drawBaseBuilding` | `21c-built.js:64-136` | built structures placed on a surface (distinct from the base-interior modules) | `gpuBake`+GcCtx |
 | `drawHomeOut`, `homeSigns` | `21f-home-out.js:73-368` | the home seen from outside while walking the surface (241 lines) | `gpuBake`+GcCtx |
-| `greenDrawBed` | `21g-greenhouse.js:105-176` | a greenhouse bed, drawn straight onto the shared world `ctx` (no own canvas) | `gpuBake`+GcCtx |
 | `pennDraw` | `21h-pennant.js:84-126` | the travelling pennant/exhibit | `gpuBake`+GcCtx |
 | `lightsSuns`, `lightsShutters`, `lightsDrawReveal` | `11g-lights.js:102-171` | window/sun-lit reveals on buildings | `gpuShapes` |
 | `glowDrawPad`, `glowDrawPatches`, `glowFlash` | `11i-glow.js:47-138` | landing-pad glow, patch glow, a flash burst (additive) | `gpuShapes` (`add` blend) |

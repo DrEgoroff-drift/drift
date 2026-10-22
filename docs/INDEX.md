@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 632 · top-level symbols: 8883
+Files: 632 · top-level symbols: 8881
 
 ## SYMBOLS
 
@@ -912,10 +912,10 @@ GPU_TONE_FILM                src/08b-gpu.js:521
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:136
 GRADE_U                      src/19c-light.js:263
 GRADE_WGSL                   src/19c-light.js:253
-GREEN_BEDS                   src/21g-greenhouse.js:23
-GREEN_FULL                   src/21g-greenhouse.js:24
-GREEN_SP                     src/21g-greenhouse.js:68
-GREEN_VEGA                   src/21g-greenhouse.js:25
+GREEN_BEDS                   src/21g-greenhouse.js:27
+GREEN_FULL                   src/21g-greenhouse.js:28
+GREEN_SP                     src/21g-greenhouse.js:72
+GREEN_VEGA                   src/21g-greenhouse.js:29
 GREY_K                       src/18a1-glaze.js:116
 GRIB_BOOM                    src/21ac1-base-banya.js:20
 GROK_DIRT                    src/12tb-grok.js:29
@@ -4089,7 +4089,7 @@ drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29rb-home-r3.js:455-460
-drawHomeOut                  src/21f-home-out.js:75-265
+drawHomeOut                  src/21f-home-out.js:75-263
 drawHotel                    src/17l-hotel.js:147-174
 drawHull                     src/03e-hull-draw.js:1-80
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -4875,17 +4875,15 @@ gpuWeatherFar                src/19cc-gpu-air.js:265-293
 gpuWorld                     src/08b-gpu.js:651-672
 gradeGpu                     src/19c-light.js:264-275
 gradePass                    src/19c-light.js:276-314
-greenAll                     src/21g-greenhouse.js:26-30
-greenCanSow                  src/21g-greenhouse.js:50-52
-greenDraw                    src/21g-greenhouse.js:201-206
-greenDrawBed                 src/21g-greenhouse.js:105-199
-greenGrow                    src/21g-greenhouse.js:36-40
-greenNext                    src/21g-greenhouse.js:43-49
-greenPrompt                  src/21g-greenhouse.js:208-214
-greenSow                     src/21g-greenhouse.js:53-65
-greenSpecies                 src/21g-greenhouse.js:69-83
-greenSpeciesFields           src/21g-greenhouse.js:86-100
-greenWatered                 src/21g-greenhouse.js:32-34
+greenAll                     src/21g-greenhouse.js:30-34
+greenCanSow                  src/21g-greenhouse.js:54-56
+greenGrow                    src/21g-greenhouse.js:40-44
+greenNext                    src/21g-greenhouse.js:47-53
+greenPrompt                  src/21g-greenhouse.js:106-112
+greenSow                     src/21g-greenhouse.js:57-69
+greenSpecies                 src/21g-greenhouse.js:73-87
+greenSpeciesFields           src/21g-greenhouse.js:90-104
+greenWatered                 src/21g-greenhouse.js:36-38
 greyA                        src/18a1-glaze.js:106-109
 greyOf                       src/18a1-glaze.js:102-105
 greyStretch                  src/18a1-glaze.js:120
@@ -5393,8 +5391,8 @@ homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:153
 homeCool                     src/16c-rescue.js:55
-homeDock                     src/21f-home-out.js:272-299
-homeDoorX                    src/21f-home-out.js:327-331
+homeDock                     src/21f-home-out.js:270-297
+homeDoorX                    src/21f-home-out.js:325-329
 homeHas                      src/12j-home.js:24-28
 homeHereP                    src/21f-home-out.js:26-32
 homeInit                     src/12j-home.js:20-23
@@ -5407,24 +5405,24 @@ homeNext                     src/12j-home.js:29-32
 homeOrderBonus               src/12j-home.js:210
 homeOutGpu                   src/21fa-home-out-gpu.js:9-54
 homeOutPal                   src/21f-home-out.js:59-70
-homePlan                     src/21f-home-out.js:340-347
+homePlan                     src/21f-home-out.js:338-345
 homePlanet                   src/21f-home-out.js:18-24
 homeProgress                 src/12j-home.js:139-147
 homeRebuild                  src/12j-home.js:227-241
 homeRevive                   src/12j-home.js:154-174
 homeShow                     src/12j-home.js:196-203
 homeShowBonus                src/12j-home.js:217-222
-homeSigns                    src/21f-home-out.js:348-381
-homeSmoke                    src/21f-home-out.js:269-271
+homeSigns                    src/21f-home-out.js:346-379
+homeSmoke                    src/21f-home-out.js:267-269
 homeSpotX                    src/21f-home-out.js:34-54
 homeStill                    src/29rf-home-still.js:13-22
 homeStillAsp                 src/29rf-home-still.js:23
-homeStillCam                 src/29rf-home-still.js:31-37
-homeStillFlush               src/29rf-home-still.js:24-28
-homeStillPaint               src/29rf-home-still.js:38-64
+homeStillCam                 src/29rf-home-still.js:34-40
+homeStillFlush               src/29rf-home-still.js:24-31
+homeStillPaint               src/29rf-home-still.js:41-67
 homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
-homeWash                     src/21f-home-out.js:300-325
+homeWash                     src/21f-home-out.js:298-323
 homingStep                   src/13a-guns.js:470-477
 hotelAngD                    src/17l-hotel.js:85
 hotelArc                     src/17l-hotel.js:179
@@ -10053,13 +10051,13 @@ zoomTo                       src/15-input.js:358
 ## src/21e4-surface-night-gpu.js · 5 KB
   · ночь поверхности на видеокарте (G15):1
 
-## src/21f-home-out.js · 23 KB
+## src/21f-home-out.js · 22 KB
   · дом снаружи:1
 
 ## src/21fa-home-out-gpu.js · 4 KB
   · дом снаружи на видеокарте (G15):1
 
-## src/21g-greenhouse.js · 11 KB
+## src/21g-greenhouse.js · 7 KB
   · грядка у дома:1
 
 ## src/21h-pennant.js · 10 KB
