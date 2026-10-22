@@ -13,25 +13,11 @@ let RAIL_RIDE=null,RAIL_ARRIVE=-1e9;
 /* ── вспышка гипера (M473 хвост, 18.09) ──
    Поезд не едет по рельсам — он прыгает: уход и приход — белая вспышка с
    бирюзовым лучом вдоль линии, 0.6 с, гаснет квадратом. На экране поездки её
-   рисует поле видеокарты (railFx, 18ga); эта 2D-вспышка осталась системе —
-   на корабле после выхода (кадр полёта — не зона поездки). */
-function railFlash(x,y,age,ang,k){
-  const u=clamp(1-age/36,0,1);if(u<=0)return;
-  const a=u*u*(k||1);
-  ctx.save();ctx.globalCompositeOperation="lighter";
-  const g=ctx.createRadialGradient(x,y,0,x,y,90*(1.2-u*.6));
-  g.addColorStop(0,"rgba(255,255,255,"+(a*.9).toFixed(3)+")");
-  g.addColorStop(.25,"rgba(180,240,255,"+(a*.45).toFixed(3)+")");
-  g.addColorStop(1,"rgba(120,220,255,0)");
-  ctx.fillStyle=g;ctx.fillRect(x-120,y-120,240,240);
-  ctx.strokeStyle="rgba(200,250,255,"+(a*.8).toFixed(3)+")";ctx.lineWidth=2*u+.5;
-  const L=60+140*(1-u);
-  ctx.beginPath();ctx.moveTo(x-Math.cos(ang)*L,y-Math.sin(ang)*L);ctx.lineTo(x+Math.cos(ang)*L,y+Math.sin(ang)*L);ctx.stroke();
-  ctx.restore();
-}
+   рисует поле видеокарты (railFx, 18ga); в системе после выхода — то же поле
+   в проходе сцены, без конуса фары (M828: прежняя 2D-вспышка railFlash снята). */
 function drawRailArrive(zx,zy){
   const age=G.t-RAIL_ARRIVE;if(age>40)return;
-  railFlash(zx(G.ship.x),zy(G.ship.y),age,G.ship.a,1.2);
+  railFx(gpuScene(),zx(G.ship.x),zy(G.ship.y),G.ship.a,age,0,RAIL_COL.arm,{k:1.2,head:0});
 }
 function railRideStart(t){
   const l=t.l,n=l.stops.length,seq=[];
@@ -126,57 +112,36 @@ function railExit(){
 }
 function drawRail(){
   const R=RAIL_RIDE;if(!R)return;
-  /* фон — в проходе сцены, под всем 2D (18ga): заливка #c закрыла бы галактику видеокарты */
+  /* фон — в проходе сцены, под галактикой (18ga) */
   gpuShapes(gpuScene(),[[0,0,0,W,H,0,0,3,4,10,1]]);
   const cell=Math.min(W,H)/14,p=railTrainPos(),V={x:p.x,y:p.y};
   drawGalaxy(V,cell);drawGalaxyStars(V,cell);
-  if(typeof drawRailMap==="function")drawRailMap(V,cell,true);
+  drawRailMap(V,cell,true);
   const X=x=>W/2+(x-V.x)*cell,Y=y=>H/2+(y-V.y)*cell,l=R.l;
   const c=RAIL_COL[l.kind];
   /* поезд: куда смотрит и как быстро идёт (производная разгона-торможения) */
   const nx=R.seg<R.seq.length-1?l.stops[R.seq[R.seg+1]]:l.stops[R.seq[R.seg]];
   const a=Math.atan2(nx.sy-p.y,nx.sx-p.x),tx=X(p.x),ty=Y(p.y);
   const uu=R.phase==="go"?clamp(R.t/R.dur,0,1):0;
-  /* над галактикой — своя линия под током, видеокартой (18ga); маршрутка идёт
-     трассой, не рельсом: пунктир (M510) */
-  railLineGpu(gpuOver(),l.pts.map(q=>[X(q[0]),Y(q[1])]),c,R.bus,tx,ty,cell,G.t/60);
-  ctx.save();
-  /* остановки маршрута: засечки с именами; пересадки — двойной круг */
-  ctx.font=uiFont(10);ctx.textAlign="left";
+  /* над галактикой — проход поверх: своя линия под током, остановки, вагон телом и свет поездки;
+     #c пуст, поэтому склейка не нужна (gpuNext). Маршрутка идёт трассой — пунктиром (M510) */
+  const pass=gpuNext();   /* без видеокарты null: каждый рисующий ниже его сам пропускает */
+  railLineGpu(pass,l.pts.map(q=>[X(q[0]),Y(q[1])]),c,R.bus,tx,ty,cell,G.t/60);
+  /* остановки маршрута — бусины под светом ядра (18gb), имена — подписями; пересадка — тор в торе */
+  const [lx,ly]=sysLightDir(p.x,p.y),SH=[],AD=[],fn=uiFont(10);
   R.seq.forEach((i,m)=>{
     const s=l.stops[i],x=X(s.sx),y=Y(s.sy),jn=RAIL_NET&&RAIL_NET.at[s.sx+","+s.sy]&&RAIL_NET.at[s.sx+","+s.sy].length>1;
     const done=m<R.seg||(m===R.seg&&R.phase==="go");
-    ctx.fillStyle="#0b0d12";ctx.beginPath();ctx.arc(x,y,jn?7:5,0,TAU);ctx.fill();
-    ctx.strokeStyle=done?"rgba(160,160,160,.5)":"rgba(245,240,230,.95)";ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(x,y,jn?6:4,0,TAU);ctx.stroke();
-    if(jn){ctx.beginPath();ctx.arc(x,y,2.5,0,TAU);ctx.stroke();}
-    ctx.fillStyle=done?"rgba(200,200,200,.45)":"rgba(245,240,230,.9)";
-    ctx.fillText(railStopName(s),x+10,y+4);
+    railStopShapes(SH,AD,x,y,jn,done,lx,ly);
+    domLabel("rs"+m,x+10,y+4,railStopName(s),fn,done?"rgba(200,200,200,.45)":"rgba(245,240,230,.9)","left");
   });
-  /* поезд: скруглённая метка; клин фары светит полем (18ga) */
-  ctx.translate(tx,ty);ctx.rotate(a);
-  if(R.bus){
-    /* ПАЗик: кремовый короб с красной полосой, окна по борту, табличка
-       маршрута спереди; качается, как маршрутка на выбоинах */
-    ctx.rotate(Math.sin(G.t*.31)*.05);
-    ctx.fillStyle="#0b0d12";ctx.fillRect(-14,-7.5,26,15);
-    ctx.fillStyle="#e9dcae";ctx.fillRect(-13,-6.5,24,13);
-    ctx.fillStyle="#c8402f";ctx.fillRect(-13,-1.4,24,2.8);
-    ctx.fillStyle="rgba(30,40,52,.9)";for(let i=0;i<5;i++){ctx.fillRect(-11+i*4.2,-5.6,3,2.6);ctx.fillRect(-11+i*4.2,3,3,2.6);}
-    ctx.fillStyle="#f5f2e8";ctx.fillRect(9.5,-3,2.5,6);
-    ctx.fillStyle="#0b0d12";ctx.font="bold 5px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("М",10.8,.3);
-  }else{
-  ctx.fillStyle="#f5efe0";ctx.strokeStyle="#0b0d12";ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(-12,-6);ctx.lineTo(8,-6);ctx.arc(8,0,6,-Math.PI/2,Math.PI/2);ctx.lineTo(-12,6);ctx.closePath();ctx.fill();ctx.stroke();
-  }
-  ctx.restore();
-  /* фара, вспышка гипера и росчерки перегона — светом ПОВЕРХ вагона, как было у 2D */
-  railFx(gpuOver(),tx,ty,a,R.flash!==undefined?G.t-R.flash:99,R.phase==="go"?Math.pow(6*uu*(1-uu)/1.5,.8):0,c);
-  /* строка сверху: линия и следующая */
+  gpuShapes(pass,SH);gpuShapes(pass,AD,{blend:"add"});
+  /* вагон: тело под тем же светом; фара, вспышка гипера и росчерки перегона — полем ПОВЕРХ вагона */
+  railCarDraw(pass,R,tx,ty,a,cell,p.x,p.y);
+  railFx(pass,tx,ty,a,R.flash!==undefined?G.t-R.flash:99,R.phase==="go"?Math.pow(6*uu*(1-uu)/1.5,.8):0,c);
+  /* строка сверху: линия и следующая; на перегоне — «×2», если пэд зажат, иначе подсказка (M473) */
   const nxt=R.seg<R.seq.length-1?"следующая — «"+railStopName(l.stops[R.seq[R.seg+1]])+"»":"конечная";
-  ctx.fillStyle="rgba(242,178,92,.9)";ctx.font=uiFont(11);ctx.textAlign="center";
-  ctx.fillText(l.ru.toUpperCase()+" · "+nxt,W/2,H*.16);
-  /* на перегоне: пэд зажат — «×2», иначе подсказка, что так можно (M473) */
-  if(R.phase==="go"){ctx.font=uiFont(9);ctx.fillStyle=R.fast?"rgba(127,230,216,.9)":"rgba(207,227,234,.45)";
-    ctx.fillText(R.bus?"ДЕЙСТВИЕ — «ВОДИТЕЛЬ, ОСТАНОВИТЕ ЗДЕСЬ»":R.fast?"×2 · ПЭД ЗАЖАТ":"ДЕЙСТВИЕ ЗАЖАТЬ — ВДВОЕ БЫСТРЕЕ",W/2,H*.16+16);}
+  domLabel("rh",W/2,H*.16,l.ru.toUpperCase()+" · "+nxt,uiFont(11),"rgba(242,178,92,.9)","center");
+  if(R.phase==="go")domLabel("rh2",W/2,H*.16+16*uiK(),R.bus?"ДЕЙСТВИЕ — «ВОДИТЕЛЬ, ОСТАНОВИТЕ ЗДЕСЬ»":R.fast?"×2 · ПЭД ЗАЖАТ":"ДЕЙСТВИЕ ЗАЖАТЬ — ВДВОЕ БЫСТРЕЕ",
+    uiFont(9),R.fast?"rgba(127,230,216,.9)":"rgba(207,227,234,.45)","center");
 }

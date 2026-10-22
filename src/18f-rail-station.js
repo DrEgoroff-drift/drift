@@ -39,13 +39,6 @@ function railHaltShapes(SH,vx,vy,s,col){
     [1,vx+13.6*s,vy-15*s,11*s,0,0,0,col[0],col[1],col[2],.16],      /* круг света */
     [1,vx+13.6*s,vy-15*s,2.2*s,0,0,0,255,236,200,.95]);             /* лампа */
 }
-function railHaltCtx(vx,vy,s,col){
-  ctx.fillStyle="#3a342e";ctx.fillRect(vx-22*s,vy+2*s,44*s,3*s);
-  ctx.fillStyle="#463c30";ctx.fillRect(vx-6*s,vy-1*s,10*s,2*s);ctx.fillRect(vx-5*s,vy+1*s,1*s,1*s);ctx.fillRect(vx+2*s,vy+1*s,1*s,1*s);
-  ctx.fillStyle="#28282c";ctx.fillRect(vx+13*s,vy-14*s,1.2*s,16*s);
-  ctx.fillStyle=rgba(col,.16);ctx.beginPath();ctx.arc(vx+13.6*s,vy-15*s,11*s,0,TAU);ctx.fill();
-  ctx.fillStyle="rgba(255,236,200,.95)";ctx.beginPath();ctx.arc(vx+13.6*s,vy-15*s,2.2*s,0,TAU);ctx.fill();
-}
 /* ── рисунок: кольцо, глиссада, вестибюль ── */
 /* с видеокарты (ступень 1): лампы, кольцо и вестибюль — фигуры кита, спираль — лента
    четырёхугольников с жёсткими стыками (без бусин на изломах), табличка — слой подписей */
@@ -82,36 +75,8 @@ function drawSysRail(zx,zy,Z){
   if(x<-400||x>W+400||y<-400||y>H+400)return;
   const col=(typeof laneLampCol==="function")?laneLampCol(R.by):[255,190,110];
   const ts=G.t/60,fast=RAIL_WAIT&&RAIL_WAIT.t<3?3:1,pass=gpuScene();
-  if(pass){railGpu(pass,R,x,y,s,col,ts,fast,zx,zy);return;}
-  /* глиссада: две цепочки ламп сходятся к кольцу со стороны станции */
-  for(let i=0;i<(R.S.halt?3:9);i++){
-    const d=70+i*28,w=10+i*4.5,ph=((ts*2.2*fast+i*.37)%1);
-    const k=Math.max(0,1-Math.abs(ph-.5)*3);
-    for(const sd of [-1,1]){
-      const px=R.x+R.ux*d-R.uy*w*sd,py=R.y+R.uy*d+R.ux*w*sd;
-      ctx.fillStyle=rgba(col,.25+.6*k);ctx.beginPath();ctx.arc(zx(px),zy(py),(1.2+1.2*k)*s,0,TAU);ctx.fill();
-    }
-  }
-  /* кольцо: тор, лежащий плоско; внутри диск светлее и медленная спираль */
-  ctx.save();ctx.translate(x,y);
-  ctx.fillStyle="rgba(40,52,66,.55)";ctx.beginPath();ctx.arc(0,0,40*s,0,TAU);ctx.fill();
-  ctx.strokeStyle="rgba(170,190,210,.7)";ctx.lineWidth=5*s;ctx.beginPath();ctx.arc(0,0,44*s,0,TAU);ctx.stroke();
-  ctx.strokeStyle="rgba(20,24,30,.9)";ctx.lineWidth=1.2*s;ctx.beginPath();ctx.arc(0,0,46.5*s,0,TAU);ctx.stroke();
-  ctx.strokeStyle="rgba(127,230,216,"+(.10+.08*fast)+")";ctx.lineWidth=1;
-  ctx.beginPath();
-  for(let a=0;a<TAU*2.2;a+=.12){const r=4*s+a*5.5*s,t=a+ts*.4*fast;a?ctx.lineTo(Math.cos(t)*r,Math.sin(t)*r):ctx.moveTo(Math.cos(t)*r,Math.sin(t)*r);}
-  ctx.stroke();
-  for(let i=0;i<12;i++){const a=i/12*TAU;ctx.fillStyle=rgba(col,.55);ctx.fillRect(Math.cos(a)*44*s-1,Math.sin(a)*44*s-1,2,2);}
-  ctx.restore();
-  /* вестибюль сбоку и табличка с линией */
-  const vx=zx(R.x-R.uy*70),vy=zy(R.y+R.ux*70);
-  if(R.S.halt){railHaltCtx(vx,vy,s,col);ctx.fillStyle="rgba(242,178,92,.6)";ctx.font=uiFont(9);ctx.textAlign="center";
-    ctx.fillText("ПОЛУСТАНОК · "+R.S.lines[0].ru.toUpperCase(),x,y+58*s+10);return;}
-  ctx.fillStyle="#1e2530";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=1;
-  ctx.fillRect(vx-16*s,vy-9*s,32*s,18*s);ctx.strokeRect(vx-16*s,vy-9*s,32*s,18*s);
-  ctx.fillStyle="rgba(255,226,170,.8)";for(let i=0;i<4;i++)ctx.fillRect(vx-12*s+i*7*s,vy-3*s,4*s,3*s);
-  ctx.fillStyle="rgba(242,178,92,.75)";ctx.font=uiFont(9);ctx.textAlign="center";
-  ctx.fillText((R.S.metro?"МЕТРО · ":"")+R.S.lines[0].ru.toUpperCase()+(R.S.lines.length>1?" +"+(R.S.lines.length-1):""),x,y+58*s+10);
+  /* без видеокарты кольца нет: 2D-запасной путь снят (M828) */
+  if(pass)railGpu(pass,R,x,y,s,col,ts,fast,zx,zy);
 }
 /* идёт ли борт в кольцо: по ходу, а стоящий — по носу */
 function railHeadingIn(sh,R){
