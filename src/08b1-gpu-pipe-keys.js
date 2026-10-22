@@ -62,6 +62,7 @@ const GPU_PIPE_KEYS=[
   "pipe:kit.img|add",
   "pipe:kit.img|hull",
   "pipe:kit.img|over",
+  "pipe:kit.img|shade",
   "pipe:kit.shp|add",
   "pipe:kit.shp|over",
   "rig.card"
