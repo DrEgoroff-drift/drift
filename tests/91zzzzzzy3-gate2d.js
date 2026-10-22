@@ -77,6 +77,17 @@ const GATE2D=[
      return {S};},
    done(){ok(!!PASS3.it&&PASS3.it.geo.length===2,"перевал: тело и свет окон собраны");
      if(globalThis.__g2pass){passIsCore=globalThis.__g2pass.core;G.pass=globalThis.__g2pass.pass;globalThis.__g2pass=null;}}},
+  {name:"три места (21piig, 11v): башня, чаша, лестница — тела в кадре планеты, на #c ни штриха",
+   painters:["plnPlaceStep","plnPlaceFrame","plnPlaceMesh"],probe:["plnPlaceFrame"],
+   place(first){
+     if(!globalThis.__g2place){globalThis.__g2place={here:placeHere};
+       placeHere=q=>q&&G.surf&&q===G.surf.p?{k:"stair"}:null;}
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
+     const S=G.surf;if(!S)return null;S.x=placeX(S.tr,S.p);
+     return {S};},
+   done(){ok(!!PLACE3.it&&PLACE3.it.key.endsWith("|stair"),"места: лестница собрана");
+     if(globalThis.__g2place){placeHere=globalThis.__g2place.here;globalThis.__g2place=null;}}},
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
    place(){
