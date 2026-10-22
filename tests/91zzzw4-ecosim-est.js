@@ -56,14 +56,14 @@ function ecoEstate(X){
     const ORE={};for(const q of (home.planets||[]))for(const k of (q.res||[]))ORE[k]=1;
     const fit=id=>{const e=Object.keys(BLD[id].eats);return e.filter(k=>ORE[k]).length/e.length;};
     const ids=Object.keys(BLD).filter(id=>bldIsShop(BLD[id])&&fit(id)>0).sort((a,b)=>fit(b)-fit(a)||(BLD[a].fam<BLD[b].fam?-1:BLD[a].fam>BLD[b].fam?1:0));
-    const NSH=X.shops===false?0:E.shops;
+    const NSH=X.shops==null?E.shops:+X.shops;   /* ECO_SHOPS=0 — база без цехов; =N — N цехов (M915: лестница даёт дому одну площадку) */
     for(const S of near){
       if(EST.shops.length>=NSH)break;
       let here=0;
       for(const id of ids){
         if(EST.shops.length>=NSH||here>=3)break;
         const def=BLD[id];
-        if(bldRuleWhy(S,def))continue;
+        if(bldRuleWhy(S,def)&&!(LV.c&&S===home))continue;   /* рычаг (в): делатель дома */
         if(EST.shops.some(x=>x.id===id))continue;
         const H=holdOf(S.key);H.bld=H.bld||{};
         H.bld[id]={lvl:1,t0:clockNow(),ready:clockNow(),my:{},got:{}};
@@ -121,6 +121,13 @@ function ecoEstate(X){
           EST.shops.push({key:t.key,id,eats:Object.keys(BLD[id].eats).join("+"),makes:Object.keys(BLD[id].makes).join("+"),eater:g});}}
     }
   }
+  /* рычаги M915 (ECO_LEVER, буквы вместе; цена — теневая × ECO_LEVER_MUL) — проба, в игре их нет:
+     a — покупатель следующего звена: промтовар яруса 1 берёт станция, где его не делают;
+     b — рынок последнего звена: ярус 2–3 берёт любая станция; c — цех-делатель можно поставить дома */
+  const LV={};for(const c of (X.lever||""))LV[c]=1;
+  function leverSell(k){const q=G.cargo[k]|0,t=RES[k].ind;if(q<=0)return;
+    if(!(LV.a&&t===1&&!EST.shops.some(s=>s.key===G.sys.key&&BLD[s.id].makes[k]))&&!(LV.b&&t>=2))return;
+    const v=Math.round(q*indPrice(k)*X.mul);G.cargo[k]=0;earn(v,"trade");EST.lev=(EST.lev|0)+v;EST.indSold+=v;}
   function estDock(){
     if(G.mode!=="dock"||!G.sys||!G.sys.station)return;
     const PH=X.ph;
@@ -141,11 +148,11 @@ function ecoEstate(X){
       for(const s of EST.shops)if(s.key===G.sys.key){try{bldCollect(G.sys,s.id);}catch(e){note("цех: "+(e&&e.message));}}
       /* промтовар — в цех, который его ест; не взяли — на склад (не трюм: бот возит руду) */
       for(const k in G.cargo){const q=G.cargo[k]|0;if(q<=0||!RES[k]||!RES[k].ind)continue;
-        const v=bldSellInd(G.sys,k,q);EST.indSold+=v||0;
+        const v=bldSellInd(G.sys,k,q);EST.indSold+=v||0;leverSell(k);
         const left=G.cargo[k]|0;if(left>0){EST.ind[k]=(EST.ind[k]|0)+left;G.cargo[k]=0;}}
       /* со склада — тоже в цех, когда стоим там, где его едят */
       for(const k in EST.ind){const q=EST.ind[k]|0;if(q<=0)continue;
-        G.cargo[k]=(G.cargo[k]|0)+q;EST.ind[k]=0;const v=bldSellInd(G.sys,k,q);EST.indSold+=v||0;
+        G.cargo[k]=(G.cargo[k]|0)+q;EST.ind[k]=0;const v=bldSellInd(G.sys,k,q);EST.indSold+=v||0;leverSell(k);
         const left=G.cargo[k]|0;G.cargo[k]=0;EST.ind[k]=left;}
     }finally{X.ph=PH;}
   }
@@ -189,7 +196,7 @@ function ecoEstate(X){
     const fed={};for(const s of EST.shops){const B=bldEntry(s.key,s.id);if(B)fed[s.id]=Math.round(Object.values(B.got||{}).reduce((a,b)=>a+b,0));}
     return {shops:EST.shops.map(s=>s.id+"@"+s.key+" ("+s.eats+"→"+s.makes+")").join(", "),indSold:Math.round(EST.indSold),
       indLeft:Math.round(left),indLeftQ:JSON.stringify(EST.ind),base:EST.base?EST.base.name+" · модулей "+EST.base.mods+" · буров "+EST.base.drills+" · энергия "+EST.base.pw+" · людей "+EST.base.crew+" ("+baseStaff(EST.base.B).map(c=>c.role).join("+")+")"+" · тепло "+EST.base.heat+" · ["+EST.base.lay+"]"+(EST.base.B.ruin?" · РАЗВАЛИНА":""):"—",
-      baseUnits:EST.baseUnits,baseWorth:Math.round(EST.baseWorth),hauls:EST.hauls,fed:EST.fed,baseTrips:EST.baseTrips,
+      baseUnits:EST.baseUnits,baseWorth:Math.round(EST.baseWorth),hauls:EST.hauls,lev:EST.lev|0,fed:EST.fed,baseTrips:EST.baseTrips,
       survey:Object.entries(EST.survey||{}).map(([g,V])=>{
         const by=j=>{const A=V.L.filter(x=>x.j===j);return A.filter(x=>x.ok.length).length+"/"+A.length;};
         const near=V.L.filter(x=>x.ok.length).slice(0,3).map(x=>x.key+" ("+x.j+"п, "+x.ok.join("/")+", бак туда-обратно "+x.fuel+")");

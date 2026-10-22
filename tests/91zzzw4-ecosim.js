@@ -10,7 +10,8 @@
    node test-node.js --only="проба · экономика", окружение:
      ECO_HOURS часов на ярус (1) · ECO_TIERS регулярка имён · ECO_DISP=0 без дел ·
      ECO_HUMAN=1 темп человека · ECO_EST=0 без хозяйства · ECO_DRONE=dear дрон на дорогой руде ·
-     ECO_LOGIST=1 логист на базе · ECO_SHOPS=0 база без цехов · ECO_EATER=1 едок промтовара ·
+     ECO_LOGIST=1 логист на базе · ECO_SHOPS=N цехов (0 — база без них) · ECO_EATER=1 едок промтовара ·
+     ECO_LEVER=abc рычаги цехов, ECO_LEVER_MUL цена × (-est) · ECO_SAVE=1 лестница после сейва ·
      ECO_BUY=0 свежий без покупок · ECO_FRESH_H часы свежего · ECO_TRACE подробности */
 suite("проба · экономика",{tier:"probe"},()=>{
   const ENV=(globalThis.process&&globalThis.process.env)||{};
@@ -465,7 +466,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
   /* хозяйство T2–T3 — в 91zzzw4-ecosim-est.js */
   const {EST,estSetup,estDock,estHaul,estReport}=ecoEstate({note,idle,dockAt,sysOf,
     get ph(){return PHASE;},set ph(v){PHASE=v;},get book(){return BOOK;},get human(){return HUMAN;},
-    logist:ENV.ECO_LOGIST==="1",shops:ENV.ECO_SHOPS!=="0",eater:ENV.ECO_EATER==="1"});
+    logist:ENV.ECO_LOGIST==="1",lever:ENV.ECO_LEVER||"",mul:+ENV.ECO_LEVER_MUL||1,shops:ENV.ECO_SHOPS,eater:ENV.ECO_EATER==="1"});
   /* ── ярус: корпус, модули, руки, дроны, управляющие ── */
   function setup(tier){
     resetWorld();
