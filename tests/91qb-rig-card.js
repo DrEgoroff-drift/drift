@@ -23,6 +23,9 @@ TEST_SUITES.push(()=>suite("риг карточкой: позы, потолок 
     for(const pose of RIG_POSES){
       const C=rigCard({pose,phase:1,ppm:40});
       ok(C&&!!C.view&&C.w>0&&C.h>0,"карточка позы «"+pose+"» нарисована");
+      /* текстура есть и при пустом рисунке: судим вершины позы (доля рига без значения — NaN, карточка пуста) */
+      {const V=RIG_CARD.mesh.own.V;let bad=0;for(let k=0;k<V.length;k++)if(!isFinite(V[k]))bad++;
+        eq(bad,0,"поза «"+pose+"»: вершины карточки конечны");}
       const b=rigCardBounds(pose,1,.30,0),B=RIG_BOX;
       ok(b.x0>=B.x0&&b.x1<=B.x1&&b.y0>=B.y0&&b.y1<=B.y1,"поза «"+pose+"» в рамке карточки: "+JSON.stringify(b));
     }

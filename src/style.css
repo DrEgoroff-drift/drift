@@ -234,7 +234,7 @@ body:not(.inflight) .ipod{display:none}
 /* спуск в новом виде (21pza, M830): показания встают в ряд пэдов перед ТОРМОЗ — у рук, не в кадре;
    строка захода — плашкой у корабля на канве, #msg молчит */
 /* показания — плашка семьи пэдов «Борт» (M830 tail): графит, срезанные углы, кремовые чернила */
-body.plnland #prompt{margin-bottom:12px;padding:5px 12px;border:0;border-radius:0;background:var(--pl-bg);
+body.plnland #prompt,body.raidui #prompt{margin-bottom:12px;padding:5px 12px;border:0;border-radius:0;background:var(--pl-bg);
   -webkit-backdrop-filter:var(--pl-blur);backdrop-filter:var(--pl-blur);box-shadow:inset 0 0 0 1px var(--pl-edge);
   clip-path:var(--pl-cutp);color:#f1ebde;text-shadow:none}
 .pads #prompt.inrow{position:static;transform:none;zoom:1;align-self:center;text-align:right;max-width:none;
@@ -1327,6 +1327,9 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(var(--c-a
     display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
     left:10px;right:calc(var(--railw,128px) + 4px);transform:none;
     text-overflow:ellipsis;max-width:none;line-height:1.4}
+  /* плашка рейда (28u): зазор до борта и до края — 12 px, как у прочих плашек; строка управления
+     влезает в одну строку за счёт полей и разрядки */
+  body.raidui #prompt{left:12px;right:calc(var(--railw,128px) + 12px);padding:5px 8px;letter-spacing:.05em}
 }
 /* ── кнопка не исчезает — кнопка гаснет (M181, прямое указание автора) ──
    Правило M167 «призрачных кнопок нет» пряталo ДЕЙСТВИЕ и ТОРМОЗ совсем, и
@@ -2581,10 +2584,11 @@ body:not(.mobile) .pads button.on{transform:scale(.97)}
 .pads kbd:empty{display:none}
 
 /* ── телефон: те же плиты, тесней ── */
-body.mobile .hud{gap:8px;padding:0 calc(env(safe-area-inset-right) + 10px) 0 calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px)}
+/* панели — от 12 px, как прочие плашки; подпись «СКАФАНДР» 9 px шире 44 px и наезжала на шкалу (Контроль 22.10) */
+body.mobile .hud{gap:8px;padding:0 calc(env(safe-area-inset-right) + 12px) 0 calc(env(safe-area-inset-left) + 12px);top:calc(env(safe-area-inset-top) + 10px)}
 body.mobile .vitals{width:auto;flex:1 1 52%;min-width:0;max-width:200px;padding:7px 10px 9px;gap:6px}
 body.mobile .vh{display:none}
-body.mobile .vitals .v{grid-template-columns:44px 1fr 44px;column-gap:7px}
+body.mobile .vitals .v{grid-template-columns:54px 1fr 44px;column-gap:7px}
 body.mobile .vitals .v b{font-size:9px;letter-spacing:.06em}
 body.mobile .vitals .v u{font-size:12px}
 body.mobile .vitals .v.big u{font-size:15px}

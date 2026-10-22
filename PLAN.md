@@ -21,7 +21,7 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 `docs/DESIGN-remake.md` (M800+, built by the three builder sessions, judged by the designer); the
 game's logic — the shift, the bill, the dispatcher, loss, the three rails, combat — is
 `docs/DESIGN-game.md` (M900+; queue in its §10.8, the author's forks in §10.9). Where a stage below
-and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M911 are built (`28m-dispatch`, `28n-access`, `28o-firstwatch`, `28p-doors`, `28q-fork`, unreleased); the §10.8 queue is closed.
+and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M911 are done 22.10 (0.499.12–0.499.15: `28m-dispatch`, `28n-access`, `28o-firstwatch`, `28p-doors`, `28q-fork`; tests `91zzzw9e`–`9i`); the §10.8 queue is closed.
 
 Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
 bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
@@ -319,6 +319,7 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
+- [ ] **The yard beds have no species (22.10, for planet):** the greenhouse beds in 21pig are one green body  sized by `greenGrow`; the 2D bed painter that drew the species (form, leaf and stem colour, bloom, curl) is  gone. `greenSpecies(name,p)` in 21g is pure data for that: the bodies should read it, or two beds of  different seed look the same (M204's rule «ФОРМА — ВИДОВАЯ»).
 - [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). The day is
   `CEL_DAY` of the sky calendar (`06a-celest`), copied in `21pifa` and `25m-probe`; a longer day moves
   the war chronicle's hashes and the need windows. Decide together with the chronicle, reshoot hashes.

@@ -40,18 +40,50 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
     ["случайные руки",()=>{T.hands(120+pick(180));return true;}],
     ["ждать",()=>{T.wait(30+pick(90));return true;}],
     ["сохранить",()=>T.bot("save")],
-    ["запись туда и обратно",roundtrip]
+    ["запись туда и обратно",roundtrip],
+    /* составные цели — как игрок думает: одиночные шаги вразнобой не доходили до петли денег
+       (12 зёрен 15.10: стыковка без подлёта, продажа с пустым трюмом, кошелёк не сдвинулся ни разу) */
+    ["к станции и стыковка",()=>{const r=T.bot("station");return r.ok?T.bot("dock"):r;}],
+    ["к кораблю и взлёт",()=>{const r=T.bot("ship");if(!r.ok)return r;
+      /* топлива меньше 8 — удержание открывает окно буксира (rescueNoLaunch): так задумано, не провал */
+      if(G.fuel<8)return {ok:false,why:"топлива меньше 8 — взлёт ведёт к буксиру"};return T.bot("launch");}],
+    ["отвезти груз",()=>{if(!(held()>0))return {ok:false,why:"трюм пуст"};
+      let r=G.mode==="dock"?{ok:true}:T.bot("station");if(!r.ok)return r;
+      if(G.mode!=="dock"){r=T.bot("dock");if(!r.ok)return r;}
+      return T.bot("sell");}]
   ];
   const HUNT_AT={
-    system:["к звезде","к станции","стыковка","к планете","прыжок к соседу","бой","случайные руки","ждать","сохранить","запись туда и обратно"],
+    system:["к звезде","к станции и стыковка","к планете","посадка","прыжок к соседу","бой","отвезти груз","отвезти груз","случайные руки","ждать","сохранить","запись туда и обратно"],
     dock:["продать","отстыковка","случайные руки","сохранить","запись туда и обратно"],
-    surface:["бурение","к кораблю","взлёт","вниз на ярус","случайные руки","ждать"],
-    dig:["вниз на ярус","наверх","случайные руки"]
+    surface:["бурение","бурение","к кораблю и взлёт","вниз на ярус","случайные руки","ждать"],
+    dig:["наверх","случайные руки","ждать"],
+    /* переходные режимы: заход руками начинается, а доводит его только время; карта
+       закрывается руками. Без своих целей бот отказывал здесь всем подряд — тупик бота, не игры */
+    landing:["ждать","случайные руки"],
+    map:["случайные руки","ждать"]
   };
   const opts0=G.opts;
   resetWorld();
   const snap=JSON.parse(JSON.stringify(snapshot()));
   const V=[],seenV={},path=[],bad=[];let steps=0,refused=0;
+  /* сторож тупика (Stuck Player, Wuji: «нет прогресса N шагов»): отказы подряд, а место, режим,
+     кошелёк и трюм не сдвинулись — бот заперт там, откуда игрок тоже не выйдет целями */
+  const STUCK_N=12;let stuckRun=0,stuckSig="";
+  const sig=()=>{let x=0,y=0;try{const H=G.mode==="surface"?G.surf:G.mode==="dig"?G.dig:G.mode==="cave"?G.cave:G.ship;x=Math.round((H&&H.x)/50);y=Math.round((H&&H.y)/50);}catch(e){}
+    return G.mode+"|"+x+","+y+"|"+Math.round(G.credits)+"|"+held();};
+  /* покрытие (EA SEED, King BAIT): какие переходы «режим → цель» тропа прошла удачно — лаборатория
+     складывает их по зёрнам и называет то, куда охота не дошла ни разу */
+  const cover={},whyN={};
+  /* краны и стоки (Machinations, Path of Exile «faucets/sinks»): каждое изменение G.credits
+     пишется на функцию, которая его сделала; заметка печатает книгу. Неизвестный кран —
+     деньги из места, о котором экономика не знает: глядеть сюда первым */
+  const book={};let cv=G.credits;
+  const RESTORE=/applySave|loadGame|resetWorld|roundtrip|snapshot/;
+  const who=()=>{const L=String(new Error().stack||"").split("\n");
+    for(let j=3;j<L.length;j++){const m=/at (?:Object\.)?([\w$.]+) /.exec(L[j]);if(m&&!/^(set|Object|Array|eval)$/.test(m[1]))return m[1];}
+    return "?";};
+  Object.defineProperty(G,"credits",{configurable:true,enumerable:true,get(){return cv;},
+    set(v){const d=v-cv;if(d&&isFinite(d)){const w=who();if(!RESTORE.test(w)){const b=book[w]||(book[w]={plus:0,minus:0,n:0});if(d>0)b.plus+=d;else b.minus-=d;b.n++;}}cv=v;}});
   const judge=(c,DS)=>{
     for(const D of DS){
       let got=[];
@@ -71,6 +103,9 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
     return out;};
   try{
     T.go("система");
+    /* треть зёрен — с пушкой: бой без неё отказывал всегда («борт не вооружён») */
+    let armed=false;if(pick(3)===0){try{T.give("module","weapon");armed=true;}catch(e){}}
+    note("пушка "+(armed?"есть":"нет"));
     const S={id:"охота "+seed,frame:null,churn:0,types:null,idleB:null,keep:true};
     for(let i=0;i<HUNT_N;i++){
       /* цель по месту: из системы — к станции и планете, у причала — торговля, на грунте — бур;
@@ -88,6 +123,11 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
       if(threw.length)bad.push("шаг "+(i+1)+" «"+name+"» бросил: "+threw[0]);
       else if(!okStep&&r&&r.hard)bad.push("шаг "+(i+1)+" «"+name+"»: "+r.why);
       else if(!okStep)refused++;
+      const ck=mode0+">"+name;cover[ck]=(cover[ck]|0)+(okStep?1:0);
+      if(!okStep&&r&&r.why&&(HUNT_AT[mode0]||[]).indexOf(name)>=0){const wk=ck+": "+String(r.why).replace(/\d+(\.\d+)?/g,"#").slice(0,80);whyN[wk]=(whyN[wk]|0)+1;}
+      if(okStep){stuckRun=0;stuckSig="";}
+      else{const s=sig();if(s===stuckSig)stuckRun++;else{stuckSig=s;stuckRun=1;}
+        if(stuckRun===STUCK_N)bad.push("шаг "+(i+1)+": тупик — "+STUCK_N+" отказов бота подряд, а место не сдвинулось ("+G.mode+")");}
       const pb=purseBad();if(pb.length)bad.push("шаг "+(i+1)+" «"+name+"»: кошелёк испорчен — "+pb.join(", "));
       detHook(true);
       detSettle(6,2);S.frame=detGrab();S.types=null;
@@ -97,7 +137,11 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
       steps++;
       if(bad.length>=3)break;
     }
+    /* корпус сейвов (Factorio, BugNet «save corpus»): раз в четыре зерна мир тропы уходит в лабораторию;
+       следующие версии обязаны его грузить (lab-local → 91zzzzzzzzc-corpus) */
+    if(seed%4===0){try{note("корпус: "+saveText());}catch(e){}}
   }finally{
+    {const v=cv;delete G.credits;G.credits=v;}
     detHook(false);DET.on=false;DET.texts=null;DET.astro=null;
     for(const k in keys)keys[k]=false;
     T.calm();
@@ -106,6 +150,9 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
     resetWorld();
     G.opts=opts0;invalidateKeyMap();
   }
+  note("кошелёк: "+(Object.keys(book).sort((x,y)=>(book[y].plus+book[y].minus)-(book[x].plus+book[x].minus)).map(k=>k+" +"+Math.round(book[k].plus)+"/−"+Math.round(book[k].minus)+"×"+book[k].n).join("; ")||"ни копейки не сдвинулось"));
+  note("отказы: "+(Object.keys(whyN).sort((x,y)=>whyN[y]-whyN[x]).slice(0,8).map(k=>k+"×"+whyN[k]).join(" | ")||"нет"));
+  note("покрытие: "+Object.keys(cover).sort().map(k=>k+"="+cover[k]).join(";"));
   note("зерно "+seed+" · шагов "+steps+" · отказов бота "+refused+" · тропа: "+path.join(" | "));
   ok(steps>=Math.min(HUNT_N,10),"зерно "+seed+": шагов под детекторами "+steps+" из "+HUNT_N);
   /* по строке на находку, находка — в начале: лаборатория ключует провал по тексту без чисел

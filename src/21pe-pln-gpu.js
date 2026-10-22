@@ -32,7 +32,13 @@ const PLN_GPU={dev:null,gen:0,
   qual:"high",tier:0,tierGen:-1,phone:null,   /* ярус; счётчик пересборок и какая собрана; телефон ли (решается раз) */
   w:0,h:0,mw:0,mh:0,ww:0,wh:0,sw:0,sh:0,       /* размер кадра и размеры зеркала, кулисы, света в воздухе */
   L:null,P:{},S:null,U:null,D:null,T:null,V:null,B:null,pp:null,one:null,oneRide:null,dummy:null,
-  ga:[0,1,2,3,4].map(()=>new Float32Array(264)),inv:new Float32Array(16)};
+  ga:null,inv:new Float32Array(16)};
+/* числа кадра — один буфер, блоки по 256 байт (шаг привязки): сцена, зеркало, две тени, кулиса,
+   пятна, свет в воздухе, свёртка. Кадр пишет одним вызовом и только изменившийся отрезок */
+const PLN_UB={main:0,refl:320,sh0:640,sh1:960,wing:1280,blobs:1600,shafts:1920,comp:1984,n:2048};
+PLN_GPU.stage=new Float32Array(PLN_UB.n);PLN_GPU.prev=new Float32Array(PLN_UB.n).fill(NaN);
+PLN_GPU.ga=["main","refl","sh0","sh1","wing"].map(k=>PLN_GPU.stage.subarray(PLN_UB[k],PLN_UB[k]+264));
+PLN_GPU.blobs=PLN_GPU.stage.subarray(PLN_UB.blobs,PLN_UB.blobs+260);   /* пятна кадра (PLN_FRAME.blobs) пишут прямо сюда */
 /* ярусы — что кадр платит (сглаживание в WebGPU бывает только 1 и 4). high — как принято на ПК
    (M600); mid — сглаживание остаётся, дешевеет остальное: свет в воздухе в четверть кадра и 16
    шагов, зеркало в четверть, карта теней 2048, пять отводов тени, два размытия кулисы, четыре
@@ -97,9 +103,15 @@ function plnInst(a,n,cap){
   if(n)GPU.dev.queue.writeBuffer(buf,0,a,0,n*16);
   return {buf,n:n||0,cap:c,gen:PLN_GPU.gen};
 }
+/* пишет только изменившийся отрезок записей: стоящие тела (площадка, корабль на стоянке) не пишутся вовсе */
 function plnInstSet(I,a,n){
   n=Math.min(n,I.cap);
-  if(n)GPU.dev.queue.writeBuffer(I.buf,0,a,0,n*16);
+  const m=n*16;
+  if(!I.prev||I.prev.length<m)I.prev=new Float32Array(I.cap*16).fill(NaN);
+  const o=I.prev;let lo=0,hi=m;
+  while(lo<hi&&a[lo]===o[lo])lo++;
+  while(hi>lo&&a[hi-1]===o[hi-1])hi--;
+  if(hi>lo){GPU.dev.queue.writeBuffer(I.buf,lo*4,a,lo,hi-lo);for(let k=lo;k<hi;k++)o[k]=a[k];}
   I.n=n;
 }
 function plnInstFree(I){if(I&&I.gen===PLN_GPU.gen)I.buf.destroy();if(I)I.n=0;}
@@ -147,8 +159,12 @@ function plnGpuDev(){
     post:null};   /* привязка свёртки — в plnGpuTier: её глубина многовыборочная или нет по ярусу */
   Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
     cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
-  const ub=n=>d.createBuffer({size:n,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
-  Q.U={main:ub(1056),refl:ub(1056),sh0:ub(1056),sh1:ub(1056),wing:ub(1056),blobs:ub(1040)};
+  /* Q.U.main — сам буфер: сцена лежит с нуля, и чужие привязки (23cd) берут его целиком */
+  const all=d.createBuffer({size:PLN_UB.n*4,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  const at=(k,n)=>({buffer:all,offset:PLN_UB[k]*4,size:n});
+  Q.U={main:all,refl:at("refl",1056),sh0:at("sh0",1056),sh1:at("sh1",1056),wing:at("wing",1056),blobs:at("blobs",1040),
+    mainR:at("main",1056),shafts:at("shafts",32),comp:at("comp",32)};
+  Q.prev.fill(NaN);
   /* единичные записи цельных сеток: мировая и та, что едет с дальним миром */
   Q.one=d.createBuffer({size:64,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
   d.queue.writeBuffer(Q.one,0,new Float32Array([0,0,0,1, 1,0,1,0, 1,1,1,0, 0,0,0,0]));
@@ -157,7 +173,7 @@ function plnGpuDev(){
   const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
   const dummy=d.createTexture({size:[1,1,1],format:PLN_HDR,usage:RT});
   Q.dummy={t:dummy,v:dummy.createView()};
-  Q.B0={sh:[Q.U.sh0,Q.U.sh1].map(u=>d.createBindGroup({layout:Q.L.shadow,entries:[{binding:0,resource:{buffer:u}}]}))};
+  Q.B0={sh:[Q.U.sh0,Q.U.sh1].map(u=>d.createBindGroup({layout:Q.L.shadow,entries:[{binding:0,resource:u}]}))};
 }
 /* ── то, что живёт с ярусом: привязка свёртки, карта теней, конвейеры ── */
 function plnGpuTier(){
@@ -242,21 +258,26 @@ function plnGpuSize(){
   const V={};for(const k in T)if(k!=="all"&&T[k])V[k]=Array.isArray(T[k])?T[k].map(t=>t.createView()):T[k].createView();
   Q.T=T;Q.V=V;
   const U=Q.U,S=Q.S,D=Q.D,L=Q.L;
-  const scene=(u,refl)=>d.createBindGroup({layout:L.scene,entries:[{binding:0,resource:{buffer:u}},{binding:1,resource:D.shArr},
-    {binding:2,resource:S.cmp},{binding:3,resource:refl},{binding:4,resource:S.lin},{binding:5,resource:{buffer:U.blobs}}]});
+  const scene=(u,refl)=>d.createBindGroup({layout:L.scene,entries:[{binding:0,resource:u},{binding:1,resource:D.shArr},
+    {binding:2,resource:S.cmp},{binding:3,resource:refl},{binding:4,resource:S.lin},{binding:5,resource:U.blobs}]});
   const pp={all:[]};
-  /* проход свёртки: свои числа и до четырёх текстур */
+  /* проход свёртки: свои числа и до четырёх текстур; числа света в воздухе и свёртки меняет кадр —
+     они в общем буфере (PLN_UB), остальные пишутся раз */
   const post=(a,texs,name)=>{
-    const u=d.createBuffer({size:32,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
-    d.queue.writeBuffer(u,0,new Float32Array([a[0],a[1],a[2]||0,a[3]||0,a[4]||0,a[5]||0,a[6]||0,a[7]||0]));
-    pp.all.push(u);if(name)pp[name]=u;
+    let u;
+    if(name)u=U[name];
+    else{
+      const b=d.createBuffer({size:32,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+      d.queue.writeBuffer(b,0,new Float32Array([a[0],a[1],a[2]||0,a[3]||0,a[4]||0,a[5]||0,a[6]||0,a[7]||0]));
+      pp.all.push(b);u={buffer:b};
+    }
     const t=k=>texs[k]||D.dummyV;
-    return d.createBindGroup({layout:L.post,entries:[{binding:0,resource:{buffer:U.main}},{binding:1,resource:{buffer:u}},
+    return d.createBindGroup({layout:L.post,entries:[{binding:0,resource:U.mainR},{binding:1,resource:u},
       {binding:2,resource:t(0)},{binding:3,resource:t(1)},{binding:4,resource:t(2)},{binding:5,resource:t(3)},
       {binding:6,resource:S.lin},{binding:7,resource:V.depth},{binding:8,resource:D.shArr},{binding:9,resource:S.cmp}]});
   };
   const wbl=.30*h/900;
-  const B={main:scene(U.main,V.refl),refl:scene(U.refl,D.dummyV),wing:scene(U.wing,D.dummyV),sh:Q.B0.sh,
+  const B={main:scene(U.mainR,V.refl),refl:scene(U.refl,D.dummyV),wing:scene(U.wing,D.dummyV),sh:Q.B0.sh,
     wingBlur:[post([wbl/ww,0],[V.wing]),post([0,wbl/wh],[V.wa]),post([wbl*2/ww,0],[V.wb]),post([0,wbl*2/wh],[V.wa])],
     shafts:post([.0024,1600,.62,-.06,Q.shN],[],"shafts"),
     shBlur:[post([1.2/shw,0],[V.sha]),post([0,1.2/shh],[V.shb])],down:[],up:[]};
@@ -270,7 +291,7 @@ function plnGpuSize(){
   }
   /* числа свёртки общие у обеих привязок: с кулисой и без неё */
   B.comp=post([.085,.42,1,0],[V.hdr,V.up[0],V.sha,V.wb],"comp");
-  B.comp0=d.createBindGroup({layout:L.post,entries:[{binding:0,resource:{buffer:U.main}},{binding:1,resource:{buffer:pp.comp}},
+  B.comp0=d.createBindGroup({layout:L.post,entries:[{binding:0,resource:U.mainR},{binding:1,resource:U.comp},
     {binding:2,resource:V.hdr},{binding:3,resource:V.up[0]},{binding:4,resource:V.sha},{binding:5,resource:D.dummyV},
     {binding:6,resource:S.lin},{binding:7,resource:V.depth},{binding:8,resource:D.shArr},{binding:9,resource:S.cmp}]});
   Q.B=B;Q.pp=pp;
@@ -309,18 +330,22 @@ function plnGlobals(a,F,o){
   return a;
 }
 function plnGpuWrite(F){
-  const Q=PLN_GPU,q=GPU.dev.queue,U=Q.U,A=Q.ga,w=Q.w,h=Q.h;
+  const Q=PLN_GPU,A=Q.ga,w=Q.w,h=Q.h,s=Q.stage,o=Q.prev;
   const e=F.eye,er=[e[0],2*F.waterY-e[1],e[2]];
-  q.writeBuffer(U.main,0,plnGlobals(A[0],F,{vp:F.vp,l0:F.L0.m,eye:e,w,h}));
-  if(F.mirror)q.writeBuffer(U.refl,0,plnGlobals(A[1],F,{vp:F.vpMirror,l0:F.L0.m,eye:er,w:Q.mw,h:Q.mh,clip:true}));
-  q.writeBuffer(U.sh0,0,plnGlobals(A[2],F,{vp:F.vp,l0:F.L0.m,eye:e,w:Q.shn,h:Q.shn}));
-  q.writeBuffer(U.sh1,0,plnGlobals(A[3],F,{vp:F.vp,l0:F.L1.m,eye:e,w:Q.shn,h:Q.shn}));
-  if(F.wing)q.writeBuffer(U.wing,0,plnGlobals(A[4],F,{vp:F.vp,l0:F.L0.m,eye:e,w:Q.ww,h:Q.wh,wing:true}));
-  q.writeBuffer(U.blobs,0,F.blobs);
-  const P=F.post||{};
-  const sf=(P.shafts||[.0024,1600,.62,-.06]).slice(0,4);sf[4]=Q.shN;
-  q.writeBuffer(Q.pp.shafts,0,new Float32Array(sf));
-  q.writeBuffer(Q.pp.comp,0,new Float32Array([P.bloom===undefined?.085:P.bloom,P.vig===undefined?.42:P.vig,P.grade===undefined?1:P.grade,0]));
+  plnGlobals(A[0],F,{vp:F.vp,l0:F.L0.m,eye:e,w,h});
+  if(F.mirror)plnGlobals(A[1],F,{vp:F.vpMirror,l0:F.L0.m,eye:er,w:Q.mw,h:Q.mh,clip:true});
+  plnGlobals(A[2],F,{vp:F.vp,l0:F.L0.m,eye:e,w:Q.shn,h:Q.shn});
+  plnGlobals(A[3],F,{vp:F.vp,l0:F.L1.m,eye:e,w:Q.shn,h:Q.shn});
+  if(F.wing)plnGlobals(A[4],F,{vp:F.vp,l0:F.L0.m,eye:e,w:Q.ww,h:Q.wh,wing:true});
+  if(F.blobs!==Q.blobs)s.set(F.blobs,PLN_UB.blobs);
+  const P=F.post||{},sf=P.shafts||[.0024,1600,.62,-.06],k=PLN_UB.shafts,c=PLN_UB.comp;
+  s[k]=sf[0];s[k+1]=sf[1];s[k+2]=sf[2];s[k+3]=sf[3];s[k+4]=Q.shN;
+  s[c]=P.bloom===undefined?.085:P.bloom;s[c+1]=P.vig===undefined?.42:P.vig;s[c+2]=P.grade===undefined?1:P.grade;
+  /* одна запись: от первого изменившегося числа до последнего */
+  let a=0,b=s.length;
+  while(a<b&&s[a]===o[a])a++;
+  while(b>a&&s[b-1]===o[b-1])b--;
+  if(b>a){GPU.dev.queue.writeBuffer(Q.U.main,a*4,s,a,b-a);o.set(s.subarray(a,b),a);}
 }
 
 /* ── кадр ──
