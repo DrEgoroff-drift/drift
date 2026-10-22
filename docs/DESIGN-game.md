@@ -546,6 +546,16 @@ at a participation station once the run of ≥ 90 % сводки is 365 sky days
 two. Not done: the rivals' traces at your landmarks, «a face gone from the hall», the `bill`
 deed (no stranger's bill exists yet). The door table is `tests/91zzzw9h-doors.js`.
 
+**Built 22.10 (M910c, `28t-hallgone`).** The cantina crowd was nameless (a seed per slot), so
+nobody could be missing from it. Now whoever wrote you a live paper (the dispatcher's face,
+`28m` `dispFace`) sits in the cantina of the station that issued it, on a crowd seat, with the
+paper's face (at most two). Let a paper's time run out and that person is gone: the seat stays
+empty for thirty sky days, and the barman, unless he has just said something, says «Лидия
+Карповна? Больше не заходит. Ждала вас, потом перестала.» The district's dispatcher (the long
+order) never sits there and never leaves. A hand sent in your place (`cold`) is not a failure:
+the paper was done, the keeper only writes it down. `G.hallGone` keeps the last three per
+station and is saved. Tests: `tests/91zzzw9l-hallgone.js`.
+
 **Built 22.10 (M910b, `28s-rivmarks`).** The six are the troupe's «соперник» (Ефим, Пекарь,
 Крапива, Ким, Штоф, Совеня); Зоя stays on the watch. A landmark is yours once you acted on it
 (`G.poiSeen[seed].n.last`). Landing again, at least ten sky days after that act, you find at its

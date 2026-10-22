@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 633 · top-level symbols: 8892
+Files: 635 · top-level symbols: 8902
 
 ## SYMBOLS
 
@@ -1125,6 +1125,8 @@ HELM_TRAIL                   src/15a-helm.js:113
 HELM_TRAIL_MAX               src/15a-helm.js:115
 HELM_U                       src/22c-cave-gpu.js:445
 HELM_WGSL                    src/22c-cave-gpu.js:436
+HGONE_HOOKS                  src/28t-hallgone.js:60-72
+HGONE_MAX                    src/28t-hallgone.js:8
 HG_BAKE                      src/17c2-hull-gpu.js:11
 HG_BELLY                     src/17c2-hull-gpu.js:15
 HG_FLAME_WGSL                src/17c2-hull-gpu.js:52
@@ -5290,6 +5292,14 @@ hgTick                       src/27j1-ui-hangar.js:299-355
 hgUnits                      src/27j1-ui-hangar.js:23-41
 hgWire                       src/27j1-ui-hangar.js:175-195
 hgZone                       src/27j1-ui-hangar.js:59-98
+hgoneFem                     src/28t-hallgone.js:10
+hgoneGone                    src/28t-hallgone.js:12-15
+hgoneHere                    src/28t-hallgone.js:17-22
+hgoneLayout                  src/28t-hallgone.js:31-44
+hgoneLine                    src/28t-hallgone.js:45-49
+hgoneNote                    src/28t-hallgone.js:23-29
+hgoneRestore                 src/28t-hallgone.js:50-59
+hgoneSt                      src/28t-hallgone.js:9
 hinFolkMake                  src/29c-home-in.js:79-109
 hinFolkTick                  src/29c-home-in.js:110-153
 hinGroundRooms               src/29c-home-in.js:23-32
@@ -10610,6 +10620,9 @@ zoomTo                       src/15-input.js:358
 ## src/28s-rivmarks.js · 6 KB
   · соперники у ваших ориентиров (M910b, docs/DESIGN-game.md §7.3):1
 
+## src/28t-hallgone.js · 5 KB
+  · лицо ушло из зала (M910c, docs/DESIGN-game.md §7.3):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10798,6 +10811,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9j-fight.js · 7 KB
 
 ## tests/91zzzw9k-rivmarks.js · 5 KB
+
+## tests/91zzzw9l-hallgone.js · 4 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
