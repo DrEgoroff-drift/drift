@@ -381,7 +381,7 @@ function drawWrecksSystem(zx,zy,Z){
     const x=zx(w.x),y=zy(w.y);
     if(x<-60||x>W+60||y<-60||y>H+60)continue;
     /* тёмный переломленный корпус: тело, обвод, тусклый аварийный маяк */
-    if(!(BODY.on&&bodyBargeWreck(w,x,y,shipScaleAt(Z)*.8))){   /* тело остова (M820, 17c2f) */
+    if(!(bodyBargeWreck(w,x,y,shipScaleAt(Z)*.8))){   /* тело остова (M820, 17c2f) */
     ctx.save();ctx.translate(x,y);
     const s=clamp(Z,.5,1.4);ctx.scale(s,s);ctx.rotate((w.seed%628)/100);
     ctx.fillStyle="rgba(24,26,32,.96)";ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.8;
@@ -615,7 +615,7 @@ function drawBarges(zx,zy,Z){
     if(x>-80&&x<W+80&&y>-80&&y<H+80){
       const s=shipScaleAt(Z)*.8;   /* один потолок с кораблём (16c, п. 2) */
       /* тело (M820, 17c2f): сетка со своими огнями; без него — выпечка и живой слой, как было */
-      const bd=BODY.on&&bodyBarge(b,x,y,s),lit=bd||gpuBargeBody(b,x,y,s);
+      const bd=bodyBarge(b,x,y,s),lit=bd||gpuBargeBody(b,x,y,s);
       if(pass&&lit){
         /* с видеокарты (ступень 1): огни — фигурами, полоса — прямоугольниками, имя — подписью */
         if(!bd)bargeLiveGpu(pass,b,x,y,s,b.a);

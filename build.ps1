@@ -169,8 +169,6 @@ $BULK_OLD = @{     # известные крупные; замер обновл�
   "14-save.js" = 44          # M415: вторая половина applySave — в 14a1-save-rest
   "12l-barge.js" = 44
   "12a-crew.js" = 44
-  "21e1-surface-world.js" = 43  # M415: ОДНА функция drawSurfaceWorld на 590 строк.
-                             # Дальше её режут по своим швам: устье шахты, следы, ночь
   "19-mode-landing.js" = 43
   "12y-parrot-face.js" = 44  # одна таблица — не делится
   "27f-hq-room.js" = 42

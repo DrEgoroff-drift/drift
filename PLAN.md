@@ -22,10 +22,6 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 game's logic — the shift, the bill, the dispatcher, loss, the three rails, combat — is
 `docs/DESIGN-game.md` (M900+; queue in its §10.8, the author's forks in §10.9). Where a stage below
 and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M911 are built (`28m-dispatch`, `28n-access`, `28o-firstwatch`, `28p-doors`, `28q-fork`, unreleased); the §10.8 queue is closed.
-Left open from M910 (story doors), each its own small item:
-- **M910b · rivals at your landmarks.** The six rivals leave traces at landmarks you marked.
-- **M910c · a face gone from the hall.** A keeper you failed is missing from the cantina crowd.
-- ~~the `bill` deed~~ dropped: there is no stranger's bill in the game.
 
 Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
 bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
@@ -96,8 +92,7 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     `hullStudio`), the ОПИСЬ pictures, the suit doll and the album; to fix on the shipyard: the price on a buy button you
     cannot afford is dark on dark — it must still read, contrast ≥ 3 (Контроль 26.09); next: the slipway sheet (26e2, needs a hull mask in 08bi),
     the home garage hull, faces); a bake at first sight
-    costs a hitch on the phone (P1, §1), so rank by that too; the raid
-    comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
+    costs a hitch on the phone (P1, §1), so rank by that too;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
   - the hull: `hullStudio` / `hullGpuDraw` (17c2) is the one GPU hull. No screen calls `drawHull` any more (22.10:
     the station, the road 27l, the scoop 19a and the home are on `hullGpuDraw` or gone); it lives on only as the
@@ -106,9 +101,9 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
     (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),
     home outside (779 / 5), the base (104 / 2), the cave (58 / 2); then the road's own layer (hull, trail, glows,
-    jets, coins), the scoop, the raid. Labels drawn into the world layer (the surface HUD, the scoop, the base, the
+    jets, coins), the scoop. Labels drawn into the world layer (the surface HUD, the scoop, the base, the
     home) go onto `#ovl` with the 08bi primitives. Already 0 and 0: cinema, HQ, winter, spa, system, dock, cabin,
-    counter, belt, «Сорока». Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
+    counter, belt, «Сорока», the raid (22.10, `91zzzw9m`). Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
     the first census read 0 on `#c` at 2–5 uploads a frame), is checked against `#c` uploads, and turns red on an
     injected call. The base's GPU bake (the fleet's zone, a850203f; main draws the base in 2D) goes in tiles: at
     2560×1440 its 4078×2092 layer with 4× MSAA and a stencil is 198 MB for a moment, 277 MB with the pool (131 MB on
@@ -309,9 +304,8 @@ Check each against the code before building — some may already hold.
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
   names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
   functions, on touch only; the button family merge; `-Times` for the Node tier.
-- [ ] **`drawHull` (03e) stays as the flight's fallback path (Control, 22.10):** `hullGpuBake` (17c2) bakes it, and
-  `gpuLitSprite` draws that bake whenever the volume hull is off or not built yet (`H3D.on`, the one-mesh-a-frame
-  queue). It goes only when 17c2a has no fallback; until then every 2D census counts it as the bake, not a painter.
+- [ ] **The tether crosses the name (22.10):** the veteran's tether line is drawn through his own name
+  plate (`13-pirates` labels against the tether pass) — route the line under the plate or break it there; not touched.
 - [ ] **The volume hull reads double up close (22.10, the road on a phone):** 17c2a lays the top-view bake on
   the mesh from above, so the bake's inserts (the dish, the plate, the bar) and its outline land on whatever
   surface is under them; where that is a wing, not the body, they show as a second outline, and the hull

@@ -1,7 +1,7 @@
 /* ══════════════ пещера на движке: кадр и переключатель (M630a) ══════════════
    Порода из сетки игры (22da), свет и проходы (22db, 22dbw). Здесь — объектив, человек,
-   фонарь, день в устье и огни, и обёртка drawCave: старая рисовалка не тронута, новый вид
-   упал — идёт она, после трёх сбоев подряд новый вид снимает себя сам. ?cave=0 — старая.
+   фонарь, день в устье и огни, и сам drawCave: 2D-пещеры нет, кадр не собрался — одни приборы;
+   после трёх сбоев подряд новый вид снимает себя сам. ?cave=0 — без вида, одни приборы.
    Игра не меняется: сетка, запросы, updateCave — те же; кадр только смотрит на них.
 
    Объектив — как на стенде: широкий на ПК, высокий на телефоне, между ними плавно. Окно кадра
@@ -308,14 +308,13 @@ function cave3Over(){
     if(x>-40&&x<W+40&&y>-40&&y<H+40){
       const k=Math.sin(G.t*.08)>0?.9:.4;
       if(LP){const h=lifeHere(x,y-6);gpuShapes(LP,[[1,h.x,h.y,4*h.s,0,0,1.2*h.s,255,225,140,k]],{blend:"over"});}
-      else{ctx.fillStyle="rgba(255,225,140,"+k+")";ctx.beginPath();ctx.arc(x,y-6,4,0,TAU);ctx.fill();}
     }
   }
 }
 
-/* ── переключатель ── */
-const CAVE3_OLD_DRAW=drawCave;
-drawCave=function(){
+/* ── переключатель ──
+   2D-рисовалки пещеры больше нет: кадр не собрался — в нём одни приборы */
+function drawCave(){
   let ok=false;
   if(CAVE3.on&&CAVE3.bad<3&&G.cave&&G.cave.g){
     try{
@@ -328,12 +327,11 @@ drawCave=function(){
     }
   }
   /* свечение у нового вида своё; движку оставлено только зерно */
-  BLOOM_K.cave=ok?0:CAVE3_BLOOM;
+  BLOOM_K.cave=0;
   CAVE3.live=ok;
-  if(!ok){CAVE3.c=null;CAVE3_OLD_DRAW();return;}
+  if(!ok){CAVE3.c=null;return;}
   withScale(G.viewK,cave3Over);
 };
-const CAVE3_BLOOM=BLOOM_K.cave;
 /* клавиша карты в пещере: дальний объектив туда и обратно (раньше она здесь молчала) */
 const CAVE3_OLD_NAV=navAction;
 navAction=function(){

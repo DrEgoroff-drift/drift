@@ -546,6 +546,25 @@ at a participation station once the run of ≥ 90 % сводки is 365 sky days
 two. Not done: the rivals' traces at your landmarks, «a face gone from the hall», the `bill`
 deed (no stranger's bill exists yet). The door table is `tests/91zzzw9h-doors.js`.
 
+**Built 22.10 (M910c, `28t-hallgone`).** The cantina crowd was nameless (a seed per slot), so
+nobody could be missing from it. Now whoever wrote you a live paper (the dispatcher's face,
+`28m` `dispFace`) sits in the cantina of the station that issued it, on a crowd seat, with the
+paper's face (at most two). Let a paper's time run out and that person is gone: the seat stays
+empty for thirty sky days, and the barman, unless he has just said something, says «Лидия
+Карповна? Больше не заходит. Ждала вас, потом перестала.» The district's dispatcher (the long
+order) never sits there and never leaves. A hand sent in your place (`cold`) is not a failure:
+the paper was done, the keeper only writes it down. `G.hallGone` keeps the last three per
+station and is saved. Tests: `tests/91zzzw9l-hallgone.js`.
+
+**Built 22.10 (M910b, `28s-rivmarks`).** The six are the troupe's «соперник» (Ефим, Пекарь,
+Крапива, Ким, Штоф, Совеня); Зоя stays on the watch. A landmark is yours once you acted on it
+(`G.poiSeen[seed].n.last`). Landing again, at least ten sky days after that act, you find at its
+foot the trace of one rival you have met in any story (a seen trace of a story with them in the
+cast), picked by the landmark's seed; one trace per rival for the whole game, one per landmark.
+The trace is a «· СЛЕД ПЕКАРЯ» tail on the landmark's «ИМЯ · СОСТОЯНИЕ» plate every visit, and
+once a line of what lies there (say, and the journal in full). No body for it yet: the landmark's
+picture is `21pie`. `G.rivMk` is saved. Tests: `tests/91zzzw9k-rivmarks.js`.
+
 **Built 22.10 (M911, `28q-fork`).** Every paper on the dock row has two sides: КУРС (yourself) and
 РУКОЙ (a hand). A hand is an idle hired hand with a ship and no order; it takes the job for
 85 % of the pay minus the goods at base price and its wage for the road, takes 0.8 of your

@@ -105,7 +105,7 @@ function rackBodies(k){
   for(const p of G.sys.planets||[]){put(p.x,p.y,p.radius);for(const m of p.moons||[])put(m.x,m.y,m.radius);}
   const st=G.sys.station;if(st&&isFinite(st.x))put(st.x,st.y,60);
   const T=G.marks&&G.marks[0];
-  if(T&&isFinite(T.x)){const b=BODY.on&&typeof bodyMarkBox==="function"?bodyMarkBox(T,Z):null;
+  if(T&&isFinite(T.x)){const b=typeof bodyMarkBox==="function"?bodyMarkBox(T,Z):null;
     box(W/2+(T.x-cx)*Z,H/2+(T.y-cy)*Z,b?b[0]:24,b?b[1]:24);}
   return O;
 }
