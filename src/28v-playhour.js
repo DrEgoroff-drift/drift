@@ -21,10 +21,10 @@ const PLAYHOUR_HOOKS=[
   ["snapshot", O=>function(){const s=O.apply(this,arguments);s.playMs=Math.round(G.playMs||0);return s;}],
   /* до оригинала: первая вахта (28o) спрашивает firstHour() внутри своей записи */
   ["applySave",O=>function(s){
-    const old=G.playMs,pm=s&&isFinite(s.playMs)&&s.playMs!==null?Math.max(0,+s.playMs):Math.max(0,(s&&+s.flownMs)||0);
-    G.playMs=pm;
-    const r=O.apply(this,arguments);
-    G.playMs=r?pm:old;
+    const had="playMs" in G,old=G.playMs,pm=s&&isFinite(s.playMs)&&s.playMs!==null?Math.max(0,+s.playMs):Math.max(0,(s&&+s.flownMs)||0);
+    G.playMs=pm;let r=false;
+    /* отказ — и возвратом, и исключением — оставляет мир нетронутым до бита (91qo: порча байтов сейва) */
+    try{r=O.apply(this,arguments);}finally{if(r)G.playMs=pm;else if(had)G.playMs=old;else delete G.playMs;}
     return r;}]
 ];
 for(const [n,mk] of PLAYHOUR_HOOKS){const O=window[n];if(typeof O!=="function")throw new Error("час игры: нет крючка "+n);window[n]=mk(O);}
