@@ -306,6 +306,37 @@ const GATE2D=[
    place(first){return gate2dRail(first,true);},
    done(){RAIL_ARRIVE=-1e9;},
    warm:30,probe:["railGpu","railRingBody"]},
+  /* перепись 2D зоны rooms-a (M806b): мачта ретранслятора и четыре комнаты на движке — художники без ctx */
+  {name:"мачта ретранслятора (11apa): тело и огни, без 2D",
+   painters:["relayDrawSystem","relayLights"],
+   place(first){if(!first)return {};
+     for(let r=0;r<=20;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const R=relayOf(x,y);if(!R)continue;
+       G.sx=x;G.sy=y;G.sys=getSystem(x,y);G.ap=null;G.orbit=null;const P=relaySpot(R);
+       G.ship.x=P.x+30;G.ship.y=P.y+20;G.ship.vx=G.ship.vy=0;G.zoom=1;G.zoomT=null;return {R};}
+     return null;},
+   warm:30,probe:["relayDrawSystem","relayLights"]},
+  {name:"дом изнутри (29rb): комната движком, без 2D",
+   painters:["drawHomeIn","home3Frame","home3Scene","home3Tags"],
+   place(first){if(first){G.home=G.home||homeInit();G.home.tier=HOME_TIERS.length;enterHomeIn();}return {};},
+   done(){G.mode="system";},
+   warm:30,probe:["home3Frame"]},
+  {name:"санаторий (29rd): комната и лист распорядка выпечкой, без 2D",
+   painters:["drawSpa","spa3Frame","spa3Scene","spa3Board","spa3BoardGrid","spa3Tags"],
+   place(first){if(first){G.spa={day:2,days:3,slot:0,done:0,took:{"2:bath":1},talked:0,pname:"Тиун III",home:{sx:G.sx,sy:G.sy},seed:1234567};G.mode="spa";}return {};},
+   done(){G.spa=null;G.mode="system";},
+   warm:30,probe:["spa3Frame"]},
+  {name:"зимовка (29rc): комната движком, без 2D",
+   painters:["drawWinter","win3Frame","win3Scene","win3Tags"],
+   place(first){if(first){G.win={sx:2,sy:-3,pi:0,pname:"Тиун II",sysName:"Тиун",day:17,days:30,pw:{heat:3,air:3,light:2,ant:1},
+     faults:[{k:"ice",day:12}],diary:[],wall:5,cold:1,dark:0,home:{sx:G.sx,sy:G.sy},t0:now(),done:0};G.mode="winter";}return {};},
+   done(){G.win=null;G.mode="system";},
+   warm:30,probe:["win3Frame"]},
+  {name:"«Сорока» изнутри (29re): коридор витрин движком, без 2D",
+   painters:["drawWanderRoom","wan3Frame","wan3Scene","wan3Tags"],
+   place(first){if(first&&!openWanderer({force:true}))return null;return {};},
+   done(){G.wan=null;G.mode="system";},
+   warm:30,probe:["wan3Frame"]},
   /* карта (хвосты переписи M828): перо на видеокарте, регистр текста — поля пера (M817), мерка строк — мимо ctx;
      считаются и методы, и сеттеры */
   {name:"карта (18, 18a, 18b): подписи, кольца, линейки, роза, владения — без вызовов на ctx",

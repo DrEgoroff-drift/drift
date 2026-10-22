@@ -554,6 +554,32 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   kinds (12 lane lamps, own light, the red light only on the metro); `91zzzzzzy3-gate2d` runs the
   vestibule and the halt with a live GPU, 0 ctx. Cost A/B/A, whole system frame with the ring in view
   (GPU timestamps, whole frame A1/B/A2 with GPU.tsOk and PLN.on: 1600 3.05/3.10/3.03 ms, the rail segment 0.002 to 0.054; 390 0.51/0.51/0.50. The ride car and bus now take the core's light (h3dRun lc, RAIL_CORE_LIGHT); the bus roof is greyer with two hatches, it burnt out to a white slab).
+  *M806b The 2D census of the rooms-a zone (22.10):* the method of M807 over 20 files — rooms `29r*`,
+  the rail `18e`–`18g`, the map `18`/`18a`/`18b`/`18l`, the relay `11ap`/`11apa`. Every method and setter of
+  both 2D context prototypes and the own hooks of `#c` is counted and given to the innermost function of
+  the zone on the stack (every function declared in those files, about 280), over 1.5 s of the live loop with
+  `GPU.ok` and `PLN.on`, at 1600 and 390. Probes prove each scene ran its painter; a planted call from a
+  function named like a zone one is caught (3 of 3), so the zeros are real.
+
+  | scene | painter alive (calls) | zone 2D calls 1600 / 390 |
+  |---|---|---|
+  | ring station, halt (18f, 18fa) | railRingBody 85–90 | 0 / 0 |
+  | ride (18g, 18gb) | railCarDraw 89–90 | 0 / 0 |
+  | map (18, 18a, 18b, 18l) | mapRingsDraw 90 | 0 / 0 |
+  | relay, relay in the air (11ap, 11apa) | relayDrawSystem 90 | 0 / 0 |
+  | home, upstairs (29rb, 29rba) | home3Frame 90 | 0 / 0 |
+  | sanatorium (29rd) | spa3Frame 75–86 | 0 / 0 |
+  | wintering (29rc) | win3Frame 89 | 0 / 0 |
+  | «Сорока» (29re) | wan3Frame 17–53 | 0 / 0 |
+  | HQ room (29r) | room3Frame 17–18 | 0 / 0 |
+  | home still in the station tab (29rf) | homeStillPaint 1 | 0 / 0 |
+
+  Verdict: nothing to remove — the zone has no 2D painter left. Statically no file of it calls a 2D
+  context; the sanatorium's schedule sheet is a `gpuBake` (GcCtx on the GPU, glyphs from 08cb), and the
+  map's register and measure already go through the pen (M817). The only no-GPU branches are early
+  returns (`bodyGpu`, `GPU.ok`), no 2D path behind them. No source changed, so no frame changed.
+  `91zzzzzzy3-gate2d` gains five scenes so it stays that way: the relay mast, home, sanatorium,
+  wintering and «Сорока», each with its painters and a probe.
 - **M823 The nebula far from the star**: inner structure and a depth ramp, no straight streaks
   (the look near the star is the author's and stays). **M824 Belt**: rocks clustered round the
   actor, haze instead of the band. **M825 The orbs' second pass**: crystal, ice, jungle, rocky,
