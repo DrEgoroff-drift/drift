@@ -344,7 +344,7 @@ function hallScene(L,cam,t){
       lights.push({p:pp,range:vl+1.5,c:r3Sc(r3Lin([255,232,196]),2.6*kf),spot:1,d:v.map(x=>x/vl),cosO:Math.cos(.2),cosI:Math.cos(.14),vol:.85});
       bulbs.push([pp[0],pp[1],pp[2],.6*kf]);}
     /* отсвет полотна на зрителях — холодный, дышит вместе с кадром: лица и плечи ряда из темноты */
-    lights.push({p:[HALL_KINO[0],HALL_KINO[1],HALL_B+.4],range:7.5,c:r3Sc(r3Lin([190,205,235]),6*kf*(.3+.7*cut)),spot:1,d:[0,-.25,1],cosO:Math.cos(1.3),cosI:Math.cos(.55),vol:0});}
+    lights.push({p:[HALL_KINO[0],HALL_KINO[1],HALL_B+.4],range:15,c:r3Sc(r3Lin([190,205,235]),9*kf*(.3+.7*cut)),vol:0});   /* СР · Визуал: отсвет достаёт до столиков левой половины — кино не висит в черноте */}
   if(L.bar){const LT=CANT_LIGHT[L.st]||CANT_LIGHT.trade,tone=r3Lin(mixc(mixc(LT.tone,acc,.2),[255,196,130],.35));
     hallLamps(L).forEach((x,i)=>{lights.push({p:[x,2.03+C3_LH,.12],range:4.2,c:r3Sc(tone,(L.st==="sci"?4.2:6)*LT.pow*(.8+.45*nk)*kn*(wlk?1.35:1)),spot:1,d:[0,-1,-.12],
       cosO:Math.cos(.78),cosI:Math.cos(.3),shadow:i<2?1:0,vol:.08});
