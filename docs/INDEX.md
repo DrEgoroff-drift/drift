@@ -3979,7 +3979,7 @@ drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
 drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
-drawHomeIn                   src/29rb-home-r3.js:455-460
+drawHomeIn                   src/29rb-home-r3.js:454-459
 drawHomeOut                  src/21f-home-out.js:75-263
 drawHotel                    src/17l-hotel.js:147-174
 drawHullMarks                src/03b-hull-paint.js:174-481
@@ -4055,11 +4055,11 @@ drawVan                      src/21ac3-base-van.js:71-137
 drawVanSmall                 src/21ac3-base-van.js:139-145
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
-drawWanderRoom               src/29re-wander-r3.js:359-362
+drawWanderRoom               src/29re-wander-r3.js:360-363
 drawWanderer                 src/12v-wander.js:339-443
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-318
-drawWinter                   src/29rc-winter-r3.js:276-279
+drawWinter                   src/29rc-winter-r3.js:275-278
 drawWorld                    src/28-loop.js:444-447
 drawWorldIn                  src/28-loop.js:448-472
 drawWreck                    src/20aa-poi-shapes.js:8-47
@@ -5244,10 +5244,10 @@ holdWorth                    src/27j-ui-opis.js:596-604
 home3Arc                     src/29rba-home-shell.js:11
 home3Cam                     src/29rb-home-r3.js:405-416
 home3Canvas                  src/29rb-home-r3.js:388-395
-home3Cost                    src/29rb-home-r3.js:452
+home3Cost                    src/29rb-home-r3.js:451
 home3FolkM                   src/29rb-home-r3.js:39
-home3Frame                   src/29rb-home-r3.js:418-436
-home3Hide                    src/29rb-home-r3.js:445-450
+home3Frame                   src/29rb-home-r3.js:418-435
+home3Hide                    src/29rb-home-r3.js:444-449
 home3LookAt                  src/29rb-home-r3.js:382
 home3Man                     src/29rb-home-r3.js:322-333
 home3Mesh                    src/29rb-home-r3.js:43-139
@@ -5261,7 +5261,7 @@ home3Skin                    src/29rba-home-shell.js:37-45
 home3StoolMesh               src/29rb-home-r3.js:314
 home3Str                     src/29rb-home-r3.js:38
 home3Stuff                   src/29rb-home-r3.js:141-312
-home3Tags                    src/29rb-home-r3.js:439
+home3Tags                    src/29rb-home-r3.js:438
 home3Under                   src/29rba-home-shell.js:47-64
 home3Up                      src/29rb-home-r3.js:30
 home3UpRooms                 src/29rb-home-r3.js:379
@@ -5301,7 +5301,7 @@ homeStill                    src/29rf-home-still.js:13-22
 homeStillAsp                 src/29rf-home-still.js:23
 homeStillCam                 src/29rf-home-still.js:34-42
 homeStillFlush               src/29rf-home-still.js:24-31
-homeStillPaint               src/29rf-home-still.js:43-71
+homeStillPaint               src/29rf-home-still.js:43-70
 homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
 homeWash                     src/21f-home-out.js:298-323
@@ -5358,7 +5358,7 @@ hq3Layout                    src/29r-rooms-r3.js:29-41
 hq3Mesh                      src/29r-rooms-r3.js:46-136
 hq3Scene                     src/29r-rooms-r3.js:139-179
 hq3Stand                     src/29r-rooms-r3.js:28
-hq3Tags                      src/29r-rooms-r3.js:264
+hq3Tags                      src/29r-rooms-r3.js:263
 hqAiOffer                    src/27c-ui-hq.js:390-410
 hqBtnTick                    src/27c-ui-hq.js:221-227
 hqJobCard                    src/27c-ui-hq.js:450-488
@@ -5366,7 +5366,7 @@ hqMgrAt                      src/27f-hq-room.js:8
 hqRelicSlot                  src/27c-ui-hq.js:416-446
 hqRender                     src/27c-ui-hq.js:228-385
 hqRentOffer                  src/12f1-mgr-rent.js:59-77
-hqScene                      src/29r-rooms-r3.js:307
+hqScene                      src/29r-rooms-r3.js:306
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
@@ -7658,8 +7658,8 @@ room3Breath                  src/29r-rooms-r3.js:213
 room3Cams                    src/29r-rooms-r3.js:199
 room3Canvas                  src/29r-rooms-r3.js:182-190
 room3Close                   src/29r-rooms-r3.js:225-231
-room3Cost                    src/29r-rooms-r3.js:295
-room3Frame                   src/29r-rooms-r3.js:240-259
+room3Cost                    src/29r-rooms-r3.js:294
+room3Frame                   src/29r-rooms-r3.js:240-258
 room3GlideAt                 src/29r-rooms-r3.js:200-204
 room3Go                      src/29r-rooms-r3.js:207-211
 room3Loop                    src/29r-rooms-r3.js:232-239
@@ -7667,11 +7667,11 @@ room3Moving                  src/29r-rooms-r3.js:205
 room3Night                   src/29r-rooms-r3.js:214
 room3Ok                      src/29r-rooms-r3.js:215
 room3Open                    src/29r-rooms-r3.js:216-223
-room3Over                    src/29r-rooms-r3.js:289-292
-room3PickHq                  src/29r-rooms-r3.js:298-304
+room3Over                    src/29r-rooms-r3.js:288-291
+room3PickHq                  src/29r-rooms-r3.js:297-303
 room3Place                   src/29r-rooms-r3.js:224
 room3Size                    src/29r-rooms-r3.js:191-198
-room3TagsDraw                src/29r-rooms-r3.js:273-287
+room3TagsDraw                src/29r-rooms-r3.js:272-286
 roomToneTick                 src/09a-roomtone.js:79-99
 routeEarn                    src/12r-route.js:196-204
 routeFork                    src/12r-route.js:64-67
@@ -8418,7 +8418,7 @@ updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
 updateSystem                 src/17-mode-system.js:106-513
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
-updateWinter                 src/29rc-winter-r3.js:296-300
+updateWinter                 src/29rc-winter-r3.js:295-299
 useBeacon                    src/23-mode-dig.js:91-116
 vCloth                       src/18d-verlet.js:41-50
 vDrawCloth                   src/18d-verlet.js:110-133
@@ -8527,8 +8527,8 @@ wallWrap                     src/11ae-concert.js:72-80
 wan3Cam                      src/29re-wander-r3.js:307-315
 wan3Canvas                   src/29re-wander-r3.js:288-298
 wan3Case                     src/29re-wander-r3.js:38
-wan3Frame                    src/29re-wander-r3.js:317-343
-wan3Hide                     src/29re-wander-r3.js:350-355
+wan3Frame                    src/29re-wander-r3.js:317-344
+wan3Hide                     src/29re-wander-r3.js:351-356
 wan3Item                     src/29re-wander-r3.js:42-111
 wan3Keeper                   src/29re-wander-r3.js:244
 wan3Lantern                  src/29re-wander-r3.js:114-123
@@ -8536,7 +8536,7 @@ wan3Mesh                     src/29re-wander-r3.js:126-241
 wan3Ok                       src/29re-wander-r3.js:316
 wan3Scene                    src/29re-wander-r3.js:248-285
 wan3Station                  src/29re-wander-r3.js:300-306
-wan3Tags                     src/29re-wander-r3.js:345
+wan3Tags                     src/29re-wander-r3.js:346
 wanAll                       src/24c-mode-wanderer.js:21
 wanCur                       src/24c-mode-wanderer.js:50
 wanLots                      src/24c-mode-wanderer.js:49
@@ -8650,25 +8650,25 @@ weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
 win3Blanket                  src/29rc-winter-r3.js:128-147
-win3Box                      src/29rc-winter-r3.js:250
+win3Box                      src/29rc-winter-r3.js:249
 win3Cam                      src/29rc-winter-r3.js:212-220
 win3Canvas                   src/29rc-winter-r3.js:200-207
-win3Cost                     src/29rc-winter-r3.js:272
+win3Cost                     src/29rc-winter-r3.js:271
 win3Fade                     src/29rc-winter-r3.js:165
-win3Frame                    src/29rc-winter-r3.js:223-242
-win3Hide                     src/29rc-winter-r3.js:265-270
-win3Hit                      src/29rc-winter-r3.js:262
-win3Hits                     src/29rc-winter-r3.js:254
+win3Frame                    src/29rc-winter-r3.js:223-241
+win3Hide                     src/29rc-winter-r3.js:264-269
+win3Hit                      src/29rc-winter-r3.js:261
+win3Hits                     src/29rc-winter-r3.js:253
 win3LeverX                   src/29rc-winter-r3.js:29
 win3Man                      src/29rc-winter-r3.js:152-162
 win3Mesh                     src/29rc-winter-r3.js:35-124
 win3Ok                       src/29rc-winter-r3.js:222
-win3On                       src/29rc-winter-r3.js:273
+win3On                       src/29rc-winter-r3.js:272
 win3Pilot                    src/29rc-winter-r3.js:150
 win3Scene                    src/29rc-winter-r3.js:167-197
 win3SleepPh                  src/29rc-winter-r3.js:164
 win3Storm                    src/29rc-winter-r3.js:32
-win3Tags                     src/29rc-winter-r3.js:244
+win3Tags                     src/29rc-winter-r3.js:243
 win3Val                      src/29rc-winter-r3.js:30
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72-74
@@ -8678,13 +8678,13 @@ winDiaryToday                src/29f-winter.js:176-191
 winDraw_                     src/29f-winter.js:69
 winEnd                       src/29f-winter.js:193-209
 winFix                       src/29f-winter.js:149-160
-winHit                       src/29rc-winter-r3.js:280
+winHit                       src/29rc-winter-r3.js:279
 winOfferHere                 src/29f-winter.js:76-94
 winOn                        src/29f-winter.js:63
 winOver                      src/29f-winter.js:70
 winShift                     src/29f-winter.js:123-148
 winTake                      src/29f-winter.js:95-111
-winTap                       src/29rc-winter-r3.js:281-293
+winTap                       src/29rc-winter-r3.js:280-292
 winWall                      src/29f-winter.js:162-172
 windOf                       src/19c-light.js:42-48
 withCtx                      src/18c-chunks.js:58-65
@@ -10468,7 +10468,7 @@ zoomTo                       src/15-input.js:358
 ## src/29rd-spa-r3.js · 21 KB
   · санаторий на движке (M850d, docs/DESIGN-rooms.md §4):1
 
-## src/29re-wander-r3.js · 35 KB
+## src/29re-wander-r3.js · 36 KB
   · «Сорока» на движке (M851, docs/DESIGN-rooms.md §4):1
 
 ## src/29rf-home-still.js · 6 KB
@@ -10566,7 +10566,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qj-pace.js · 2 KB
   · темп мира: фон не носится (Зрение 2.0, закон «темп»):1
 
-## tests/91qj-rooms.js · 7 KB
+## tests/91qj-rooms.js · 9 KB
   · комнаты на движке (DESIGN-rooms §7):1
 
 ## tests/91qk-ground.js · 5 KB

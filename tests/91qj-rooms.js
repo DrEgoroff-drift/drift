@@ -76,3 +76,20 @@ TEST_SUITES.push(()=>suite("комнаты на движке: сцены, све
       eq(b.seed,a.seed,"лицо пилота то же после сейва");eq(home3PilotM().seed,b.seed,"и то же при втором вызове (не случайное)");}
   }finally{Object.assign(G,sv);}
 }));
+/* ореол колбы в комнатах (22.10): копии формулы зала без отсечения клали ореол и лампе за кадром, и лампе у
+   плоскости объектива (x 2·10⁵ px — ровный жёлтый слой на весь кадр, 91qc «зал: ореол колбы»). Все кадры комнат
+   и снимок дома зовут одну hallBulbU (кадры обёрнуты чужими модулями — проверяется формула в кадре, не текст); в кадре «Сороки» на 390 крайняя лампа витрины за правой кромкой — без ореола */
+TEST_SUITES.push(()=>suite("комнаты: ореол колбы — одна формула зала",()=>{
+  resetWorld();const sv={wan:G.wan,mode:G.mode};
+  try{openWanderer({force:true});const S=wanAll(),lots=wanLots();
+    for(const z of [{cw:1920,ch:1080,wide:true,rw:1920},{cw:390,ch:844,wide:false,rw:390}]){
+      const cam=wan3Cam(z,1.5,0,lots.length),Sc=wan3Scene(S,lots,cam,1.5,0),U=new Float32Array(60);
+      hallBulbU(U,cam.vp,Sc.bulbs,z.cw,z.ch);
+      let lit=0,off=0;Sc.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,z.cw,z.ch);
+        if(U[i*4+3]>0){lit++;ok(U[i*4+2]>=2&&U[i*4+2]<HALL_BULB_R,"«Сорока» "+z.cw+": ореол лампы "+i+" — "+U[i*4+2].toFixed(1)+" px");}
+        else if(q&&(q[0]<-40||q[0]>z.cw+40))off++;});
+      ok(lit>0,"«Сорока» "+z.cw+": лампы в кадре с ореолом ("+lit+")");
+      if(z.cw===390)ok(off>0,"«Сорока» 390: лампа за кромкой — без ореола ("+off+")");
+      ok(Array.from(U).every(v=>Math.abs(v)<5000),"«Сорока» "+z.cw+": в поле нет чисел за кадром");}
+  }finally{Object.assign(G,sv);}
+}));

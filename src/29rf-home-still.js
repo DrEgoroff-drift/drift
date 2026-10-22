@@ -62,8 +62,7 @@ function homeStillPaint(cv,nd){
     /* ключ снимка — солнце двора: ему тень (дом ложится на газон, люди — на пол), иначе кадр без ключа и без веса */
     for(const l of S.lights)if(l.range===40){l.shadow=1;break;}
     const U=new Float32Array(60);
-    S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,w/nd,h/nd),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],w/nd,h/nd);
-      if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
+    hallBulbU(U,cam.vp,S.bulbs,w/nd,h/nd);   /* ореол — только у колбы в кадре и своего размера (27f4a, 22.10) */
     U.set([...r3Lin([255,200,140]),1.0],24);U[43]=t;U[44]=1;U[47]=1;
     U.set([.5,.5,HALL_CA,1],48);U.set([1,h/w,HALL_SHARP,1],52);
     r3Frame(hc,S,(pl,Sv,Vv,Bv)=>rpgField(Rg,pl,"r3post",R3_POST_WGSL,U,[Sv,{view:R3.blank},Vv,Bv]),{cx,w,h});
