@@ -35,6 +35,37 @@ const GATE2D=[
      return {S};},
    done(){ok(!!TRC.it,"чужой след: тело собрано");
      if(G.surf)G.surf.trace=null;}},
+  {name:"мат свидетеля (21piid, 20c): пластинки и свечение затмения — тела в кадре планеты, на #c ни штриха",
+   painters:["peepDrawMat","plnPeepStep","plnPeepFrame","plnPeepMesh"],probe:["plnPeepFrame"],
+   place(first){
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
+     const S=G.surf;if(!S)return null;
+     if(!S.peep||S.peep.gate2d!==1)S.peep={gate2d:1,x:S.x+30,r:PEEP_R,ph:0,watch:0,dk:0,paid:0,scene:peepScene(S.p)};
+     return {S};},
+   done(){ok(!!PEEP3.it&&PEEP3.it.parts.length>0,"мат свидетеля: тело собрано");
+     if(G.surf)G.surf.peep=null;}},
+  /* земля поверхности (M807): грунт, разрез и порода — тела движка (21pf); старая 2D-земля (18a fillMaterial,
+     18a1 лессировка, 18b drawStrata) снята, её имена — заглушки для запертых 19/20a/21b. Художники — и движок
+     земли, и всё, что осталось от старой: позови кто-нибудь из них 2D — ворота красные */
+  {name:"земля поверхности (21pf, M807): грунт и разрез движком, 2D-краски старой земли нет",
+   painters:["plnLandStep","plnGpuFrame","drawGround","groundChunkPaint","drawRocks","fillMaterial","drawStrata",
+     "glazeGround","planetMatHue","greyOf","greyA","greyStretch"],probe:["plnGpuFrame"],
+   place(first){
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
+     return G.surf?{S:G.surf}:null;}},
+  {name:"выкладка медленной долины (21piie, 11o): колышек, фигура и ответ — тела в кадре планеты, на #c ни штриха",
+   painters:["plnSlowStep","plnSlowFrame","plnSlowMesh"],probe:["plnSlowFrame"],
+   place(first){
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
+     const S=G.surf;if(!S)return null;
+     if(!globalThis.__g2slow){globalThis.__g2slow={core:slowIsCore,spot:slowSpotX,slow:G.slow};const sx=S.x+30;
+       slowIsCore=q=>!!G.surf&&q===G.surf.p;slowSpotX=()=>sx;G.slow={fig:["ice","iron"],at:-1,round:0};}
+     return {S};},
+   done(){ok(!!SLOW3.it,"выкладка: тело собрано");
+     if(globalThis.__g2slow){slowIsCore=globalThis.__g2slow.core;slowSpotX=globalThis.__g2slow.spot;G.slow=globalThis.__g2slow.slow;globalThis.__g2slow=null;}}},
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
    place(){
@@ -262,12 +293,12 @@ const GATE2D=[
      return null;},
    done(){RAIL_ARRIVE=-1e9;},
    warm:30,probe:["railGpu","drawRailArrive"]},
-  /* карта (хвосты переписи M828): перо на видеокарте, регистр текста и мерка строк — мимо ctx */
+  /* карта (хвосты переписи M828): перо на видеокарте, регистр текста — поля пера (M817), мерка строк — мимо ctx;
+     считаются и методы, и сеттеры */
   {name:"карта (18, 18a, 18b): подписи, кольца, линейки, роза, владения — без вызовов на ctx",
    painters:["mapLateFlush","mapOverview","mapRingsDraw","mapRumoursDraw","mapRulersDraw","mapRoseDraw","mapHoldingsDraw","mapHoldingsTop"],
    place(first){if(first){G.mode="map";G.mapView=null;G.mapMore=false;G.sel={x:G.sx+1,y:G.sy};}return {};},
    done(){G.mode="system";},
-   reg:true,   /* регистр текста пера (font, textAlign, textBaseline, fillStyle) — свойства ctx без рисования; меряются методы */
    warm:30,probe:["mapRulersDraw","mapLateFlush","mapRingsDraw"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{

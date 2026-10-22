@@ -67,12 +67,12 @@ function mapGridDraw(V,cell,R,st){
 /* 6. кольца прыжков за освещённым кругом */
 function mapRingsDraw(px,py,cell,st){
   const MS=mapSave();
-  mapFont(8);ctx.textAlign="left";
+  mapFont(8);MPN.textAlign="left";
   for(const k of [2,3]){
     const r=k*(st.jump+.02)*cell;
     if(r>Math.hypot(W,H))continue;
     mpDashCircle(px,py,r,1,"rgba(127,230,216,"+(k===2?.14:.09)+")",[2,6]);
-    ctx.fillStyle="rgba(127,230,216,"+(k===2?.42:.3)+")";
+    MPN.fillStyle="rgba(127,230,216,"+(k===2?.42:.3)+")";
     const t=k+" "+pl3(k,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"),tw=mapTM(t).width,d=r*.707;
     mapLate(t,[[px+d+4,py-d-3],[px-d-4-tw,py-d-3],[px+d+4,py+d+11],[px-d-4-tw,py+d+11]],1);   /* у кольца, в любой четверти */
   }
@@ -88,7 +88,7 @@ function mapRumoursDraw(V,cell){
     if(x0>W||y0>H||x0+w<0||y0+w<0)continue;
     mpHatch(x0,y0,w,w,9,1,1,"rgba(207,227,234,.16)");
     mpDashFrame(x0+.5,y0+.5,w,w,1,"rgba(207,227,234,.35)",[4,4]);
-    ctx.fillStyle="rgba(207,227,234,.7)";mapFont(8);ctx.textAlign="left";
+    MPN.fillStyle="rgba(207,227,234,.7)";mapFont(8);MPN.textAlign="left";
     mapLate("В "+r.rad+" "+pl3(r.rad,"СЕКТОРЕ","СЕКТОРАХ","СЕКТОРАХ")+" ВОКРУГ "+r.sx+":"+r.sy+(r.src?" · "+r.src.toUpperCase():""),
       [[x0+4,y0-4],[x0+4,y0+w+11],[x0+4,y0+12],[x0+4,y0+w-4]],2);   /* над областью, под ней или у кромки внутри */
   }
@@ -119,14 +119,14 @@ function mapRulersDraw(V,cell,foot){
   const deck=(typeof mapDeck==="function")?mapDeck():H-100;
   const yEnd=deck-16*U*Math.max(1,(foot&&foot.rows?foot.rows.length:1))-14*U;
   const MS=mapSave();
-  mapFont(8);ctx.textBaseline="alphabetic";
+  mapFont(8);MPN.textBaseline="alphabetic";
   /* полоса X сверху */
   mpRect(xL,y0,RX-xL,13*U,"rgba(6,10,16,.55)");
   mpLine(xL,y0+13.5*U,RX,y0+13.5*U,1,"rgba(150,182,212,.35)");
   mapBox("линейка X",xL,y0,RX-xL,14*U);
   const step=cell>=34?1:(cell>=18?2:5);
   const gx0=Math.floor(V.x-(W/2-xL)/cell)-1,gx1=Math.ceil(V.x+(RX-W/2)/cell)+1;
-  ctx.textAlign="center";
+  MPN.textAlign="center";
   for(let gx=gx0;gx<=gx1;gx++){
     const x=W/2+(gx-V.x)*cell;if(x<xL+6||x>RX-6)continue;
     const me=gx===G.sx,sel=gx===G.sel.x;
@@ -142,7 +142,7 @@ function mapRulersDraw(V,cell,foot){
   mpLine(xL-1.5,yT,xL-1.5,yEnd,1,"rgba(150,182,212,.35)");
   mapBox("линейка Y",2,yT,xL-2,Math.max(10,yEnd-yT));
   const gy0=Math.floor(V.y-(H/2-yT)/cell)-1,gy1=Math.ceil(V.y+(yEnd-H/2)/cell)+1;
-  ctx.textAlign="right";
+  MPN.textAlign="right";
   for(let gy=gy0;gy<=gy1;gy++){
     const y=H/2+(gy-V.y)*cell;if(y<yT+6||y>yEnd-4)continue;
     const me=gy===G.sy,sel=gy===G.sel.y;
@@ -153,7 +153,7 @@ function mapRulersDraw(V,cell,foot){
     if(me||sel)mpRect(xL-8*U-String(gy).length*5*U,y+5*U,String(gy).length*5*U,1,col);
   }
   /* шапка: где вы и что выбрано */
-  ctx.textAlign="left";mapFace(11);
+  MPN.textAlign="left";mapFace(11);
   const nm=(G.sys&&typeof nameOf==="function")?nameOf(G.sys):(G.sys?G.sys.name:"");
   const l1="ВЫ · сектор "+G.sx+":"+G.sy+(nm?" · «"+nm+"»":"");
   const dch=Math.max(Math.abs(G.sel.x-G.sx),Math.abs(G.sel.y-G.sy));
@@ -207,7 +207,7 @@ function mapRoseDraw(foot){
   const MS=mapSave();
   const lc="rgba(150,182,212,.5)",tc="rgba(180,200,220,.8)";
   mpCircle(cx,cy,r,1,lc);
-  mapFont(8);ctx.textAlign="center";
+  mapFont(8);MPN.textAlign="center";
   mpLine(cx,cy,cx+r,cy,1,lc);mpText("+X",cx+r+9*U,cy+3*U,tc);
   mpLine(cx,cy,cx,cy+r,1,lc);mpText("+Y",cx,cy+r+9*U,tc);
   const a=Math.atan2(-G.sy,-G.sx);

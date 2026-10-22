@@ -65,7 +65,6 @@ function drawSurvey(cell){
   if(!pts.length)return;
   const cx=W/2,cy=H/2;
   const at=p=>[cx+(p.sx-G.sx)*cell,cy+(p.sy-G.sy)*cell];
-  ctx.save();
   /* сперва ноги маршрута — они уходят под значки */
   for(const [a,b,chap] of surveyLegs()){
     const [x1,y1]=at(a),[x2,y2]=at(b);
@@ -79,7 +78,6 @@ function drawSurvey(cell){
     mpLine(x-4,y-4,x+4,y+4,1,c);mpLine(x+4,y-4,x-4,y+4,1,c);
     mpLine(x-6,y+6.5,x+6,y+6.5,1,c);       // черта под крестом: их подпись
   }
-  ctx.restore();
 }
 /* цвет с прозрачностью из hex: своя короткая, чтобы не тащить сюда палитру */
 function hexa(h,a){

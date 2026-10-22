@@ -108,11 +108,10 @@ function powerGlyph(k){return k&&POWERS[k]?(POWER_GLYPH[POWERS[k].emblem]||""):"
    Шесть цветов на карте были бы шумом (holding §13), поэтому на карте — чип
    с эмблемой, а не заливка. */
 function powerEmblem(k,x,y,r,pen){
-  /* пером карты (17z4): на карте — видеокарта, на сайте (ctx подменён) — mp2d; pen — своё перо
-     {line,circle,path,disc} того же договора (табличка стапеля 26e2 — холст движка) */
-  const P=powerOf(k),col=P.col,g=!pen&&!MPN.gpu;
+  /* пером карты: в игре — видеокарта (17z4), на сайте — 2D-перо site/war-pen.js того же договора;
+     pen — своё перо {line,circle,path,disc} (табличка стапеля 26e2 — холст движка) */
+  const P=powerOf(k),col=P.col;
   const Ln=pen?pen.line:mpLine,Ci=pen?pen.circle:mpCircle,Pa=pen?pen.path:mpPath,Di=pen?pen.disc:mpDisc;
-  if(g)ctx.save();
   Ci(x,y,r,Math.max(1,r*.16),col);
   if(P.emblem==="star"){
     /* пятиконечная — но собранная из лучей, а не залитая: на чипе в шесть
@@ -142,7 +141,6 @@ function powerEmblem(k,x,y,r,pen){
   }else{
     Di(x,y,r*.3,col);
   }
-  if(g)ctx.restore();
 }
 /* ══════════════ «Ялта» (M369, D12) ══════════════
    Одна система на всю галактику, куда все шестеро летают отдыхать и где никто
