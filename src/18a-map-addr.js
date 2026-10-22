@@ -66,22 +66,22 @@ function mapGridDraw(V,cell,R,st){
 }
 /* 6. кольца прыжков за освещённым кругом */
 function mapRingsDraw(px,py,cell,st){
-  ctx.save();
+  const MS=mapSave();
   mapFont(8);ctx.textAlign="left";
   for(const k of [2,3]){
     const r=k*(st.jump+.02)*cell;
     if(r>Math.hypot(W,H))continue;
     mpDashCircle(px,py,r,1,"rgba(127,230,216,"+(k===2?.14:.09)+")",[2,6]);
     ctx.fillStyle="rgba(127,230,216,"+(k===2?.42:.3)+")";
-    const t=k+" "+pl3(k,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"),tw=ctx.measureText(t).width,d=r*.707;
+    const t=k+" "+pl3(k,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"),tw=mapTM(t).width,d=r*.707;
     mapLate(t,[[px+d+4,py-d-3],[px-d-4-tw,py-d-3],[px+d+4,py+d+11],[px-d-4-tw,py+d+11]],1);   /* у кольца, в любой четверти */
   }
-  ctx.restore();
+  mapRestore(MS);
 }
 /* 5. области слухов — штрихованные квадраты; наложение видно само */
 function mapRumoursDraw(V,cell){
   const L=rumoursKnown();if(!L.length)return;
-  ctx.save();
+  const MS=mapSave();
   for(const r of L){
     const c=mapCellXY(r.sx,r.sy,V,cell),half=(r.rad+.5)*cell;
     const x0=c.x-half,y0=c.y-half,w=half*2;
@@ -92,7 +92,7 @@ function mapRumoursDraw(V,cell){
     mapLate("В "+r.rad+" "+pl3(r.rad,"СЕКТОРЕ","СЕКТОРАХ","СЕКТОРАХ")+" ВОКРУГ "+r.sx+":"+r.sy+(r.src?" · "+r.src.toUpperCase():""),
       [[x0+4,y0-4],[x0+4,y0+w+11],[x0+4,y0+12],[x0+4,y0+w-4]],2);   /* над областью, под ней или у кромки внутри */
   }
-  ctx.restore();
+  mapRestore(MS);
 }
 /* 9. спички на клетках: лежит, тёплая головка, без свечения */
 function mapMarksDraw(V,cell){
@@ -118,7 +118,7 @@ function mapRulersDraw(V,cell,foot){
   const y0=mapRulerTop(),xL=MAP_RUL*U;
   const deck=(typeof mapDeck==="function")?mapDeck():H-100;
   const yEnd=deck-16*U*Math.max(1,(foot&&foot.rows?foot.rows.length:1))-14*U;
-  ctx.save();
+  const MS=mapSave();
   mapFont(8);ctx.textBaseline="alphabetic";
   /* полоса X сверху */
   mpRect(xL,y0,RX-xL,13*U,"rgba(6,10,16,.55)");
@@ -185,7 +185,7 @@ function mapRulersDraw(V,cell,foot){
   /* выбранная пустая клетка — тонкий квадрат вместо прицела звезды */
   if(!star){const c=mapCellXY(G.sel.x,G.sel.y,V,cell);
     mpDashFrame(c.x-cell/2+1,c.y-cell/2+1,cell-2,cell-2,1,"rgba(242,178,92,.75)",[3,3]);}
-  ctx.restore();
+  mapRestore(MS);
 }
 /* 8. роза в углу: +X, +Y и «к ядру» */
 function mapRoseDraw(foot){
@@ -204,7 +204,7 @@ function mapRoseDraw(foot){
   if(pr){const p=pr.r,bx0=cx-r-6*U,bx1=cx+r+24*U;
     if(p.left<bx1&&p.right>bx0&&p.top<cy+r+16*U)cy=Math.min(cy,p.top-r-16*U);}
   if(cy<mapRulerTop()+80*U)return;
-  ctx.save();
+  const MS=mapSave();
   const lc="rgba(150,182,212,.5)",tc="rgba(180,200,220,.8)";
   mpCircle(cx,cy,r,1,lc);
   mapFont(8);ctx.textAlign="center";
@@ -215,7 +215,7 @@ function mapRoseDraw(foot){
     mpLine(cx,cy,cx+Math.cos(a)*r*.9,cy+Math.sin(a)*r*.9,1.4,"#f2b25c");
     mpText("К ЯДРУ",cx+Math.cos(a)*(r+16*U),cy+Math.sin(a)*(r+12*U)+3*U,"#f2b25c");}
   mapBox("роза",cx-r-6*U,cy-r-6*U,r*2+30*U,r*2+22*U);
-  ctx.restore();
+  mapRestore(MS);
 }
 /* 7. поиск адреса: поле над картой; окно едет, клетка обводится */
 function mapGoAddr(sx,sy){

@@ -43,28 +43,9 @@ function glowDressFlora(plants){
   if(!glowDepthHere())return;
   for(const pl of plants)pl.glow=true;
 }
-/* площадка освещена той же флорой: кольцо огоньков вокруг корабля, ночью.
-   G6: огонёк — не пятно на грунте, а лампа: банка со мхом на колышке, и она
-   СВЕТИТ — холодным светом мха на грунт площадки, на опоры и на людей (11va).
-   Днём мох в банке тусклый, зелёный — лампа видна как вещь */
+/* площадка освещена той же флорой: кольцо банок со мхом на колышках вокруг плиты — тела движка (21piic).
+   Днём мох в банке тусклый, зелёный — лампа видна как вещь; ночью светит холодным светом мха */
 const GLOW_LAMP=[150/255,235/255,225/255];   /* PEEP_LIT (20c) — объявлен ниже по сборке */
-function glowDrawPad(S,camx,camy){
-  if(!glowDepthHere())return;
-  const nite=(typeof surfNight==="function")?surfNight(S.p):0;
-  const a=clamp((nite-.08)*2.4,0,1);
-  for(let i=-3;i<=3;i++){
-    if(!i)continue;                                   /* под кораблём лампу не ставят */
-    const wx=S.shipX+i*34, x=wx-camx;
-    if(x<-20||x>W+20)continue;
-    const y=groundAt(S.tr,wx)-camy;
-    ctx.fillStyle="rgba(58,48,36,.95)";ctx.fillRect(x-.8,y-9,1.6,9);          /* колышек */
-    ctx.fillStyle="rgba(24,30,30,.9)";ctx.fillRect(x-2.4,y-14,4.8,5.5);       /* банка */
-    ctx.fillStyle=a>0?rgba(PEEP_LIT,.55+.4*a):"rgba(96,132,110,.7)";
-    ctx.fillRect(x-1.6,y-13,3.2,3.8);
-    ctx.fillStyle="rgba(230,240,236,.35)";ctx.fillRect(x-2.4,y-14.6,4.8,.8);  /* крышка */
-    if(a>0)placeLamp(x,y-11.5,120,GLOW_LAMP,Math.min(1,.4+a),12);
-  }
-}
 /* светящийся мох — товар: скан растения в уезде кладёт в трюм ксенобиом */
 function glowScan(pl){
   if(!glowDepthHere()||!pl||!pl.glow)return;
@@ -73,8 +54,8 @@ function glowScan(pl){
 }
 /* ── планета ядра: пятна по формам ──
    Три пятна на мир, от зерна: колея (две пунктирные нитки), контур машины,
-   прямоугольник фундамента. Видны только ночью, лежат поверх грунта,
-   рисуются тем же светом, что мат. Фермерская строка — в ground line. */
+   прямоугольник фундамента. Видны только ночью, лежат на грунте тем же светом,
+   что мат, — тела движка (21piic). Фермерская строка — в ground line. */
 function glowPatches(tr,p){
   if(tr.glowP)return tr.glowP;
   const r=rng(hashi(p.seed|0,0x61,0x0D));
@@ -84,35 +65,6 @@ function glowPatches(tr,p){
     out.push({k:kinds[i],x,w:90+r()*120,s:r()});
   }
   return tr.glowP=out;
-}
-function glowDrawPatches(tr,camx,camy,p){
-  if(!glowIsCore(p))return;
-  const nite=(typeof surfNight==="function")?surfNight(p):0;
-  if(nite<.1)return;
-  const a=clamp(nite*1.3,0,.8);
-  ctx.save();ctx.globalCompositeOperation="lighter";
-  ctx.strokeStyle=rgba(PEEP_LIT,a*.55);ctx.lineWidth=1.6;
-  for(const q of glowPatches(tr,p)){
-    const x=q.x-camx;if(x<-q.w||x>W+q.w)continue;
-    const y=groundAt(tr,q.x)-camy;
-    /* пятно светит само: грунт вокруг формы сияет её светом, без точки-лампы (11va) */
-    for(const f of [-.5,0,.5])placeLamp(x+q.w*f,groundAt(tr,q.x+q.w*f)-camy-4,q.w*.7,GLOW_LAMP,a*.45,-6);
-    if(q.k==="rut"){
-      ctx.setLineDash([6,5]);
-      for(const dy of [-2.5,1.5]){ctx.beginPath();for(let wx=q.x-q.w;wx<=q.x+q.w;wx+=8){const sy=groundAt(tr,wx)-camy+dy;wx===q.x-q.w?ctx.moveTo(wx-camx,sy):ctx.lineTo(wx-camx,sy);}ctx.stroke();}
-      ctx.setLineDash([]);
-    }else if(q.k==="machine"){
-      const h=14+q.s*10;
-      ctx.beginPath();ctx.moveTo(x-q.w*.3,y);ctx.lineTo(x-q.w*.3,y-h);ctx.lineTo(x-q.w*.05,y-h);ctx.lineTo(x+q.w*.05,y-h*1.5);
-      ctx.lineTo(x+q.w*.2,y-h*1.5);ctx.lineTo(x+q.w*.22,y-h*.6);ctx.lineTo(x+q.w*.3,y-h*.6);ctx.lineTo(x+q.w*.3,y);ctx.stroke();
-      ctx.beginPath();ctx.arc(x-q.w*.18,y-3,4,0,TAU);ctx.stroke();ctx.beginPath();ctx.arc(x+q.w*.18,y-3,4,0,TAU);ctx.stroke();
-    }else{
-      const h=6+q.s*8;
-      ctx.strokeRect(x-q.w*.35,y-h,q.w*.7,h);
-      ctx.beginPath();ctx.moveTo(x-q.w*.35,y-h*.5);ctx.lineTo(x+q.w*.35,y-h*.5);ctx.stroke();
-    }
-  }
-  ctx.restore();
 }
 function glowGroundLine(){
   const d=glowDepthHere();

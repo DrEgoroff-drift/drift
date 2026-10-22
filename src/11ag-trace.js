@@ -171,7 +171,8 @@ function traceLeave(){
   return true;
 }
 
-/* ── как это выглядит ── прорез в грунте и вещь рядом, размером с ящик, не с дом */
+/* ── как это выглядит ── знак на камне и вещь рядом: тела движка (21piib); штрихи фигуры — здесь,
+   их же режет стена (11ah) */
 function traceDrawMark(m,sc,col,w){
   const M=TRACE_MARK[m%TRACE_MARK.length];
   ctx.save();ctx.scale(sc,sc);
@@ -179,6 +180,3 @@ function traceDrawMark(m,sc,col,w){
   ctx.strokeStyle=col;ctx.lineWidth=(w||2)/sc;ctx.lineCap="round";ctx.lineJoin="round";
   ctx.stroke();ctx.restore();
 }
-/* Вид следа — телом в кадре планеты (21q-trace-body, M631): плита со знаком и груз. traceDrawMark живёт для стены (11ah) */
-/* пустая: 21pj (plnOverOld) ещё зовёт её под typeof, а 21pj — файл планеты; уйдёт вместе с той строкой */
-function traceDraw(){}

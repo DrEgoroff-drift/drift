@@ -36,6 +36,9 @@ function surfHudPen(U){
       ovPush(Q,Math.min(q[0],q[2],q[4]),Math.min(q[1],q[3],q[5]),Math.max(q[0],q[2],q[4]),Math.max(q[1],q[3],q[5]),ovPm(col),2,0,0,0,q);},
     text:(t,x,y,col,align)=>ovText(Q,x*U,y*U,t,ctx.font,col,align,"alphabetic",1,U)};
 }
+/* кегль фишек у кромки: на телефоне (UIK=1) 9px выходил ≈10 px на полу шрифта — «КОРАБЛЬ 1848 м»
+   читался с трудом; на ПК фишки идут под withScale(UIK) и остаются прежними */
+function surfChipPx(){return W<=760?11:9;}
 function drawSurfaceHud(camx,camy,K){
   K=K||1;
   const S=G.surf;
@@ -96,7 +99,7 @@ function drawSurfaceHud(camx,camy,K){
   /* фишки у кромки (M167): далёкая цель — плашка у левого или правого края,
      по стороне, где она; фишки одной стороны стоят столбиком и не наезжают
      ни друг на друга, ни на солнце в небе. Ближняя цель — засечка на месте. */
-  ctx.font="9px ui-monospace,monospace";
+  ctx.font=surfChipPx()+"px ui-monospace,monospace";
   let leftY=(hint?TOP+34:TOP+6),rightY=leftY,rowY=leftY;
   /* два прохода (M352): сперва фишки у кромок, потом засечки на месте — засечка
      у самого края ложилась текстом поперёк второй фишки того же столбика
@@ -113,7 +116,7 @@ function drawSurfaceHud(camx,camy,K){
     if(ad*K>W*.45){                       // цель за краем — фишка у своей кромки
       const dir=Math.sign(d);
       const label=m.ru+" "+Math.round(ad)+" м";
-      const tw=ctx.measureText(label).width,cw=tw+24,ch=15;
+      const tw=ctx.measureText(label).width,cw=tw+24,ch=surfChipPx()+6;
       const rx=dir>0?W-RIGHT_PAD-8-cw:8;
       const ry=dir>0?(rightY+=0,rightY):(leftY+=0,leftY);
       if(dir>0)rightY+=ch+4;else leftY+=ch+4;
@@ -121,7 +124,7 @@ function drawSurfaceHud(camx,camy,K){
       pen.frame(rx,ry,cw,ch,m.col,.5);
       const ax=dir>0?rx+cw-7:rx+7;
       pen.tri([ax+dir*4,ry+ch/2,ax-dir*3,ry+ch/2-4,ax-dir*3,ry+ch/2+4],m.col);
-      pen.text(label,dir>0?rx+cw-14:rx+14,ry+11,m.col,dir>0?"right":"left");
+      pen.text(label,dir>0?rx+cw-14:rx+14,ry+ch-4,m.col,dir>0?"right":"left");
       if(typeof hangBlock==="function"){const k=ovNd()*U;hangBlock(rx*k,ry*k,(rx+cw)*k,(ry+ch)*k);}   /* таблички их обходят (M826) */
     }else{
       const sx=clamp((m.x-camx)*K,64,W-RIGHT_PAD-14);

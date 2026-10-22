@@ -290,6 +290,8 @@ function plnOwnFlat(L){
   if(typeof homeHereP==="function"&&homeHereP(p)){const A=plnOwnHomeAt(L,tr,p);if(A)o.push([A.x,A.z+.4,10.6,7.4,A.y-.06]);}
   const V=typeof plnSetFlat==="function"?plnSetFlat(L):null;   /* полка посёлка (21pii) */
   if(V)for(const f of V)o.push(f);
+  const J=typeof plnTinFlat==="function"?plnTinFlat(L):null;   /* плита Жестянки (21piia) */
+  if(J)for(const f of J)o.push(f);
   return o.length?o:null;
 }
 /* ── теплица: грядки читают вид (M204) ──
@@ -297,7 +299,7 @@ function plnOwnFlat(L){
    генератор вида (20e speciesPlant) от потока по имени, форма и признак берутся из самого имени —
    «грибной, светящийся» растёт грибом и светится, «колючий» несёт шипы. Анатомия — 21pia (plnHerbMesh),
    краска — мира, где стоит теплица. Рост — доля greenGrow: всход, потом взрослое; старым в теплице не бывает */
-const OWN_GREEN={tx:6.6,tz:2,hl:3,rw:1.6,ky:2.3,bz:i=>2-3+.75+i*1.5};
+const OWN_GREEN={tx:6.6,tz:2,hl:3,rw:1.6,ky:2.3,film:.62,bz:i=>2-3+.75+i*1.5};   /* film — непрозрачность плёнки днём */
 const OWN_GREEN_SP=new Map();
 function plnOwnGreenSp(name,p){
   const key=name+"|"+((p&&p.type)||"");let sp=OWN_GREEN_SP.get(key);
@@ -391,22 +393,26 @@ function plnOwnHomeMesh(L,A,sd,beds,penn){
     plnCard(pm,[mx+1.5,fy-.18,mz],[mx+1.5,fy+.26,mz],[mx,fy+.4,mz],[mx,fy-.4,mz],[0,0,1],col,PLN_MAT.leaf,[1,1,0,0],0,0);}
   /* теплица: рёбра свода на дальней стороне двора, внутри грядки 21g и холодная лампа */
   /* свод 2.3 м в коньке (был 1.45 — лампа и прогоны висели над ним); прогоны лежат на рёбрах */
-  const {tx,tz,hl,rw,ky}=OWN_GREEN;
+  /* рёбра — тоном ниже дома (замечание Контроля: светлые рёбра сливались с молочной плёнкой в один купол) */
+  const {tx,tz,hl,rw,ky}=OWN_GREEN,rib=plnMix3(C.steelLt,C.steelDk,.45);
   for(let k=0;k<=6;k++){const z=tz-hl+k;
-    plnTube(m,{path:plnBez([tx-rw,0,z],[tx,ky*2,z],[tx+rw,0,z],8),rad:k%6?.045:.075,sides:5,col:C.steelLt,mat:PLN_MAT.man});}
-  for(const t of [.2,.5,.8]){const x=tx+rw*(2*t-1),y=4*t*(1-t)*ky;K.rod([x,y,tz-hl],[x,y,tz+hl],.035,C.steelLt,{sides:4});}
+    plnTube(m,{path:plnBez([tx-rw,0,z],[tx,ky*2,z],[tx+rw,0,z],8),rad:k%6?.045:.075,sides:5,col:rib,mat:PLN_MAT.man});}
+  for(const t of [.2,.5,.8]){const x=tx+rw*(2*t-1),y=4*t*(1-t)*ky;K.rod([x,y,tz-hl],[x,y,tz+hl],.035,rib,{sides:4});}
   K.box([tx,.12,tz],[rw,.12,hl],conc,{box:.25});
   plnTube(gm,{path:[[tx,ky-.25,tz-hl+.4],[tx,ky-.25,tz+hl-.4]],rad:.05,sides:5,col:OWN_WIN.grow,mat:PLN_MAT.glow,glow:2.4,x:1,cap:true});
   /* плёнка по рёбрам (замечание к M204): молочная, бока подвёрнуты валиком на 0.4 м — гряды видно и с
-     торца, и снизу сбоку. Ночью поверх неё — тёплый накал (fm, запись 5 по доле ночи): теплица — фонарь у дома */
-  const fm=plnMesh(256),arc=t=>[tx+rw*(2*t-1),4*t*(1-t)*ky],film=plnMix3(C.steelLt,[.84,.88,.84],.65);
+     торца, и снизу сбоку. Днём она полупрозрачна (vm — вуаль, запись 6): сквозь неё видны гряды, восемь
+     полотнищ через одно темнее тоном (планка шва тоньше пикселя дробилась в пунктир — свод читался сеткой). Ночью поверх — тёплый накал (fm,
+     запись 5 по доле ночи): теплица — фонарь у дома, ночной кадр прежний */
+  const fm=plnMesh(256),vm=plnMesh(256),arc=t=>[tx+rw*(2*t-1),4*t*(1-t)*ky],film=plnMix3(C.steelLt,[.84,.88,.84],.65),
+    filmB=plnMix3(film,[.5,.54,.5],.4);
   {const t0=.12,n=8;
    for(let i=0;i<n;i++){const ta=lerp(t0,1-t0,i/n),tb=lerp(t0,1-t0,(i+1)/n),a=arc(ta),b=arc(tb);
      const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy),nn=[dy/l,-dx/l,0];
-     const N=nn[1]<0?[-nn[0],-nn[1],0]:nn,o=0,q=.018;
-     plnCard(m,[a[0]+N[0]*o,a[1]+N[1]*o,tz-hl],[a[0]+N[0]*o,a[1]+N[1]*o,tz+hl],[b[0]+N[0]*o,b[1]+N[1]*o,tz+hl],[b[0]+N[0]*o,b[1]+N[1]*o,tz-hl],N,film,PLN_MAT.man,null,0,0);
+     const N=nn[1]<0?[-nn[0],-nn[1],0]:nn,o=.08,q=.1;   /* плёнка поверх каркаса: рёбра просвечивают сквозь молоко */
+     plnCard(vm,[a[0]+N[0]*o,a[1]+N[1]*o,tz-hl],[a[0]+N[0]*o,a[1]+N[1]*o,tz+hl],[b[0]+N[0]*o,b[1]+N[1]*o,tz+hl],[b[0]+N[0]*o,b[1]+N[1]*o,tz-hl],N,i%2?filmB:film,PLN_MAT.glow,null,1,0);
      plnCard(fm,[a[0]+N[0]*q,a[1]+N[1]*q,tz-hl],[a[0]+N[0]*q,a[1]+N[1]*q,tz+hl],[b[0]+N[0]*q,b[1]+N[1]*q,tz+hl],[b[0]+N[0]*q,b[1]+N[1]*q,tz-hl],N,OWN_WIN.film,PLN_MAT.glow,null,1,1);}
-   for(const t of [t0,1-t0]){const p2=arc(t);K.rod([p2[0],p2[1],tz-hl],[p2[0],p2[1],tz+hl],.07,film,{sides:6});}}
+   for(const t of [t0,1-t0]){const p2=arc(t);K.rod([p2[0],p2[1],tz-hl],[p2[0],p2[1],tz+hl],.07,rib,{sides:6});}}
   /* гряды — короба с тёмной землёй, все четыре: пустая читается незасеянной; тела видов — записями (plnOwnGreenBuild) */
   const soil=(u,p2)=>plnMix3(P.soilDark,[.1,.08,.06],.5+.3*plnNoise(p2[0]*4,p2[2]*4,sd+21));
   for(let i=0;i<GREEN_BEDS;i++){const z=OWN_GREEN.bz(i);
@@ -422,22 +428,22 @@ function plnOwnHomeMesh(L,A,sd,beds,penn){
       if(prev)for(const h of [.45,.9])K.rod([prev[0],h,prev[1]],[x,h,z],.008,C.steelLt,{sides:3,cap:false});
       prev=[x,z];}};
   run([-fx,-fz],[fx,-fz],dr);run([-fx,-fz],[-fx,fz]);run([fx,-fz],[fx,fz]);run([-fx,fz],[fx,fz]);
-  return {body:m,light:lm,beacon:bm,grow:gm,penn:pm,film:fm,occ,lampAt:{porch:[dr+.95,2.3,-2.75],grow:[tx,ky-.3,tz]},blots:[[0,1,4.2,.45],[5.8,1.2,2.4,.4]]};
+  return {body:m,light:lm,beacon:bm,grow:gm,penn:pm,film:fm,veil:vm,occ,lampAt:{porch:[dr+.95,2.3,-2.75],grow:[tx,ky-.3,tz]},blots:[[0,1,4.2,.45],[5.8,1.2,2.4,.4]]};
 }
 
 /* ── сборка: раз на посадку и состав ── */
 function plnOwnFree(it){
   if(!it)return;
-  for(const k of ["geo","light","aux","beam","fx","film"])if(it[k])plnGeoFree(it[k]);
+  for(const k of ["geo","light","aux","beam","fx","film","veil"])if(it[k])plnGeoFree(it[k]);
   if(it.inst)plnInstFree(it.inst);
   if(it.green){for(const q of it.green.parts)plnGeoFree(q.geo);plnInstFree(it.green.inst);it.green=null;}
 }
 function plnOwnItem(kind,A,M,sd,key){
   const g=x=>x&&x.nv?plnGeo(plnMeshDone(x)):null;
-  const it={kind,A,key,sd,geo:g(M.body),light:g(M.light),aux:g(M.batt||M.beacon),beam:g(M.grow),fx:g(M.penn),film:g(M.film),
-    lampAt:M.lampAt,blots:M.blots,occ:M.occ||[],a:new Float32Array(16*6),inst:null};
-  for(let i=0;i<6;i++)plnRec(it.a,i,[A.x,A.y,A.z],1,0,1,sd%97,i?[1,1,1]:null);
-  it.inst=plnInst(it.a,6,6);
+  const it={kind,A,key,sd,geo:g(M.body),light:g(M.light),aux:g(M.batt||M.beacon),beam:g(M.grow),fx:g(M.penn),film:g(M.film),veil:g(M.veil),
+    lampAt:M.lampAt,blots:M.blots,occ:M.occ||[],a:new Float32Array(16*7),inst:null};
+  for(let i=0;i<7;i++)plnRec(it.a,i,[A.x,A.y,A.z],1,0,1,sd%97,i?[1,1,1]:null);
+  it.inst=plnInst(it.a,7,7);
   return it;
 }
 /* lim — бюджет кадра (заход): собрал базу и бюджет кончился — false, дом соберёт следующий вызов */
@@ -462,6 +468,9 @@ function plnOwnStep(L,S,lim){
     O.porch=(H.x+H.door)*PLN_M;
   }else{plnOwnFree(O.home);O.home=null;O.porch=null;}
   if(lim!=null&&wallMs()-t0>lim)return false;
+  if(typeof plnTinStep==="function")plnTinStep(L,S);   /* Жестянка (21piia) */
+  if(typeof plnTrcStep==="function")plnTrcStep(L,S);   /* чужой след (21piib) */
+  if(typeof plnGlwStep==="function")plnGlwStep(L,S);   /* уезд света (21piic) */
   return typeof plnSetStep==="function"?plnSetStep(L,S):true;   /* посёлок (21pii) */
 }
 /* Ставит свои вещи в кадр: тела, свет записями, лампы ночью. ex — где объектив, V — {hw, D}, nk — ночь */
@@ -484,13 +493,17 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
     /* накал плёнки теплицы — с сумерек: раньше молочная плёнка под солнцем светлее накала */
     const fk=plnSmooth(.3,.8,nk);
     plnRec(it.a,5,pos,1,0,1,0,[fk,fk,fk]);
-    plnInstSet(it.inst,it.a,6);
+    /* плёнка днём — вуаль: молочная, светлая под солнцем, к ночи гаснет (её накрывает накал) */
+    const fd=1.05*(1-.85*plnSmooth(0,.6,nk));
+    plnRec(it.a,6,pos,1,0,1,0,[fd,fd,fd],3,[OWN_GREEN.film,0,0]);
+    plnInstSet(it.inst,it.a,7);
     if(it.geo)F.batches.push({geo:it.geo,inst:it.inst,first:0,count:1,kind:Bk,to:TO});
     if(it.light)F.batches.push({geo:it.light,inst:it.inst,first:1,count:1,kind:Bk,to:LIT});
     if(it.aux&&ak>.01)F.batches.push({geo:it.aux,inst:it.inst,first:2,count:1,kind:Bk,to:LIT});
     if(it.beam)F.batches.push({geo:it.beam,inst:it.inst,first:3,count:1,kind:Bk,to:LIT});
     if(it.fx)F.batches.push({geo:it.fx,inst:it.inst,first:4,count:1,kind:Bk,to:TO});
     if(it.film&&fk>.01)F.batches.push({geo:it.film,inst:it.inst,first:5,count:1,kind:Bk,to:LIT});
+    if(it.veil)F.batches.push({geo:it.veil,inst:it.inst,first:6,count:1,kind:PLN_KIND.veil,to:PLN_TO.main});
     if(it.green)for(const q of it.green.parts)F.batches.push({geo:q.geo,inst:it.green.inst,first:q.first,count:q.count,kind:Bk,to:TO});
     /* лампы — ночью (§3): фонарь крыльца — ключ двора с тенью, лампа теплицы — второй свет двора без
        тени, фонарь пирса — ключ базы, свет над воротами; в кадр идут две, по старшинству */
@@ -509,6 +522,9 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
   }
   b[0]=n;
   if(typeof plnSetFrame==="function")plnSetFrame(F,S,ex,V,nk,want);   /* посёлок (21pii): тела, огонь, дым, лампа очага */
+  if(typeof plnTinFrame==="function")plnTinFrame(F,S,ex,V,nk,want);   /* Жестянка (21piia): тело, рёбра хода, дым, мигалка */
+  if(typeof plnTrcFrame==="function")plnTrcFrame(F,ex,V);   /* чужой след (21piib): плита со знаком, мешки */
+  if(typeof plnGlwFrame==="function")plnGlwFrame(F,ex,V,nk,want);   /* уезд света (21piic): банки у площадки, пятна ядра */
   want.sort((u,v)=>u.o-v.o);
   /* в кадр — две по старшинству из тех, чей свет до кадра достаёт: пирс за кромкой уступает лампе кромки у ворот */
   const seen=want.filter(w=>Math.abs(w.l.p[0]-ex)<V.hw*(1+Math.max(0,w.l.p[2])/V.D)+w.l.r);
@@ -544,6 +560,9 @@ function plnOwnPads(tr,p,L){
   const bx=(typeof homeHereP==="function"&&homeHereP(p))?homeSpotX(p,tr):null;
   if(bx!=null)o.push([bx/PLN_M,OWN.yardZ,11,8,9]);
   const v=typeof plnSetPad==="function"?plnSetPad(tr,p):null;if(v)o.push(v);   /* полка посёлка (21pii) */
+  const j=typeof plnTinPad==="function"?plnTinPad(tr,p):null;if(j)o.push(j);   /* плита Жестянки (21piia) */
+  const t=typeof traceHere==="function"&&G.surf&&G.surf.p===p?traceHere():null;   /* чужой след (21piib) */
+  if(t&&t.x!=null)o.push([t.x/PLN_M+.9,1.9,2.4,1.4,3]);
   return o;
 }
 
