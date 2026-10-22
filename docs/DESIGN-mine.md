@@ -182,6 +182,15 @@ Steady frames: `minecost.py` (scratchpad) — the scene from `mkmine.py`, the pa
 timestamp counted only on frames the GPU drew (the game skips rAF ticks on a 240 Hz screen).
 `cost.py` reads the CPU wrong inside the mine and is not used here.
 
+**The base outside (M628 gate, 22.10, an estimate — S23 not measured).** `cost.py` at `s23` (390×844
+at 1.5, this machine's GPU, not the phone's chip), the desert world, the man at the base's gate
+(`plnOwnGateX`) against the same x with no base and no home, A/B/A with neighbours' sessions
+loading the GPU: day gate 0.60 / 0.49 / 0.60 ms against bare 0.42 / 0.54 / 0.54; night gate
+0.43 / 0.64 / 0.62 / 0.64 against 0.55 / 0.55 / 0.53. Medians: +0.06 day, +0.08 night (the noise
+is ±0.06; the first single pair read +0.18). As a share of the frame, +10–15 %, which on the S23's
+0.92 ms surface would be +0.1–0.14 ms, under the +0.3 ms gate. The P1 gate on the phone itself is
+the designer's.
+
 ## 7. Disputed — decided without the author
 
 - Honest planet terrain over the mine: hills are cut as dark slabs, and a valley may leave rows
