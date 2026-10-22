@@ -472,6 +472,7 @@ function plnOwnStep(L,S,lim){
   if(typeof plnTrcStep==="function")plnTrcStep(L,S);   /* чужой след (21piib) */
   if(typeof plnGlwStep==="function")plnGlwStep(L,S);   /* уезд света (21piic) */
   if(typeof plnPeepStep==="function")plnPeepStep(L,S);   /* мат свидетеля (21piid) */
+  if(typeof plnSlowStep==="function")plnSlowStep(L,S);   /* выкладка медленной долины (21piie) */
   return typeof plnSetStep==="function"?plnSetStep(L,S):true;   /* посёлок (21pii) */
 }
 /* Ставит свои вещи в кадр: тела, свет записями, лампы ночью. ex — где объектив, V — {hw, D}, nk — ночь */
@@ -527,6 +528,7 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
   if(typeof plnTrcFrame==="function")plnTrcFrame(F,ex,V);   /* чужой след (21piib): плита со знаком, мешки */
   if(typeof plnGlwFrame==="function")plnGlwFrame(F,ex,V,nk,want);   /* уезд света (21piic): банки у площадки, пятна ядра */
   if(typeof plnPeepFrame==="function")plnPeepFrame(F,ex,V,typeof celDark==="function"?celDark():0);   /* мат свидетеля (21piid) */
+  if(typeof plnSlowFrame==="function")plnSlowFrame(F,ex,V);   /* выкладка медленной долины (21piie) */
   want.sort((u,v)=>u.o-v.o);
   /* в кадр — две по старшинству из тех, чей свет до кадра достаёт: пирс за кромкой уступает лампе кромки у ворот */
   const seen=want.filter(w=>Math.abs(w.l.p[0]-ex)<V.hw*(1+Math.max(0,w.l.p[2])/V.D)+w.l.r);

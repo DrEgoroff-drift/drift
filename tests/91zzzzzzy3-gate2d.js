@@ -55,6 +55,17 @@ const GATE2D=[
      if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
        const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
      return G.surf?{S:G.surf}:null;}},
+  {name:"выкладка медленной долины (21piie, 11o): колышек, фигура и ответ — тела в кадре планеты, на #c ни штриха",
+   painters:["plnSlowStep","plnSlowFrame","plnSlowMesh"],probe:["plnSlowFrame"],
+   place(first){
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
+     const S=G.surf;if(!S)return null;
+     if(!globalThis.__g2slow){globalThis.__g2slow={core:slowIsCore,spot:slowSpotX,slow:G.slow};const sx=S.x+30;
+       slowIsCore=q=>!!G.surf&&q===G.surf.p;slowSpotX=()=>sx;G.slow={fig:["ice","iron"],at:-1,round:0};}
+     return {S};},
+   done(){ok(!!SLOW3.it,"выкладка: тело собрано");
+     if(globalThis.__g2slow){slowIsCore=globalThis.__g2slow.core;slowSpotX=globalThis.__g2slow.spot;G.slow=globalThis.__g2slow.slow;globalThis.__g2slow=null;}}},
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
    place(){

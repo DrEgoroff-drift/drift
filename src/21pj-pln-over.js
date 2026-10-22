@@ -36,7 +36,6 @@ function plnOverOld(tr,camx,camy,p){
   }
   if(settleCanLive(p)&&typeof hoursDrawPeople==="function")hoursDrawPeople(null,tr,camx,camy,p);   /* прохожий затмения (11h); посёлок — тела движка (21pii) */
   /* мат свидетеля — тела движка (21piid); peepDrawMat в 20c остаётся без вызова */
-  if(typeof slowDraw==="function")slowDraw(tr,camx,camy,p);
   if(typeof passDraw==="function")passDraw(tr,camx,camy,p);
   if(typeof placeDraw==="function")placeDraw(tr,camx,camy,p);
   if(typeof lightsDrawReveal==="function")lightsDrawReveal(tr,camx,camy,p);
