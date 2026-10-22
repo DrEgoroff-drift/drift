@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 640 · top-level symbols: 8736
+Files: 638 · top-level symbols: 8723
 
 ## SYMBOLS
 
@@ -1112,7 +1112,7 @@ HG_U                         src/17c2-hull-gpu.js:92
 HIN_ROOM_W                   src/29c-home-in.js:21
 HIN_THINGS                   src/29c-home-in.js:199-223
 HIN_UP                       src/29e-home-up.js:20
-HIT_FX                       src/18d-postfx.js:10
+HIT_FX                       src/18d-postfx.js:6
 HIT_REAR                     src/13-combat.js:11
 HK_DARK                      src/17l1-hotel-kosmos.js:20
 HK_ROOM                      src/17l1-hotel-kosmos.js:24
@@ -1197,7 +1197,6 @@ HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
 HUNT_TIERS                   src/12o-hunter.js:19-23
 HX                           src/12v-wander.js:186
-HZ_CN                        src/18d-postfx.js:31
 ICO_F                        src/24-mode-belt.js:10
 ICO_V                        src/24-mode-belt.js:4-9
 IND_FEE                      src/12ac-bld.js:111
@@ -1852,16 +1851,14 @@ RAID_UI                      src/28u-raid-ui.js:8
 RAID_WGSL_COMMON             src/24aa1-raid-gpu.js:86
 RAIL_ARM_RU                  src/18e-rail-net.js:25
 RAIL_BUFFET                  src/18f-rail-station.js:20
-RAIL_CAR_ROLL                src/18gb-rail-car.js:12
 RAIL_COL                     src/18e-rail-net.js:219
-RAIL_CREAM                   src/18gb-rail-car.js:13
 RAIL_DECL                    src/18h-rail-powers.js:14
 RAIL_DOCK                    src/18f-rail-station.js:22
 RAIL_EXPRESS_MUL             src/18h-rail-powers.js:13
-RAIL_FLAP_PREV               src/18f-rail-station.js:125
+RAIL_FLAP_PREV               src/18f-rail-station.js:160
 RAIL_FORK                    src/18e-rail-net.js:22
-RAIL_FX_U                    src/18ga-rail-gpu.js:55
-RAIL_FX_WGSL                 src/18ga-rail-gpu.js:18
+RAIL_FX_U                    src/18ga-rail-gpu.js:56
+RAIL_FX_WGSL                 src/18ga-rail-gpu.js:19
 RAIL_HAIL_R                  src/18f-rail-station.js:19
 RAIL_LIFE                    src/18i-rail-life.js:17
 RAIL_METRO_R                 src/18e-rail-net.js:26
@@ -2294,7 +2291,6 @@ TEST_TIMES                   tests/99-run.js:18
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 TIER_RU                      src/05-parts.js:86
-TILE                         src/18c-chunks.js:128
 TIN_BIN                      src/12ta-tin.js:31
 TIN_CAP                      src/12ta-tin.js:28
 TIN_EAT                      src/12ta-tin.js:29
@@ -3978,7 +3974,7 @@ drawGround                   src/19-mode-landing-ground.js:11-232
 drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
 drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
-drawHitFx                    src/18d-postfx.js:81-87
+drawHitFx                    src/18d-postfx.js:14-20
 drawHomeIn                   src/29rb-home-r3.js:454-459
 drawHomeOut                  src/21f-home-out.js:75-263
 drawHotel                    src/17l-hotel.js:147-177
@@ -4010,8 +4006,8 @@ drawPlantAlien               src/20-life.js:227-394
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-613
 drawRaid                     src/24aa-raid-draw.js:14-612
-drawRail                     src/18g-rail-ride.js:113-147
-drawRailArrive               src/18g-rail-ride.js:18-21
+drawRail                     src/18g-rail-ride.js:127-182
+drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-271
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:79-512
@@ -4037,14 +4033,13 @@ drawSurvey                   src/12w-survey.js:63-83
 drawSysHud                   src/17-mode-system.js:748-1080
 drawSysLane                  src/17g-sys-lane.js:112-138
 drawSysLaneShips             src/17g-sys-lane.js:168-196
-drawSysRail                  src/18f-rail-station.js:72-80
+drawSysRail                  src/18f-rail-station.js:79-115
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawSystem                   src/17-mode-system.js:554-736
 drawTapes                    src/12s1-tape.js:51-66
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:63-156
-drawTiles                    src/18c-chunks.js:154-165
 drawTrail                    src/16-flight.js:457-460
 drawTransitPlate             src/03d-hull-marks.js:186-196
 drawWallPaper                src/11ae-concert.js:39-71
@@ -5094,9 +5089,7 @@ haulStart                    src/16c-rescue.js:171-187
 haulTick                     src/16c-rescue.js:319-437
 hazardBand                   src/25-cockpit.js:166-177
 hazeBand                     src/19cc-gpu-air.js:200-212
-hazeDone                     src/18d-postfx.js:68
 hazeFar                      src/19c-light.js:167-188
-hazeGrab                     src/18d-postfx.js:33-50
 hdA                          src/17l2-hotel-druzhba.js:19
 hdPaint                      src/17l2-hotel-druzhba.js:35-162
 hdS                          src/17l2-hotel-druzhba.js:22
@@ -5115,8 +5108,6 @@ heardUse                     src/12x-parrot.js:116-136
 heardWordsRu                 src/12x-parrot.js:79-85
 heardYours                   src/12x-parrot.js:71-74
 heatAdd                      src/13a-guns.js:47-52
-heatHaze                     src/18d-postfx.js:70-74
-heatHazeFrom                 src/18d-postfx.js:52-67
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:367
 helmApply                    src/15a-helm.js:450-548
@@ -5190,7 +5181,7 @@ hinUpRooms                   src/29e-home-up.js:24-34
 hinWidth                     src/29c-home-in.js:45
 hireMerc                     src/12a-crew.js:219-234
 hireMgr                      src/12c-mgr-core.js:302-318
-hitFx                        src/18d-postfx.js:11
+hitFx                        src/18d-postfx.js:7
 hitLocMul                    src/13-combat.js:32-35
 hitShip                      src/13-combat.js:89-153
 hkBand                       src/17l1-hotel-kosmos.js:46
@@ -7287,35 +7278,34 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:239-246
+railBuffet                   src/18f-rail-station.js:274-281
 railBuildLines               src/18e-rail-net.js:55-101
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:224-238
-railCarDraw                  src/18gb-rail-car.js:63-72
-railCarLights                src/18gb-rail-car.js:56-61
-railCarMesh                  src/18gb-rail-car.js:16-54
+railBuy                      src/18f-rail-station.js:259-273
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:25-31
 railCut                      src/18h-rail-powers.js:22
 railDeclare                  src/18h-rail-powers.js:33-43
-railDestinations             src/18f-rail-station.js:140-157
+railDestinations             src/18f-rail-station.js:175-192
 railDestinationsVia          src/18k-rail-scheme.js:17-41
-railDocked                   src/18f-rail-station.js:114-121
-railExit                     src/18g-rail-ride.js:100-112
+railDocked                   src/18f-rail-station.js:149-156
+railExit                     src/18g-rail-ride.js:114-126
 railExpressDraw              src/18h-rail-powers.js:72-81
-railFare                     src/18f-rail-station.js:158-169
-railFlap                     src/18f-rail-station.js:126-131
-railFmt                      src/18f-rail-station.js:136
+railFare                     src/18f-rail-station.js:193-204
+railFlap                     src/18f-rail-station.js:161-166
+railFlash                    src/18g-rail-ride.js:18-31
+railFmt                      src/18f-rail-station.js:171
 railFrontShut                src/18h-rail-powers.js:18
 railFx                       src/18ga-rail-gpu.js:58-66
-railGpu                      src/18f-rail-station.js:45-71
+railGpu                      src/18f-rail-station.js:52-78
+railHaltCtx                  src/18f-rail-station.js:42-48
 railHaltShapes               src/18f-rail-station.js:34-41
-railHeadingIn                src/18f-rail-station.js:82-86
+railHeadingIn                src/18f-rail-station.js:117-121
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:45-48
-railInteract                 src/18f-rail-station.js:88-113
-railInterval                 src/18f-rail-station.js:133
+railInteract                 src/18f-rail-station.js:123-148
+railInterval                 src/18f-rail-station.js:168
 railKrai                     src/18k-rail-scheme.js:115-120
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:76-81
@@ -7341,7 +7331,7 @@ railPaxOffer                 src/18i-rail-life.js:53-57
 railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRect                     src/08-state.js:150-156
-railRideStart                src/18g-rail-ride.js:22-32
+railRideStart                src/18g-rail-ride.js:36-46
 railSchemeClose              src/18k-rail-scheme.js:105
 railSchemeDraw               src/18k-rail-scheme.js:140-260
 railSchemeOpen               src/18k-rail-scheme.js:51-71
@@ -7351,24 +7341,23 @@ railSchemeScope              src/18k-rail-scheme.js:76-82
 railSchemeZoom               src/18k-rail-scheme.js:83-86
 railSealDock                 src/18i-rail-life.js:114-118
 railSealPirates              src/18i-rail-life.js:122-127
-railSegDur                   src/18g-rail-ride.js:33-36
+railSegDur                   src/18g-rail-ride.js:47-50
 railSpurApply                src/18e-rail-net.js:170-185
 railSpurLine                 src/18e-rail-net.js:160-169
 railSpurSig                  src/18e-rail-net.js:153-159
 railStation                  src/18e-rail-net.js:197-202
 railStep                     src/18e-rail-net.js:43
-railStopName                 src/18f-rail-station.js:137
-railStopShapes               src/18gb-rail-car.js:75-86
+railStopName                 src/18f-rail-station.js:172
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:248-253
-railTrainPos                 src/18g-rail-ride.js:38-50
+railTick                     src/18f-rail-station.js:283-288
+railTrainPos                 src/18g-rail-ride.js:52-64
 railUAt                      src/18e-rail-net.js:105-110
 railVisited                  src/18k-rail-scheme.js:110-114
-railWaitNow                  src/18f-rail-station.js:135
-railWinClose                 src/18f-rail-station.js:171
-railWinOpen                  src/18f-rail-station.js:170
-railWinRender                src/18f-rail-station.js:177-223
-railWinShow                  src/18f-rail-station.js:172-176
+railWaitNow                  src/18f-rail-station.js:170
+railWinClose                 src/18f-rail-station.js:206
+railWinOpen                  src/18f-rail-station.js:205
+railWinRender                src/18f-rail-station.js:212-258
+railWinShow                  src/18f-rail-station.js:207-211
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -8316,8 +8305,6 @@ tickLaunchHold               src/21-mode-surface.js:673-686
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
 tierOf                       src/04b-fleet.js:157
-tileAt                       src/18c-chunks.js:129-139
-tileSpan                     src/18c-chunks.js:145-153
 timeBucket                   src/03-ships.js:128-131
 tinAskOf                     src/12ta-tin.js:97-106
 tinAt                        src/12ta-tin.js:58
@@ -8427,7 +8414,7 @@ updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:73-145
 updateMap                    src/18-mode-map.js:695-709
 updateRaid                   src/24a-mode-raid.js:276-408
-updateRail                   src/18g-rail-ride.js:51-98
+updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
@@ -9636,11 +9623,11 @@ zoomTo                       src/15-input.js:358
 ## src/18b-map-hold.js · 16 KB
   · владения на карте (M348):1
 
-## src/18c-chunks.js · 12 KB
+## src/18c-chunks.js · 9 KB
   · кэш статичного: чанки и слои:1
 
-## src/18d-postfx.js · 6 KB
-  · эффекты кадра: марево, хроматика (M325):1
+## src/18d-postfx.js · 2 KB
+  · эффекты кадра: хроматика (M325):1
 
 ## src/18d-verlet.js · 8 KB
   · верле: верёвки и ткань:1
@@ -9648,16 +9635,14 @@ zoomTo                       src/15-input.js:358
 ## src/18e-rail-net.js · 16 KB
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 20 KB
+## src/18f-rail-station.js · 22 KB
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
-## src/18g-rail-ride.js · 12 KB
+## src/18g-rail-ride.js · 13 KB
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/18ga-rail-gpu.js · 6 KB
   · поездка: свет видеокартой (G12):1
-
-## src/18gb-rail-car.js · 8 KB
 
 ## src/18h-rail-powers.js · 6 KB
   · шесть железных дорог (M474, DESIGN-metro §6):1
@@ -10555,9 +10540,6 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qd2-relay.js · 3 KB
   · мачта телом (M827 · 11apa):1
-
-## tests/91qd3-rail.js · 4 KB
-  · поездка на движке (M828 · 18gb):1
 
 ## tests/91qe-own.js · 13 KB
 
