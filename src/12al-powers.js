@@ -107,38 +107,40 @@ function powerGlyph(k){return k&&POWERS[k]?(POWER_GLYPH[POWERS[k].emblem]||""):"
 /* эмблема — круглая, одной конструкции на все шесть: круг, внутри знак.
    Шесть цветов на карте были бы шумом (holding §13), поэтому на карте — чип
    с эмблемой, а не заливка. */
-function powerEmblem(k,x,y,r){
-  /* пером карты (17z4): на карте — видеокарта, в выпечке (ctx подменён) — mp2d */
-  const P=powerOf(k),col=P.col,g=!MPN.gpu;
+function powerEmblem(k,x,y,r,pen){
+  /* пером карты (17z4): на карте — видеокарта, на сайте (ctx подменён) — mp2d; pen — своё перо
+     {line,circle,path,disc} того же договора (табличка стапеля 26e2 — холст движка) */
+  const P=powerOf(k),col=P.col,g=!pen&&!MPN.gpu;
+  const Ln=pen?pen.line:mpLine,Ci=pen?pen.circle:mpCircle,Pa=pen?pen.path:mpPath,Di=pen?pen.disc:mpDisc;
   if(g)ctx.save();
-  mpCircle(x,y,r,Math.max(1,r*.16),col);
+  Ci(x,y,r,Math.max(1,r*.16),col);
   if(P.emblem==="star"){
     /* пятиконечная — но собранная из лучей, а не залитая: на чипе в шесть
        пикселей залитая звезда превращается в кляксу */
     for(let i=0;i<5;i++){
       const a=-Math.PI/2+i/5*TAU;
-      mpLine(x,y,x+Math.cos(a)*r*.72,y+Math.sin(a)*r*.72,Math.max(1,r*.22),col);
+      Ln(x,y,x+Math.cos(a)*r*.72,y+Math.sin(a)*r*.72,Math.max(1,r*.22),col);
     }
   }else if(P.emblem==="ring"){
-    mpCircle(x,y,r*.42,Math.max(1,r*.16),col);
+    Ci(x,y,r*.42,Math.max(1,r*.16),col);
   }else if(P.emblem==="grid"){
     const w=Math.max(1,r*.14);
     for(const t of [-.35,.35]){
-      mpLine(x+r*t,y-r*.55,x+r*t,y+r*.55,w,col);
-      mpLine(x-r*.55,y+r*t,x+r*.55,y+r*t,w,col);
+      Ln(x+r*t,y-r*.55,x+r*t,y+r*.55,w,col);
+      Ln(x-r*.55,y+r*t,x+r*.55,y+r*t,w,col);
     }
   }else if(P.emblem==="wave"){
     const pts=[];
     for(let i=0;i<=8;i++){const t=i/8;pts.push(x-r*.6+r*1.2*t,y+Math.sin(t*TAU)*r*.34);}
-    mpPath(pts,Math.max(1,r*.16),col);
+    Pa(pts,Math.max(1,r*.16),col);
   }else if(P.emblem==="sun"){
-    mpDisc(x,y,r*.34,col);
+    Di(x,y,r*.34,col);
     for(let i=0;i<8;i++){
       const a=i/8*TAU;
-      mpLine(x+Math.cos(a)*r*.5,y+Math.sin(a)*r*.5,x+Math.cos(a)*r*.78,y+Math.sin(a)*r*.78,Math.max(1,r*.12),col);
+      Ln(x+Math.cos(a)*r*.5,y+Math.sin(a)*r*.5,x+Math.cos(a)*r*.78,y+Math.sin(a)*r*.78,Math.max(1,r*.12),col);
     }
   }else{
-    mpDisc(x,y,r*.3,col);
+    Di(x,y,r*.3,col);
   }
   if(g)ctx.restore();
 }
