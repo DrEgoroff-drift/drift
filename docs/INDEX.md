@@ -483,8 +483,8 @@ DIG3_HOOKS                   src/23c0-dig-hooks.js:6-10
 DIG3_LENS                    src/23c-dig-pln.js:17
 DIG3_LIP                     src/23ca-dig-pln-rock.js:26
 DIG3_NOSCENE                 src/23cd-dig-pln-top.js:374
-DIG3_OLD_HSURF               src/23cf-dig-words.js:36
-DIG3_OLD_HUD                 src/23cf-dig-words.js:53
+DIG3_OLD_HSURF               src/23cf-dig-words.js:37
+DIG3_OLD_HUD                 src/23cf-dig-words.js:54
 DIG3_OLD_WALK                src/23c-dig-pln.js:278
 DIG3_ORE                     src/23cb-dig-pln-dress.js:101
 DIG3_PAINT_W                 src/23ca-dig-pln-rock.js:142
@@ -3727,7 +3727,7 @@ dig3HeapTint                 src/23cb-dig-pln-dress.js:253-258
 dig3Hex                      src/23cb-dig-pln-dress.js:179-185
 dig3InstPut                  src/23c-dig-pln.js:121-127
 dig3IsKey                    src/23cf-dig-words.js:25
-dig3KeyLine                  src/23cf-dig-words.js:27-35
+dig3KeyLine                  src/23cf-dig-words.js:27-36
 dig3Land                     src/23ca-dig-pln-rock.js:75-81
 dig3Lens                     src/23c-dig-pln.js:19-26
 dig3LensMk                   src/23cd-dig-pln-top.js:52-55
