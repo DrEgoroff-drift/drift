@@ -283,6 +283,7 @@ def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
 # Запас шире — 25 % и абсолютный порог: headless шумит; база — медиана пяти прошлых записей сцены ──
 FRAMES_LOG = os.path.join(os.environ.get("LAB_DATA") or os.path.join(os.path.expanduser("~"), "drift-data", "lab"), "frames.jsonl")
 ENTRY_SEEN = {}
+WIN = {"k": ""}   # окно замера: база регресса — только прогоны того же окна (ПК 1600×900 и телефон 390 — разные пиксели)
 NOISE = {"on": False}   # соседи грузят машину: замер не пишется в базу регресса и не красит прогон
 REGRESS = {"entry": (1.5, 100, "вход в сцену, мс"), "low1": (1.25, 3, "1% low, мс"), "gpums": (1.25, .5, "видеокарта, мс/кадр"), "main": (1.25, .05, "поток, доля"),
            "hitch": (2.0, 4, "заминки")}
@@ -296,7 +297,7 @@ def regress(sc, row, out, ver):
         for ln in open(FRAMES_LOG, encoding="utf-8"):
             try: r = json.loads(ln)
             except ValueError: continue
-            if r.get("scene") == sc: hist.append(r)
+            if r.get("scene") == sc and r.get("win") == WIN["k"]: hist.append(r)
     except OSError: pass
     base = hist[-5:]
     if len(base) >= 3:
@@ -309,7 +310,7 @@ def regress(sc, row, out, ver):
     try:
         os.makedirs(os.path.dirname(FRAMES_LOG), exist_ok=True)
         with open(FRAMES_LOG, "a", encoding="utf-8") as f:
-            f.write(json.dumps(dict(row, scene=sc, ver=ver, ts=int(time.time())), ensure_ascii=False) + "\n")
+            f.write(json.dumps(dict(row, scene=sc, ver=ver, win=WIN["k"], ts=int(time.time())), ensure_ascii=False) + "\n")
     except OSError: pass
 
 
@@ -579,6 +580,7 @@ def main():
     ap.add_argument("--root", default=ROOT, help="the checkout whose drift.html and stand scenes are measured")
     ap.add_argument("--quiet-wait", type=float, default=0, help="seconds to wait before each scene for neighbours' Chromes to go and the CPU to fall under 40 %%")
     a = ap.parse_args()
+    WIN["k"] = "%dx%d@%g%s" % (a.w, a.h, a.dpr, "m" if a.mobile else "")
     if not a.port: a.port = noise.free_port()
     shot.HERE = os.path.join(a.root, "docs")   # stand_tail() reads docs/mkview.ps1 of that checkout
     chrome = next((c for c in shot.CHROMES if os.path.exists(c)), None)
