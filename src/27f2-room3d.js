@@ -74,11 +74,13 @@ function r3Proj(vp,p,w,h){
 /* ── инструменты сетки ── всё в метрах; T — текущая матрица (стек push/pop) */
 /* пул буфера вершин: один большой Float32Array ходит от тела к телу (до 16 МБ), а не удваивается заново на каждом */
 let R3_VPOOL=null;const R3_VPOOL_MAX=4194304,R3_VNIL=new Float32Array(0);
-/* рабочие массивы поверхности (место, краска, нормали, вес): растут до самой большой поверхности и живут между телами;
-   пока их держит стоящий на yield генератор (кожа головы), соседняя поверхность берёт свои, как прежде */
-const SG_POOL=[null,null,null,null];let SG_BUSY=0;
-function sgArr(k,len,pool){if(!pool)return new Float32Array(len);let a=SG_POOL[k];
-  if(!a||a.length<len){a=new Float32Array(Math.max(len,a?a.length*2:0));SG_POOL[k]=a;}return a;}
+/* рабочие массивы поверхности (место, краска, нормали, вес): комплект растёт до самой большой поверхности и живёт между
+   телами. Комплекты — свободный список (проход 4 по мусору, 22.10): генератор, стоящий на yield (кожа головы) или брошенный
+   на полпути, уносит свой комплект, а не запирает один общий флаг — соседи берут следующий; больше SG_MAX — свежие, как прежде */
+const SG_FREE=[],SG_MAX=6;let SG_LIVE=0;
+function sgTake(){if(SG_FREE.length)return SG_FREE.pop();if(SG_LIVE>=SG_MAX)return null;SG_LIVE++;return [null,null,null,null];}
+function sgArr(k,len,slot){if(!slot)return new Float32Array(len);let a=slot[k];
+  if(!a||a.length<len){a=new Float32Array(Math.max(len,a?a.length*2:0));slot[k]=a;}return a;}
 function r3Kit(){
   /* вершины — в растущем Float32Array (удвоение), не в JS-массиве через push: заготовка зала сорила ~74 МБ на тело
      (охотник, отчёт 15); VN — занято чисел, 12 на вершину. Снаружи массив никто не читает — только K.pack */
@@ -152,7 +154,7 @@ function r3Kit(){
   /* точки, краска и вес — плоскими массивами (ни массива на точку, ни замыкания на треугольник); o.src={P,C?,W?} —
      готовые плоские массивы вместо f (кожа головы, 27f3a); краска без своей — краска материала */
   K.surfG=function*(nu,nv,f,M,o,ms){o=o||{};const n=(nu+1)*(nv+1),mc=M.c;let t0=ms?wallMs():0,P,C,Wt;
-    const brk=()=>ms&&wallMs()-t0>ms,pool=!SG_BUSY;if(pool)SG_BUSY=1;
+    const brk=()=>ms&&wallMs()-t0>ms,pool=sgTake();
     try{
     if(o.src){P=o.src.P;C=o.src.C||null;Wt=o.src.W||null;}
     else{P=sgArr(0,3*n,pool);C=sgArr(1,3*n,pool);Wt=null;
@@ -183,7 +185,7 @@ function r3Kit(){
       k=3*q2;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q2]:0);
       k=3*q3;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q3]:0);}
       if(brk()){yield;t0=wallMs();}}
-    }finally{if(pool)SG_BUSY=0;}};
+    }finally{if(pool)SG_FREE.push(pool);}};
   K.surf=(nu,nv,f,M,o)=>{const it=K.surfG(nu,nv,f,M,o,0);while(!it.next().done);};
   /* труба по ломаной P с радиусом r (число или массив); N — граней; кольца — параллельным переносом */
   K.tube=(Pp,r,M,Nn,cap)=>{Nn=Math.round((Nn||8)*K.q);const R=[];let u0=null;
