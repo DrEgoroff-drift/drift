@@ -9,7 +9,7 @@ const MAP_W={you:1,route:.8,rest:.42};
 /* лицо строк состояния — то же, что у табличек у вещи (HANG.FACE, M720), а не моноширинный */
 /* ширина строки так, как её положит перо: на видеокарте слой ставит цифры моноширинно по «0» (hangTW,
    08bj) — строка из цифр шире, чем мерит ctx, и вылетала из своей плашки на 7 px (зрение, 390) */
-function mapTW(t){return MPN.gpu?hangTW(ctx.font,String(t)):ctx.measureText(t).width;}
+function mapTW(t){return hangTW(ctx.font,String(t));}
 function mapFace(px,b){ctx.font=(b?"600 ":"")+Math.max(8,px*mapU()).toFixed(1)+"px "+HANG.FACE;}
 /* ── табличка у выбранной системы (M822, закон L5: слова висят на вещи) ──
    Что это, дотянусь ли и что будет по ДЕЙСТВИЮ — у самой звезды, материалом «Борта», глагол акцентом.

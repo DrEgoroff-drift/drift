@@ -9,7 +9,7 @@
    st.draft — черновик протяжки (stapelDraft): те же рамка и масштаб, без выпечки;
    st.cv — прежний холст листа: того же размера он и остаётся, вёрстка не дёргается */
 /* перо эмблемы на холсте движка (08ca GcCtx): договор пера карты 17z4 (line/circle/path/disc),
-   без подмены ctx и без mp2d — 2D-цель пера остаётся только сайту */
+   без подмены ctx; у пера карты 2D-цели нет (M817), сайт рисует своим site/war-pen.js */
 function stapelPen(c){
   const st=(w,col)=>{c.strokeStyle=col;c.lineWidth=w;};
   return {line:(x0,y0,x1,y1,w,col)=>{st(w,col);c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();},
