@@ -42,7 +42,7 @@ const EYES_SUITE=() => suite("глаза тестов: видеокарта ес
     (GPU.lost?", устройство потеряно":GPU.busy?", адаптер не ответил":"")+")"));
 });
 BOOT_SUITE.pin="first";
-let BOOT_SINK=0,BOOT_PIPE_POLL=0,BOOT_GPU_POLL=0;
+let BOOT_SINK=0,BOOT_PIPE_POLL=0,BOOT_LATE_POLL=0,BOOT_GPU_POLL=0;
 /* опрос адаптера: ~20 мс настоящего счёта (2e7 шагов прогретого цикла) за 25 мс виртуальных */
 const BOOT_GPU_MS=20;
 /* детектор конвейеров (91zzzzzzy4) — сразу за ними: до него никто не должен был создать конвейер полёта */
@@ -69,6 +69,13 @@ if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NOD
      14.10: на новой машине 2e7 шагов счёта — ~5 мс, и 600 опросов давали ~3 с настоящих; карточка рига
      (rig.card, MSAA) в таблице не успевала — потолок 2400 опросов, это те же ~12 с */
   if(GPU.ok&&!GPU_PIPES.done&&BOOT_PIPE_POLL++<2400){let s=0;for(let k=0;k<2e7;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),1);return;}
+  /* и поздней очереди (08b0 gpuPipesLate: зал, комнаты, рейд — фоном через 1,5 с после прогрева). Под нагрузкой
+     полного прогона детектор конвейеров заставал r3.* недостроенными: r3Dev строил их сам, синхронно, и набор
+     краснел раз из трёх (22.10, remake-a3). Пока очередь не началась — шаг 25 мс виртуальных без счёта,
+     пока строится — как прогрев */
+  if(GPU.ok&&GPU_PIPES.done&&!(GPU_PIPES.late&&GPU_PIPES.late.done)&&BOOT_LATE_POLL++<2400){
+    if(GPU_PIPES.late){let s=0;for(let k=0;k<2e7;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),1);}else setTimeout(()=>boot(t0),25);
+    return;}
   const ready=frameN>=1||crashN>0;
   if(!ready&&performance.now()-t0<17000){setTimeout(()=>boot(t0),50);return;}
   G.running=false;

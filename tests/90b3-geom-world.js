@@ -7,11 +7,9 @@
    фигуры видеокарты в долях кадра лежат там же. Разошлись больше чем на 4 % кадра — «масштаб».
    Подсадка: gpuShpAt (08c) подменяется тождеством — брак обязан найтись. */
 const GEO_WORLD=[
-  {name:"шахта",open(){landOnTestPlanet();const S=G.surf,p=S.p;G.mines=G.mines||{};
-    G.mines[mineKey(p)]={dug:[],deepest:0,x:S.x};enterDig();
-    for(let r=1;r<6;r++)G.dig.cells["0,"+r]={dug:true,res:null,amount:0,prog:0,hard:0,tint:0};
-    G.dig.row=3;G.dig.maskV=(G.dig.maskV|0)+1;return G.mode==="dig";}},
-  /* пещера и поверхность — 3D-движок (21p*, 22d*), фигур видеокарты у них нет: им нужен свой закон по телам */
+  /* шахта с 0.499.11 целиком на 3D-движке (23c*, dig3Draw), как пещера и поверхность (21p*, 22d*): фигур
+     видеокарты у них нет, закон по фигурам их не видит и слепнул в воротах (22.10). Сцена и подсадка сняты,
+     пока нет закона по телам; новая сцена с фигурами видеокарты в мире — сюда, подсадка вернётся с ней */
 ];
 /* где легли фигуры видеокарты за один кадр: рамка всех центров, в долях кадра */
 function geoWorldBox(){
@@ -41,6 +39,7 @@ function geoWorldOne(sc,out,plant){
   }finally{if(plant)gpuShpAt=keep;T.window();}
 }
 function geoWorld(out){
+  if(!GEO_WORLD.length)return;
   if(!GPU.ok||!GPU.dev){out.blind.push("мир: видеокарты нет — закон «масштаб» не смотрел");return;}   /* без видеокарты мир рисует 2D, и масштаб у него свой */
   for(const sc of GEO_WORLD){
     let r=null;
