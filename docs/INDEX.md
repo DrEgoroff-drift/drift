@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 635 · top-level symbols: 8715
+Files: 636 · top-level symbols: 8717
 
 ## SYMBOLS
 
@@ -1629,6 +1629,7 @@ PLAN_F                       src/27jb-kb.js:395
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
+PLAYHOUR_HOOKS               src/28v-playhour.js:18-29
 PLN                          src/21p-pln.js:15
 PLN_ACT                      src/21pif-pln-marks-act.js:18
 PLN_ACTS                     src/21pz-pln-frame.js:46
@@ -6599,6 +6600,7 @@ plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29-37
 plantUx                      src/20-life.js:433-437
 plate                        src/25-cockpit.js:160-164
+playTick                     src/28v-playhour.js:14-17
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
 plnActAge                    src/21pif-pln-marks-act.js:58
@@ -10428,6 +10430,9 @@ zoomTo                       src/15-input.js:358
 ## src/28u-raid-ui.js · 2 KB
   · абордаж: строка у пульта — плашкой (22.10):1
 
+## src/28v-playhour.js · 3 KB
+  · первый час — час игры, а не час налёта (M912 · DESIGN-game §10.7, §4.1b):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10584,7 +10589,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim.js · 21 KB
+## tests/91zzzw4-ecosim.js · 38 KB
   · проба · экономика (M903):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB

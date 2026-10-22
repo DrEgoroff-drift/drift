@@ -250,6 +250,74 @@ waits for a drone that earns); **T3**'s managers cost 3 700 cr/h each and produc
 probe, which builds no workshops and no base. M905/M906 did not give them work the probe can count
 (the gauges have nothing for a manager either): open, for M907.
 
+### 4.1b Measured after the dispatcher — M912, 22.10 (three hours per tier)
+
+M907–M911 changed the faucet of demand: К ВАМ with two addressed and one urgent at every dock, the
+access rungs, orders as forks. The probe now plays the dispatcher between laps the way a careful
+player would: it walks the legs (jump, dock, land, cantina, cargo bought at the nearest shop), takes
+only paper that pays for its goods and fuel, urgent first, then by net per estimated minute, and
+skips paper with a fight in it. A fresh save gets its own row: 600 cr, no flight preset, the first
+watch from minute zero. Purchases for cargo paper are taken off gross, not booked as upkeep — U/G is
+the pressure of keeping things, not the turnover of goods. Every row is three hours; «было» is the
+last line of §4.1a (one hour, M904d).
+
+| tier | было net | стало net | oracle | vs oracle | стало U/G | band | dispatcher cr/h | mining only, net |
+|---|---|---|---|---|---|---|---|---|
+| T0, fresh save | — | 5 514 | 4 400 | +25 % | .51 | .40 | 2 630 (13 deeds) | 6 282 (.37) |
+| T0 Стриж | 6 822 | 6 898 | 4 400 | +57 % | .48 | .40 | 3 622 (16) | 6 118 (.38) |
+| T1 Вьюк, 1 hand, 1 drone | 21 212 | 20 704 | 13 900 | +49 % | .24 | .50 | 8 863 (30) | 17 000 (.15) |
+| T2 Обод, insured | 14 871 | 12 199 | 14 200 | −14 % | .57 | .65 | 5 434 (20) | 14 739 (.46) |
+| T3 Мамонт, insured | 6 917 | 7 294 | 12 700 | −43 % | .78 | .70 | 9 552 (24) | 7 890 (.72) |
+| T2, uninsured wreck | −14 535 | −694 | negative | ✓ | 1.03 | — | 3 802 | 1 538 |
+| T2, insured wreck | 11 676 | 11 516 | — | — | .58 | — | 5 726 | 12 353 |
+
+(The wreck falls at half the run — 1.5 h of three, not 30 min of one — so its loss is spread over three
+hours; the hull loss is the same 8–11 k.)
+
+**The «Вьюк» lap.** 5.0 min with the dispatcher, 5.9 mining only: 457 and 335 cr/min, under 900.
+
+**The norm moves with filled needs.** Judged per сводка over the run, with the player and on a copy
+with the player's fills and orders removed: 81–90 % against 76–79 % at every tier (19–22 needs,
+12–14 windows). The player is the 5–11 points that lift a station over the 80 % line.
+
+**The first hour of a fresh save** (minutes of play): two addressed items at 0.2, urgent at 6.0,
+the watch line at 0.2, the first hour and the first watch end at 60.2, the стажёр paper at
+60.2–60.7, the mutual-aid debt never above 0. Credits from 600: 1 551 at minute 2, 2 306 at 6,
+5 276 at 60 (dispatcher) / 7 043 (mining only); the first hour nets 4 700–6 400 against the
+oracle's 4 400.
+
+**What the probe found and what was fixed** (one commit each):
+
+- **The first hour counted flight, not play.** `firstHour()` read `G.flownMs`, which advances only
+  in system, belt, landing and scoop; a fresh save that worked the dispatcher had flown 11 of its
+  first 90 minutes, and the стажёр paper, the end of the first watch and the bill came after about
+  eight hours of play. `28v-playhour` counts play time (every running tick outside the dock),
+  saves it, and `firstHour()` is `max(play, flown) < 1 h`; the watch menu asks `firstHour()`.
+- **The probe hired managers and gave them no orders.** A factor without «водить постоянно» moves
+  no credit (`mgrWorkFact`); the probe now gives each domain its main order and hires the factor
+  first, as a player paying wages would. T2 went −56 % → −14 %, T3 −83 % → −43 %; the domain line
+  («tick» in the probe) is 7 900–9 500 cr/h at T2–T3.
+- Tried and reverted: pay by effort (minutes of legs × the hand-mining rate). It ignored the fuel of
+  each jump (130–250 cr), made urgent paper lose money and took nothing off the T0/T1 excess,
+  which is the mining lap's. The pays of §4.3 stand: net ≈ 220 cr/min, urgent ≈ ×2 — a premium,
+  not a second economy.
+
+**Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
+
+- **T0 +25 % (fresh) / +57 %.** The lap is 3.8–4.1 minutes; §4.1a's owner stands (the lap a
+  human will not fly). The fresh save's *first hour* is in band; the excess is hours 2–3.
+- **T1 +49 %, U/G .24.** Nothing to pay at T1 but fuel and one hand; the dispatcher adds
+  8 900 cr/h on top of mining. A T1 line on the paper (the drone's parts, §3.1) is the lever
+  §4.1a already named; it waits for a drone that earns.
+- **T3 −43 %.** Gross is −38 %: the probe builds no workshops and no base, which the oracle's T3
+  gross assumes (five workshops, a base of 20). The commander and the keeper are multipliers on
+  hands and drones and add nothing countable at level 1 — 3 500–4 200 cr/h of wages each. Owner:
+  the estate (workshops and base in the probe) before any change to wages.
+- Bot findings in files this series may not edit: the Жестянка's «НАРЯД НЕ ЗАКРЫТ · НУЖЕН …»
+  prompt takes ДЕЙСТВИЕ from any deposit within 56 of it (and reads «НУЖЕН ЛЕТУЧИЕ ГАЗЫ»);
+  swimming takes it on water worlds; «ВОЙТИ В ПОЯС ВОРОН» takes the landing prompt near a belt.
+  The probe steps around all three.
+
 ### 4.2 Stations have three gauges, and they fall
 
 Every station gets three numbers, lazy, saved as three bytes: **склад** (stock, 0–1), **люди**
@@ -829,6 +897,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M909 | the first watch (§10.7) **done 22.10 (`28o-firstwatch`)** | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
 | M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) **done 22.10 (`28p-doors`)** | chapter N+1's door is a deed; the sixth is met on the watch |
 | M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) **done 22.10 (`28q-fork`)** | every order has both sides; a found notch gives one access line |
+| M912 | economy after the dispatcher **measured 22.10, §4.1b**: the first hour counts play (`28v-playhour`); the probe plays the dispatcher and a fresh save | T2 within ±20 %; T0/T1 over and T3 under, each with an owner |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),
