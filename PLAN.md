@@ -99,12 +99,9 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     costs a hitch on the phone (P1, §1), so rank by that too; the raid
     comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
-  - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull. Moved off
-    `drawHull` (0.476.0): the shipyard 26e2, the left trace 12as, `look`/h (28y `makerRead`) and the home room 27e.
-    Left: the station 26:425 — GPU-3; the road 27l (two calls) and the scoop 19a — the fleet, after its landing;
-    29d — the worker, when homein moves (below). 03e1 is deleted with its last caller;
-  - the homein frame onto the engine — the worker, after the fleet's landing, on the fleet's room kit (light,
-    vignette, `kit.img`); pairs at 760 and 390 by the room rules; it takes 29d's `drawHull` with it;
+  - the hull: `hullStudio` / `hullGpuDraw` (17c2) is the one GPU hull. No screen calls `drawHull` any more (22.10:
+    the station, the road 27l, the scoop 19a and the home are on `hullGpuDraw` or gone); it lives on only as the
+    bake under the sprite path (§10, «drawHull stays as the flight's fallback path»);
   - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):
     the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
     (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),
