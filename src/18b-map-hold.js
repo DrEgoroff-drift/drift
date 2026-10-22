@@ -31,9 +31,9 @@ function mapLayerRu(){return "СЛОИ · "+MAP_LAYERS.find(l=>l[0]===mapLayer()
 function mapHousePatch(vis,st){
   const P={};
   for(const v of vis){
-    if(!v.s||!v.s.station||typeof houseOf!=="function")continue;
+    if(!v.s||!v.s.station)continue;
     const Hh=houseOf(v.s);if(!Hh)continue;
-    const known=v.d<=st.jump+.02||(G.seenPrices&&G.seenPrices[v.s.key])||(typeof rumoursKnown==="function"&&rumoursKnown().some(r=>Math.abs(r.sx-v.gx)<=r.rad&&Math.abs(r.sy-v.gy)<=r.rad));
+    const known=v.d<=st.jump+.02||(G.seenPrices&&G.seenPrices[v.s.key])||(rumoursKnown().some(r=>Math.abs(r.sx-v.gx)<=r.rad&&Math.abs(r.sy-v.gy)<=r.rad));
     if(!known)continue;
     for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){
       const k=(v.gx+dx)+","+(v.gy+dy);
@@ -45,7 +45,6 @@ function mapHousePatch(vis,st){
 }
 /* трасса: цепочка между соседними станциями с флотом — те же пары, что у 12ai */
 function mapTrassaPairs(vis,cell){
-  if(typeof fleetRung!=="function")return [];
   const L=vis.filter(v=>v.s&&v.s.station&&fleetRung(v.s)>=5),out=[],seen=new Set();
   for(const a of L){
     const nb=L.filter(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)<=cell*1.6)
@@ -58,7 +57,7 @@ function mapTrassaPairs(vis,cell){
   return out;
 }
 function mapUnderTrassa(sx,sy){
-  if(typeof fleetRung!=="function"||!starAt(sx,sy))return false;
+  if(!starAt(sx,sy))return false;
   const s=getSystem(sx,sy);return !!(s.station&&fleetRung(s)>=5);
 }
 function mapOwnHere(gx,gy){
@@ -69,7 +68,6 @@ function mapOwnHere(gx,gy){
 }
 /* бирка перемены: только где 12p записал «сменился хозяин», гаснет за трое суток */
 function mapTagAt(gx,gy,now){
-  if(typeof newsMarkAt!=="function")return null;
   const m=newsMarkAt(gx,gy);if(!m||m.what!=="сменился хозяин"||!m.t)return null;
   const days=(( now===undefined?clockNow():now)-m.t)/86400e3;
   if(days>=3)return null;
@@ -116,7 +114,7 @@ function mapHoldingsDraw(vis,cell,V,st){
      Летопись знает хозяина каждой системы обжитого круга. Шесть заливок на
      телефоне были бы шумом (вывод holding §13), поэтому владение читается
      чипом с эмблемой в углу клетки, а фронт — красной кромкой. */
-  if(typeof chronOwner==="function")for(const v of vis){
+  for(const v of vis){
     const o=chronOwner(v.gx,v.gy);
     if(o<0)continue;
     const key=MAKER_KEYS[o];
@@ -124,7 +122,7 @@ function mapHoldingsDraw(vis,cell,V,st){
     const d=Math.hypot(v.gx-G.sx,v.gy-G.sy),fade=clamp(1.1-d/(st.jump*2.4),.25,1);
     const chip=!allL||v.near||(v.gx===G.sel.x&&v.gy===G.sel.y);
     if(!chip){}
-    else if(typeof powerEmblem==="function"&&cell>=18){
+    else if(cell>=18){
       /* чип растёт с клеткой: на трёх пикселях эмблема — точка, а точек на
          карте и так хватает */
       /* M458: вблизи чип дорастает до читаемых 14–18 px (радиус 7–9) */
@@ -136,14 +134,12 @@ function mapHoldingsDraw(vis,cell,V,st){
       mpDisc(x0+cell-6,y0+6,2,rgba(hex2rgb(powerOf(key).col),(.5*fade).toFixed(3)));
     }
     /* сигнал сбора (M378): чип с числом ответивших — ни имени, ни слова */
-    if(typeof rallyAt==="function"){
-      const R=rallyAt(v.gx,v.gy);
-      if(R){
-        mpCircle(x0+cell*.5,y0+cell*.5,cell*.32,1.4,"rgba(255,214,120,.9)");
-        MPN.font=Math.max(8,cell*.16).toFixed(0)+"px ui-monospace,monospace";
-        MPN.textAlign="center";
-        mpText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06,"rgba(255,214,120,.9)");mapInkText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06);
-      }
+    const R=rallyAt(v.gx,v.gy);
+    if(R){
+      mpCircle(x0+cell*.5,y0+cell*.5,cell*.32,1.4,"rgba(255,214,120,.9)");
+      MPN.font=Math.max(8,cell*.16).toFixed(0)+"px ui-monospace,monospace";
+      MPN.textAlign="center";
+      mpText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06,"rgba(255,214,120,.9)");mapInkText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06);
     }
     if(chronFront(v.gx,v.gy))
       mpFrame(x0+.7,y0+.7,cell-1.4,cell-1.4,1.4,"rgba(255,90,70,"+(.7*fade).toFixed(2)+")");
@@ -157,19 +153,17 @@ function mapHoldingsDraw(vis,cell,V,st){
        Где воюют — не узор, а красный фронт ниже. */
     for(const q of MAP_BORDER_NB){
       const o2=chronOwner(v.gx+q[0],v.gy+q[1]);
-      if(o2===o||(o2>=0&&typeof chronWarBetween==="function"&&chronWarBetween(o,o2)))continue;
+      if(o2===o||(o2>=0&&chronWarBetween(o,o2)))continue;
       const ins=Math.max(1.5,cell*.05);
       const ax=x0+q[2]*cell-q[0]*ins,ay=y0+q[3]*cell-q[1]*ins,bx=x0+q[4]*cell-q[0]*ins,by=y0+q[5]*cell-q[1]*ins;
       mapBorderEdge(key,ax,ay,bx,by,.55*fade*kE,cell,-q[0],-q[1]);
     }
-    if(typeof chronWarBetween==="function"){
-      const wc="rgba(255,120,90,"+(.85*fade).toFixed(2)+")";
-      const nb=[[1,0,x0+cell,y0,x0+cell,y0+cell],[0,1,x0,y0+cell,x0+cell,y0+cell]];
-      for(const q of nb){
-        const o2=chronOwner(v.gx+q[0],v.gy+q[1]);
-        if(o2<0||o2===o||!chronWarBetween(o,o2))continue;
-        mpDash(q[2],q[3],q[4],q[5],1.6,wc,[3,3]);
-      }
+    const wc="rgba(255,120,90,"+(.85*fade).toFixed(2)+")";
+    const nb=[[1,0,x0+cell,y0,x0+cell,y0+cell],[0,1,x0,y0+cell,x0+cell,y0+cell]];
+    for(const q of nb){
+      const o2=chronOwner(v.gx+q[0],v.gy+q[1]);
+      if(o2<0||o2===o||!chronWarBetween(o,o2))continue;
+      mpDash(q[2],q[3],q[4],q[5],1.6,wc,[3,3]);
     }
   }
   for(const k in P){
@@ -190,13 +184,11 @@ function mapHoldingsDraw(vis,cell,V,st){
     mpLine(a.x,a.y,b.x,b.y,cell*.55,"rgba(236,232,220,"+(.07*k).toFixed(3)+")");
   }
   /* пираты: ржавый косой штрих; у пятна дома — фронт ярче */
-  if(typeof occLvl==="function"){
-    for(const v of vis){
-      const ol=occLvl(v.gx,v.gy);if(!ol)continue;
-      const x0=v.x-cell/2,y0=v.y-cell/2;
-      mpHatch(x0,y0,cell,cell,5,1,1.2,"rgba(200,96,60,"+(.16+ol*.07).toFixed(2)+")");
-      if(P[v.gx+","+v.gy])mpFrame(x0+.5,y0+.5,cell-1,cell-1,1,"rgba(255,120,80,.55)");
-    }
+  for(const v of vis){
+    const ol=occLvl(v.gx,v.gy);if(!ol)continue;
+    const x0=v.x-cell/2,y0=v.y-cell/2;
+    mpHatch(x0,y0,cell,cell,5,1,1.2,"rgba(200,96,60,"+(.16+ol*.07).toFixed(2)+")");
+    if(P[v.gx+","+v.gy])mpFrame(x0+.5,y0+.5,cell-1,cell-1,1,"rgba(255,120,80,.55)");
   }
   /* своё: рамка цвета игрока, видна и во тьме */
   const vx0=Math.round(V.x),vy0=Math.round(V.y),R=Math.ceil(Math.max(W,H)/cell/2)+1;
@@ -238,7 +230,7 @@ function mapHoldingsTop(vis,cell,V,st){
     for(const v of vis){
       if(!v.s||!v.s.station)continue;
       let pr=G.seenPrices[v.s.key];
-      if((!pr||!pr.p)&&typeof wanderHas==="function"&&wanderHas("pricelist")&&v.s.station.prices&&Math.hypot(v.gx-G.sx,v.gy-G.sy)<=3*Math.max(.5,st.jump))pr={p:v.s.station.prices};
+      if((!pr||!pr.p)&&wanderHas("pricelist")&&v.s.station.prices&&Math.hypot(v.gx-G.sx,v.gy-G.sy)<=3*Math.max(.5,st.jump))pr={p:v.s.station.prices};
       if(!pr||!pr.p)continue;
       let bk=null;for(const k of TRADE_KEYS){if(pr.p[k]&&(!bk||pr.p[k]>pr.p[bk]))bk=k;}
       if(!bk)continue;

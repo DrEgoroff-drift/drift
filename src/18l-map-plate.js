@@ -17,9 +17,9 @@ function mapFace(px,b){MPN.font=(b?"600 ":"")+Math.max(8,px*mapU()).toFixed(1)+"
    табличка висит (27z, mapHintHung), а кнопка ДЕЙСТВИЯ берёт глагол из G.prompt, как прежде */
 function mapSelHang(sel,dsel,cost,st){
   const s=sel.s,rr=1.8+s.cls.t*2.2,far=dsel>st.jump+.02,poor=!far&&cost>G.fuel;
-  const nm=((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase();
+  const nm=nameOf(s).toUpperCase();
   const what=s.cls.ru+" · "+s.planets.length+" "+pl3(s.planets.length,"планета","планеты","планет")+(s.station?" · станция":"")+(s.belt?" · пояс":"");
-  const NX=(typeof routeNext==="function"&&routeOf().legs.length>=2)?routeNext():null;
+  const NX=(routeOf().legs.length>=2)?routeNext():null;
   const onRoute=NX&&NX.sys.sx===G.sel.x&&NX.sys.sy===G.sel.y;
   const pk=dsel.toFixed(1).replace(".",",")+" пк",more=G.mapMore?"":" · ещё тап — подробнее";
   let L,verb;

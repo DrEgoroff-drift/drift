@@ -154,7 +154,7 @@ function railSpurSig(){
   const t=Math.floor(((typeof G==="object"&&G&&G.t)||0)/60);
   if(railSpurSig.t===t&&railSpurSig.hold===(G&&G.hold))return railSpurSig.v;
   railSpurSig.t=t;railSpurSig.hold=G&&G.hold;let v="";
-  if(G&&G.hold&&typeof bldHas==="function")for(const k in G.hold){const p=k.split(",").map(Number);if(bldHas(p[0],p[1],"railpost"))v+=k+";";}
+  if(G&&G.hold)for(const k in G.hold){const p=k.split(",").map(Number);if(bldHas(p[0],p[1],"railpost"))v+=k+";";}
   return railSpurSig.v=v;
 }
 function railSpurLine(N,key){
@@ -178,8 +178,8 @@ function railSpurApply(N){
     N.lines.push(l);N.byId[l.id]=l;
     for(const s of l.stops){const k=s.sx+","+s.sy;(N.at[k]||(N.at[k]=[])).push(l.id);}
     /* дело холдинга в журнал — один раз на пост */
-    const B=(typeof bldEntry==="function")?bldEntry(key,"railpost"):null;
-    if(B&&!B.said){B.said=1;if(typeof logAdd==="function")logAdd("dim","ГЛАВТРАССА: проложена "+l.ru+" · от «"+getSystem(l.stops[0].sx,l.stops[0].sy).name+"» до вашей площадки · полустанок ваш");}
+    const B=bldEntry(key,"railpost");
+    if(B&&!B.said){B.said=1;logAdd("dim","ГЛАВТРАССА: проложена "+l.ru+" · от «"+getSystem(l.stops[0].sx,l.stops[0].sy).name+"» до вашей площадки · полустанок ваш");}
   }
   return N;
 }
@@ -240,7 +240,7 @@ function drawRailMap(V,cell,pale){
     for(const r of R[i])mapRibbon(SH,r,hw,[4,6,10,.5*k]);}
   /* свои линии — те, где есть остановка в досягаемости прыжка: они горят; чужие —
      бледный каркас. На карте сразу видно, куда отсюда можно уехать */
-  const jr=pale?-1:((typeof stat==="function"?stat().jump:1)+.02);
+  const jr=pale?-1:(stat().jump+.02);
   const mine=l=>jr>0&&l.stops&&l.stops.some(s=>Math.hypot(s.sx-G.sx,s.sy-G.sy)<=jr);
   for(let i=0;i<L.length;i++){
     const l=L[i],c=RAIL_COL[l.kind],r=l.kind==="radial",hw=((r?1:1.4)+k*(r?.6:1))/2,my=mine(l);

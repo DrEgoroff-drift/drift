@@ -32,8 +32,8 @@ function mapMarkAt(sx,sy){return mapMarks().findIndex(m=>m.sx===sx&&m.sy===sy);}
 /* спичка на клетку: из кошелька; забрать — обратно в кошелёк */
 function mapMarkToggle(sx,sy){
   const L=mapMarks(),i=mapMarkAt(sx,sy);
-  if(i>=0){L.splice(i,1);if(typeof matchesAdd==="function")matchesAdd(1);say("Спичка снята с карты · спичек: "+matchesRec());return "taken";}
-  if(typeof matchesRec!=="function"||matchesRec()<1){say("Ни одной спички — нечем отметить");return null;}
+  if(i>=0){L.splice(i,1);matchesAdd(1);say("Спичка снята с карты · спичек: "+matchesRec());return "taken";}
+  if(matchesRec()<1){say("Ни одной спички — нечем отметить");return null;}
   if(L.length>=MAP_MARKS_MAX){say("Десять спичек на карте — больше не кладём");return null;}
   matchesSpend(1);L.push({sx:sx|0,sy:sy|0});
   say("Спичка легла на сектор "+sx+":"+sy+" · спичек: "+matchesRec());
@@ -113,10 +113,10 @@ function mapMarksDraw(V,cell){
 }
 /* 2+3. линейки и шапка — интерфейс, сообщает прямоугольники */
 function mapRulersDraw(V,cell,foot){
-  const RX=(typeof mapRail==="function")?mapRail():W-16;
+  const RX=mapRail();
   const U=mapU();
   const y0=mapRulerTop(),xL=MAP_RUL*U;
-  const deck=(typeof mapDeck==="function")?mapDeck():H-100;
+  const deck=mapDeck();
   const yEnd=deck-16*U*Math.max(1,(foot&&foot.rows?foot.rows.length:1))-14*U;
   const MS=mapSave();
   mapFont(8);MPN.textBaseline="alphabetic";
@@ -154,7 +154,7 @@ function mapRulersDraw(V,cell,foot){
   }
   /* шапка: где вы и что выбрано */
   MPN.textAlign="left";mapFace(11);
-  const nm=(G.sys&&typeof nameOf==="function")?nameOf(G.sys):(G.sys?G.sys.name:"");
+  const nm=G.sys?nameOf(G.sys):"";
   const l1="ВЫ · сектор "+G.sx+":"+G.sy+(nm?" · «"+nm+"»":"");
   const dch=Math.max(Math.abs(G.sel.x-G.sx),Math.abs(G.sel.y-G.sy));
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy),st=stat();
@@ -189,7 +189,7 @@ function mapRulersDraw(V,cell,foot){
 }
 /* 8. роза в углу: +X, +Y и «к ядру» */
 function mapRoseDraw(foot){
-  const deck=(typeof mapDeck==="function")?mapDeck():H-100;
+  const deck=mapDeck();
   const rows=foot&&foot.rows?foot.rows.length:1;
   /* один угол — одна вещь (M437): карточка системы стоит в том же нижнем
      левом углу и накрывала розу собой на любой мерке. Роза — постоянная
@@ -221,9 +221,9 @@ function mapRoseDraw(foot){
 function mapGoAddr(sx,sy){
   sx|=0;sy|=0;
   G.sel={x:sx,y:sy};
-  if(typeof mapFit==="function")mapFit(sx,sy);else G.mapView={x:sx,y:sy};
+  mapFit(sx,sy);
   G.mapMore=false;G.mapOutline={sx,sy,t:now()};
-  if(typeof sfx==="function")sfx("ui");
+  sfx("ui");
   return true;
 }
 function mapParseAddr(s){
@@ -242,7 +242,7 @@ function mapAddrBox(){
   const run=()=>{const a=mapParseAddr(inp.value);if(!a){say("Адрес пишут так: 4:-7");return;}mapGoAddr(a.sx,a.sy);inp.blur();};
   go.addEventListener("click",run);
   e.querySelector("#mapMarkGo").addEventListener("click",()=>{if(G.mode==="map")mapMarkToggle(G.sel.x,G.sel.y);});
-  e.querySelector("#mapLayerGo").addEventListener("click",()=>{if(typeof mapLayerNext==="function"){mapLayerNext();if(typeof sfx==="function")sfx("ui");}});
+  e.querySelector("#mapLayerGo").addEventListener("click",()=>{mapLayerNext();sfx("ui");});
   inp.addEventListener("keydown",ev=>{if(ev.key==="Enter"){run();ev.preventDefault();}ev.stopPropagation();});
   inp.addEventListener("keyup",ev=>ev.stopPropagation());
   return e;
@@ -313,6 +313,6 @@ function addrify(root){
   const on=id=>{const e=document.getElementById(id);if(!e)return;
     e.addEventListener("click",ev=>{const u=ev.target.closest&&ev.target.closest("u.addr");if(!u)return;
       ev.stopPropagation();ev.preventDefault();
-      if(typeof gotoSector==="function")gotoSector(+u.dataset.sx,+u.dataset.sy,null);});};
+      gotoSector(+u.dataset.sx,+u.dataset.sy,null);});};
   on("tableBody");on("stBody");
 })();

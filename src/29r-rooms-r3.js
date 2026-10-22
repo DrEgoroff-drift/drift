@@ -171,7 +171,7 @@ function hq3Scene(L,cam,t){
   lights.push({p:[0,hc-.2,B+.4],range:7,c:r3Sc(warm,3.2+.6*nk),spot:1,d:[0,-1,0],cosO:Math.cos(1.2),cosI:Math.cos(.6),vol:0});   /* кромка скользит по стене вниз */
   /* рассеянный ночью не падает в черноту: синее небо дока, value стен ≥ .08 */
   const sky=r3Lin(mixc([78,70,62],[46,50,72],nk)),gnd=r3Lin(mixc([84,66,50],[56,54,62],nk)),fog=r3Lin(mixc([46,40,36],[24,30,48],nk));
-  const kind=L.st&&typeof hallT==="function"?hallT(L.st).win:5;
+  const kind=L.st?hallT(L.st).win:5;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
     sky:[...sky,2.4-.8*nk],gnd:[...gnd,.095-.035*nk],fog:[...r3Sc(fog,.25),.04],acc:[...r3Lin([255,170,90]),1],
     win:[W[0],W[2],W[1],W[3]],win2:[B,kind,7,.7*(.38+.62*day)],sgn:[0,0,0,0],sgn2:[B,0,0,0],
@@ -307,4 +307,4 @@ function hqScene(){if(room3Ok())room3Open("hq",$hq);else if(ROOM3.open)room3Clos
 if(typeof document!=="undefined"&&typeof $hq!=="undefined"&&$hq)$hq.addEventListener("click",ev=>{
   if(ROOM3.open!=="hq"||ev.target!==$hq)return;
   const id=room3PickHq(ev.clientX,ev.clientY);
-  if(!id||id===hqSel)return;hqSel=id;if(typeof sfx==="function")sfx("ui");hqRender();});
+  if(!id||id===hqSel)return;hqSel=id;sfx("ui");hqRender();});
