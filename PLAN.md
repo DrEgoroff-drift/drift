@@ -317,8 +317,6 @@ Check each against the code before building — some may already hold.
   there is the ship's), a **POI on the cave mouth** (obelisk, portal; `genPOI` does not know the
   mouth), the **ocean world's pad in the water** with a 2 m drop under the ship (`genTerrain`'s pad vs
   `waterOf`). All in the surface's own modules; a fix moves deposits and POI on those worlds.
-- [ ] **`03e-hull-draw.js` grew to 49 KB** with the yard marks: move the hull's marks (scars, transit plate,
-  seal, yard mark) to their own module along that seam.
 - [ ] **Old worktrees:** `C:\Claude\drift-refactor` (one WIP commit «stall report names who held the frame»,
   330 behind), `drift-lab` (an uncommitted `site/war.js`), `drift-t1`, `drift-t2`, `drift-tests` (still
   since 12.09) and the main checkout `C:\Claude\files` (236 behind) — see what is unmerged, then refresh

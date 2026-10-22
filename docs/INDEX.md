@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 619 · top-level symbols: 8748
+Files: 620 · top-level symbols: 8748
 
 ## SYMBOLS
 
@@ -3975,7 +3975,7 @@ drawHomeOut                  src/21f-home-out.js:75-265
 drawHomeRoom                 src/27e-ui-home.js:49-77
 drawHotel                    src/17l-hotel.js:147-174
 drawHqRoom                   src/27f-hq-room.js:51-99
-drawHull                     src/03e-hull-draw.js:117-196
+drawHull                     src/03e-hull-draw.js:1-80
 drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-52
@@ -4017,9 +4017,9 @@ drawRocks                    src/19-mode-landing-ground.js:323-415
 drawRouteMap                 src/12r-route.js:267-316
 drawRungRing                 src/12ae-ladder.js:72-86
 drawRushTraffic              src/17g-sys-lane.js:153-167
-drawScars                    src/03e-hull-draw.js:5-42
+drawScars                    src/03d-hull-marks.js:132-169
 drawScoop                    src/19a-mode-scoop.js:185-241
-drawSeal                     src/03e-hull-draw.js:47-58
+drawSeal                     src/03d-hull-marks.js:174-185
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:71-113
 drawSkyBase                  src/19c-light.js:318
@@ -4050,7 +4050,7 @@ drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:159-170
 drawTrail                    src/16-flight.js:457-460
-drawTransitPlate             src/03e-hull-draw.js:59-69
+drawTransitPlate             src/03d-hull-marks.js:186-196
 drawVan                      src/21ac3-base-van.js:71-137
 drawVanSmall                 src/21ac3-base-van.js:139-145
 drawWallPaper                src/11ae-concert.js:39-71
@@ -4065,7 +4065,7 @@ drawWorld                    src/28-loop.js:444-447
 drawWorldIn                  src/28-loop.js:448-471
 drawWreck                    src/20aa-poi-shapes.js:8-47
 drawWrecksSystem             src/12l-barge.js:378-405
-drawYardMark                 src/03e-hull-draw.js:73-116
+drawYardMark                 src/03d-hull-marks.js:200-243
 droneBreakP                  src/12e-drone-flight.js:171-175
 droneBreaks                  src/12e-drone-flight.js:176
 droneCapacity                src/12-economy.js:327-330
@@ -5378,9 +5378,9 @@ hullInkBox                   src/03e1-hull-bake.js:120-131
 hullLiveInserts              src/03e1-hull-bake.js:38-42
 hullLost                     src/28i-insure.js:46-62
 hullOf                       src/03a-hull-gen.js:1-532
-hullPart1                    src/03e-hull-draw.js:201-679
-hullPart2                    src/03e-hull-draw.js:681-684
-hullPart3                    src/03e-hull-draw.js:687-764
+hullPart1                    src/03e-hull-draw.js:85-563
+hullPart2                    src/03e2-hull-top.js:3-6
+hullPart3                    src/03e2-hull-top.js:9-86
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176-183
 hullStudio                   src/17c2-hull-gpu.js:161-165
@@ -8792,12 +8792,14 @@ zoomTo                       src/15-input.js:358
 ## src/03c-hull-luxe.js · 18 KB
   · люксовая яхта:1
 
-## src/03d-hull-marks.js · 6 KB
+## src/03d-hull-marks.js · 15 KB
 
-## src/03e-hull-draw.js · 49 KB
+## src/03e-hull-draw.js · 35 KB
 
 ## src/03e1-hull-bake.js · 8 KB
   · печка корпуса (Stage 0, 18.09):1
+
+## src/03e2-hull-top.js · 6 KB
 
 ## src/03f-hull-role.js · 6 KB
   · корпус — это профессия, а не ступенька:1
