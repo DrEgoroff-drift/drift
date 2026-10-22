@@ -418,8 +418,9 @@ function h3dStudioPt(m,v3,x,y,sc,px,py,pz){
   const X=px*cy-py*sy,Y0=px*sy+py*cy,Y=Y0*ct-pz*st,Z=Y0*st+pz*ct,w=1-pp*Z*(1-pp)/m.R;
   return [x+X*sc/w,y+Y*sc/w,Z];
 }
-/* общий проход: сетка m, выпечка T (с .view и .mat), остальное — как у h3dDraw; yaw(слот) — угол турели к курсу */
-function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V){
+/* общий проход: сетка m, выпечка T (с .view и .mat), остальное — как у h3dDraw; yaw(слот) — угол турели к курсу;
+   lc — цвет света [r,g,b] 0–255 (M805: вагон рельса — цветом ядра галактики); без него — студия V.col или звезда системы */
+function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
   if(!T||!T.view)return false;
   if(T.draw)gpuBakeLive(T);
   h3dDev();
@@ -440,7 +441,7 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V){
     K=h3dCls(H3D_SIDES[si]);while(K.slot>=K.nl&&si>0)K=h3dCls(H3D_SIDES[--si]);
     if(K.slot>=K.nl)return false;
     side=H3D_SIDES[si];n=Math.min(n,side);}
-  const c=V?V.col||HS_COL:(typeof starRGB==="function")?starRGB():[255,244,214],cm=Math.max(1,c[0],c[1],c[2]);
+  const c=lc||(V?V.col||HS_COL:(typeof starRGB==="function")?starRGB():[255,244,214]),cm=Math.max(1,c[0],c[1],c[2]);
   let sl=Math.hypot(lx,ly);const sx=sl>1e-6?lx/sl:.6,sy=sl>1e-6?ly/sl:-.8,lz=sv?sv.lz||H3D_LZ:H3D_LZ,ll=Math.hypot(1,lz);
   const U=H3D.U;U.fill(0);
   U[0]=x;U[1]=y;U[2]=sc;U[3]=Rb;
