@@ -508,6 +508,21 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   would be noise and cost). Suite `91qk-map`: the map frame without a device paints nothing on
   `ctx`, the backdrop names are absent from the game and present in `war.js`, the fan is inside
   the frame and clear of the plate at 1920 and 390.
+  *M822c (22.10):* every world of the selected system is a lit orb on the real GPU (the flat discs
+  were headless virtual time, not the game); orb families absent from the first system (`gor1/2/5/6`)
+  join `GPU_LATE_KEYS`, so the map never waits on a pipeline. The fan also avoids the «ВЫ» plate and
+  your ring, tries 8 directions, and with no clean full row falls back to a compact one (`rMin`, no
+  rings). The selection plate gets a spare side (`o.spare`, map only): beside the star it slides along
+  it into the frame, then wraps narrower (85/72/60 %), breaking at « · » first; the centre band of M803
+  stays forbidden. The map rose rises above `#prompt` when the hint shows.
+  *M823 relay (22.10; Control's number — the nebula's M823 of 08.10 is another item):* the
+  transmitter of `11ap` in the system frame is an engine body (`11apa-relay-body.js`), like the
+  station and the shuttle: an `h3dKit` mesh per kind (beacon, buoy, relay, post, met post,
+  wintering), lit by the star, own lamps as scene points, the call sign as an overlay label. The
+  mesh stands on edge — built mast-up and laid by a tilt of 1.05 rad, so the mast rises up the
+  screen and the rock under it reads from three quarters above. The 2D `relayDrawSystem` silhouette
+  (179 `ctx` calls a frame in 9–32 % of systems) is gone; suite `91qd2-relay`: every kind builds
+  inside h3d, lamps and warm windows by kind, the system frame with a mast paints nothing on `ctx`.
 - **M823 The nebula far from the star**: inner structure and a depth ramp, no straight streaks
   (the look near the star is the author's and stays). **M824 Belt**: rocks clustered round the
   actor, haze instead of the band. **M825 The orbs' second pass**: crystal, ice, jungle, rocky,

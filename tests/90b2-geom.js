@@ -277,6 +277,22 @@ function geoHookOvl(){
               if(it.k==="t"){o.clip=m((it.clip?geoAnd(it.clip,crop):crop)||{x0:0,y0:0,x1:0,y1:0});o.an=[ox+it.an[0]*sx,oy+it.an[1]*sy];o.px=it.px*sy;}
               O.push(o);}}}}catch(e){}
       return oM.apply(this,arguments);};}
+  /* выпечка в мире (gpuImage: щит, неон) — её надписи в слой меток: мир под пультом тоже читают */
+  if(typeof gpuImage==="function"&&!gpuImage.__g){const oG=gpuImage;
+    gpuImage=function(pass,B,R,o){
+      try{const A=B&&B.__geoL;
+        if(A&&A.length&&GEO.on&&!GEO.into&&!B.inv&&B.w&&B.h)for(const re of R||[]){
+          if(Math.abs(re.rot||0)>1e-3||!(re.a>.05||re.a==null))continue;
+          const u0=re.u0||0,v0=re.v0||0,u1=re.u1==null?1:re.u1,v1=re.v1==null?1:re.v1;
+          const sx=re.w/((u1-u0)*B.w),sy=re.h/((v1-v0)*B.h),ox=re.x-re.w/2-u0*B.w*sx,oy=re.y-re.h/2-v0*B.h*sy;
+          const m=r=>r&&{x0:ox+r.x0*sx,y0:oy+r.y0*sy,x1:ox+r.x1*sx,y1:oy+r.y1*sy},crop={x0:u0*B.w,y0:v0*B.h,x1:u1*B.w,y1:v1*B.h};
+          for(const it of A){const ic=it.k==="t"&&geoAnd(it.r,crop);if(!ic)continue;const r=m(ic);   /* окно вырезки режет нарочно (бегущая строка; она же едет — в сверку DPR не годится, mv) */
+            /* неон кладут дважды (тело и свечение, целый и с мёртвой буквой): одна надпись */
+            if(GEO.ov.lab.some(q=>q.wd&&q.s.length===it.s.length&&Math.abs(q.r.x1-r.x1)<1&&Math.abs(q.r.y1-r.y1)<1))continue;
+            GEO.ov.lab.push(Object.assign({},it,{L:"lab",r,wd:1,mv:u0>0||u1<1?1:0,a:(it.a==null?1:it.a)*(re.a==null?1:re.a),z:GEO_Z.lab,g:0,n:GEO.n++,
+              clip:m((it.clip?geoAnd(it.clip,ic):ic)||{x0:0,y0:0,x1:0,y1:0}),an:[ox+it.an[0]*sx,oy+it.an[1]*sy],px:it.px*sy}));}}}catch(e){}
+      return oG.apply(this,arguments);};
+    gpuImage.__g=true;}
   ovText=function(Q,x,y,text,font,col,align,base,al,sc,vert){
     const r=oT.apply(this,arguments);
     try{const P=tgt(),q=!P&&GEO.on&&geoOvQ(Q);
@@ -516,6 +532,15 @@ function geoLaws(D,C,O,vp,where,opt){
         f.push([cut.ell?"срез…":"срез",cut.o.v,Object.assign({side:GEO_SIDE[cut.o.side],box:geoWho(cut.e)},tx)]);}
     else if(t.box){const o=geoOut(t.r,geoPad(t.box,sty(t.box)),th,tv);
       if(o)f.push(["вылет",o.v,Object.assign({side:GEO_SIDE[o.side],box:geoWho(t.box),r:geoRs(t.r)},tx)]);}
+    /* круглая рамка: строка ложится в прямоугольник рамки, а видна в круге — углы строк (ужатых до чернил)
+       меряем от эллипса рамки. Подпись «Долгое · форсаж» упиралась в обвод 56-го пэда на 390, а прямоугольник
+       молчал (22.10) */
+    if(t.box&&!scr&&!cut){const s=sty(t.box),rs=s.borderTopLeftRadius||"",P=geoPad(t.box,s),w=P.x1-P.x0,h=P.y1-P.y0;
+      if(w>0&&h>0&&(/%/.test(rs)?parseFloat(rs)>=45:parseFloat(rs)>=.45*Math.min(w,h))){
+        const cx=(P.x0+P.x1)/2,cy=(P.y0+P.y1)/2,ea=w/2,eb=h/2,e=.15*t.px;let worst=0;
+        for(const q of t.lines)for(const [x,y] of [[q.x0,q.y0+e],[q.x1,q.y0+e],[q.x0,q.y1-e],[q.x1,q.y1-e]]){
+          const d=Math.hypot((x-cx)/ea,(y-cy)/eb);if(d>1)worst=Math.max(worst,(d-1)*Math.min(ea,eb));}
+        if(worst>=1)f.push(["вылет",+worst.toFixed(1),Object.assign({side:"круг",box:geoWho(t.box),r:geoRs(t.r)},tx)]);}}
     /* край — по видимой части: строка под многоточием в рамке на экране за экран не торчит */
     if(!t.scr){const o=geoEdge(t.vis,V);if(o)f.push(["край",o.v,Object.assign({side:GEO_SIDE[o.side]},tx)]);}
     /* контраст: подложка — фоны предков снизу вверх до первого сплошного; картинка на пути — не знаем */
@@ -584,10 +609,11 @@ function geoLaws(D,C,O,vp,where,opt){
     if(!geoFin(t.r)){add("мусор",who,0,{s:"NaN в рамке"});continue;}
     t.vis=t.clip?geoAnd(t.r,t.clip):t.r;if(t.vis&&t.view)t.vis=geoAnd(t.vis,t.view);if(!t.vis)continue;
     if(GEO_JUNK.test(t.s))f.push(["мусор",0,{s:t.s.slice(0,40)}]);
+    /* надпись выпечки в мире (wd: щит, вывеска) растёт с зумом по замыслу — кегль и сжатие не её; наезд — её */
     /* холст целый: его мерка расходится с DPR на полпикселя из ширины, и шрифт 8 px мерится как 7,997 —
        это не мельче. Допуск 0,05 px меньше любого настоящего шага кегля */
-    if(t.px&&t.px<7.95&&!t.pt)f.push(["кегль",t.px,{}]);
-    if(t.sq<.8&&!t.pt)f.push(["сжатие",Math.round(t.sq*100),{}]);
+    if(t.px&&t.px<7.95&&!t.pt&&!t.wd)f.push(["кегль",t.px,{}]);
+    if(t.sq<.8&&!t.pt&&!t.wd)f.push(["сжатие",Math.round(t.sq*100),{}]);
     if(t.clip){const o=geoOut(t.r,t.clip,1,1);if(o)f.push(["срез",o.v,Object.assign({side:GEO_SIDE[o.side]},tx)]);}
     const b=own(A,i,t);
     if(b){const o=geoOut(t.r,b.r,1,1);if(o)f.push(["вылет",o.v,Object.assign({side:GEO_SIDE[o.side],box:"плашка "+geoRs(b.r),r:geoRs(t.r)},tx)]);
@@ -835,14 +861,16 @@ function geoSelf(vp){
    const pane=(l,o,s)=>'<div style="position:absolute;left:'+l+'px;top:4px;opacity:'+o+'"><div style="backdrop-filter:blur(12px);padding:4px 6px;border:1px solid #9cf"><div style="white-space:nowrap">'+s+'</div></div></div>';
    gl.innerHTML='<div style="position:absolute;left:12px;top:10px;white-space:nowrap">МИР ПОД СТЕКЛОМ</div>'+pane(4,.45,"СТЕКЛО ТИХОЕ")+
      '<div style="position:absolute;left:162px;top:10px;white-space:nowrap">ЧИСТО ПОД КРЫШКОЙ</div>'+pane(154,1,"ЧИСТО СТЕКЛО");
-   document.body.appendChild(gl);try{F=F.concat(geoLaws(geoDom(gl,vp),[],{lab:[],chip:[],ui:[],dock:[]},vp,"тест теста",{x:geoExtra(vp,gl)}).filter(f=>f.law==="наезд"));}finally{gl.remove();}
+   const rb=(l,al,s)=>'<button style="position:absolute;left:'+l+'px;top:30px;width:60px;height:60px;border-radius:50%;border:0;padding:4px 0;background:#234;color:#fff;font:12px monospace;display:flex;flex-direction:column;align-items:center;justify-content:'+al+'"><span>'+s+'</span></button>';
+   gl.style.height="100px";gl.innerHTML+=rb(4,"flex-start","КРУГОМ")+rb(154,"center","ЧИСТО");
+   document.body.appendChild(gl);try{F=F.concat(geoLaws(geoDom(gl,vp),[],{lab:[],chip:[],ui:[],dock:[]},vp,"тест теста",{x:geoExtra(vp,gl)}).filter(f=>f.law==="наезд"||f.law==="вылет"));}finally{gl.remove();}
   }
   const has=(law,re)=>F.some(f=>f.law===law&&re.test(f.who+" "+(f.with||"")+" "+(f.s||"")));
   const need=[["вылет",/ПРОВЕРКА ВЫЛЕТА/],["наезд",/НАЛОЖЕНИЕ/],["край",/КРАЙ ЭКРАНА/],["срез",/СРЕЗАННАЯ/],["невидим",/НЕВИДИМКА/],
     ["мусор",/NaN/],["накрыта",/ПОД ПЛАШКОЙ/],["вылет",/ПЛАШКА С ДЛИННЫМ/],["наезд",/СТРОКА ОДИН|СТРОКА ДВА/],["наезд",/КОСАЯ ЛИНИЯ|ПОПЕРЁК/],["мусор",/НЕ ЧИСЛО/],["сжатие",/СЖАТО/],
     ["поверх",/ЧУЖАЯ/],["сквозь",/ПОДЛОЖКА/],["поверх",/ПРИШЕЛЕЦ/],["накрыта",/ПОД ВИДЖЕТОМ/],["кегль",/МЕЛКО/],["вылет",/ХОЛСТ ВЫЛЕТ/]];
   if(vp.touch)need.push(["цель",/button/]);
-  need.push(["наезд",/МИР ПОД СТЕКЛОМ|СТЕКЛО ТИХОЕ/]);
+  need.push(["наезд",/МИР ПОД СТЕКЛОМ|СТЕКЛО ТИХОЕ/],["вылет",/КРУГОМ/]);
   /* «касание»: широкая плашка, край которой ближе к центру нижней соседки, — брак; пара врозь — чисто */
   {const z=(l,x0,y0,x1,y1,p)=>({l,x0,y0,x1,y1,p});
    F=F.concat(geoChipTouch([z("ФИШКА ШИРОКАЯ",0,0,200,44,[6,14,188,16]),z("ФИШКА СОСЕДКА",150,24,230,68,[156,38,68,16]),
@@ -868,9 +896,29 @@ function geoStation(t){if(!G.sys.station)return false;
   if(!st||!st.classList.contains("open")){G.st=G.sys.station;G.mode="dock";openStation();}
   tab=t;renderTab();return true;}
 function geoTable(t){if(!tableOpenNow)tableToggle(true);tableSetTab(t);return true;}
+/* щит под тихим пультом (22.10): щит ГЛАВТРАССЫ читался сквозь «ПРИЁМНИК», а ни один экран обхода не ставил
+   вещь мира с буквами под пульт — закон был слеп и без покрытия. Корабль ведём к щиту, пока щит не встанет
+   серединой под #rx (камера не строго на корабле — меряем, где щит нарисован, и поправляем) */
+/* щит под пультом: бегущую строку щита (y+10·s, 17k) ставим на видимую надпись пульта — сквозь
+   тихое стекло её не должно быть видно; без надписи — на середину приёмника */
+function geoBillboardUnder(){
+  if(!T.go("система")||typeof bbHere!=="function"||typeof bbDrawGpu!=="function")return false;
+  G.zoom=1;G.zoomT=null;const B=bbHere(),rx=document.getElementById("rx"),con=document.getElementById("console");if(!B||!rx)return false;
+  const aim=()=>{let best=null,ba=0;
+    for(const e of (con||rx).querySelectorAll("*")){if(e.childElementCount||!e.textContent.trim())continue;
+      const r=e.getBoundingClientRect(),a=r.width*r.height;if(a>ba&&r.width>4&&r.bottom<=innerHeight){ba=a;best=r;}}
+    const r=best||rx.getBoundingClientRect();return [(r.left+r.right)/2,(r.top+r.bottom)/2];};
+  let at=null;const o=bbDrawGpu;bbDrawGpu=function(p,q,x,y,s){at=[x,y+10*s];return o.apply(this,arguments);};
+  try{G.ship.x=B.x;G.ship.y=B.y;G.ship.vx=0;G.ship.vy=0;
+    for(let k=0;k<4;k++){at=null;for(let i=0;i<12;i++)geoFrame1();if(!at)return false;
+      const c=aim();G.ship.x+=(at[0]-c[0])/G.zoom;G.ship.y+=(at[1]-c[1])/G.zoom;G.ship.vx=0;G.ship.vy=0;}
+    geoFrame1();}finally{bbDrawGpu=o;}
+  if(con)con.classList.add("quiet");
+  return true;}
 function geoScreens(){
   const L=[];
   for(const sc of lookScenes())L.push({name:"сцена «"+sc.id+"»",open:()=>T.go(sc.id)&&G.mode!=="none",restore:()=>T.go(sc.id),body:null,dd:"hud"});
+  L.push({name:"щит под пультом",open:geoBillboardUnder,restore:geoBillboardUnder,body:null,dd:"hud"});
   let st=[],tb=[];
   try{geoRich();if(G.sys.station){G.st=G.sys.station;G.mode="dock";openStation();st=[...document.querySelectorAll("#stTabs button")].map(b=>b.dataset.tab).filter(Boolean);closeStation();}}catch(e){}
   try{geoRich();tableToggle(true);tb=[...document.querySelectorAll("#tableTabs button")].map(b=>b.dataset.tab).filter(Boolean);tableToggle(false);}catch(e){}
@@ -995,7 +1043,7 @@ function geoRun(o){
         /* надпись под идущей анимацией или переходом ещё едет — в сверку не годится */
         const an=new Set();try{for(const a of document.getAnimations()){const e=a.effect&&a.effect.target;if(e)an.add(e);}}catch(e){}
         const mv=e=>{for(let x=e;x;x=x.parentElement)if(an.has(x))return 1;return 0;};
-        for(const t of D.texts)put("dom",t,an.size?mv(t.p):0);for(const t of GEO.c)put("холст #c",t);for(const q in GEO.ov)for(const t of GEO.ov[q])put("слой "+q,t);
+        for(const t of D.texts)put("dom",t,an.size?mv(t.p):0);for(const t of GEO.c)put("холст #c",t);for(const q in GEO.ov)for(const t of GEO.ov[q])put("слой "+q,t,t.mv);
         for(const [n,L] of X)for(const t of L)put(n,t);out.geo.push([where,A]);}
       const F=geoLaws(D,GEO.c,GEO.ov,vp,where,{x:X}),st=F.st;
       for(const f of F)out.findings.push(f);for(const f of geoCompose(D,vp,where))out.notes.push(f);

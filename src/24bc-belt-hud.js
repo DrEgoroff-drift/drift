@@ -8,23 +8,17 @@
    (тонировка над ним — разница меньше 1/255), а символика стекла прячется за рамой, как прежде.
    Мастер печётся полосами — шагами печи 17a0 (кадр входа в пояс не платит полноэкранную
    выпечку разом); последний шаг — кадр вхолостую: глифы живых надписей растрятся там.
-   Без видеокарты — прежний 2D-рисунок на #c (drawGlassHUD, drawCockpit) */
+   Без видеокарты кабины нет: плашка 08b2 вместо мира, 2D-запас (drawGlassHUD, drawCockpit) снят (M631, 22.10) */
 /* кегль доски: строка шрифта на размер — одна на всю игру, а не новая на каждый кадр */
-const BHUD={font:[],need:new Map()};
+const BHUD={font:[]};
 function ckptFont(px){const F=BHUD.font;return F[px]||(F[px]=px+"px ui-monospace,monospace");}
-/* ширина самой длинной подписи ламп — от шрифта и трёх постоянных слов, не от кадра (2D) */
-function ckptLampNeed(lamps){
-  const f=ctx.font;let v=BHUD.need.get(f);
-  if(v===undefined){v=0;for(let i=0;i<lamps.length;i++)v=Math.max(v,ctx.measureText(lamps[i][0]).width);v+=14;BHUD.need.set(f,v);}
-  return v;
-}
 const CKG_BANDS=4;   /* полосы мастера: полноэкранная выпечка на 390×3 — 3 Мпикс, одним шагом это кадр за 25 мс */
 const CKG={pid:null,pw:0,ph:0,P:null,key:"",jk:"",M:null,S:null,lazy:new Map(),st:new Map(),need:new Map(),
   in:{b:null,proj:null,st:null},ys:[],frames:0,fa:1};
 /* свежий мастер проявляется за столько кадров: целиком за кадр он «выскакивает» (детектор картины) */
 const CKG_FADE=10;
 const CKG_LAMPS=[["СБЛИЖЕНИЕ","#ff6b57"],["ТОПЛИВО","#ff6b57"],["ТРЮМ ПОЛОН","#c58ae0"]];
-/* план рамы — от корабля и размера окна; cockpitTex (2D-холст) в пути видеокарты не зовётся */
+/* план рамы — от корабля и размера окна */
 function ckgPlan(){
   if(CKG.pid!==G.shipId||CKG.pw!==W||CKG.ph!==H){CKG.pid=G.shipId;CKG.pw=W;CKG.ph=H;CKG.P=cockpitPlan(G.shipId);}
   return CKG.P;
@@ -443,9 +437,10 @@ function beltHangAt(b,proj){
     const d=Math.hypot(s.x-W/2,s.y-H/2)-s.r;if(d<bd){bd=d;best=s;}}
   if(best)hangAt("rock",best.x,best.y,clamp(best.r,10,220));
 }
-/* стекло и кабина пояса: с видеокартой — мастер и очередь #ovl, без неё — на #c */
+/* стекло и кабина пояса: мастер и очередь #ovl. Без устройства (потеря, нет WebGPU) — ничего: кадр ждёт
+   подъёма, а нет WebGPU — плашка 08b2 (M631) */
 function beltHudPush(b,proj,fwd,st,bas){
-  if(!GPU.on||!GPU.ok){drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);return;}
+  if(!GPU.on||!GPU.ok)return;
   beltHangAt(b,proj);   /* камень-цель — точка слов (M803, 08bj) */
   if(!OVL.cv&&!ovCanvas())return;   /* мерка слоя (ovNd) — от его холста с первого кадра: иначе ключ мастера сменится на втором */
   const P=ckgPlan(),FS=ckgFS(P),I=CKG.in;

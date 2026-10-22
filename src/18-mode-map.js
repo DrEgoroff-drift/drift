@@ -611,7 +611,8 @@ function drawMapIn(){
       const a=Math.PI/4+i*Math.PI/2, r0=rr+13, r1=rr+20;
       mpLine(x+Math.cos(a)*r0,y+Math.sin(a)*r0,x+Math.cos(a)*r1,y+Math.sin(a)*r1,1.2,"#f2b25c");
     }
-    mapOrbsDraw(sel,cell);   /* миры выбора — шарами 17gab, в чернилах (18l, M822b) */
+    {const cr=cur&&!cur.edge&&cur.s?1.8+cur.s.cls.t*2.2+16:0;   /* ряду преграда и ваше кольцо, не только плашка */
+      mapOrbsDraw(sel,cell,[youR,cr?{x0:cur.x-cr,y0:cur.y-cr,x1:cur.x+cr,y1:cur.y+cr}:null]);}   /* миры выбора — шарами 17gab, в чернилах (18l, M822b) */
     if(hung)mapSelHang(sel,dsel,cost,st);
     /* ширину карточка берёт до правого борта, а не до края экрана: кнопки
        КАРТА и МЕНЮ стоят там всегда, и угол карточки уезжал под них */

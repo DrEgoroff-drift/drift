@@ -40,7 +40,11 @@ function r3MixI(a,b,t,k){k=k==null?1:k;a[0]+=(b[0]*k-a[0])*t;a[1]+=(b[1]*k-a[1])
 function r3ScI(a,k){a[0]*=k;a[1]*=k;a[2]*=k;return a;}
 function r3Step(a,b,x){const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);}
 /* ── матрицы (по столбцам, как WGSL) ── */
-function r3Mul(a,b){const o=new Array(16);
+/* кольцо рабочих матриц (проход 3 по мусору, 22.10): только для временных внутри одного выражения — что живёт
+   дольше (матрица человека на кадр, P/Pi рига лица), держит свою; o/out — куда писать, без него новый массив, как прежде */
+const R3_SCR=[];for(let i=0;i<16;i++)R3_SCR.push(new Float64Array(16));let R3_SI=0;const R3_O3=[0,0,0];
+function r3Scr(){const o=R3_SCR[R3_SI];R3_SI=(R3_SI+1)&15;return o;}
+function r3Mul(a,b,o){o=o||new Array(16);
   for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o;}
 function r3Persp(fy,asp,n,f){const t=1/Math.tan(fy/2),k=1/(n-f);return [t/asp,0,0,0, 0,t,0,0, 0,0,f*k,-1, 0,0,f*n*k,0];}
 function r3Look(e,t,up){
@@ -49,15 +53,17 @@ function r3Look(e,t,up){
   const z=nz(sub(e,t)),x=nz(cr(up||[0,1,0],z)),y=cr(z,x);
   return [x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -dt(x,e),-dt(y,e),-dt(z,e),1];}
 /* место o, курс ry (вокруг вертикали), наклон rx, крен rz, масштаб s */
-function r3Xf(o,ry,rx,rz,s){
+function r3Xf(o,ry,rx,rz,s,out){
   const cy=Math.cos(ry||0),sy=Math.sin(ry||0),cx=Math.cos(rx||0),sx=Math.sin(rx||0),cz=Math.cos(rz||0),sz=Math.sin(rz||0);s=s||1;
   /* R = Ry·Rx·Rz */
   const r00=cy*cz+sy*sx*sz,r01=-cy*sz+sy*sx*cz,r02=sy*cx,
         r10=cx*sz,r11=cx*cz,r12=-sx,
         r20=-sy*cz+cy*sx*sz,r21=sy*sz+cy*sx*cz,r22=cy*cx;
-  return [r00*s,r10*s,r20*s,0, r01*s,r11*s,r21*s,0, r02*s,r12*s,r22*s,0, o[0],o[1],o[2],1];}
+  if(!out)return [r00*s,r10*s,r20*s,0, r01*s,r11*s,r21*s,0, r02*s,r12*s,r22*s,0, o[0],o[1],o[2],1];
+  out[0]=r00*s;out[1]=r10*s;out[2]=r20*s;out[3]=0;out[4]=r01*s;out[5]=r11*s;out[6]=r21*s;out[7]=0;
+  out[8]=r02*s;out[9]=r12*s;out[10]=r22*s;out[11]=0;out[12]=o[0];out[13]=o[1];out[14]=o[2];out[15]=1;return out;}
 /* поворот вокруг точки p (шарнир шеи, кисть): T(p)·R·T(−p), сверху — внешняя матрица A */
-function r3Pivot(A,p,ry,rx,rz){return r3Mul(A,r3Mul(r3Xf(p,ry,rx,rz,1),r3Xf([-p[0],-p[1],-p[2]],0,0,0,1)));}
+function r3Pivot(A,p,ry,rx,rz,out){return r3Mul(A,r3Mul(r3Xf(p,ry,rx,rz,1,r3Scr()),r3Xf([-p[0],-p[1],-p[2]],0,0,0,1,r3Scr()),r3Scr()),out);}
 function r3Pt(M,p){return [M[0]*p[0]+M[4]*p[1]+M[8]*p[2]+M[12],M[1]*p[0]+M[5]*p[1]+M[9]*p[2]+M[13],M[2]*p[0]+M[6]*p[1]+M[10]*p[2]+M[14]];}
 /* точка мира → пиксели CSS кадра w×h; z — глубина (>1 — за камерой) */
 function r3Proj(vp,p,w,h){
@@ -68,6 +74,11 @@ function r3Proj(vp,p,w,h){
 /* ── инструменты сетки ── всё в метрах; T — текущая матрица (стек push/pop) */
 /* пул буфера вершин: один большой Float32Array ходит от тела к телу (до 16 МБ), а не удваивается заново на каждом */
 let R3_VPOOL=null;const R3_VPOOL_MAX=4194304,R3_VNIL=new Float32Array(0);
+/* рабочие массивы поверхности (место, краска, нормали, вес): растут до самой большой поверхности и живут между телами;
+   пока их держит стоящий на yield генератор (кожа головы), соседняя поверхность берёт свои, как прежде */
+const SG_POOL=[null,null,null,null];let SG_BUSY=0;
+function sgArr(k,len,pool){if(!pool)return new Float32Array(len);let a=SG_POOL[k];
+  if(!a||a.length<len){a=new Float32Array(Math.max(len,a?a.length*2:0));SG_POOL[k]=a;}return a;}
 function r3Kit(){
   /* вершины — в растущем Float32Array (удвоение), не в JS-массиве через push: заготовка зала сорила ~74 МБ на тело
      (охотник, отчёт 15); VN — занято чисел, 12 на вершину. Снаружи массив никто не читает — только K.pack */
@@ -141,16 +152,17 @@ function r3Kit(){
   /* точки, краска и вес — плоскими массивами (ни массива на точку, ни замыкания на треугольник); o.src={P,C?,W?} —
      готовые плоские массивы вместо f (кожа головы, 27f3a); краска без своей — краска материала */
   K.surfG=function*(nu,nv,f,M,o,ms){o=o||{};const n=(nu+1)*(nv+1),mc=M.c;let t0=ms?wallMs():0,P,C,Wt;
-    const brk=()=>ms&&wallMs()-t0>ms;
+    const brk=()=>ms&&wallMs()-t0>ms,pool=!SG_BUSY;if(pool)SG_BUSY=1;
+    try{
     if(o.src){P=o.src.P;C=o.src.C||null;Wt=o.src.W||null;}
-    else{P=new Float32Array(3*n);C=new Float32Array(3*n);Wt=null;
+    else{P=sgArr(0,3*n,pool);C=sgArr(1,3*n,pool);Wt=null;
       for(let j=0,k=0;j<=nv;j++)for(let i=0;i<=nu;i++,k++){const r=f(i/nu,j/nv),p=r[0],c=r[1]||mc,w=r[2];
         P[3*k]=p[0];P[3*k+1]=p[1];P[3*k+2]=p[2];C[3*k]=c[0];C[3*k+1]=c[1];C[3*k+2]=c[2];
-        if(w){if(!Wt)Wt=new Float32Array(n);
+        if(w){if(!Wt){Wt=sgArr(3,n,pool);Wt.fill(0,0,n);}
           if(typeof w==="number")Wt[k]=w;else{const wq=Math.round(clamp(w[1],0,1)*255);if(wq)Wt[k]=2048*w[0]+32768*wq;}}}}
     const ix=(i,j)=>{if(o.wrap)i=(i+nu)%nu;else i=Math.max(0,Math.min(nu,i));j=Math.max(0,Math.min(nv,j));return 3*(j*(nu+1)+i);};
     /* нормали — плоским Float32Array (та же математика: центральные разности, cross, flip) */
-    const NN=new Float32Array(3*n),sg=o.flip?-1:1;let k3=0;
+    const NN=sgArr(2,3*n,pool),sg=o.flip?-1:1;let k3=0;
     for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){
       const a=ix(i+1,j),b=ix(i-1,j),c=ix(i,j+1),d=ix(i,j-1);
       const ux=P[a]-P[b],uy=P[a+1]-P[b+1],uz=P[a+2]-P[b+2];let vx=P[c]-P[d],vy=P[c+1]-P[d+1],vz=P[c+2]-P[d+2];
@@ -170,7 +182,8 @@ function r3Kit(){
       k=3*q0;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q0]:0);
       k=3*q2;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q2]:0);
       k=3*q3;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q3]:0);}
-      if(brk()){yield;t0=wallMs();}}};
+      if(brk()){yield;t0=wallMs();}}
+    }finally{if(pool)SG_BUSY=0;}};
   K.surf=(nu,nv,f,M,o)=>{const it=K.surfG(nu,nv,f,M,o,0);while(!it.next().done);};
   /* труба по ломаной P с радиусом r (число или массив); N — граней; кольца — параллельным переносом */
   K.tube=(Pp,r,M,Nn,cap)=>{Nn=Math.round((Nn||8)*K.q);const R=[];let u0=null;

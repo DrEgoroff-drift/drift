@@ -264,22 +264,25 @@ const HALL_STALLS=[[-1.25,.55],[1.15,.55],[3.45,.55],[4.6,2.0],[6.5,2.0]];
 
 /* ── свет и матрицы кадра ── */
 const HALL_M=new Float32Array(R3_MAXI*R3_PART*16),HALL_OT=new Float32Array(R3_MAXI*R3_PART*4);
+/* матрицы кадра зала живут между кадрами (проход 3 по мусору): единица, человек (место, дыхание, голова, рука) */
+const HALL_I=r3Xf([0,0,0]),HALL_WA=new Float64Array(16),HALL_WB=new Float64Array(16),HALL_WM=new Float64Array(16),HALL_WR=new Float64Array(16),
+      HALL_WS=new Float64Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
 function hallLamps(L){   /* лампы над баром — x по стойке кантины, сдвинутые */
   const n=Math.min(3,L.T.bar),xs=[];for(let i=0;i<n;i++)xs.push(HALL_XB+C3_CL+.3+(C3_CR-C3_CL-.6)*(i+.5)/n);return xs;}
 function hallScene(L,cam,t){
-  const T=L.T,M=HALL_M,OT=HALL_OT,I=r3Xf([0,0,0]),acc=L.acc,hc=T.hc;
+  const T=L.T,M=HALL_M,OT=HALL_OT,I=HALL_I,acc=L.acc,hc=T.hc;
   for(let i=0;i<R3_MAXI*R3_PART;i++)M.set(I,i*16);OT.fill(0);
   /* зал: экземпляр 0; часть 1 — крюк крана или цепь стапеля, качается медленно */
   const hx=T.weld?3.6:2.4,hz=T.weld?-.6:.4;
-  M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29)),16);
+  M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29),r3Scr()),16);
   const draws=[[L.room,0,1]];let ii=1;
   const gm=hallGoodsUp(L);if(gm)draws.push([gm,0,1]);   /* товар ящиками на стойке (M811) — тот же экземпляр, что зал */
   draws.push([hallBoardUp(L),0,1]);   /* листы доски — объявления плиты (M814) */
   draws.push([hallHoldUp(L),0,1]);   /* карта под стеклом конторы — дом и базы фишками (M814) */
   if(ii<R3_MAXI){hallInstrPose(M,ii,t);draws.push([hallInstrUp(),ii,1]);ii++;}   /* пять приборов на верстаке (M813): стрелки — части 1–5 */
   for(const P of L.people){if(ii>=R3_MAXI)break;
-    const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw);
-    const B=r3Mul(A,[1,0,0,0, 0,br,0,0, 0,0,1,0, 0,0,0,1]),at=P.mesh.at;
+    const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw,0,0,1,HALL_WA);
+    HALL_WS[5]=br;const B=r3Mul(A,HALL_WS,HALL_WB),at=P.mesh.at;
     let hy,hp;
     if(P.kind==="keep"&&P.id==="hallkeep"){   /* хозяин поворачивает голову к камере, не дальше ±20° */
       const a=Math.atan2(cam.eye[0]-P.x,cam.eye[2]-P.z)-P.yaw,w=Math.atan2(Math.sin(a),Math.cos(a));
@@ -289,9 +292,9 @@ function hallScene(L,cam,t){
       hy=clamp(w,-.6,.6)+.05*Math.sin(t*.13+ph)-.4*Math.max(0,Math.sin(t*.05+ph*5)-.85)/.15;hp=-.08+.02*Math.sin(t*.11+ph);}
     else{hy=.28*Math.sin(t*.21+ph*3)*Math.max(0,Math.sin(t*.09+ph));hp=.05*Math.sin(t*.17+ph);}
     M.set(B,(ii*R3_PART)*16);
-    const Mh=r3Pivot(B,at.neck,hy,hp,0);M.set(Mh,(ii*R3_PART+1)*16);
+    const Mh=r3Pivot(B,at.neck,hy,hp,0,HALL_WM);M.set(Mh,(ii*R3_PART+1)*16);
     cpRig(M,ii*R3_PART,Mh,P.mesh,cpFace(P.m,null));
-    for(let k=0;k<2;k++){let rA=B;if(P.kind==="keep"&&k===1)rA=r3Pivot(B,at.sh[1],.05*Math.sin(t*.7+ph),0,.02*Math.sin(t*1.3));
+    for(let k=0;k<2;k++){let rA=B;if(P.kind==="keep"&&k===1)rA=r3Pivot(B,at.sh[1],.05*Math.sin(t*.7+ph),0,.02*Math.sin(t*1.3),HALL_WR);
       M.set(rA,(ii*R3_PART+2+k)*16);}
     const dm=HALL.place==="folk"&&P.kind==="crowd"?.32:(P.dim||0);   /* у бара один герой: завсегдатаи за столиками тише */
     for(let p=0;p<R3_PART;p++)OT[(ii*R3_PART+p)*4+1]=dm;

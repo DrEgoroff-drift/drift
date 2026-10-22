@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 634 · top-level symbols: 8710
+Files: 636 · top-level symbols: 8714
 
 ## SYMBOLS
 
@@ -870,8 +870,8 @@ GPU_FRONT_LIKE               src/08b-gpu.js:533
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:193
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:167
-GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:104
-GPU_LATE_KEYS                src/08b0-gpu-pipe.js:94-124
+GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:107
+GPU_LATE_KEYS                src/08b0-gpu-pipe.js:94-127
 GPU_LIT_DK                   src/17c-system-draw.js:23
 GPU_LIT_SH                   src/17c-system-draw.js:21
 GPU_MIP                      src/08c-gpu-kit.js:98
@@ -1035,7 +1035,7 @@ HANG_ACC                     src/27j1-ui-hangar.js:18
 HANG_ALARM_HOLD              src/08bj-ovl-hang.js:21
 HANG_DIR                     src/08bj-ovl-hang.js:26
 HANG_KEYF                    src/08bj-ovl-hang.js:77
-HANG_MSG_AT                  src/08bj-ovl-hang.js:342
+HANG_MSG_AT                  src/08bj-ovl-hang.js:360
 HAUL_BARGE_K                 src/16c-rescue.js:199
 HAUL_BIT_GAP                 src/16c-rescue.js:202
 HAUL_BIT_TALK                src/16c-rescue.js:209
@@ -1365,7 +1365,7 @@ MAP_MARKS_MAX                src/18a-map-addr.js:29
 MAP_ORB                      src/18l-map-plate.js:80
 MAP_OVER                     src/18-mode-map.js:146
 MAP_SPIKE_N                  src/17z3-map-gpu.js:201
-MAP_TOP                      src/18a-map-addr.js:253
+MAP_TOP                      src/18a-map-addr.js:258
 MAP_W                        src/18l-map-plate.js:8
 MATCH_BOX                    src/12uc-matches.js:21
 MATCH_BY_TIER                src/12uc-matches.js:20
@@ -1923,6 +1923,8 @@ RELAY_KINDS                  src/11ap-relay.js:38-69
 RELAY_NEAR                   src/11ap-relay.js:107
 RELAY_PAY_WIN                src/11ap-relay.js:75
 RELAY_REACH                  src/11ap-relay.js:73
+RELAY_ROCK                   src/11apa-relay-body.js:11
+RELAY_TILT                   src/11apa-relay-body.js:10
 RELIC_KEYS                   src/12h-relic.js:64
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07a-terrain.js:16-34
@@ -2482,7 +2484,7 @@ addPart                      src/05-parts.js:365-380
 addPath                      src/25-cockpit.js:154-158
 addRes                       src/11-log.js:161-168
 addrForm                     src/11b-speech.js:96-99
-addrify                      src/18a-map-addr.js:283-306
+addrify                      src/18a-map-addr.js:288-311
 adjTo                        src/05-parts.js:26-29
 affLabel                     src/05-parts.js:95-99
 affVal                       src/05-parts.js:89-94
@@ -2539,7 +2541,7 @@ applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
 arrive                       src/16-flight.js:172-210
-arriveSystem                 src/18-mode-map.js:722-773
+arriveSystem                 src/18-mode-map.js:723-774
 artGet                       src/08ca-gpu-canvas.js:550
 artPut                       src/08ca-gpu-canvas.js:551-696
 asMap                        src/14-save.js:209-215
@@ -3982,7 +3984,7 @@ drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
 drawMap                      src/18-mode-map.js:218-221
-drawMapIn                    src/18-mode-map.js:222-671
+drawMapIn                    src/18-mode-map.js:222-672
 drawMisFigure                src/11z-misclosure.js:63-87
 drawMonolith                 src/20aa-poi-shapes.js:189-206
 drawMooredBarge              src/17e-station-body.js:17-36
@@ -4701,7 +4703,7 @@ gpuPipeRecipe                src/08b0-gpu-pipe.js:55-63
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
 gpuPipes                     src/08b-gpu.js:370-391
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
-gpuPipesLate                 src/08b0-gpu-pipe.js:107-124
+gpuPipesLate                 src/08b0-gpu-pipe.js:110-127
 gpuPipesWarm                 src/08b0-gpu-pipe.js:66-78
 gpuPirateBody                src/12i-pirate-hull.js:425-436
 gpuPirateLive                src/12i-pirate-hull.js:443-489
@@ -5028,34 +5030,34 @@ handBtnTick                  src/12td-settle-hand.js:123-134
 hangAlarmOn                  src/08bj-ovl-hang.js:63
 hangAt                       src/08bj-ovl-hang.js:41-45
 hangBlock                    src/08bj-ovl-hang.js:48-52
-hangCase                     src/08bj-ovl-hang.js:372-381
-hangCue                      src/08bj-ovl-hang.js:386-400
-hangCueHung                  src/08bj-ovl-hang.js:401
+hangCase                     src/08bj-ovl-hang.js:390-399
+hangCue                      src/08bj-ovl-hang.js:404-418
+hangCueHung                  src/08bj-ovl-hang.js:419
 hangCut                      src/08bj-ovl-hang.js:96-99
-hangDraw                     src/08bj-ovl-hang.js:250-278
+hangDraw                     src/08bj-ovl-hang.js:268-296
 hangFont                     src/08bj-ovl-hang.js:74
-hangHex                      src/08bj-ovl-hang.js:244-249
-hangHint                     src/08bj-ovl-hang.js:405-417
+hangHex                      src/08bj-ovl-hang.js:262-267
+hangHint                     src/08bj-ovl-hang.js:423-435
 hangHit                      src/08bj-ovl-hang.js:94
 hangIn                       src/08bj-ovl-hang.js:30
 hangLW                       src/08bj-ovl-hang.js:79-85
-hangLayout                   src/08bj-ovl-hang.js:196-235
-hangMsg                      src/08bj-ovl-hang.js:343-368
+hangLayout                   src/08bj-ovl-hang.js:208-253
+hangMsg                      src/08bj-ovl-hang.js:361-386
 hangMsgBand                  src/08bj-ovl-hang.js:121-130
-hangMsgHung                  src/08bj-ovl-hang.js:369
-hangNamed                    src/08bj-ovl-hang.js:185-194
+hangMsgHung                  src/08bj-ovl-hang.js:387
+hangNamed                    src/08bj-ovl-hang.js:197-206
 hangObstacles                src/08bj-ovl-hang.js:106-118
 hangOk                       src/08bj-ovl-hang.js:29
-hangPlace                    src/08bj-ovl-hang.js:138-168
+hangPlace                    src/08bj-ovl-hang.js:138-172
 hangRectAt                   src/08bj-ovl-hang.js:100-104
 hangRuns                     src/08bj-ovl-hang.js:78
 hangSay                      src/08bj-ovl-hang.js:54-61
 hangSize                     src/08bj-ovl-hang.js:87-92
 hangSt                       src/08bj-ovl-hang.js:65
-hangSurface                  src/08bj-ovl-hang.js:302-336
+hangSurface                  src/08bj-ovl-hang.js:320-354
 hangTW                       src/08bj-ovl-hang.js:66-73
-hangTri                      src/08bj-ovl-hang.js:237-240
-hangWrap                     src/08bj-ovl-hang.js:170-183
+hangTri                      src/08bj-ovl-hang.js:255-258
+hangWrap                     src/08bj-ovl-hang.js:174-195
 hasEpisode                   src/03-ships.js:139-142
 hasSave                      src/14a-cloud.js:76
 hashi                        src/01-core.js:23-27
@@ -5489,7 +5491,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:709-717
+jump                         src/18-mode-map.js:710-718
 jumpToBase                   src/21a-mode-base.js:386-403
 kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:220
@@ -5814,7 +5816,7 @@ makerStand                   src/28y-look.js:391-397
 makerTicks                   src/03a-hull-maker.js:236-239
 makerWear                    src/03a-hull-maker.js:456
 makerWidth                   src/03a-hull-maker.js:426-453
-mapAddrBox                   src/18a-map-addr.js:228-244
+mapAddrBox                   src/18a-map-addr.js:233-249
 mapBack                      src/18-mode-map.js:172-183
 mapBorderEdge                src/18b-map-hold.js:86-106
 mapBox                       src/18-mode-map.js:30
@@ -5823,11 +5825,11 @@ mapCellXY                    src/18a-map-addr.js:52
 mapCleanSet                  src/18-mode-map.js:186
 mapCourseDash                src/18l-map-plate.js:40-47
 mapDeck                      src/18-mode-map.js:14-18
-mapDryWord                   src/18-mode-map.js:683
+mapDryWord                   src/18-mode-map.js:684
 mapFace                      src/18l-map-plate.js:13
 mapFit                       src/18-mode-map.js:154-159
 mapFont                      src/18-mode-map.js:43
-mapGoAddr                    src/18a-map-addr.js:216-223
+mapGoAddr                    src/18a-map-addr.js:221-228
 mapGpuOver                   src/17z3-map-gpu.js:191-194
 mapGpuPass                   src/17z3-map-gpu.js:20-24
 mapGridDraw                  src/18a-map-addr.js:55-66
@@ -5839,8 +5841,8 @@ mapHousePatch                src/18b-map-hold.js:31-45
 mapInkBox                    src/18-mode-map.js:56
 mapInkPoly                   src/18-mode-map.js:54
 mapInkText                   src/18-mode-map.js:58
-mapJump                      src/18-mode-map.js:684-693
-mapJumpCost                  src/18-mode-map.js:678-681
+mapJump                      src/18-mode-map.js:685-694
+mapJumpCost                  src/18-mode-map.js:679-682
 mapLate                      src/18-mode-map.js:62
 mapLateFlush                 src/18-mode-map.js:72-104
 mapLayer                     src/18b-map-hold.js:26
@@ -5851,14 +5853,14 @@ mapMarkAt                    src/18a-map-addr.js:31
 mapMarkToggle                src/18a-map-addr.js:33-41
 mapMarks                     src/18a-map-addr.js:30
 mapMarksDraw                 src/18a-map-addr.js:98-113
-mapOrbFan                    src/18l-map-plate.js:83-102
+mapOrbFan                    src/18l-map-plate.js:89-104
 mapOrbInk                    src/18l-map-plate.js:81
-mapOrbsDraw                  src/18l-map-plate.js:103-118
+mapOrbsDraw                  src/18l-map-plate.js:105-120
 mapOverOn                    src/18-mode-map.js:148
 mapOverTap                   src/18-mode-map.js:213-217
 mapOverview                  src/18-mode-map.js:191-212
 mapOwnHere                   src/18b-map-hold.js:64-69
-mapParseAddr                 src/18a-map-addr.js:224-227
+mapParseAddr                 src/18a-map-addr.js:229-232
 mapPeek                      src/18-mode-map.js:165-171
 mapPriceDraw                 src/12aa-need.js:336-346
 mapPriceRows                 src/12aa-need.js:311-335
@@ -5867,7 +5869,7 @@ mapRange                     src/18-mode-map.js:150
 mapReset                     src/18-mode-map.js:184
 mapRibbon                    src/17z3-map-gpu.js:181-189
 mapRingsDraw                 src/18a-map-addr.js:68-80
-mapRoseDraw                  src/18a-map-addr.js:191-214
+mapRoseDraw                  src/18a-map-addr.js:191-219
 mapRulerTop                  src/18a-map-addr.js:53
 mapRulersDraw                src/18a-map-addr.js:115-189
 mapRumoursDraw               src/18a-map-addr.js:82-96
@@ -5877,7 +5879,7 @@ mapSelInk                    src/18l-map-plate.js:54-58
 mapStarsGpu                  src/17z3-map-gpu.js:202-230
 mapTW                        src/18l-map-plate.js:12
 mapTagAt                     src/18b-map-hold.js:71-78
-mapTopPlace                  src/18a-map-addr.js:254-281
+mapTopPlace                  src/18a-map-addr.js:259-286
 mapTrassaPairs               src/18b-map-hold.js:47-59
 mapU                         src/18-mode-map.js:42
 mapUnderTrassa               src/18b-map-hold.js:60-63
@@ -6306,7 +6308,7 @@ ovEll                        src/08bi-gpu-ovl.js:341-344
 ovFlush                      src/08bi-gpu-ovl.js:229-243
 ovGraph                      src/08bi-gpu-ovl.js:362-366
 ovHang                       src/08bj-ovl-hang.js:34-38
-ovHangFlush                  src/08bj-ovl-hang.js:280-297
+ovHangFlush                  src/08bj-ovl-hang.js:298-315
 ovHushed                     src/08bi-gpu-ovl.js:204
 ovImage                      src/08bi-gpu-ovl.js:290-296
 ovInto                       src/08bi-gpu-ovl.js:90-93
@@ -7412,12 +7414,14 @@ relayAll                     src/11ap-relay.js:149-152
 relayArrive                  src/11ap-relay.js:179-183
 relayAtFreq                  src/11ap-relay.js:134-145
 relayDial                    src/11ap-relay.js:207-252
-relayDrawSystem              src/11ap-relay.js:376-497
+relayDrawSystem              src/11apa-relay-body.js:102-113
 relayEar                     src/11ap-relay.js:126-130
 relayFreq                    src/11ap-relay.js:99-103
 relayInteract                src/11ap-relay.js:358-371
 relayKnown                   src/11ap-relay.js:153
+relayLights                  src/11apa-relay-body.js:89-100
 relayList                    src/11ap-relay.js:189-199
+relayMesh                    src/11apa-relay-body.js:14-86
 relayOf                      src/11ap-relay.js:81-97
 relayServe                   src/11ap-relay.js:334-357
 relaySpeak                   src/11ap-relay.js:167-174
@@ -8399,7 +8403,7 @@ updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:73-145
-updateMap                    src/18-mode-map.js:694-708
+updateMap                    src/18-mode-map.js:695-709
 updateRaid                   src/24a-mode-raid.js:276-408
 updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
@@ -8856,7 +8860,7 @@ zoomTo                       src/15-input.js:358
 ## src/08b-gpu.js · 54 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08b0-gpu-pipe.js · 10 KB
+## src/08b0-gpu-pipe.js · 11 KB
   · конвейеры: одна воронка и прогрев (DESIGN-gpu §G):1
   · поздний прогрев: конвейеры режимов:85
 
@@ -8872,7 +8876,7 @@ zoomTo                       src/15-input.js:358
 ## src/08bi-gpu-ovl.js · 31 KB
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
-## src/08bj-ovl-hang.js · 31 KB
+## src/08bj-ovl-hang.js · 33 KB
   · Слова на вещах (M803): табличка у вещи, центр кадра пуст:1
 
 ## src/08c-gpu-kit.js · 34 KB
@@ -8960,9 +8964,11 @@ zoomTo                       src/15-input.js:358
 ## src/11ao-firsthour.js · 6 KB
   · первый час: сменщик в эфире:1
 
-## src/11ap-relay.js · 31 KB
+## src/11ap-relay.js · 25 KB
   · приёмники как места:1
   · у мачты есть тело:303
+
+## src/11apa-relay-body.js · 9 KB
 
 ## src/11aq-late.js · 9 KB
   · поздний час у стойки:1
@@ -9596,7 +9602,7 @@ zoomTo                       src/15-input.js:358
   · где у карты пол и где правый борт:4
   · карта: ночное небо, а не схема молекулы:127
 
-## src/18a-map-addr.js · 20 KB
+## src/18a-map-addr.js · 21 KB
   · карта говорит адресами (M347):1
 
 ## src/18a-material.js · 31 KB
@@ -9646,7 +9652,7 @@ zoomTo                       src/15-input.js:358
 ## src/18k-rail-scheme.js · 19 KB
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
-## src/18l-map-plate.js · 12 KB
+## src/18l-map-plate.js · 13 KB
   · карта: веса и таблички (M822):1
 
 ## src/19-mode-landing-ground.js · 27 KB
@@ -10520,6 +10526,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd1-hull-plane.js · 4 KB
   · плоскость краски объёмного корпуса (22.10, «двойной корпус»):1
 
+## tests/91qd2-relay.js · 3 KB
+  · мачта телом (M823 · 11apa):1
+
 ## tests/91qe-own.js · 13 KB
 
 ## tests/91qe-rack.js · 4 KB
@@ -10545,7 +10554,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qk-ground.js · 5 KB
   · тела на земле (Зрение 2.0, закон «опора»):1
 
-## tests/91qk-map.js · 5 KB
+## tests/91qk-map.js · 9 KB
   · карта без 2D и с мирами выбора (M822b, 22.10):1
 
 ## tests/91ql-light.js · 3 KB
@@ -10575,7 +10584,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim.js · 45 KB
+## tests/91zzzw4-ecosim.js · 60 KB
   · проба · экономика (M903):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB

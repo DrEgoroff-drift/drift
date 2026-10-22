@@ -33,6 +33,7 @@ function hallRigMesh(){
   return HALL_RIG.mesh;
 }
 /* кости в мире: B — место человека в зале; матрица кости — поворот вокруг оси x зала (оси z рига) и сдвиг */
+const HALL_RK=new Float64Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);   /* поворот кости — одна матрица на все кости */
 function hallRigPose(M,base,B,kind,t){
   const A=(Array.isArray(kind)?kind:(HALL_RIG_POSE[kind]||HALL_RIG_POSE.stand)).slice(),br=Math.sin(t*1.5),seat=Array.isArray(kind)?null:HALL_RIG_SEAT[kind],W=[];   /* M816: на ходу углы приходят массивом */
   A[1]+=.012*br;A[2]+=.03*Math.sin(t*.19);
@@ -40,7 +41,8 @@ function hallRigPose(M,base,B,kind,t){
     if(P){w.a=P.a+A[k];w.x=P.x+P.c*o[0]-P.s*o[1];w.y=P.y+P.s*o[0]+P.c*o[1];w.z=P.z+o[2];}
     else{w.a=A[k];w.x=o[0];w.y=seat!=null?seat:o[1]+.004*br;w.z=o[2];}
     w.c=Math.cos(w.a);w.s=Math.sin(w.a);W[k]=w;
-    M.set(r3Mul(B,[1,0,0,0, 0,w.c,-w.s,0, 0,w.s,w.c,0, -w.z,w.y,w.x,1]),(base+k)*16);}
+    const Rk=HALL_RK;Rk[5]=w.c;Rk[6]=-w.s;Rk[9]=w.s;Rk[10]=w.c;Rk[12]=-w.z;Rk[13]=w.y;Rk[14]=w.x;
+    M.set(r3Mul(B,Rk,r3Scr()),(base+k)*16);}
   return W;
 }
 function hallRigDrop(){r3Drop(HALL_RIG.mesh);HALL_RIG.mesh=null;HALL_RIG.key="";}

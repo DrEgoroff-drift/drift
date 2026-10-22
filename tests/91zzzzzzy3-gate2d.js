@@ -25,6 +25,16 @@ function gate2dChips(){
   return null;
 }
 const GATE2D=[
+  {name:"чужой след (21piib, M171): плита и груз — тела в кадре планеты, на #c ни штриха",
+   painters:["plnTrcStep","plnTrcFrame","plnTrcMesh"],probe:["plnTrcFrame"],
+   place(first){
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
+     const S=G.surf;if(!S)return null;
+     if(!S.trace||S.trace.key!=="gate2d")S.trace={key:"gate2d",m:5,h:"0a1b2c",i:"1",r:"ice",n:3,x:S.x+20};
+     return {S};},
+   done(){ok(!!TRC.it,"чужой след: тело собрано");
+     if(G.surf)G.surf.trace=null;}},
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
    place(){
@@ -122,7 +132,7 @@ const GATE2D=[
      G.rack={on:true};return {};},
    probe:["rackDraw"]},
   {name:"кабина пояса (24bc, 25-cockpit, 25a, 25b): мастер полосами, стекло, приборы, лента",
-   painters:["beltHudPush","drawGlassHUD","drawCockpit","ckgTex","ckgJob","prebake","ckgPaint","ckgSprites","ckgAtlas","ckgLazy","ckgWarm",
+   painters:["beltHudPush","ckgTex","ckgJob","prebake","ckgPaint","ckgSprites","ckgAtlas","ckgLazy","ckgWarm",
              "ckgFrame","ckgGlass","ckgGlint","ckgPanel","ckgLamps","ckgNode","ckgPut","ckgPutRot","ckT","ckLine",
              "cockpitPaint","instrPanel","tapeStrip","tapePaper","drawNodeIcon"],
    place(first){

@@ -226,6 +226,17 @@ the designer's.
   as the cave does, since sentence case would spoil the key letters («A d w»). `#msg` hangs by the man
   through the shared `hud.msg`; on a phone it often finds no room and stays the DOM line at the top.
 
+- Someone else's trace is a body (22.10, M631, `21q-trace-body`): a faceted slab in the deposit
+  boulders' stone language, the mark carved on its face, one to three tied sacks in the cargo's colour
+  beside it; set a little deeper than the game's things so it never covers the man. `traceDraw` (11ag)
+  stays as an empty function only because the planet's `21pj` still guards it with `typeof`; it goes
+  with that line. The settlement's wall stone still cuts marks in 2D (`wallDraw`, 11ah): it is part of
+  the settlement's 2D drawing and leaves with it, not before.
+- No 2D cockpit without a GPU (22.10, M631, Control's decision): the surface has no world without a
+  device, so the belt's 2D fallback (`drawCockpit`, `cockpitTex`, `drawGlassHUD`, `ckptLampNeed`) is
+  gone and the belt draws nothing while the device is lost; with no WebGPU the player sees the 08b2
+  plate. `cockpitPaint` and `cockpitPlan` stay in `25-cockpit`: they are the GPU master's painter (24bc).
+
 ## 8. Open
 
 (none)

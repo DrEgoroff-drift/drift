@@ -420,13 +420,14 @@ function cpHeadAI(K,g,lod){
 /* оснастка лица: матрицы частей 4–12 экземпляра (F — матрицы кадра, base — его первая часть) из матрицы головы Mh
    и выражения X (27f6 cpFace). Части построены в системе головы: P — та же матрица, что K.push головы в cpBody;
    движение части L — между P и P⁻¹. Без выражения или у ядра ИИ лицо просто едет с головой */
+const CPR_P=new Float64Array(16),CPR_PI=new Float64Array(16);   /* P и Pi живут весь риг — своя пара, не кольцо */
 function cpRig(F,base,Mh,M,X){
   for(let k=4;k<=12;k++)F.set(Mh,(base+k)*16);   /* 12 — верхние зубы: стоят с головой */
   const R=M.rig;if(!R||!X)return;
   const hc=M.at.hp[0],rx=M.at.hp[1],hs=M.at.hp[2];
-  const P=r3Mul(Mh,r3Xf(hc,0,rx,0,hs)),Pi=r3Mul(r3Xf([0,0,0],0,-rx,0,1/hs),r3Xf([-hc[0],-hc[1],-hc[2]]));
-  const put=(k,L,b)=>{const A=r3Mul(P,r3Mul(L,Pi));if(b){A[3]=b[0];A[7]=b[1];A[11]=b[2];}F.set(A,(base+k)*16);};
-  const piv=(c,ry,rr,rz)=>r3Mul(r3Xf(c,ry,rr,rz,1),r3Xf([-c[0],-c[1],-c[2]]));
+  const P=r3Mul(Mh,r3Xf(hc,0,rx,0,hs,r3Scr()),CPR_P),Pi=r3Mul(r3Xf(R3_O3,0,-rx,0,1/hs,r3Scr()),r3Xf([-hc[0],-hc[1],-hc[2]],0,0,0,1,r3Scr()),CPR_PI);
+  const put=(k,L,b)=>{const A=r3Mul(P,r3Mul(L,Pi,r3Scr()),r3Scr());if(b){A[3]=b[0];A[7]=b[1];A[11]=b[2];}F.set(A,(base+k)*16);};
+  const piv=(c,ry,rr,rz)=>r3Mul(r3Xf(c,ry,rr,rz,1,r3Scr()),r3Xf([-c[0],-c[1],-c[2]],0,0,0,1,r3Scr()),r3Scr());
   const scl=(c,sx,sy,t)=>[sx,0,0,0, 0,sy,0,0, 0,0,1,0, c[0]*(1-sx)+(t?t[0]:0),c[1]*(1-sy)+(t?t[1]:0),(t?t[2]:0),1];
   /* веки: верхнее — прищур и моргание (+ вниз), следует за взглядом вниз; нижнее поднимают щёки */
   const ax=[0,R.ey,R.ez],up=X.lu+(.84-X.lu)*X.bl-X.gz[1]*.5;
@@ -436,7 +437,7 @@ function cpRig(F,base,Mh,M,X){
   for(const s of [1,-1])put(CPR.eye+(s>0?0:1),piv([s*R.ex,R.ey,R.ez],X.gz[0]-s*.03,-X.gz[1],0));
   /* брови: подъём и излом (внутренний конец вверх — горе и удивление, вниз — гнев) */
   for(const s of [1,-1]){const i=s>0?0:1,c=[s*R.brow[0],R.brow[1],R.brow[2]],b=X.br[i];
-    put(CPR.brow+i,r3Mul(r3Xf([0,b*.0045+X.bi[i]*.0012,-Math.abs(b)*.0008]),piv(c,0,0,-s*X.bi[i]*.16)));}
+    put(CPR.brow+i,r3Mul(r3Xf([0,b*.0045+X.bi[i]*.0012,-Math.abs(b)*.0008],0,0,0,1,r3Scr()),piv(c,0,0,-s*X.bi[i]*.16),r3Scr()));}
   /* губы: изгиб в шейдере (y += a·x² + b·x·|x|, уголки назад), шире в улыбке; нижняя губа с зубами — вниз, рот
      изнутри тянется за ней. Изгиб — в осях сетки: x сетки = hs·x головы */
   const m=R.mouth,a=X.sm*7.5/hs,b=X.sk*6/hs,zb=Math.max(0,X.sm)*3/hs,sx=1+.06*X.sm-.05*X.mo,d=X.mo*.009;

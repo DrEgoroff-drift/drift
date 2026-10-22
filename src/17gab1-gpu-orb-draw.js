@@ -78,7 +78,7 @@ function gpuOrb(p,x,y,r,lights,o2){
   const sky=gas?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0][4]:((p.T.sky&&p.T.sky[0])||[130,180,210]);
   const sa=PLANET_BAKE_ANG+planetSunRot(p),sx=o2&&o2.lit?o2.lit[0]:Math.cos(sa),sy=o2&&o2.lit?o2.lit[1]:Math.sin(sa);
   const o={k,sx,sy,turn:planetSpin(p)/TAU,air:sky,th:airless?0:(GOR_AIR[p.type]||0),sun:(o2&&o2.sun)||gplSun(),seed:p.seed%97,
-    pal:gas?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0]:p.T.pal,ring:(p.ring&&r>5)?p.ring:null,cities:0,lz:o2&&o2.lz};
+    pal:gas?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0]:p.T.pal,ring:(p.ring&&r>5&&!(o2&&o2.noRing))?p.ring:null,cities:0,lz:o2&&o2.lz};
   /* огни построек — те же точки, что у 17ga; сушу под ними проверяет шейдер своими материками */
   if(lights){const C=GOR.C||(GOR.C=new Float32Array(256));C.fill(0);
     o.cities=gplCities({sx,sy,lights,wet:0,seed:o.seed,T:o.turn},C);o.cpts=C;}
