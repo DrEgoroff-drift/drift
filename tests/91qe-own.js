@@ -67,6 +67,23 @@ TEST_SUITES.push(()=>suite("база и дом телами: вход у вор�
     eq(G.mode,"base","ДЕЙСТВИЕ у ворот — в базе");
     eq(G.base&&G.base.B,baseAt(G.sx,G.sy,w.p.idx),"в той самой базе");
 
+    /* у ворот организм дальше двери строку не забирает; ближе двери — скан (брак M628, 22.10) */
+    w=owWorld();owFound(w.p);
+    const g2=plnOwnGateX(w.S),sd=g2>(w.tr.W||w.tr.N*w.tr.step)/2?-1:1;
+    const near=(dx,beast)=>{const x=g2+sd*10;
+      const o=beast?{x:x+sd*dx,y:0,r:1,seed:7,name:"тест",scanned:false,shy:0,vx:0,face:1}:{x:x+sd*dx,scanned:false};
+      const pr=String((()=>{owAt(w.S,x,false);w.S.plants=beast?[]:[o];w.S.fauna=beast?[o]:[];
+        G.prompt=null;try{actEdge=false;updateSurface(1);}finally{actEdge=false;}return G.prompt||"";})());
+      return {pr,o};};
+    let r=near(12,false);
+    eq(r.pr,"ДЕЙСТВИЕ — ВОЙТИ В БАЗУ","растение дальше двери — у ворот вход");
+    eq(r.o.scanned,false,"спрятанное растение вернулось не сканированным");
+    r=near(14,true);
+    eq(r.pr,"ДЕЙСТВИЕ — ВОЙТИ В БАЗУ","зверь дальше двери — у ворот вход");
+    ok(r.o.scanned===false&&!r.o.caught,"спрятанный зверь вернулся каким был");
+    r=near(-4,false);
+    ok(/СКАНИРОВАТЬ ОРГАНИЗМ/.test(r.pr),"растение ближе двери — скан: "+JSON.stringify(r.pr));
+
     /* прыжок к базе со станции и прочие входы вне хода по грунту не трогаются */
     w=owWorld();owFound(w.p);
     enterBase(w.p);
@@ -83,6 +100,10 @@ TEST_SUITES.push(()=>suite("база и дом телами: вход у вор�
     const pads=plnOwnPads(w.tr,w.p);
     eq(pads.length,2,"трава расступается под настилом и во дворе");
     ok(pads.every(q=>q.length===5&&q.every(isFinite)),"площадки — [x, z, rx, rz, рост]");
+    /* куртина игры под настилом выходит из-под него вперёд (брак M628: грибы сквозь настил) */
+    {const d=pads[0],q={x:d[0]*PLN_M,z:1,h:60},z=plnHerbZAt(q,pads),r=clamp(60/PLN_M*.45,.6,3.5);
+     ok(z+r<=d[1]-d[3]+1e-6||z===.4,"куртина под настилом — перед его кромкой: z "+z.toFixed(2)+", кромка "+(d[1]-d[3]).toFixed(2));
+     eq(plnHerbZAt({x:(d[0]+d[2]+40)*PLN_M,z:1,h:60},pads),plnHerbZ({z:1}),"вдали от настила глубина прежняя");}
 
     /* старый вид: вход у корабля, как было */
     OWN.on=false;
