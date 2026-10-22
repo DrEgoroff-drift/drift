@@ -1436,6 +1436,18 @@ per line of code to the most disputable, then what it says to leave alone. Every
 those sections (T3 at a human's pace with the base and the logist unless named; cr/h; 3 h · 6 h).
 Nothing here is built; prices and balance are the author's.
 
+**First: the uninsured hull, lost unwarned (M920).** In four fresh saves out of ten the «Вьюк» is
+lost between minutes 82 and 162, uninsured, with every module on it. It goes in open space at a
+neighbour system where the player digs (1,0 most often), not at the pier: the probe waits there
+idle, padding a lap to a human's six minutes, and with the same wait at the pier none of twenty runs
+lost anything. The game could have said so, and does not. The first hour's protection ends at
+minute 60 without a word (`firstHour()` in `wreck`, `28i-insure.js:67`). The first watch has no
+line about insurance (`28o-firstwatch`). The offer itself is a plate on the ДОСКА of a *yard* only
+(`insSection`, `28i-insure.js:89`), and no run docked at a yard with a hull of its own. The M904c
+screen nearest that minute is the shift bill on the ДОСКА (`billSection`, `27ib-bill.js:225`). It
+shows wherever a bill is open or was issued, which is every few laps. It has a «Страхкасса» row
+(`27ib-bill.js:31`, `:134-136`), but the row appears only once a hull is insured. Lever and its price are M921 (§4.1b).
+
 ### Proposals, ranked
 
 **1. Let a workshop eat what its own system makes, at home — lever (в).** Today `bldRuleWhy`
