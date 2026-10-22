@@ -305,7 +305,7 @@ function hallScene(L,cam,t){
   /* свет смены. ДЕНЬ: ключ — окно и свет дока: холодное небо заливает зал (стены 25–35 % тона, потолок
      отсветом пола 15–20 %), луч окна с пылью кладёт пятно и тени людей; лампы — вторые.
      НОЧЬ: окно тёмно-синее, рассеянный падает вчетверо, ключ — лампы людей: стойка, бра, бар */
-  const nk=hallNight(),day=1-nk;
+  const nk=hallNight(),day=1-nk,wlk=!!(HALL.walk&&!HALL.walk.eng&&HALL.walk.fk<.5);   /* wlk — на линии хода (M816) */
   const lights=[],bulbs=[],key=r3Lin(T.key),fill=r3Lin(T.fill),dk=T.dark?1:0;
   const ky=hallKeyY(T);
   /* лампа над стойкой: лицо и столешница в одном луче; ночью — ключ зала */
@@ -346,7 +346,7 @@ function hallScene(L,cam,t){
     /* отсвет полотна на зрителях — холодный, дышит вместе с кадром: лица и плечи ряда из темноты */
     lights.push({p:[HALL_KINO[0],HALL_KINO[1],HALL_B+.4],range:7.5,c:r3Sc(r3Lin([190,205,235]),6*kf*(.3+.7*cut)),spot:1,d:[0,-.25,1],cosO:Math.cos(1.3),cosI:Math.cos(.55),vol:0});}
   if(L.bar){const LT=CANT_LIGHT[L.st]||CANT_LIGHT.trade,tone=r3Lin(mixc(mixc(LT.tone,acc,.2),[255,196,130],.35));
-    hallLamps(L).forEach((x,i)=>{lights.push({p:[x,2.03+C3_LH,.12],range:4.2,c:r3Sc(tone,(L.st==="sci"?4.2:6)*LT.pow*(.8+.45*nk)*kn),spot:1,d:[0,-1,-.12],
+    hallLamps(L).forEach((x,i)=>{lights.push({p:[x,2.03+C3_LH,.12],range:4.2,c:r3Sc(tone,(L.st==="sci"?4.2:6)*LT.pow*(.8+.45*nk)*kn*(wlk?1.35:1)),spot:1,d:[0,-1,-.12],
       cosO:Math.cos(.78),cosI:Math.cos(.3),shadow:i<2?1:0,vol:.08});
       bulbs.push([x,2.03+C3_LH,.12,LT.pow*(L.st==="sci"?.4:1)*(L.kino?.35:1)]);});
     const fl=(Math.sin(t*.31+L.seed%7)>-.92)?1:.35;
@@ -370,14 +370,15 @@ function hallScene(L,cam,t){
   /* рассеянный: небо — свет дока сквозь окна (сверху и со стен), земля — отсвет пола (потолок, низы балок) */
   /* ночью рассеянный не падает в черноту: value ≥ .08 на всех плоскостях (потолок, дальняя стена, пол) */
   /* на ходу (M816) рассеянный тише: зал держат лампы мест — лужи на полу, а не ровный серый */
-  const wk=HALL.walk&&!HALL.walk.eng&&HALL.walk.fk<.5?.62:1;
+  const wk=wlk?.42:1;   /* СР · Визуал 22.10: на ходу рассеянный ещё тише — верх зала в тени, свет держат лампы */
   const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.49+.51*day)*wk*(L.kino?.3:1),ptc=hallPlanetTone();   /* кинодень: зал гасят — светят полотно и луч */
   const sky=mx(mixc(mixc(T.wall,T.day||[146,178,232],.62),ptc,.08),mixc(T.wall,[66,84,140],.5)),gnd=mx(mixc(T.wall,[204,164,118],.6),mixc(T.wall,[92,106,140],.58));
-  const fog=mx(mixc(T.wall,[150,165,190],.4),[30,38,64]);
+  const fog=mixc(mx(mixc(T.wall,[150,165,190],.4),[30,38,64]),r3Lin([34,34,38]),wlk?.55:0);   /* на ходу туман темнее и нейтральнее: кадр не молоко */
+  const fd=wlk?.5:1;   /* и вдвое реже: потолок, балки и дальняя стена не растворяются в сером */
   const pl=HALL.orb&&HALL.orbTex?HALL.orb:null;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
-    sky:[...sky,amb],gnd:[...gnd,T.win===1?.045:dk?.04:.03],
-    fog:[...r3Sc(L.kino?[.09,.085,.08]:fog,.25),L.kino?.1:T.win===1?.055:dk?.04:.035],acc:[...r3Lin(acc),1],
+    sky:[...sky,amb],gnd:[...gnd,(T.win===1?.045:dk?.04:.03)*fd],
+    fog:[...r3Sc(L.kino?[.09,.085,.08]:fog,.25),(L.kino?.1:T.win===1?.055:dk?.04:.035)*(wlk?.6:1)],acc:[...r3Lin(acc),1],
     win:[HALL_WIN[0],wy[0],HALL_WIN[1],wy[1]],win2:[HALL_B,T.win,L.seed%47,(T.win===1?1.15:1)*(.38+.62*day)],
     sgn:[HALL_XB+HALL_SGN[0],HALL_SGN[2],HALL_XB+HALL_SGN[1],HALL_SGN[3]],sgn2:[HALL_B,.32+.25*nk,0,0],
     flm:pl?pl.flm:[0,0,1,0],flm2:[HALL_B,L.kino?1+(Math.floor(now()/4200)%KINO_REEL.length)+(now()%4200)/4200:0,pl?1:0,hallSiteW(L)],tsg:L.bar?C3.sign:null,tfl:pl?{view:HALL.orbTex.view}:null,M,ot:OT};
