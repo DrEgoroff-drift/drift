@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 644 · top-level symbols: 8752
+Files: 645 · top-level symbols: 8758
 
 ## SYMBOLS
 
@@ -718,7 +718,7 @@ GAL_STAR_RED                 src/17z3-map-gpu.js:164
 GAL_STAR_SCREEN              src/17z1-galaxy.js:82
 GAL_VER                      src/17z1-galaxy.js:18
 GAL_WGSL                     src/17z3-map-gpu.js:25
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-265
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-272
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GAUGE_MID                    src/28l-gauge.js:23
@@ -878,7 +878,7 @@ GPU_LIT_SH                   src/17c-system-draw.js:21
 GPU_MIP                      src/08c-gpu-kit.js:100
 GPU_MIP_LOD                  src/08c-gpu-kit.js:194
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-68
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-69
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:50
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:42-63
 GPU_PL_WGSL                  src/08b-gpu.js:485
@@ -1359,15 +1359,16 @@ MAKER_PX                     src/28y-look.js:313
 MAPGPU                       src/17z3-map-gpu.js:17
 MAP_BORDER_NB                src/18b-map-hold.js:81
 MAP_BOX                      src/18-mode-map.js:29
-MAP_DOM                      src/18-mode-map.js:52
-MAP_DOMR                     src/18-mode-map.js:53
+MAP_DOM                      src/18-mode-map.js:63
+MAP_DOMR                     src/18-mode-map.js:64
 MAP_DRY_INK                  src/18-mode-map.js:3
-MAP_INK                      src/18-mode-map.js:51
+MAP_INK                      src/18-mode-map.js:62
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
 MAP_ORB                      src/18l-map-plate.js:80
-MAP_OVER                     src/18-mode-map.js:146
+MAP_OVER                     src/18-mode-map.js:157
 MAP_SPIKE_N                  src/17z3-map-gpu.js:201
+MAP_TMS                      src/18-mode-map.js:49
 MAP_TOP                      src/18a-map-addr.js:258
 MAP_W                        src/18l-map-plate.js:8
 MATCH_BOX                    src/12uc-matches.js:21
@@ -1703,13 +1704,13 @@ PLN_OLD_HUD2                 src/21pzb-pln-words.js:102
 PLN_OLD_LANDING              src/21pza-pln-descent.js:221
 PLN_OLD_ULAND                src/21pza-pln-descent.js:212
 PLN_OVER                     src/21pj-pln-over.js:16
-PLN_OWN_GATE_R               src/21pig-pln-own.js:567
-PLN_OWN_OLD_AT               src/21pig-pln-own.js:672
-PLN_OWN_OLD_DIG              src/21pig-pln-own.js:619
-PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:597
-PLN_OWN_OLD_HINT             src/21pig-pln-own.js:665
-PLN_OWN_OLD_UPD              src/21pig-pln-own.js:642
-PLN_OWN_UPD                  src/21pig-pln-own.js:596
+PLN_OWN_GATE_R               src/21pig-pln-own.js:575
+PLN_OWN_OLD_AT               src/21pig-pln-own.js:680
+PLN_OWN_OLD_DIG              src/21pig-pln-own.js:627
+PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:605
+PLN_OWN_OLD_HINT             src/21pig-pln-own.js:673
+PLN_OWN_OLD_UPD              src/21pig-pln-own.js:650
+PLN_OWN_UPD                  src/21pig-pln-own.js:604
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:41-65
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
@@ -2556,7 +2557,7 @@ applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
 arrive                       src/16-flight.js:172-210
-arriveSystem                 src/18-mode-map.js:723-774
+arriveSystem                 src/18-mode-map.js:734-785
 artGet                       src/08ca-gpu-canvas.js:550
 artPut                       src/08ca-gpu-canvas.js:551-696
 asMap                        src/14-save.js:209-215
@@ -3993,8 +3994,8 @@ drawLawRing                  src/12al2-laws.js:136-162
 drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
-drawMap                      src/18-mode-map.js:218-221
-drawMapIn                    src/18-mode-map.js:222-672
+drawMap                      src/18-mode-map.js:229-232
+drawMapIn                    src/18-mode-map.js:233-683
 drawMisFigure                src/11z-misclosure.js:63-87
 drawMonolith                 src/20aa-poi-shapes.js:189-206
 drawMooredBarge              src/17e-station-body.js:17-36
@@ -4108,11 +4109,13 @@ e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
 ecoEstate                    tests/91zzzw4-ecosim-est.js:5-221
+ecoFresh                     tests/91zzzw4-ecosim-t1.js:6-124
+ecoFreshPrint                tests/91zzzw4-ecosim-t1.js:126-136
 ecoLadder                    tests/91zzzw4-ecosim-rep.js:7-29
 ecoNormFold                  tests/91zzzw4-ecosim-rep.js:41-45
 ecoNormNow                   tests/91zzzw4-ecosim-rep.js:30-39
 ecoNormSum                   tests/91zzzw4-ecosim-rep.js:46-52
-ecoPrint                     tests/91zzzw4-ecosim-rep.js:53-108
+ecoPrint                     tests/91zzzw4-ecosim-rep.js:53-109
 econCycleMul                 src/12ax-fx-econ.js:27-34
 econEmbargoOn                src/12ax-fx-econ.js:56-61
 econFairHere                 src/12ax-fx-econ.js:48-54
@@ -5500,7 +5503,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:710-718
+jump                         src/18-mode-map.js:721-729
 jumpToBase                   src/21a-mode-base.js:386-403
 kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:220
@@ -5825,34 +5828,34 @@ makerTicks                   src/03a-hull-maker.js:236-239
 makerWear                    src/03a-hull-maker.js:456
 makerWidth                   src/03a-hull-maker.js:426-453
 mapAddrBox                   src/18a-map-addr.js:233-249
-mapBack                      src/18-mode-map.js:172-183
+mapBack                      src/18-mode-map.js:183-194
 mapBorderEdge                src/18b-map-hold.js:86-106
 mapBox                       src/18-mode-map.js:30
-mapCell                      src/18-mode-map.js:149
+mapCell                      src/18-mode-map.js:160
 mapCellXY                    src/18a-map-addr.js:52
-mapCleanSet                  src/18-mode-map.js:186
+mapCleanSet                  src/18-mode-map.js:197
 mapCourseDash                src/18l-map-plate.js:40-47
 mapDeck                      src/18-mode-map.js:14-18
-mapDryWord                   src/18-mode-map.js:684
+mapDryWord                   src/18-mode-map.js:695
 mapFace                      src/18l-map-plate.js:13
-mapFit                       src/18-mode-map.js:154-159
-mapFont                      src/18-mode-map.js:43
+mapFit                       src/18-mode-map.js:165-170
+mapFont                      src/18-mode-map.js:54
 mapGoAddr                    src/18a-map-addr.js:221-228
 mapGpuOver                   src/17z3-map-gpu.js:191-194
 mapGpuPass                   src/17z3-map-gpu.js:20-24
 mapGridDraw                  src/18a-map-addr.js:55-66
 mapHintHung                  src/18l-map-plate.js:37
-mapHit                       src/18-mode-map.js:65-104
+mapHit                       src/18-mode-map.js:76-115
 mapHoldingsDraw              src/18b-map-hold.js:107-209
 mapHoldingsTop               src/18b-map-hold.js:211-251
 mapHousePatch                src/18b-map-hold.js:31-45
-mapInkBox                    src/18-mode-map.js:56
-mapInkPoly                   src/18-mode-map.js:54
-mapInkText                   src/18-mode-map.js:58
-mapJump                      src/18-mode-map.js:685-694
-mapJumpCost                  src/18-mode-map.js:679-682
-mapLate                      src/18-mode-map.js:62
-mapLateFlush                 src/18-mode-map.js:72-104
+mapInkBox                    src/18-mode-map.js:67
+mapInkPoly                   src/18-mode-map.js:65
+mapInkText                   src/18-mode-map.js:69
+mapJump                      src/18-mode-map.js:696-705
+mapJumpCost                  src/18-mode-map.js:690-693
+mapLate                      src/18-mode-map.js:73
+mapLateFlush                 src/18-mode-map.js:83-115
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
 mapLayerOn                   src/18b-map-hold.js:27
@@ -5864,36 +5867,39 @@ mapMarksDraw                 src/18a-map-addr.js:98-113
 mapOrbFan                    src/18l-map-plate.js:89-104
 mapOrbInk                    src/18l-map-plate.js:81
 mapOrbsDraw                  src/18l-map-plate.js:105-120
-mapOverOn                    src/18-mode-map.js:148
-mapOverTap                   src/18-mode-map.js:213-217
-mapOverview                  src/18-mode-map.js:191-212
+mapOverOn                    src/18-mode-map.js:159
+mapOverTap                   src/18-mode-map.js:224-228
+mapOverview                  src/18-mode-map.js:202-223
 mapOwnHere                   src/18b-map-hold.js:64-69
 mapParseAddr                 src/18a-map-addr.js:229-232
-mapPeek                      src/18-mode-map.js:165-171
+mapPeek                      src/18-mode-map.js:176-182
 mapPriceDraw                 src/12aa-need.js:336-346
 mapPriceRows                 src/12aa-need.js:311-335
 mapRail                      src/18-mode-map.js:19-22
-mapRange                     src/18-mode-map.js:150
-mapReset                     src/18-mode-map.js:184
+mapRange                     src/18-mode-map.js:161
+mapReset                     src/18-mode-map.js:195
+mapRestore                   src/18-mode-map.js:47
 mapRibbon                    src/17z3-map-gpu.js:181-189
 mapRingsDraw                 src/18a-map-addr.js:68-80
 mapRoseDraw                  src/18a-map-addr.js:191-219
 mapRulerTop                  src/18a-map-addr.js:53
 mapRulersDraw                src/18a-map-addr.js:115-189
 mapRumoursDraw               src/18a-map-addr.js:82-96
+mapSave                      src/18-mode-map.js:46
 mapSelBlock                  src/18l-map-plate.js:61-68
 mapSelHang                   src/18l-map-plate.js:18-35
 mapSelInk                    src/18l-map-plate.js:54-58
 mapStarsGpu                  src/17z3-map-gpu.js:202-230
+mapTM                        src/18-mode-map.js:50
 mapTW                        src/18l-map-plate.js:12
 mapTagAt                     src/18b-map-hold.js:71-78
 mapTopPlace                  src/18a-map-addr.js:259-286
 mapTrassaPairs               src/18b-map-hold.js:47-59
 mapU                         src/18-mode-map.js:42
 mapUnderTrassa               src/18b-map-hold.js:60-63
-mapViewC                     src/18-mode-map.js:138
-mapZoomK                     src/18-mode-map.js:147
-mapZoomSet                   src/18-mode-map.js:151
+mapViewC                     src/18-mode-map.js:149
+mapZoomK                     src/18-mode-map.js:158
+mapZoomSet                   src/18-mode-map.js:162
 marketCtx                    src/12-economy.js:110-120
 marketFor                    src/12-economy.js:2-24
 marketPrice                  src/12-economy.js:151-154
@@ -6854,35 +6860,35 @@ plnOver                      src/21pj-pln-over.js:47-125
 plnOverAt                    src/21pj-pln-over.js:19-22
 plnOverOld                   src/21pj-pln-over.js:30-44
 plnOverPlate                 src/21pj-pln-over.js:23-28
-plnOwnAtGate                 src/21pig-pln-own.js:568
+plnOwnAtGate                 src/21pig-pln-own.js:576
 plnOwnBaseAt                 src/21pig-pln-own.js:96-111
 plnOwnBaseMesh               src/21pig-pln-own.js:122-261
 plnOwnBaseX                  src/21pig-pln-own.js:67-92
 plnOwnBattOf                 src/21pig-pln-own.js:113-118
 plnOwnFlat                   src/21pig-pln-own.js:286-296
-plnOwnFrame                  src/21pig-pln-own.js:473-534
-plnOwnFree                   src/21pig-pln-own.js:431-436
-plnOwnGateC                  src/21pig-pln-own.js:581
-plnOwnGateHide               src/21pig-pln-own.js:628-636
-plnOwnGateNote               src/21pig-pln-own.js:584-590
-plnOwnGateShow               src/21pig-pln-own.js:637-641
-plnOwnGateX                  src/21pig-pln-own.js:562-566
+plnOwnFrame                  src/21pig-pln-own.js:477-542
+plnOwnFree                   src/21pig-pln-own.js:435-440
+plnOwnGateC                  src/21pig-pln-own.js:589
+plnOwnGateHide               src/21pig-pln-own.js:636-644
+plnOwnGateNote               src/21pig-pln-own.js:592-598
+plnOwnGateShow               src/21pig-pln-own.js:645-649
+plnOwnGateX                  src/21pig-pln-own.js:570-574
 plnOwnGreenBuild             src/21pig-pln-own.js:325-339
 plnOwnGreenSp                src/21pig-pln-own.js:304-320
 plnOwnHomeAt                 src/21pig-pln-own.js:264-282
-plnOwnHomeMesh               src/21pig-pln-own.js:340-428
-plnOwnInYard                 src/21pig-pln-own.js:604-607
-plnOwnItem                   src/21pig-pln-own.js:437-444
+plnOwnHomeMesh               src/21pig-pln-own.js:340-432
+plnOwnInYard                 src/21pig-pln-own.js:612-615
+plnOwnItem                   src/21pig-pln-own.js:441-448
 plnOwnKit                    src/21pig-pln-own.js:42-61
-plnOwnMark                   src/21pig-pln-own.js:570
-plnOwnOcc                    src/21pig-pln-own.js:537-546
-plnOwnPads                   src/21pig-pln-own.js:548-559
+plnOwnMark                   src/21pig-pln-own.js:578
+plnOwnOcc                    src/21pig-pln-own.js:545-554
+plnOwnPads                   src/21pig-pln-own.js:556-567
 plnOwnPennHere               src/21pig-pln-own.js:119-121
 plnOwnSteel                  src/21pig-pln-own.js:35-40
-plnOwnStep                   src/21pig-pln-own.js:446-471
-plnOwnUnder                  src/21pig-pln-own.js:608-611
-plnOwnWordsAt                src/21pig-pln-own.js:572-577
-plnOwnYardPrompt             src/21pig-pln-own.js:612-618
+plnOwnStep                   src/21pig-pln-own.js:450-475
+plnOwnUnder                  src/21pig-pln-own.js:616-619
+plnOwnWordsAt                src/21pig-pln-own.js:580-585
+plnOwnYardPrompt             src/21pig-pln-own.js:620-626
 plnPadBulb                   src/21pza-pln-descent.js:120
 plnPadFrame                  src/21pza-pln-descent.js:134-164
 plnPadGeo                    src/21pza-pln-descent.js:83-105
@@ -8441,7 +8447,7 @@ updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:73-145
-updateMap                    src/18-mode-map.js:695-709
+updateMap                    src/18-mode-map.js:706-720
 updateRaid                   src/24a-mode-raid.js:276-408
 updateRail                   src/18g-rail-ride.js:51-98
 updateScoop                  src/19a-mode-scoop.js:79-180
@@ -8725,8 +8731,8 @@ worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
 wq634World                   tests/91qi-water.js:6-16
-wrapCount                    src/18-mode-map.js:118-126
-wrapLeft                     src/18-mode-map.js:105-114
+wrapCount                    src/18-mode-map.js:129-137
+wrapLeft                     src/18-mode-map.js:116-125
 wreck                        src/28-loop.js:16-44
 wreckInteract                src/12l-barge.js:351-377
 wrecksHere                   src/12l-barge.js:348
@@ -9632,10 +9638,10 @@ zoomTo                       src/15-input.js:358
 ## src/17z4-map-pen.js · 13 KB
   · перо карты (G15: карта с #c на видеокарту):1
 
-## src/18-mode-map.js · 60 KB
+## src/18-mode-map.js · 62 KB
   · карта:1
   · где у карты пол и где правый борт:4
-  · карта: ночное небо, а не схема молекулы:127
+  · карта: ночное небо, а не схема молекулы:138
 
 ## src/18a-map-addr.js · 21 KB
   · карта говорит адресами (M347):1
@@ -10011,7 +10017,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pifc-pln-marks-act-lift.js · 13 KB
   · космический лифт (§4.3, M627b проход 5):1
 
-## src/21pig-pln-own.js · 51 KB
+## src/21pig-pln-own.js · 53 KB
   · планета: свои вещи телами — база, дом, двор (M628a):1
 
 ## src/21pigz-cave-room.js · 3 KB
@@ -10643,7 +10649,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw4-ecosim-rep.js · 11 KB
 
-## tests/91zzzw4-ecosim.js · 40 KB
+## tests/91zzzw4-ecosim-t1.js · 10 KB
+
+## tests/91zzzw4-ecosim.js · 38 KB
   · проба · экономика (M903, M912):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB

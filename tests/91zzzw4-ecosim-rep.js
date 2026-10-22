@@ -105,4 +105,5 @@ function ecoPrint(rows,X){
     console.log("  к 60′ валовый: "+s(H.gross)+" · расход: "+s(H.spend));
     console.log("  покупки: "+(L.bought||"—")+" · на «Вьюке» с "+(L.board==null?"—":L.board.toFixed(1)+"′")+
       " · вложено за прогон "+r.inv+" кр (не расход: U/G без него)");}
+  ecoFreshPrint(rows);
 }
