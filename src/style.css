@@ -249,6 +249,8 @@ body.cavewords #prompt,body.cavehush #msg{visibility:hidden}
 body.basewords #prompt{visibility:hidden}
 /* лента стройки под шапкой (телефон лёжа) — на месте #msg; строка остаётся в ЭФИРЕ */
 body.basehush #msg{visibility:hidden}
+/* шахта: строки состояния — табличкой у человека (23cf); #msg молчит сам, когда висит табличкой (08bj) */
+body.minewords #prompt{visibility:hidden}
 
 /* ══════════════ пэды ══════════════ */
 .pads{position:fixed;left:0;right:0;bottom:0;padding:0 14px calc(env(safe-area-inset-bottom) + 16px);

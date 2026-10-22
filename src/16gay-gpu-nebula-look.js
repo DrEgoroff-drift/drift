@@ -111,14 +111,17 @@ const GNB_FARC=`
     let gx=fbt(qa+vec2f(e1,0.),3)-.5+.38*(fbt(qc+vec2f(e3,0.),2)-.5)-f0;
     let gy=fbt(qa+vec2f(0.,e1),3)-.5+.38*(fbt(qc+vec2f(0.,e3),2)-.5)-f0;
     let fp=f0/max(length(vec2f(gx,gy)),1e-5);
-    let ln=smoothstep(-5.,-.5,fp)*(1.-smoothstep(.5,1.6,fp))*smoothstep(.44,.58,gnt(qd*2.4+vec2f(6.,3.)))*(.45+.55*gnt(qd*5.1+vec2f(1.,9.)));
+    /* СР · Визуал 22.10: вдали прожилка шириной в пиксель читалась тушью — замкнутые контуры-изолинии по всему
+       газу (мрамор, не пыль). Вдали (fz) ложбина широкая, 10–20 px, с мягкими краями; у звезды — как было */
+    let ln=mix(smoothstep(-5.,-.5,fp)*(1.-smoothstep(.5,1.6,fp)),smoothstep(-16.,-3.,fp)*(1.-smoothstep(2.,14.,fp)),fz)
+      *smoothstep(.44,.58,gnt(qd*2.4+vec2f(6.,3.)))*(.45+.55*gnt(qd*5.1+vec2f(1.,9.)));
     /* маска — не пустыня: в ярком газе (value ≥ .25) прожилки есть везде, маска только ослабляет */
     let lm=max(smoothstep(.24,.44,gnt(qd*.45+vec2f(11.,4.))),.8*smoothstep(.025,.06,l0));
     let qb=qd*3.3+wv*1.6+vec2f(9.,1.);let e2=3.3*3.6/H;
     let h0=fbt(qb,3)-.5;let hx=fbt(qb+vec2f(e2,0.),3)-.5-h0;let hy=fbt(qb+vec2f(0.,e2),3)-.5-h0;
     let hp=h0/max(length(vec2f(hx,hy)),1e-5);
-    let ln2=smoothstep(-3.5,-.4,hp)*(1.-smoothstep(.4,1.2,hp))*max(smoothstep(.5,.66,gnt(qd*.6+vec2f(2.,21.))),.75*smoothstep(.025,.06,l0))*smoothstep(.46,.6,gnt(qd*3.9+vec2f(13.,2.)))*(.45+.55*gnt(qd*7.3+vec2f(4.,6.)));
-    c=c*(1.-.6*max(ln*lm,ln2*.8)*smoothstep(.0,.08,l0)*fl)*(1.+.55*pow(rf,6.)*bm*fz)*(1.-.18*smoothstep(.9,.985,rl)*bm*fz);
+    let ln2=mix(smoothstep(-3.5,-.4,hp)*(1.-smoothstep(.4,1.2,hp)),smoothstep(-9.,-1.5,hp)*(1.-smoothstep(1.,8.,hp)),fz)*max(smoothstep(.5,.66,gnt(qd*.6+vec2f(2.,21.))),.75*smoothstep(.025,.06,l0))*smoothstep(.46,.6,gnt(qd*3.9+vec2f(13.,2.)))*(.45+.55*gnt(qd*7.3+vec2f(4.,6.)));
+    c=c*(1.-mix(.6,.42,fz)*max(ln*lm,ln2*.8)*smoothstep(.0,.08,l0)*fl)*(1.+.55*pow(rf,6.)*bm*fz)*(1.-.18*smoothstep(.9,.985,rl)*bm*fz);
     /* тон внутри массы дрейфует: местами к сини, у ядра — к теплу; у ядра светлый узел */
     let tz=smoothstep(.45,.75,gnt(qd*.3+vec2f(5.,17.)))*bm*fz;
     c=mix(c,c*vec3f(.82,.8,1.28),tz*.55);

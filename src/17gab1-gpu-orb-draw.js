@@ -46,9 +46,9 @@ const GOR_GAS=[
 function gorBody(pass,key,x,y,r,o){
   const fam=GOR_FAM[o.k]|0,P=gorPipe(fam);if(!P)return false;
   const a=GOR.A;a.fill(0);
-  const l=Math.hypot(o.sx,o.sy)||1,kx=Math.sqrt(1-GOR_LZ*GOR_LZ)/l;
+  const lz=o.lz||GOR_LZ,l=Math.hypot(o.sx,o.sy)||1,kx=Math.sqrt(1-lz*lz)/l;
   a[0]=x;a[1]=y;a[2]=r;a[3]=o.k;
-  a[4]=o.sx*kx;a[5]=o.sy*kx;a[6]=GOR_LZ;a[7]=o.turn||0;
+  a[4]=o.sx*kx;a[5]=o.sy*kx;a[6]=lz;a[7]=o.turn||0;
   a[8]=gorLin(o.air[0]);a[9]=gorLin(o.air[1]);a[10]=gorLin(o.air[2]);a[11]=o.th||0;
   /* цвет звезды — наполовину к белому: палитра мира должна читаться и у красного карлика */
   /* у гиганта — на три четверти к белому (M703): облака сами цветные, и под тёплой звездой все гиганты
@@ -68,19 +68,29 @@ function gorBody(pass,key,x,y,r,o){
   pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gor"+fam+"."+key,P,[ub,sb]));pass.draw(6);
   return true;
 }
-/* планета системы: false — мир не из двенадцати, пусть рисует 17ga */
-function gpuOrb(p,x,y,r,lights){
+/* планета системы: false — мир не из двенадцати, пусть рисует 17ga. o2 (карта, M822b) — шар чужой
+   системы: sun — цвет её звезды, lit — направление на неё в кадре, lz — доля света «из-за плеча
+   смотрящего» (у значка мира ночь не должна съедать полшара), key — своё имя буфера */
+function gpuOrb(p,x,y,r,lights,o2){
   const k=GOR.K[p.type];if(k===undefined||!p.T||!p.T.pal)return false;
   const pass=gpuScene();if(!pass)return true;
   const gas=p.type==="gas",airless=!gas&&p.T.atm==="отсутствует";
   const sky=gas?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0][4]:((p.T.sky&&p.T.sky[0])||[130,180,210]);
-  const sa=PLANET_BAKE_ANG+planetSunRot(p),sx=Math.cos(sa),sy=Math.sin(sa);
-  const o={k,sx,sy,turn:planetSpin(p)/TAU,air:sky,th:airless?0:(GOR_AIR[p.type]||0),sun:gplSun(),seed:p.seed%97,
-    pal:gas?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0]:p.T.pal,ring:(p.ring&&r>5)?p.ring:null,cities:0};
+  const sa=PLANET_BAKE_ANG+planetSunRot(p),sx=o2&&o2.lit?o2.lit[0]:Math.cos(sa),sy=o2&&o2.lit?o2.lit[1]:Math.sin(sa);
+  const o={k,sx,sy,turn:planetSpin(p)/TAU,air:sky,th:airless?0:(GOR_AIR[p.type]||0),sun:(o2&&o2.sun)||gplSun(),seed:p.seed%97,
+    pal:gas?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0]:p.T.pal,ring:(p.ring&&r>5)?p.ring:null,cities:0,lz:o2&&o2.lz};
   /* огни построек — те же точки, что у 17ga; сушу под ними проверяет шейдер своими материками */
   if(lights){const C=GOR.C||(GOR.C=new Float32Array(256));C.fill(0);
     o.cities=gplCities({sx,sy,lights,wet:0,seed:o.seed,T:o.turn},C);o.cpts=C;}
-  return gorBody(pass,"p"+(p.idx|0),x,y,r,o);
+  return gorBody(pass,((o2&&o2.key)||"p")+(p.idx|0),x,y,r,o);
+}
+/* кольцо газового гиганта — бросок от зерна планеты; система кладёт его в p.ring при первом показе,
+   карта (M822b) спрашивает здесь же, не трогая планету */
+function planetRing(p){
+  const rr=rng(p.seed^0x21A9);
+  return (p.type==="gas"&&rr()<.62)
+    ? {i:1.34+rr()*.26,o:1.85+rr()*.7,tilt:.16+rr()*.26,n:3+Math.floor(rr()*4),s:p.seed}
+    : null;
 }
 /* луна (M701): тот же шар, каменистый, серый по прежнему тону луны; с M804 серый ряд берёт
    оттенок у палитры своей планеты (ключ луны начинается с номера планеты) — одна пыль на систему */
