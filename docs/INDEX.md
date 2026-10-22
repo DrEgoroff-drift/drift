@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 633 · top-level symbols: 8731
+Files: 633 · top-level symbols: 8708
 
 ## SYMBOLS
 
@@ -2547,7 +2547,6 @@ audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
 autoLandInputs               src/19-mode-landing.js:49-72
 autosave                     src/14a-cloud.js:68-71
-avrDraw                      src/21a6-base-avral.js:133-159
 avrHands                     src/21a6-base-avral.js:59-73
 avrLose                      src/21a6-base-avral.js:112-131
 avrRoll                      src/21a6-base-avral.js:32-57
@@ -2626,13 +2625,10 @@ baseAdjSpirit                src/21a4-base-adj.js:102-104
 baseAirWgsl                  src/21ad-base-gpu.js:157-201
 baseAssignHere               src/21a3-base-people.js:61-66
 baseAt                       src/21a-mode-base.js:85
-baseBackPaint                src/21ac-base-draw.js:62-171
 baseBakeFree                 src/21ad-base-gpu.js:28
 baseBlocked                  src/21b1-base-pay.js:86-89
-baseCageY                    src/21ac-base-draw.js:319-324
 baseCall                     src/21a2-base-link.js:35-39
 baseCallOut                  src/21a2-base-link.js:128-135
-baseCam                      src/21ac-base-draw.js:366-371
 baseCell                     src/21a-mode-base.js:165-168
 baseCellRole                 src/21a3-base-people.js:49
 baseCellStaff                src/21a3-base-people.js:50-54
@@ -2642,14 +2638,10 @@ baseCost                     src/21a-mode-base.js:88-98
 baseCrewN                    src/21a1-base-life.js:293
 baseCryoMake                 src/21a1a-base-heat.js:118-131
 baseCryoOn                   src/21a1a-base-heat.js:34-38
-baseDeep                     src/21ac-base-draw.js:51-55
 baseDepth                    src/21a1a-base-heat.js:41-48
 baseDial                     src/21a8-base-world.js:33-58
 baseDialOf                   src/21a8-base-world.js:59
 baseDirStep                  src/21a5-base-dir.js:235-243
-baseDrawAdj                  src/21ac-base-draw.js:608-650
-baseDrawBoard                src/21ac-base-draw.js:651-692
-baseDrawNote                 src/21ac-base-draw.js:693-718
 baseDrinkMul                 src/21a9-base-laws.js:125-131
 baseDusty                    src/21a5-base-dir.js:222-225
 baseEarn                     src/21a1-base-life.js:195-211
@@ -2665,7 +2657,6 @@ baseFoodKeepsGood            src/21a3-base-people.js:42-44
 baseFoodStep                 src/21a1b-base-food.js:73-105
 baseForecast                 src/21a5-base-dir.js:104-107
 baseFreeCrew                 src/21a3-base-people.js:58-60
-baseFrontPaint               src/21ac-base-draw.js:207-316
 baseFrozen                   src/21a1a-base-heat.js:95
 baseGaugeLine                src/21a9-base-laws.js:47-54
 baseGrowCheck                src/21a-mode-base.js:14-22
@@ -2699,7 +2690,6 @@ baseLightWgsl                src/21ad-base-gpu.js:127-155
 baseLinkCan                  src/21a2-base-link.js:114
 baseLinkPark                 src/21a2-base-link.js:115-123
 baseList                     src/21a-mode-base.js:376-380
-baseLiveShapes               src/21ac-base-draw.js:326-362
 baseLog                      src/21a1-base-life.js:115-127
 baseLogList                  src/21a1-base-life.js:128-131
 baseMine                     src/21a1-base-life.js:213-262
@@ -2720,8 +2710,6 @@ baseReport                   src/21a2-base-link.js:86-110
 baseResolve                  src/21a1-base-life.js:475-524
 baseResolveAll               src/21a1-base-life.js:528-531
 baseRoleForce                src/12a-crew.js:177-180
-baseRoomTrace                src/21ac-base-draw.js:25-49
-baseRoomsPaint               src/21ac-base-draw.js:178-205
 baseRows                     src/21a-mode-base.js:13
 baseRuinCheck                src/21b0-base-ruin.js:28-42
 baseRuinClearable            src/21b0-base-ruin.js:68-72
@@ -2730,7 +2718,6 @@ baseRuinPrice                src/21b0-base-ruin.js:57-65
 baseRuinTake                 src/21b0-base-ruin.js:74-107
 baseSeal                     src/21a5-base-dir.js:111-114
 baseSet                      src/21a-mode-base.js:169-172
-baseShaftBox                 src/21ac-base-draw.js:57-60
 baseSharp                    src/21a9-base-laws.js:25-40
 baseShift                    src/21a1-base-life.js:28
 baseShiftRun                 src/21a1-base-life.js:136-191
@@ -2746,7 +2733,6 @@ baseT0                       src/21a1-base-life.js:31-35
 baseTenant                   src/21b0-base-ruin.js:45-56
 baseThreat                   src/21a5-base-dir.js:85-91
 baseTraitSpirit              src/21a9-base-laws.js:110-123
-baseTunnelLamps              src/21ac-base-draw.js:173-176
 baseUniqStep                 src/21b1-base-pay.js:70-82
 baseUnique                   src/21b1-base-pay.js:51-66
 baseVein                     src/21a5-base-dir.js:230-233
@@ -3137,7 +3123,6 @@ caveBuild                    src/22-mode-cave.js:105-174
 caveCeil                     src/22-mode-cave.js:67-72
 caveCeilLow                  src/22-mode-cave.js:82-88
 caveCeilOf                   src/22-mode-cave.js:90
-caveContour                  src/22-mode-cave.js:450-479
 caveDeco                     src/22a-cave-deco.js:94-200
 caveFloor                    src/22-mode-cave.js:61-66
 caveFloorLow                 src/22-mode-cave.js:75-81
@@ -3148,7 +3133,6 @@ caveGalY                     src/22-mode-cave.js:35
 caveLampSpot                 src/22a-cave-deco.js:240-245
 caveLowY                     src/22-mode-cave.js:42
 caveMake                     src/22-mode-cave.js:177-226
-caveMossSpots                src/22a-cave-deco.js:285-297
 caveMoveX                    src/22-mode-cave.js:255-260
 cavePool                     src/22a-cave-deco.js:76-86
 caveProps                    src/22b-cave-props.js:29-65
@@ -3937,7 +3921,7 @@ drawAstronaut                src/20-life.js:4-140
 drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-651
 drawBargesMap                src/12l-barge.js:653-672
-drawBase                     src/21ac-base-draw.js:372-605
+drawBase                     src/21ae-base-sect.js:439-455
 drawBaseBuilding             src/21c-built.js:142-202
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
@@ -3947,10 +3931,7 @@ drawBeltRocks                src/17gc-sys-belt.js:67-152
 drawBillboard                src/17k-billboard.js:182-198
 drawBuildMenu                src/21aa-base-rooms.js:259-275
 drawBuilt                    src/21c-built.js:64-102
-drawCave                     src/22-mode-cave.js:739-749
-drawCaveFar                  src/22-mode-cave.js:620-656
-drawCaveRock                 src/22-mode-cave.js:480-610
-drawCaveWorld                src/22-mode-cave.js:657-733
+drawCave                     src/22d-cave-pln.js:317-334
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
 drawCockpit                  src/25-cockpit.js:405-680
@@ -3960,7 +3941,6 @@ drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:114-140
 drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:166-216
-drawDeposit                  src/21b-surface-deco.js:405-559
 drawDigFauna                 src/23-mode-dig.js:336-345
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
@@ -6502,14 +6482,11 @@ peepScene                    src/20c-peep.js:42-48
 peepUpdate                   src/20c-peep.js:67-83
 peepWalk                     src/20c-peep.js:207-236
 pennAll                      src/21h-pennant.js:24
-pennDraw                     src/21h-pennant.js:113-164
-pennGpu                      src/21h-pennant.js:83-109
 pennHash                     src/21h-pennant.js:41-45
-pennHere                     src/21h-pennant.js:58-63
 pennHolder                   src/21h-pennant.js:47-57
 pennQuarter                  src/21h-pennant.js:23
 pennScore                    src/21h-pennant.js:26-36
-pennTick                     src/21h-pennant.js:65-80
+pennTick                     src/21h-pennant.js:59-74
 peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
 pgRest                       src/12y1-parrot-gpu.js:106
@@ -9791,7 +9768,7 @@ zoomTo                       src/15-input.js:358
 ## src/21a5-base-dir.js · 15 KB
   · директор базы (M397, DESIGN-base §10):1
 
-## src/21a6-base-avral.js · 9 KB
+## src/21a6-base-avral.js · 8 KB
   · аврал (M398, DESIGN-base §11):1
 
 ## src/21a7-base-charter.js · 5 KB
@@ -9813,7 +9790,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ab-base-interiors2.js · 25 KB
   · отсеки базы: вторая половина:1
 
-## src/21ac-base-draw.js · 47 KB
+## src/21ac-base-draw.js · 3 KB
   · база: рисование разреза:1
 
 ## src/21ac1-base-banya.js · 15 KB
@@ -9836,7 +9813,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/21aea-base-kits.js · 16 KB
 
-## src/21b-surface-deco.js · 34 KB
+## src/21b-surface-deco.js · 26 KB
   · крупная форма на поверхности:1
   · залежь как выход породы (M169):384
 
@@ -9900,7 +9877,7 @@ zoomTo                       src/15-input.js:358
 ## src/21g-greenhouse.js · 11 KB
   · грядка у дома:1
 
-## src/21h-pennant.js · 10 KB
+## src/21h-pennant.js · 5 KB
   · переходящий вымпел:1
 
 ## src/21p-pln.js · 9 KB
@@ -10044,7 +10021,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pzd-surf-laws.js · 5 KB
   · законы поверхности: вещи не стоят друг на друге (22.10):1
 
-## src/22-mode-cave.js · 46 KB
+## src/22-mode-cave.js · 27 KB
   · пещера: поле породы в двух измерениях:1
 
 ## src/22a-cave-deco.js · 16 KB
