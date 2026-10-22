@@ -886,6 +886,12 @@ function geoSettle(){for(const a of document.getAnimations()){try{const t=a.effe
   /* заход собирается за несколько кадров (21pz plnWarmStep): пока строится, спуск стоит и чип корабля
      ждёт на прежней сцене — два снимка (DPR 1 и 3) заставали разные стадии сборки. Достраиваем кадрами */
   if(G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone){for(let i=0;i<80&&!G.land.warmDone;i++)geoFrame1();}
+  /* фишки системы едут по настоящим часам (CHIP_T, 200 px/с, затухание): DPR 1 и 3 снимали разные
+     мгновения въезда, и сверка на 390 краснела через раз (22.10). Доводим фишки до места кадрами */
+  if((G.mode==="system"||G.mode==="landing")&&typeof CHIP_T==="number"){
+    for(let i=0;i<40;i++){CHIP_T=wallNow()-200;geoFrame1();}
+    CHIP_T=wallNow();
+  }
   /* зал пешком (27f4l, M816a): пилот идёт к месту по wallMs — ставим его в цель, объектив на нём */
   if(G.mode==="dock"&&typeof HALL==="object"&&HALL&&HALL.walk){
     /* тело вкладки на ходу спрятано, пока пилот не вошёл в место — экран «станция/market» без входа
