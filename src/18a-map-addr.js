@@ -53,7 +53,7 @@ function mapCellXY(gx,gy,V,cell){return {x:W/2+(gx-V.x)*cell,y:H/2+(gy-V.y)*cell
 function mapRulerTop(){return (typeof HUD_BAND==="number"?HUD_BAND:72)+4;}
 /* 1. сетка под законом тьмы */
 function mapGridDraw(V,cell,R,st){
-  /* рисунок сетки — тот же, что mapGridPaint (17z-map-backdrop, им рисует карта войны сайта), но пером (17z4) */
+  /* рисунок сетки — пером (17z4); 2D-двойник mapGridPaint удалён 22.10 (M822b) — его не звал никто */
   const gx0=Math.round(V.x),gy0=Math.round(V.y),c=Math.round(cell);
   for(let gy=gy0-R;gy<=gy0+R;gy++)for(let gx=gx0-R;gx<=gx0+R;gx++){
     const f=clamp(1-Math.hypot(gx-G.sx,gy-G.sy)/(st.jump*1.6),0,1);   /* к краю прыжка — в ничто */

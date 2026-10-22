@@ -419,8 +419,9 @@ function Bird {
 # ту же историю, что и клиенты, — тем же кодом: здесь из src/ склеивается
 # `site/war.js` — заголовок с заглушками (`site/war-head.js`) плюс модули
 # летописи в порядке склейки игры. Список явный: страница не должна тянуть
-# шесть мегабайт игры ради трёхсот систем и шести агентов.
-$WAR_MODULES = @("01-core.js", "03a-hull-maker.js", "12al-powers.js", "17z-map-backdrop.js", "17z4-map-pen.js",
+# шесть мегабайт игры ради трёхсот систем и шести агентов. Имя с косой
+# чертой — от корня (site/war-backdrop.js: 2D-фон живёт только на сайте, M822b).
+$WAR_MODULES = @("01-core.js", "03a-hull-maker.js", "12al-powers.js", "site/war-backdrop.js", "17z4-map-pen.js",
   "12am-chron-agents.js", "12am-chron-director.js", "12am-chron-lines.js", "12am-chron.js",
   "12an-chron-news.js",
   "12at-vote.js", "12au-rites.js", "12av-boss.js", "12aw-circ.js", "12b0-fx-pow.js", "14b-war-net.js")
@@ -430,7 +431,7 @@ function War {
   if (-not (Test-Path $head)) { return "no chronicle for the site" }
   $parts = @([System.IO.File]::ReadAllText($head, $enc))
   foreach ($m in $WAR_MODULES) {
-    $f = Join-Path $src $m
+    $f = if ($m.Contains("/")) { Join-Path $root $m } else { Join-Path $src $m }
     if (-not (Test-Path $f)) { throw "no $f — war.js will not build" }
     $parts += [System.IO.File]::ReadAllText($f, $enc)
   }

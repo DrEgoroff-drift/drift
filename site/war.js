@@ -27,7 +27,7 @@ function earn(){}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.20";
+const VER="0.499.21";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -898,7 +898,7 @@ function yaltaSealed(){
   return true;
 }
 
-/* ДРЕЙФ — фон звёздной карты: туманность, полоса Галактики, пеленги (M436).
+/* ДРЕЙФ — фон карты войны на сайте: туманность, полоса Галактики, пеленги (M436).
  *
  * Три слоя, которые делают карту космосом, а не листом в клетку. Жили внутри
  * `drawMap` (18-mode-map) и потому были видны только в игре; страница войны
@@ -907,9 +907,14 @@ function yaltaSealed(){
  * и в `site/war.js`, и обе карты — одна и та же бумага.
  *
  * Договор: каждая функция красит ПЕРЕДАННЫЙ контекст в поле W×H и не читает
- * ничего из `G`. В игре они зовутся внутри `screenLayer` (кэш на размер
- * экрана), на сайте — прямо в свой холст. Ни одна из них не двигает камеру:
- * смещение туманности по сектору остаётся делом зовущего.
+ * ничего из `G`. Ни одна из них не двигает камеру: смещение туманности по
+ * сектору остаётся делом зовущего.
+ *
+ * С 22.10 (M822b) модуль живёт только здесь, в site/: игра с M447 не звала ни
+ * одной его функции (небо карты — 17z3 на видеокарте, сетка и пеленги — перо
+ * 17z4), а 2D в сборке игры быть не должно. build.ps1 (War) клеит его в
+ * site/war.js на прежнем месте списка. Сетка секторов (mapGridPaint) удалена:
+ * её не звал никто — ни игра, ни страница войны.
  */
 const MAPBG={tex:null};
 function mapNebula(){
@@ -1000,25 +1005,6 @@ function mapRhumbPaint(c,W,H,cx,cy){
   c.restore();
 }
 
-/* ── сетка секторов ──
-   Клетка в один сектор, каждая пятая громче: по ней карта читается адресом, а
-   не россыпью точек. `at(gx,gy)` даёт экранную середину клетки, `fadeAt` —
-   насколько эта клетка вообще видна (в игре гаснет к краю прыжка, на сайте —
-   к краю круга летописи). */
-function mapGridPaint(c,W,H,cell,gx0,gy0,R,at,fadeAt){
-  c.save();c.lineWidth=1;
-  for(let gy=gy0-R;gy<=gy0+R;gy++)for(let gx=gx0-R;gx<=gx0+R;gx++){
-    const f=fadeAt(gx,gy);
-    if(f<=.02)continue;
-    const p=at(gx,gy),x0=p.x-cell/2,y0=p.y-cell/2;
-    if(x0>W||y0>H||x0+cell<0||y0+cell<0)continue;
-    const fifth=(gx%5===0||gy%5===0);
-    c.strokeStyle="rgba(150,182,212,"+(f*(fifth?.16:.09)).toFixed(3)+")";
-    c.strokeRect(Math.round(x0)+.5,Math.round(y0)+.5,Math.round(cell),Math.round(cell));
-  }
-  c.restore();
-}
-
 /* ── звезда на карте ──
    Ореол, у ярких — лучи, ядро цвета звезды, подмешанного к белому. Ровно тот
    рисунок, что в `drawMap`: звезда светит, а не лежит кружком на фоне.
@@ -1055,21 +1041,24 @@ function mapStarPaint(c,x,y,col,t,fade,opts){
      в очередь интерфейса #ovl (OVL.uq) на родном DPR, в порядке вызовов;
    · текст — всегда в OVL.uq: шрифт, выравнивание и линия — из ctx, как у fillText
      (mapFont и textAlign ставятся как прежде; ctx только мерит, не рисует).
-   Без видеокарты (Node-ярус, Chrome без WebGPU) каждое движение пера — тот же
-   вызов на ctx, что был. Прозрачность пера — mpAlpha (без видеокарты она же
-   ctx.globalAlpha). Цвет — строкой, как у 2D */
-const MPN={q:[],lay:"u",gpu:false,al:1,a0:1,w:1};
-function mpBegin(){MPN.gpu=typeof GPU!=="undefined"&&!!GPU.ok&&!!GPU.on&&!!GPU.enc;MPN.lay="u";MPN.q.length=0;MPN.al=MPN.a0=MPN.w=1;}
-function mpEnd(){mpFlush();MPN.gpu=false;MPN.al=MPN.a0=MPN.w=1;if(typeof ctx!=="undefined"&&ctx)ctx.globalAlpha=1;}
+   Прозрачность пера — mpAlpha. Цвет — строкой, как у 2D.
+   2D-запасного пути у карты нет (M822b, 22.10): кадр карты всегда пишет в очереди; без
+   видеокарты кадр не отправляется, и игрок видит плашку 08b2, а не 2D-карту. MPN.gpu —
+   «перо пишет в очереди»; false только внутри mp2d — выпечка в чужой холст (ctx подменён
+   зовущим): страница войны сайта и табличка стапеля 26e2. На ctx игры перо не красит */
+const MPN={q:[],lay:"u",gpu:true,al:1,a0:1,w:1};
+/* MPN.dev — устройство есть: без него у слоя нет атласа и кадр не уйдёт — строки не кладутся (мерка у карты своя) */
+function mpBegin(){MPN.gpu=true;MPN.dev=typeof GPU!=="undefined"&&!!GPU.ok&&!!GPU.dev;MPN.lay="u";MPN.q.length=0;MPN.al=MPN.a0=MPN.w=1;}
+function mpEnd(){mpFlush();MPN.al=MPN.a0=MPN.w=1;}
 /* слой: с "u" на "o" — сначала сброс фигур под звёздами */
 function mpLay(l){if(MPN.lay==="u"&&l!=="u")mpFlush();MPN.lay=l;}
-function mpFlush(){const q=MPN.q;if(q.length&&MPN.gpu){const p=gpuNext();if(p)gpuShapes(p,q,{blend:"over"});}q.length=0;}
+function mpFlush(){const q=MPN.q;if(q.length&&MPN.gpu&&typeof GPU!=="undefined"&&GPU.ok&&GPU.enc){const p=gpuNext();if(p)gpuShapes(p,q,{blend:"over"});}q.length=0;}
 function mpAlpha(a){MPN.a0=a;MPN.al=a*MPN.w;if(!MPN.gpu)ctx.globalAlpha=MPN.al;}
 /* вес слоя (M822): у карты три веса — «вы» (вы, выбор, курс), путь (круг прыжка, связи, свой
    маршрут) и всё остальное. Вес множит прозрачность каждого движения пера, mpAlpha слоя — внутри
    него: слой, который сам гасит дальнее, гасит его от своего веса */
 function mpWeight(w){MPN.w=w;mpAlpha(MPN.a0);}
-/* рисунок без видеокарты на время fn (выпечка в чужой холст: ctx подменён) */
+/* рисунок на 2D на время fn — только выпечка в чужой холст (ctx подменён зовущим), не кадр игры */
 function mp2d(fn){const g=MPN.gpu,a=MPN.al;MPN.gpu=false;MPN.al=1;try{return fn();}finally{MPN.gpu=g;MPN.al=a;}}
 function mpU(){return MPN.gpu&&MPN.lay==="u";}
 function mpS(kind,a,b,c,d,hw,soft,col,al){const C=gcColor(col),A=C[3]*MPN.al*(al==null?1:al);
@@ -1194,11 +1183,11 @@ function mpHatch(x0,y0,w,h,st,dir,lw,col){
 function mpTextAlong(t,x,y,ang,dy,col){
   const ca=Math.cos(ang),sa=Math.sin(ang),al=ctx.textAlign;
   /* на видеокарте — вся строка одной повёрнутой маской (08bi ovTextRot), как 2D под rotate */
-  if(MPN.gpu){ovTextRot(OVL.uq,x-dy*sa,y+dy*ca,t,ctx.font,col,"center",ctx.textBaseline,MPN.al,ang);return;}
+  if(MPN.gpu){if(MPN.dev)ovTextRot(OVL.uq,x-dy*sa,y+dy*ca,t,ctx.font,col,"center",ctx.textBaseline,MPN.al,ang);return;}
   ctx.save();ctx.translate(x-dy*sa,y+dy*ca);ctx.rotate(ang);ctx.textAlign="center";ctx.fillStyle=col;
   ctx.fillText(t,0,0);ctx.restore();ctx.textAlign=al;
 }
-/* сеть пеленгов — mapRhumbPaint (17z-map-backdrop, её же рисует карта войны сайта) пером:
+/* сеть пеленгов — mapRhumbPaint (site/war-backdrop.js, ею рисует карта войны сайта) пером:
    шестнадцать румбов из вашей системы до дальнего угла кадра и окружность построения */
 function mpRhumb(ox,oy){
   let L=0;
@@ -1220,7 +1209,7 @@ function mpPlate(x,y,w,h){
 /* подпись: шрифт, выравнивание и линия — нынешние ctx (mapFont, textAlign, textBaseline) */
 function mpText(t,x,y,col){
   if(!MPN.gpu){ctx.fillStyle=col;ctx.fillText(t,x,y);return;}
-  if(!t&&t!==0)return;
+  if((!t&&t!==0)||!MPN.dev)return;
   ovText(OVL.uq,x,y,String(t),ctx.font,col,ctx.textAlign,ctx.textBaseline,MPN.al,1);
 }
 

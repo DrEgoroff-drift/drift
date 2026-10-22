@@ -64,3 +64,45 @@ function mapSelBlock(n0,hung){
   for(const b of MAP_BOX)if(!hung||b.s!=="подвал слева · выбор")B(b.x,b.y,b.x+b.w,b.y+b.h);
   for(const d of MAP_DOMR)if(!hung||d.sel!=="#prompt")B(d.r.left,d.r.top,d.r.right,d.r.bottom);
 }
+/* ── планеты выбранной системы — шарами 17gab (M822b) ──
+   До сих пор планет на карте не было вовсе — только «N планет» строкой. Теперь у выбора — ряд его
+   миров по порядку орбит от кольца прицела: ближний к звезде — первым, гигант крупнее камня (корень
+   отношения радиусов), кольцо гиганта — тем же броском, что в системе. Свет — от самой выбранной
+   звезды: её цвет, направление на неё в кадре (а не звезда, у которой стоите вы). Ряд — чернила
+   карты: подписи мира и табличка у выбора его обходят. Вниз от звезды; не влез над полом карты —
+   вверх; не влез и так (телефон, звезда у кромки) — вбок, к середине кадра. Шары только у выбора:
+   всё небо шарами — шум и цена. mapOrbFan — чистая раскладка (её мерит 91qk-map), mapOrbsDraw — рисунок */
+const MAP_ORB={rMin:3.5,rMax:9,gap:4,lz:.8};
+function mapOrbInk(p){const P=p.type==="gas"?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0]:(p.T&&p.T.pal)||[[150,160,170]],c=P[Math.min(3,P.length-1)];
+  return "rgba("+c[0]+","+c[1]+","+c[2]+",.92)";}
+function mapOrbFan(sel,cell){
+  const s=sel.s,P=(s.planets||[]);if(!P.length)return [];
+  const rr=1.8+s.cls.t*2.2,U=mapU(),big=clamp(cell*.16,6,MAP_ORB.rMax)*Math.min(U,1.4);
+  const mR=Math.max(...P.map(p=>p.radius||1));
+  const L=P.map(p=>{const r=Math.max(MAP_ORB.rMin,big*Math.sqrt((p.radius||1)/mR)),ring=planetRing(p);
+    return {p,r,ext:ring&&r>5?r*ring.o:r};});
+  const r0=rr+24*U;let len=0;for(const o of L)len+=o.ext*2+MAP_ORB.gap*U;
+  const x0=8*U,y0=8*U,x1=mapRail(),y1=mapDeck();
+  const fits=(dx,dy)=>{const ex=sel.x+dx*(r0+len),ey=sel.y+dy*(r0+len),w=Math.max(...L.map(o=>o.ext));
+    return Math.min(ex,sel.x)-(dy?w:0)>=x0&&Math.max(ex,sel.x)+(dy?w:0)<=x1&&Math.min(ey,sel.y)-(dx?w:0)>=y0&&Math.max(ey,sel.y)+(dx?w:0)<=y1;};
+  const side=sel.x<(x0+x1)/2?1:-1;
+  const D=[[0,1],[0,-1],[side,0],[-side,0]].find(d=>fits(d[0],d[1]))||[0,sel.y<(y0+y1)/2?1:-1];
+  let d=r0;
+  return L.map(o=>{d+=o.ext;const f={p:o.p,r:o.r,ext:o.ext,x:sel.x+D[0]*d,y:sel.y+D[1]*d,dx:D[0],dy:D[1]};d+=o.ext+MAP_ORB.gap*U;return f;});
+}
+function mapOrbsDraw(sel,cell){
+  const F=mapOrbFan(sel,cell);if(!F.length)return F;
+  const c=hex2rgb(sel.s.cls.col||"#ffe08a"),m=Math.max(1,c[0],c[1],c[2]),sun=[c[0]/m,c[1]/m,c[2]/m];
+  const a=F[0],b=F[F.length-1],U=mapU();
+  /* ось ряда — волосок от кольца прицела до последнего мира: ряд читается схемой системы */
+  const l0=MPN.lay;MPN.lay="u";   /* ось — в сцену, под шары; прицел и слова над ними — в слое интерфейса */
+  mpLine(a.x-a.dx*(a.ext+4*U),a.y-a.dy*(a.ext+4*U),b.x,b.y,1,"rgba(207,227,234,.22)");
+  mpFlush();MPN.lay=l0;
+  for(const f of F){
+    const lx=sel.x-f.x,ly=sel.y-f.y,l=Math.hypot(lx,ly)||1;
+    /* запасной диск — пока конвейер своего рода собирается (первые кадры) или ?orb=0: цветом мира, не серым */
+    if(!(GOR.on&&gpuOrb(f.p,f.x,f.y,f.r,0,{sun,lit:[lx/l,ly/l],lz:MAP_ORB.lz,key:"m"})))mpDisc(f.x,f.y,f.r,mapOrbInk(f.p));
+    mapInkBox(f.x-f.ext-2,f.y-f.ext-2,f.ext*2+4,f.ext*2+4);
+  }
+  return F;
+}
