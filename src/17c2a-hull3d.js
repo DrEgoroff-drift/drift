@@ -324,7 +324,10 @@ struct FO{@location(0) c:vec4f,@builtin(sample_mask) k:u32};
   /* части (не тело) — в тени тела и темнее у самого борта */
   let part=i.m.x>=0.;let sh=select(1.,bodySh(i.o),part);
   let ao=select(1.,1.-.42*(1.-smoothstep(1.,2.4,bodyF(i.o))),part);
-  let fill=u.v[4].rgb*(.62+.38*max(n.z,0.))*ao;
+  /* полёт (M824): заливка — отсвет туманности сверху: верхним граням полтора, бортам меньше — тёмная краска
+     корпуса (.18) иначе сливается с газом (.16); в студии (u.v[8].w) заливка прежняя */
+  let fly0=1.-step(.5,u.v[8].w);
+  let fill=u.v[4].rgb*mix(.62+.38*max(n.z,0.),.45+1.7*max(n.z,0.),fly0)*ao;
   let key=sc*${H3D_KEY}*max(ndl,0.)*sh;
   /* огни сцены: отрезок-источник над плоскостью, без заслонов */
   var pl=vec3f(0.);let hz=u.v[0].w*u.v[0].z*.3;
@@ -344,9 +347,15 @@ struct FO{@location(0) c:vec4f,@builtin(sample_mask) k:u32};
   let sp=sh*sc*step(0.,ndl)*(pow(nh,mix(18.,70.,met))*(abs(i.m.x)*.3*gl+met*.8)+gls*(.06+2.2*pow(nh,140.)));
   /* студия (M723, u.v[24].y): контровой справа сверху — тёплый край силуэта против ключа слева; в полёте ноль */
   let rk=u.v[24].y*pow(1.-max(n.z,0.),2.)*smoothstep(-.2,.9,dot(n.xy,vec2f(.8,-.6)));
-  let rim=vec3f(.55,.68,.85)*pow(1.-max(n.z,0.),3.)*.12+vec3f(1.,.62,.38)*rk;
+  /* полёт (M824, СР · Визуал 22.10): корпус в кадре системы — тёмное пятно без ключа; по закону «Сцены» ему
+     нужны контровой от звезды по кромке с её стороны и холодный отсвет туманности по кромке с другой — тогда
+     силуэт читается на любом фоне. Оба идут не через краску (она тёмная), а на полкраски к белому. В студии — ноль */
+  let gr=pow(1.-max(n.z,0.),1.3);let sl=dot(n.xy,L.xy);let fly=1.-step(.5,u.v[8].w);
+  let rimS=sc*gr*smoothstep(-.1,.8,sl)*sh*1.1*fly;
+  let rimC=vec3f(.55,.68,.85)*gr*(.12+.5*smoothstep(-.3,.8,-sl)*fly);
+  let rim=vec3f(1.,.62,.38)*rk;
   let em=mk.x;
-  var c=alb*(fill+key+pl+rim)*(1.-em)+alb*em*${RL_EM}+sp*(1.-em)+min(alb*fs,u.v[6].rgb*.16)*(1.-em);
+  var c=alb*(fill+key+pl+rim)*(1.-em)+(rimS+rimC)*mix(alb,vec3f(1.),.5)*(1.-em)+alb*em*${RL_EM}+sp*(1.-em)+min(alb*fs,u.v[6].rgb*.16)*(1.-em);
   c+=vec3f(1.,.42,.16)*max(i.m.y,0.)*step(i.m.y,1.)*u.v[4].w;
   /* огонь сверх 1 — своё свечение части: излучатель, щель реактора, линза */
   c+=i.c.rgb*max(i.m.y-1.,0.);
@@ -471,7 +480,10 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
   d.queue.submit([enc.finish()]);
   const pass=V?V.pass:gpuScene();if(!pass)return false;
   if(V){const w=V.bw/V.nd,h=V.bh/V.nd;gpuImage(pass,img,[{x:w/2,y:h/2,w,h}],{blend:"hull"});}
-  else gpuImage(pass,K.img[L],[{x,y,w:2*Rb*sc,h:2*Rb*sc,u1:n/side,v1:n/side}],{blend:"hull"});
+  else{   /* обвод (M824): тот же слой чуть шире, фон под ним темнеет — тёмная кромка в 2–3 px вокруг силуэта;
+             на светлой туманности корпус отделяется ей, на тёмной — контровым от звезды */
+    const hp=2*Rb*sc+8;gpuImage(pass,K.img[L],[{x,y,w:hp,h:hp,u1:n/side,v1:n/side,a:.85}],{blend:"shade"});
+    gpuImage(pass,K.img[L],[{x,y,w:2*Rb*sc,h:2*Rb*sc,u1:n/side,v1:n/side}],{blend:"hull"});}
   return true;
 }
 /* цель студии (M723) — своя у держателя V, размером с его рамку: ×4 цвет и глубина, сведённая — картинкой

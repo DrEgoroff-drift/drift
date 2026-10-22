@@ -25,16 +25,16 @@ function gate2dChips(){
   return null;
 }
 const GATE2D=[
-  {name:"чужой след (21q, M631): плита и груз — тела в кадре планеты, на #c ни штриха",
-   painters:["traceDraw","plnThingsFrame","traceBodyMesh"],probe:["plnThingsFrame"],
+  {name:"чужой след (21piib, M171): плита и груз — тела в кадре планеты, на #c ни штриха",
+   painters:["plnTrcStep","plnTrcFrame","plnTrcMesh"],probe:["plnTrcFrame"],
    place(first){
      if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
-       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";traceBodyDrop();}
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
      const S=G.surf;if(!S)return null;
      if(!S.trace||S.trace.key!=="gate2d")S.trace={key:"gate2d",m:5,h:"0a1b2c",i:"1",r:"ice",n:3,x:S.x+20};
      return {S};},
-   done(){ok(TRACE_BODY.n>0&&!TRACE_BODY.err,"чужой след: тело собрано ("+TRACE_BODY.n+")"+(TRACE_BODY.err?" — "+TRACE_BODY.err:""));
-     if(G.surf)G.surf.trace=null;traceBodyDrop();}},
+   done(){ok(!!TRC.it,"чужой след: тело собрано");
+     if(G.surf)G.surf.trace=null;}},
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
    place(){
@@ -239,6 +239,36 @@ const GATE2D=[
      this.i++;return {};},
    done(){albumOpen=-1;albumBack=false;albumClose();tableToggle(false);G.album=[];G.smenaAt={};},
    probe:["albumPut"]},
+  /* поездка (M828): линия, остановки, вагон телом и свет — одним проходом поверх; имена и строки — подписями.
+     Ехать не даём: перегон длиной в вечность, полпути. С десятого кадра (до конца разгона) — ПАЗик маршрутки */
+  {name:"поездка (18g, 18gb): вагон и ПАЗик телами, остановки, подписи",
+   painters:["drawRail","railLineGpu","railStopShapes","railCarDraw","railCarLights","railFx"],
+   place(first){
+     if(first){const l=railNet().lines.find(q=>q.stops.length>4);if(!l)return null;
+       G.sx=l.stops[1].sx;G.sy=l.stops[1].sy;G.sys=getSystem(G.sx,G.sy);
+       railRideStart({l,i0:1,dir:1,k:3});RAIL_RIDE.dur=1e6;RAIL_RIDE.t=4.5e5;this.i=0;return {};}
+     if(++this.i===10&&RAIL_RIDE)RAIL_RIDE.bus=true;
+     return {};},
+   done(){RAIL_RIDE=null;G.mode="system";},
+   warm:30,probe:["railCarDraw","railStopShapes"]},
+  /* кольцо станции рельса в системе и вспышка выхода из поезда (M828): запасной 2D-ветки нет */
+  {name:"кольцо рельса и вспышка выхода (18f, 18g): без 2D",
+   painters:["drawSysRail","railGpu","railHaltShapes","drawRailArrive","railFx"],
+   place(){
+     for(let r=0;r<=20;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const R=railHere();if(!R)continue;
+       G.ship.x=R.x+40;G.ship.y=R.y+30;G.ship.vx=G.ship.vy=0;G.zoom=1;G.zoomT=null;RAIL_ARRIVE=G.t-6;return {R};}
+     return null;},
+   done(){RAIL_ARRIVE=-1e9;},
+   warm:30,probe:["railGpu","drawRailArrive"]},
+  /* карта (хвосты переписи M828): перо на видеокарте, регистр текста и мерка строк — мимо ctx */
+  {name:"карта (18, 18a, 18b): подписи, кольца, линейки, роза, владения — без вызовов на ctx",
+   painters:["mapLateFlush","mapOverview","mapRingsDraw","mapRumoursDraw","mapRulersDraw","mapRoseDraw","mapHoldingsDraw","mapHoldingsTop"],
+   place(first){if(first){G.mode="map";G.mapView=null;G.mapMore=false;G.sel={x:G.sx+1,y:G.sy};}return {};},
+   done(){G.mode="system";},
+   reg:true,   /* регистр текста пера (font, textAlign, textBaseline, fillStyle) — свойства ctx без рисования; меряются методы */
+   warm:30,probe:["mapRulersDraw","mapLateFlush","mapRingsDraw"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
@@ -260,7 +290,7 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
         if(GATE2D_DYRY.includes(m[1])){if(!GATE2D_TXT.includes(m[1]))return null;t=true;continue;}
         if(!p&&own.has(m[1]))p=m[1];}
       return p&&{p,t};};
-    const note=k=>{if(!K.on)return;const w=who();if(!w)return;
+    const note=(k,set)=>{if(!K.on||set&&S.reg)return;const w=who();if(!w)return;
       if(w.t){K.tx++;if(S.warm!=null&&K.i>=S.warm)K.late++;return;}
       K.n++;const q=w.p+"."+k;K.by[q]=(K.by[q]||0)+1;};
     const run0=G.running,loop0=LOOP_OFF,wrap={},lim0=Error.stackTraceLimit;
@@ -278,7 +308,7 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
         if(d.value instanceof Function){const o=d.value;saved.push([P,k,d]);
           P[k]=function(){note(k);return o.apply(this,arguments);};}
         else if(d.set){const s=d.set;saved.push([P,k,d]);
-          Object.defineProperty(P,k,{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){note(k);return s.call(this,v);}});}}
+          Object.defineProperty(P,k,{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){note(k,1);return s.call(this,v);}});}}
       for(const k of CO){const o=C[k];saved.push([C,k,{value:o,writable:true,configurable:true,enumerable:true}]);
         C[k]=function(){if(dep.n)note(k);return o.apply(this,arguments);};}
       /* с первого кадра: выпечка — тоже часть ворот */

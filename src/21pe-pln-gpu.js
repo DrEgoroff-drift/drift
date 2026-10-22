@@ -23,7 +23,7 @@
 const PLN_HDR="rgba16float",PLN_DEP="depth32float";
 /* куда идёт отрисовка: биты проходов и род */
 const PLN_TO={main:1,mirror:2,sh0:4,sh1:8,all:15,lit:3,near:7};
-const PLN_KIND={body:0,water:1,wing:2};
+const PLN_KIND={body:0,water:1,wing:2,veil:3};   /* veil — смешанное свечение после тел (дым) */
 const PLN_GPU={dev:null,gen:0,
   ms:4,shn:4096,                       /* сглаживание сцены; сторона карты теней */
   shD:2,shN:32,                        /* свет в воздухе: делитель кадра, шагов луча */
@@ -206,7 +206,10 @@ function plnPipeDescs(d,L,ms){
       primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"always"},multisample:mu});
     mk("body"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_main",targets:[{format:PLN_HDR}]},
       primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"greater"},multisample:mu});
-    mk("water"+n,plnWaterPipe(lS,mS,mu));   /* вода — одна на все сцены (21pw) */
+    mk("water"+n,plnWaterPipe(lS,mS,mu));
+    /* вуаль: дым и пар — свечение с альфой записи; глубину читают, не пишут */
+    mk("veil"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_veil",targets:[{format:PLN_HDR,blend}]},
+      primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater"},multisample:mu});   /* вода — одна на все сцены (21pw) */
     /* осадки: карточки без буферов, по шесть вершин на штуку; глубину читают, не пишут (M626) */
     mk("wx"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_wx"},fragment:{module:mS,entryPoint:"fs_wx",targets:[{format:PLN_HDR,blend}]},
       primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater"},multisample:mu});
@@ -218,7 +221,7 @@ function plnPipeDescs(d,L,ms){
   return out;
 }
 /* ключ воронки: свёртка и тень зависят от сглаживания яруса, сцена несёт его в имени (sky1/sky4) */
-const plnPipeKey=(k,ms)=>"pln."+k+(/^(shadow|sky|body|water|wx)/.test(k)?"":"."+ms);
+const plnPipeKey=(k,ms)=>"pln."+k+(/^(shadow|sky|body|water|wx|veil)/.test(k)?"":"."+ms);
 /* конвейеры: через воронку движка (непрогретый ключ она строит на месте и пишет в GPU_PIPES.lazy),
    а держим сами — воронка непрогретое не хранит. Q.P — по короткому имени: shadow, sky1, body4, blur … */
 function plnGpuPipes(){
@@ -356,6 +359,7 @@ function plnGpuFrame(F){
   const Q=PLN_GPU,e=GPU.enc,P=Q.P,B=Q.B,V=Q.V,D=Q.D,ms=Q.ms;
   F.mirror=F.waterY>-1e4&&F.batches.some(b=>b.kind===PLN_KIND.water&&b.geo.n>0);
   F.wing=F.batches.some(b=>b.kind===PLN_KIND.wing&&b.geo.n>0);
+  F.veil=F.batches.some(b=>b.kind===PLN_KIND.veil);
   plnGpuWrite(F);
   let tris=0,calls=0;
   const some=(p,to,kind)=>{
@@ -385,6 +389,7 @@ function plnGpuFrame(F){
     p.setBindGroup(0,B.main);p.setPipeline(P["sky"+ms]);p.draw(3);
     p.setPipeline(P["body"+ms]);some(p,PLN_TO.main,PLN_KIND.body);
     if(F.mirror){p.setPipeline(P["water"+ms]);some(p,PLN_TO.main,PLN_KIND.water);}
+    if(F.veil){p.setPipeline(P["veil"+ms]);some(p,PLN_TO.main,PLN_KIND.veil);}
     if(F.wx&&F.wx.n>0){p.setPipeline(P["wx"+ms]);p.draw(F.wx.n*6);calls++;tris+=F.wx.n*2;}
     p.end();
   }
