@@ -281,17 +281,3 @@ function growLichen(r,R,iters){
   }
   return pts;
 }
-/* мох пещеры: места пятен (2D-свет пещеры 22-mode-cave спрашивает их под typeof) */
-function caveMossSpots(C){
-  if(C.moss)return C.moss;
-  const r=rng(C.seed^0x3055), out=[];
-  for(let i=0;i<16;i++){
-    const low=r()<.4;
-    const x=low?340+r()*(CAVE_W-560):160+r()*(CAVE_W-320);
-    const y=low?caveLowY(C,x):caveGalY(C,x);
-    /* мох садится на СВОД и на стены, а не на пол: ему нужна сырость сверху */
-    out.push({x,y:y-(6+r()*22),n:3+Math.floor(r()*5),ph:r()*TAU,
-              rr:10+r()*16,col:r()<.5?[120,200,180]:[150,190,230]});
-  }
-  return C.moss=out;
-}
