@@ -15,6 +15,8 @@ const GPU_BLEND={
   /* вычесть ранее прибавленное (кусок, заменённый другим: окна гостиницы) */
   sub:{color:{operation:"reverse-subtract",srcFactor:"one",dstFactor:"one"},alpha:GPU_KEEP_A},
   hull:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one-minus-src-alpha"}},
+  /* затенить фон под альфой картинки (цвет её не кладётся): обвод корпуса в полёте (M824) */
+  shade:{color:{srcFactor:"zero",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one"}},
   /* умножение, как multiply у 2D на непрозрачном фоне: тьма пещеры, тени, дымка */
   mul:{color:{srcFactor:"dst",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one"}}};
 function gpuPipe(name,code,blend,layout){
