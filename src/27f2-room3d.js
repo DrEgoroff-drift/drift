@@ -484,11 +484,23 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
       let hull=length(s/vec2f(.62,.11));let tw=max(abs(s.x+.12)-.07,abs(s.y-.15)-.08);
       f=mix(f,.06,smoothstep(1.03,.97,hull));f=mix(f,.06,step(tw,0.));
       f=mix(f,.14,step(c2.y,-.3));}
-    else if(k==2u){   /* смена: строй фигур на светлом */
-      f=.62+.15*c2.y;let cx=c2.x*3.4+ph*.4;let id=floor(cx);let lx=fract(cx)-.5;let hh=.08*vn3(vec3f(id,7.,0.));
-      let lw=lx/3.4;let hd=length(vec2f(lw,c2.y-(.15+hh)));   /* в метрах кадра: голова круглая, плечи шире шеи */
-      let bd=max(abs(lw)-.075,max(c2.y-(.09+hh)+.025*smoothstep(.04,.075,abs(lw)),-.5-c2.y));
-      f=mix(f,.08,max(smoothstep(.052,.046,hd),step(bd,0.)));}
+    else if(k==2u){   /* смена (СР · Визуал 22.10): толпа идёт двумя рядами — дальний мельче, в дымке, навстречу ближнему,
+                         фигуры покачиваются в шаге; на второй половине — склейка на крупный план: голова и плечи, поворот к камере.
+                         Прежний «строй из шести» читался построением, а не фильмом */
+      f=.62+.15*c2.y;
+      if(ph<.55){for(var r=0u;r<2u;r++){let fr=f32(r);let sc=mix(.55,1.,fr);let dir=mix(1.,-1.,fr);let base=mix(.1,-.22,fr);
+          let cx=c2.x*(3.3/sc)+ph*dir*1.6+fr*.37;let id=floor(cx);let lw=(fract(cx)-.5)*sc/3.3;
+          let hh=(.14*vn3(vec3f(id,7.+fr,0.))-.04)*sc;let bob=.014*sc*sin(ph*44.+id*2.1);
+          let gap=step(.78,vn3(vec3f(id*1.7,fr*3.+2.,0.)));   /* толпа неровная: часть мест пустая, рост разный */
+          let y=(c2.y-base-bob)/sc;let x=lw/sc;
+          let hd=length(vec2f(x,y-(.15+hh/sc)));
+          let bd=max(abs(x)-.075,max(y-(.09+hh/sc)+.025*smoothstep(.04,.075,abs(x)),-mix(.32,.5,fr)-y));
+          f=mix(f,mix(.3,.08,fr),max(smoothstep(.052,.046,hd),step(bd,0.))*(1.-gap));}}
+      else{let q=(ph-.55)/.45;f=.7+.12*c2.y;let s=c2;
+        let hd=length((s-vec2f(.16-.28*q,.14))/vec2f(.15,.18));
+        let nk2=max(abs(s.x-.1+.14*q)-.06,max(s.y-.0,-.1-s.y));
+        let bd=max(abs(s.x)-.46,max(s.y+.06+.32*smoothstep(.18,.46,abs(s.x)),-.5-s.y));
+        f=mix(f,.08,max(smoothstep(1.03,.97,hd),max(step(nk2,0.),step(bd,0.))));}}
     else if(k==3u){   /* биология: стебли и соцветия */
       f=.5+.2*c2.y;let cx=c2.x*4.;let id=floor(cx);let hh=.05+.3*vn3(vec3f(id,3.,0.));
       let sx=abs(fract(cx+.06*sin(c2.y*7.+id))-.5);
