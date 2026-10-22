@@ -56,7 +56,7 @@ function plnTinPal(p){
     lite:plnMix3(MK.steelLt,f(pal[1],.6,60),.3),steel:plnMix3(MK.steel,f(pal[2],.6,40),.2)};
 }
 function plnTinMesh(A,st,p,sd){
-  const C=plnTinPal(p),V=TIN_V,MK=PLN_MARK_COL,m=plnMesh(1<<14),lm=plnMesh(1<<9),pm=plnMesh(1<<8),K=plnOwnKit(m,lm),MAN=PLN_MAT.man;
+  const C=plnTinPal(p),V=TIN_V,MK=PLN_MARK_COL,m=plnMesh(1<<14),lm=plnMesh(1<<9),pm=plnMesh(1<<10),K=plnOwnKit(m,lm),MAN=PLN_MAT.man;
   const iron=plnOwnSteel(C.iron,.45,sd),steel=plnOwnSteel(C.steel,.25,sd+7),dark=plnOwnSteel(C.dark,.2,sd+3),haz=plnMix3(MK.orange,[.9,.6,.2],.3);
   const conc=plnSetMott(plnMix3(C.dark,[.34,.33,.31],.55),.18,.9,sd+1);
   const tv=hashi(p.seed,0x71A,2),dw=(64+((tv>>>3)&3)*12)/PLN_M,ch=(34+((tv>>>1)&3)*9)/PLN_M,nh=3+((tv>>>5)&3);
@@ -64,21 +64,29 @@ function plnTinMesh(A,st,p,sd){
   K.box([0,-.42,0],[V.hx,.6,V.hz],conc,{box:.12,bump:.02,seed:sd});
   for(let x=-V.hx+.5,i=0;x<V.hx-.4;x+=.9,i++)
     plnCard(m,[x,.08,-V.hz-.01],[x,.17,-V.hz-.01],[x+.45,.17,-V.hz-.01],[x+.45,.08,-V.hz-.01],[0,0,-1],i%2?C.dark:haz,MAN,null,0,0);
-  /* ── приёмная воронка: четыре ноги, раструб квадратом, тёмный зев, уровень наряда ── */
-  {const hx=V.hop,hz=-.6,y0=2,y1=4.3,r0=.72,r1=1.75;
-   for(const sx of [-1,1])for(const sz of [-1,1])K.rod([hx+sx*1.05,0,hz+sz*.95],[hx+sx*r0*.75,y0+.05,hz+sz*r0*.75],.08,dark,{sides:6});
-   K.rod([hx-1.05,.9,hz-.95],[hx+1.05,.9,hz-.95],.05,dark,{sides:5});
-   plnTube(m,{path:[[hx,y0,hz],[hx,y1,hz]],rad:t=>(r0+(r1-r0)*t)*Math.SQRT2,sides:4,up:[1,0,1],col:iron,mat:MAN,cap:false});
-   plnTube(m,{path:[[hx,y0-.35,hz],[hx,y0+.02,hz]],rad:.32,sides:8,col:dark,mat:MAN,cap:true});
-   K.box([hx,y1-.12,hz],[r1-.08,.04,r1-.08],[.012,.012,.012],{box:.1,sub:1});
-   if(st.fq&&st.A){const f=st.fq/8,yl=y0+(y1-y0-.2)*f,rl=r0+(r1-r0)*(yl-y0)/(y1-y0)-.06;
-     K.box([hx,yl,hz],[rl,.08,rl],plnSetMott(plnHex(RES[st.A.k].col),.25,3,sd+4),{box:.3,bump:.2,seed:sd+4});}
-   /* кромка — светлая; полосы по переднему скату: единственное место, куда человек лезет руками */
-   for(const s of [-1,1]){K.rod([hx-r1,y1+.03,hz+s*r1],[hx+r1,y1+.03,hz+s*r1],.06,C.lite,{sides:5});
-     K.rod([hx+s*r1,y1+.03,hz-r1],[hx+s*r1,y1+.03,hz+r1],.06,C.lite,{sides:5});}
-   const k=(r1-r0)/(y1-y0);
-   for(let i=0;i<4;i++){const xa=hx-1.45+i*.8,yA=y1-.55,yB=y1-.25;
-     plnCard(m,[xa,yA,hz-(r0+k*(yA-y0))-.03],[xa,yB,hz-(r0+k*(yB-y0))-.03],[xa+.38,yB,hz-(r0+k*(yB-y0))-.03],[xa+.38,yA,hz-(r0+k*(yA-y0))-.03],[0,.42,-1],haz,MAN,null,0,0);}}
+  /* ── приёмная воронка: круглый конус раструбом вверх на четырёх ногах, горло — лотком вниз в торец
+     барабана; рыжая краска выцвела, по кромке — светлый обруч. Уровень наряда — шкалой по восьмым на
+     переднем скате: на шляпке он читался жёлтым куполом на тонких ногах, и воронка становилась грибом.
+     Конус выше плеча (низ 3.3 м): горлу нужно падать в барабан, а не тянуться к нему ── */
+  const dw0=dw,dX=V.drum-dw0/2;
+  {const hx=V.hop,hz=0,y0=3.3,y1=5.2,r0=.42,r1=1.75,rk=y=>r0+(r1-r0)*(y-y0)/(y1-y0);
+   for(const sx of [-1,1])for(const sz of [-1,1])K.rod([hx+sx*1.25,0,hz+sz*1.1],[hx+sx*.62,y0+.5,hz+sz*.62],.08,dark,{sides:6});
+   for(const sz of [-1,1])K.rod([hx-1.18,1.2,hz+sz*1.05],[hx+1.18,1.2,hz+sz*1.05],.05,dark,{sides:5});
+   plnTube(m,{path:[[hx,y0,hz],[hx,y1,hz]],rad:t=>r0+(r1-r0)*t,sides:16,col:iron,mat:MAN,cap:false});
+   plnTube(m,{path:[[hx,y1-.4,hz],[hx,y1-.36,hz]],rad:rk(y1-.4)-.05,sides:16,col:[.014,.013,.012],mat:MAN,cap:true});
+   {const pth=[];for(let k=0;k<=24;k++){const a=k/24*TAU;pth.push([hx+Math.cos(a)*(r1+.04),y1,hz+Math.sin(a)*(r1+.04)]);}
+    plnTube(m,{path:pth,rad:.075,sides:6,col:C.lite,mat:MAN});}
+   {const pth=[];for(let k=0;k<=24;k++){const a=k/24*TAU,yy=y0+.55;pth.push([hx+Math.cos(a)*(rk(yy)+.03),yy,hz+Math.sin(a)*(rk(yy)+.03)]);}
+    plnTube(m,{path:pth,rad:.05,sides:5,col:dark,mat:MAN});}
+   plnTube(m,{path:[[hx,y0-.45,hz],[hx,y0+.03,hz]],rad:r0+.02,sides:10,col:dark,mat:MAN,cap:true});
+   {const a0=[hx+.15,y0-.35],a1=[dX+.05,2.95],L2=Math.hypot(a1[0]-a0[0],a1[1]-a0[1]),ang=Math.atan2(a1[1]-a0[1],a1[0]-a0[0]);
+    K.box([(a0[0]+a1[0])/2,(a0[1]+a1[1])/2,0],[L2/2+.1,.14,.38],dark,{box:.15,lean:ang});}
+   /* шкала: восемь планок по переднему скату снизу вверх; полные — цветом наряда, пустые — сажей */
+   const k=(r1-r0)/(y1-y0),nf=st.A?st.fq:0,fc=st.A?plnMix3(plnHex(RES[st.A.k].col),[.5,.42,.3],.25):C.dark;
+   for(let i=0;i<8;i++){const yA=y0+.2+i*.19,yB=yA+.11,zA=hz-rk(yA)-.03,zB=hz-rk(yB)-.03;
+     plnCard(m,[hx-.32,yA,zA],[hx-.32,yB,zB],[hx+.32,yB,zB],[hx+.32,yA,zA],[0,k,-1],i<nf?fc:plnMix3(C.dark,[0,0,0],.4),MAN,null,0,0);}
+   for(const s of [-1,1]){const yA=y0+.15,yB=y0+.2+7*.19+.16;
+     K.rod([hx+s*.4,yA,hz-rk(yA)-.05],[hx+s*.4,yB,hz-rk(yB)-.05],.025,C.lite,{sides:4});}}
   /* ── барабан на станине; рёбра крутятся отдельной сеткой ── */
   const dx=V.drum,dy=3.45,dr=1.28;
   K.box([dx,.62,0],[dw/2+.5,.62,1.05],dark,{box:.15});
@@ -112,6 +120,13 @@ function plnTinMesh(A,st,p,sd){
    /* плафон над окном: горит, пока идёт смена — ночью по нему машину и видно */
    K.box([bx,bh-.12,-bd-.28],[.34,.1,.26],dark,{box:.2,sub:1});
    plnBlob(pm,{c:[bx,bh-.24,-bd-.3],r:[.26,.05,.18],sub:1,col:[1,.86,.6],mat:PLN_MAT.glow,glow:2.4,x:1});}
+  /* ── рабочий фонарь: мачта у ленты, голова над барабаном — горит, пока идёт смена; его свет кладёт тёплый
+     ключ на бок барабана, кромку воронки и стену бункера (плафона у окна на это не хватало) ── */
+  const wl=[(dx+dw/2+V.bin)/2-.6,6.6,-1.6];
+  K.rod([wl[0],0,-1.1],[wl[0],wl[1]-.1,-1.1],.07,dark,{sides:6});
+  K.rod([wl[0],wl[1]-.1,-1.1],[wl[0],wl[1]-.1,wl[2]],.05,dark,{sides:5});
+  K.box([wl[0],wl[1]+.02,wl[2]],[.32,.14,.2],dark,{box:.2,sub:1});
+  plnBlob(pm,{c:[wl[0],wl[1]-.12,wl[2]],r:[.24,.05,.14],sub:1,col:[1,.84,.58],mat:PLN_MAT.glow,glow:2.6,x:1});
   /* ── лампа на барабане ── */
   const lp=[dx-34/PLN_M,dy+dr+.65,-.2];
   K.rod([lp[0],dy+dr-.05,lp[2]],[lp[0],lp[1]-.1,lp[2]],.05,dark,{sides:5});
@@ -132,7 +147,7 @@ function plnTinMesh(A,st,p,sd){
       plnTube(rm,{path:[[dx-dw/2+.05,yy,zz],[dx+dw/2-.05,yy,zz]],rad:.06,sides:4,col:plnMul(C.dark,.7),mat:MAN,cap:false});
       if(Math.cos(a)>-.2)plnBlob(rm,{c:[dx-dw/2+.25,dy+Math.cos(a)*(dr+.13),Math.sin(a)*(dr+.13)],r:[.07,.07,.07],sub:1,col:C.lite,mat:MAN});}
     ribs.push(rm);}
-  return {body:m,light:lm,plaf:pm,plafAt:[V.bin,3.7,-1.9],ribs,smoke:[[cx,ctop+.4,cz,.85,10]],lamp:lp,blots:[[0,0,V.hx+.6,.4],[V.print,-.4,.8,.3]]};
+  return {body:m,light:lm,plaf:pm,plafAt:[wl[0],wl[1]-.4,wl[2]-.4],ribs,smoke:[[cx,ctop+.4,cz,.85,10]],lamp:lp,blots:[[0,0,V.hx+.6,.4],[V.print,-.4,.8,.3]]};
 }
 function plnTinFree(){
   const it=TINB.it;if(!it)return;
@@ -170,7 +185,7 @@ function plnTinFrame(F,S,ex,V,nk,want){
   const ph=it.st.run?Math.floor(t*4)%4:0,rg=it.ribs[ph];
   if(rg)F.batches.push({geo:rg,inst:it.inst,first:2,count:1,kind:Bk,to:TO});
   if(it.st.run)plnSetSmoke(F,it.sa,it.sinst,it.smoke,pos,t,nk);
-  if(nk>.05&&run){const l=it.plafAt;want.push({o:2.4,l:{p:[A.x+l[0],A.y+l[1],A.z+l[2]],r:9,c:[1,.84,.6],k:2*nk}});}
+  if(nk>.05&&run){const l=it.plafAt;want.push({o:2.4,l:{p:[A.x+l[0],A.y+l[1],A.z+l[2]],r:15,c:[1,.78,.5],k:3.2*nk}});}
   if(nk>.05&&blink){const l=it.lamp;want.push({o:2.5,l:{p:[A.x+l[0],A.y+l[1],A.z+l[2]],r:5,c:[1,.7,.32],k:1.4*nk}});}
   const b=F.blobs;let n=b[0]|0;
   for(const q of it.blots){if(n>=64)break;b.set([A.x+q[0],A.z+q[1],q[2],q[3]],4+n*4);n++;}

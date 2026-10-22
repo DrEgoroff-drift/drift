@@ -21,6 +21,8 @@
    с третьего уровня — подъёмник с четырьмя кроватками. Люди часов (11h) остались в 12t: это не посёлок,
    а один прохожий в затмение. */
 const SET_V={z:10.5,man:1.75,front:-1.1,back:3.9,lift:.9,street:-4.4,fence:-6.3};
+let SET_SPILL=null;
+const SET_WIN=[1,.6,.28];   /* окно посёлка — тёплый янтарь лучины, не белый свет станции */   /* сетка отсветов окон, пока строится посёлок (plnSetMesh) */
 const SET={it:null,gen:-1,L:null,puff:null,at:null};
 
 /* до первого дара записи нет, но люди здесь уже есть: та же болванка, что у 12t */
@@ -91,7 +93,11 @@ function plnSetState(S,p){
 /* ── краски ── */
 function plnSetPal(p){
   const q=sdPal(p),c=v=>plnRgb(v);
-  return {wall:c(q.wall),roof:c(q.roof),wood:c(q.wood),stone:c(q.stone),earth:c(q.earth)};
+  /* дерево и стена — тёплые: местный тон мира (зелёный, синий) в 2D держался подсветкой, а под солнцем
+     движка давал холодно-тёмный, почти чёрно-синий сруб в полдень. Лицо на свету берёт тёплый ключ,
+     тень холодит свет сцены сама */
+  return {wall:plnMix3(c(q.wall),plnHex("#d09660"),.62),roof:c(q.roof),wood:plnMix3(c(q.wood),plnHex("#cc8040"),.88),
+    stone:c(q.stone),earth:c(q.earth)};
 }
 /* пятнистая краска по месту: тон дерева, камня, земли не ровной заливкой */
 function plnSetMott(base,amt,f,sd){
@@ -135,7 +141,7 @@ function plnSetHouse(K,m,lm,q,hp,M,C,st,sd,o){
   /* цоколь из камня: без него стена обрывалась о землю */
   K.box([cx,y0+.12,cz],[w/2+.14,.2,d/2+.14],stone,{box:.25});
   /* стена: сердцевина и то, из чего она сложена */
-  const core=wk==="log"?plnMix3(wood,[0,0,0],.25):wall;
+  const core=wk==="log"?plnMix3(wood,[0,0,0],.12):wall;
   K.box([cx,y0+wh/2+.1,cz],[w/2-(wk==="log"?.06:0),wh/2,d/2-(wk==="log"?.06:0)],plnSetMott(core,.12,.9,sd+2),{box:wk==="adobe"?.32:.14});
   if(wk==="log"){
     const lw=plnSetMott(plnMix3(wood,wall,.25),.2,2.2,sd+3),n=Math.floor((wh-.1)/.27);
@@ -183,7 +189,10 @@ function plnSetHouse(K,m,lm,q,hp,M,C,st,sd,o){
     K.box([x,y,fz-.05],[ww+.07,hh+.07,.04],plnMix3(wood,[0,0,0],.35),{box:.2});
     if(st.shut===2){K.box([x,y,fz-.1],[ww+.12,hh+.1,.03],plnMix3(wood,[0,0,0],.15),{box:.2});
       K.rod([x-ww-.12,y,fz-.14],[x+ww+.12,y,fz-.14],.03,plnMix3(wood,[.6,.5,.4],.3),{sides:4});return;}
-    K.glass([x,y,fz-.09],ww,hh,OWN_WIN.home,1.15);
+    K.glass([x,y,fz-.09],ww,hh,SET_WIN,1.15);
+    /* отсвет окна на земле перед домом — карточка свечения, ночью (запись 4); не лампа: бюджет ламп 91qe */
+    const sp=SET_SPILL;if(sp){const g=y0+.09,z0=fz-.12,z1=fz-3,a=ww*1.3,b=ww*3.2;
+      plnCard(sp,[x-a,g,z0],[x+a,g,z0],[x+b,g,z1],[x-b,g,z1],[0,1,0],SET_WIN,PLN_MAT.glow,null,.7,1);}
     if(st.shut===1)for(const s of [-1,1])K.box([x+s*(ww*1.5+.08),y,fz-.1],[ww*.5,hh+.06,.025],plnMix3(wood,[0,0,0],.12),{box:.2});
   };
   if(barn&&o.county){
@@ -221,8 +230,8 @@ function plnSetHouse(K,m,lm,q,hp,M,C,st,sd,o){
   K.box([dx,y0+1.08,fz-.07],[.49,1.02,.06],plnMix3(wood,[0,0,0],.4),{box:.15});
   K.box([dx,y0+1.03,fz-.1],[.42,.95,.03],plnSetMott(plnMix3(wood,[0,0,0],.1),.2,3,sd+21),{box:.15});
   if(st.shut!==2)K.pane(null,[dx,y0+.1,fz-.13],.38,.03,OWN_WIN.lamp,1);
-  win(dWin,y0+wh*.6,.36,.3);
-  if(hp.variant===3)win(dx-fx*1.25,y0+wh*.6,.28,.26);
+  win(dWin,y0+wh*.6,.48,.4);
+  if(hp.variant===3)win(dx-fx*1.35,y0+wh*.6,.36,.34);
   if(hp.variant===1){
     K.box([dx,y0+.12,fz-.75],[.85,.1,.62],plnMix3(wood,[0,0,0],.2),{box:.2});
     for(const s of [-1,1])K.rod([dx+s*.78,y0+.2,fz-1.25],[dx+s*.78,y0+2.35,fz-1.25],.05,wood,{sides:5});
@@ -335,7 +344,8 @@ function plnSetCraft(K,m,fm,q,C,st,sd,o){
 
 /* ── сборка посёлка: раз на план и состояние ── */
 function plnSetMesh(L,A,sd,st,p){
-  const C=plnSetPal(p),M=sdMat(p),m=plnMesh(1<<15),lm=plnMesh(1<<11),fm=plnMesh(1<<11),K=plnOwnKit(m,lm),MAN=PLN_MAT.man;
+  const C=plnSetPal(p),M=sdMat(p),m=plnMesh(1<<15),lm=plnMesh(1<<11),fm=plnMesh(1<<11),gm=plnMesh(1<<10),K=plnOwnKit(m,lm),MAN=PLN_MAT.man;
+  SET_SPILL=gm;
   const Y=A.Y,hw=Y.span/2,V=SET_V,P=A.P,o={smoke:[],fire:[],door:null,walls:[]};
   const earth=plnSetMott(plnMix3(C.earth,PLN_PAL.soil,.3),.2,.5,sd+1),stone=plnSetMott(C.stone,.25,1.3,sd+2);
   /* полка — сама земля мира, срезанная ровно (plnOwnFlat): плита утоптанной земли поверх читалась плоской
@@ -401,7 +411,8 @@ function plnSetMesh(L,A,sd,st,p){
     plnCard(m,[px,ph-.8,pz],[px,ph-.05,pz],[px+1.5,ph-.3,pz],[px+1.5,ph-.55,pz],[0,0,-1],col,PLN_MAT.leaf,[0,0,.4,.4],0,0);
     plnCard(m,[px+1.5,ph-.55,pz],[px+1.5,ph-.3,pz],[px,ph-.05,pz],[px,ph-.8,pz],[0,0,1],col,PLN_MAT.leaf,[.4,.4,0,0],0,0);}
   const blots=Y.yards.map(q=>[q.x,q.z,q.w*.62,.35]);
-  return {body:m,light:lm,fire:fm,door:o.door,smoke:o.smoke,fires:o.fire,blots,hw,lampAt:st.warm?{hearth:[0,1,V.street]}:{}};
+  SET_SPILL=null;
+  return {body:m,light:lm,fire:fm,spill:gm,door:o.door,smoke:o.smoke,fires:o.fire,blots,hw,lampAt:st.warm?{hearth:[0,1,V.street]}:{}};
 }
 /* знак дома — доска у двери первого жилого двора переднего ряда (17d, M326): снаружи от двери,
    на уровне головы; краска выцвела, но цвет дома цел */
@@ -418,18 +429,21 @@ function plnSetMark(K,m,W,H,C){
 }
 
 /* дым труб записями: s = [x, y, z, сила, клубов] от места pos; зовёт и Жестянка (21piia).
-   Клубы идут неровно: у каждого своя скорость, свой сдвиг и свой рост — ровная цепочка шаров
-   читалась бусами. Ночью дым почти не виден: светлый клуб на чёрном небе висел призраком */
+   Тонкая струя, не столб облаков: клуб мал у трубы, растёт и редеет кверху — запись-вуаль (режим 3)
+   несёт долю непрозрачности, проход вуали (21pe) смешивает её с тем, что за дымом (у трубы ≈ .4, верхний клуб ≤ .2).
+   Клубы идут неровно: у каждого своя скорость, сдвиг и рост — ровная цепочка шаров читалась бусами.
+   Ночью у трубы дым подсвечен очагом (тёплый, светлее неба), выше почти невидим */
 function plnSetSmoke(F,sa,inst,smoke,pos,t,nk){
-  const wd=WIND||0,g0=.78*(1-.88*nk);let n=0;
+  const wd=WIND||0,cap=sa.length>>4;let n=0;
   for(let j=0;j<smoke.length;j++){const s=smoke[j];
-    for(let i=0,ni=s[4]||7;i<ni&&n<64;i++){const u=plnHash(i,j,71),v=plnHash(i,j,72),w2=plnHash(i,j,73);
+    for(let i=0,ni=Math.round((s[4]||7)*2.6);i<ni&&n<cap;i++){const u=plnHash(i,j,71),v=plnHash(i,j,72),w2=plnHash(i,j,73);
       const ph=(t*.055*(.8+.4*u)/(.6+s[3]*.4)+v)%1,hh=ph*5.6*s[3];
-      const sc=s[3]*(.4+ph*2.3)*(.75+.5*w2)*plnSmooth(0,.1,ph)*(1-plnSmooth(.55,1,ph));
-      const g=g0*(.92-.2*ph+.12*w2);
-      plnRec(sa,n++,[pos[0]+s[0]+wd*hh*.8+(u-.5)*.5*ph*s[3],pos[1]+s[1]+hh,pos[2]+s[2]+ph*.6+(w2-.5)*.4],Math.max(.002,sc),i*1.7+j,1,0,[g,g,g]);}}
+      const sc=s[3]*(.24+ph*1.3)*(.8+.4*w2)*plnSmooth(0,.06,ph);
+      const al=(.42-.1*w2)*Math.pow(1-ph,1.5)*(1-.4*nk),lo=nk*(1-plnSmooth(0,.3,ph));
+      const g=.86*(1-.75*nk)+.1*w2,c=[g+lo*.5,g+lo*.26,g+lo*.08];
+      plnRec(sa,n++,[pos[0]+s[0]+wd*hh*.8+(u-.5)*.22*ph*s[3],pos[1]+s[1]+hh,pos[2]+s[2]+ph*.5+(w2-.5)*.25],Math.max(.002,sc),i*1.7+j,1,0,c,3,[al,0,0]);}}
   plnInstSet(inst,sa,n);
-  if(n)F.batches.push({geo:plnSetPuff(),inst,first:0,count:n,kind:PLN_KIND.body,to:PLN_TO.lit});
+  if(n)F.batches.push({geo:plnSetPuff(),inst,first:0,count:n,kind:PLN_KIND.veil,to:PLN_TO.main});
 }
 /* клуб дыма: одна сетка на все трубы, записи несут место, рост и тон */
 function plnSetPuff(){
@@ -440,7 +454,7 @@ function plnSetPuff(){
 }
 function plnSetFree(){
   const it=SET.it;if(!it)return;
-  for(const k of ["geo","light","fire","door"])if(it[k])plnGeoFree(it[k]);
+  for(const k of ["geo","light","fire","door","spill"])if(it[k])plnGeoFree(it[k]);
   if(it.inst)plnInstFree(it.inst);if(it.sinst)plnInstFree(it.sinst);
   SET.it=null;
 }
@@ -453,10 +467,10 @@ function plnSetStep(L,S){
   if(SET.it&&SET.it.key===key){SET.it.A=A;return true;}
   plnSetFree();
   const sd=hashi(A.S.seed|0,0x5E7,3),M=plnSetMesh(L,A,sd,st,S.p),g=x=>x&&x.nv?plnGeo(plnMeshDone(x)):null;
-  const it={A,key,st,sd,geo:g(M.body),light:g(M.light),fire:g(M.fire),door:M.door?g(M.door.m):null,doorW:M.door?M.door.w:0,
-    smoke:M.smoke,fires:M.fires,blots:M.blots,hw:M.hw,lampAt:M.lampAt,a:new Float32Array(16*4),sa:new Float32Array(16*64),inst:null,sinst:null};
-  for(let i=0;i<4;i++)plnRec(it.a,i,[A.x,A.y,A.z],1,0,1,sd%97,i?[1,1,1]:null);
-  it.inst=plnInst(it.a,4,4);it.sinst=plnInst(null,0,64);
+  const it={A,key,st,sd,geo:g(M.body),light:g(M.light),fire:g(M.fire),door:M.door?g(M.door.m):null,spill:g(M.spill),doorW:M.door?M.door.w:0,
+    smoke:M.smoke,fires:M.fires,blots:M.blots,hw:M.hw,lampAt:M.lampAt,a:new Float32Array(16*5),sa:new Float32Array(16*160),inst:null,sinst:null};
+  for(let i=0;i<5;i++)plnRec(it.a,i,[A.x,A.y,A.z],1,0,1,sd%97,i?[1,1,1]:null);
+  it.inst=plnInst(it.a,5,5);it.sinst=plnInst(null,0,160);
   SET.it=it;return true;
 }
 /* в кадр: тела, свет окон, дрожь огня, створка уезда по шуму, дым; лампа очага — в общий выбор своих ламп */
@@ -470,11 +484,14 @@ function plnSetFrame(F,S,ex,V,nk,want){
   plnRec(it.a,2,pos,1,0,1,0,[fk,fk,fk]);
   if(it.door){const sf=G.surf,lvl=sf?countyLevel(sf):0,op=lvl>=1?clamp(((sf.noise||0)-COUNTY_LVL[0])/40,0,1):0;
     plnRec(it.a,3,[A.x+op*(it.doorW+.4),A.y,A.z+op*.12],1,0,1,0,null);}
-  plnInstSet(it.inst,it.a,4);
+  const sp=clamp((nk-.1)*1.6,0,1)*.9;
+  plnRec(it.a,4,pos,1,0,1,0,[sp,sp,sp]);
+  plnInstSet(it.inst,it.a,5);
   if(it.geo)F.batches.push({geo:it.geo,inst:it.inst,first:0,count:1,kind:Bk,to:TO});
   if(it.light)F.batches.push({geo:it.light,inst:it.inst,first:1,count:1,kind:Bk,to:LIT});
   if(it.fire)F.batches.push({geo:it.fire,inst:it.inst,first:2,count:1,kind:Bk,to:LIT});
   if(it.door)F.batches.push({geo:it.door,inst:it.inst,first:3,count:1,kind:Bk,to:TO});
+  if(it.spill&&sp>0)F.batches.push({geo:it.spill,inst:it.inst,first:4,count:1,kind:Bk,to:PLN_TO.main});
   /* дым — только у сытого посёлка: клубы растут, сносятся ветром и тают в вышине */
   if(it.st.warm&&it.smoke.length)plnSetSmoke(F,it.sa,it.sinst,it.smoke,pos,t,nk);
   if(nk>.05&&it.lampAt.hearth){const h=it.lampAt.hearth;

@@ -71,12 +71,14 @@ fn turnBy(n: vec3f, i0: vec4f, i1: vec4f) -> vec3f {
      к макушке (r) и свою светлоту (g), а оба цвета даёт запись; режим 2 — так красится
      только листва, кора остаётся своей: дерево — одно тело и одна запись */
   var c = in.col * in.i2.rgb;
-  if (in.i2.w > 0.5) {
+  if (in.i2.w > 0.5 && in.i2.w < 2.5) {
     let ramp = mix(in.i2.rgb, in.i3.rgb, in.col.r) * (0.5 + in.col.g);
     let leafy = (in.par.x > 1.5 && in.par.x < 2.5) || (in.par.x > 6.5 && in.par.x < 7.5);
     if (in.i2.w < 1.5 || leafy) { c = ramp; } else { c = in.col; }
   }
   o.col = c; o.par = in.par;
+  /* запись-вуаль (режим 3): доля непрозрачности свечения в i3.x — дым, пар; ветер у свечения не нужен */
+  if (in.i2.w > 2.5) { o.par.y = 10.0 + in.i3.x; }
   /* вода: в цвете вершины лежит дно — высота ленты (мировая) и высота дальнего мира (на его
      уровне); глубина считается здесь, потому что уровень воды в кадре свой */
   if (in.par.x > 5.5 && in.par.x < 6.5) {
@@ -158,6 +160,12 @@ fn lampShade(w: vec3f, lp: vec3f) -> f32 {
   let pn = g.invViewProj * vec4f(ndc, 1.0, 1.0);
   let rd = normalize(pn.xyz / pn.w - g.camPos.xyz);
   return vec4f(skyCol(rd), 1.0);
+}
+
+/* вуаль (PLN_KIND.veil): свечение с долей непрозрачности из записи — дым, пар; смешивается, глубину не пишет */
+@fragment fn fs_veil(in: VOut) -> @location(0) vec4f {
+  let a = clamp(in.par.y - 10.0, 0.0, 1.0);
+  return vec4f(applyFog(in.col * in.par.z, in.wpos, 0.9 * (1.0 - clamp(in.par.w, 0.0, 1.0))), a);
 }
 
 @fragment fn fs_main(in: VOut) -> @location(0) vec4f {
