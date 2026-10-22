@@ -57,11 +57,27 @@ function ecoFresh(X){
     const yard=G.mode==="dock"&&G.st&&G.st.stype==="yard"&&Object.keys(G.owned).some(id=>id!=="strizh"&&G.owned[id]);
     if(yard&&!TL.inYard){TL.yardN=(TL.yardN|0)+1;if(TL.insSeen==null)TL.insSeen=m;}
     TL.inYard=yard;
-    const dt=TL.mPrev==null?0:m-TL.mPrev;TL.mPrev=m;
+    /* M921: окно страховки — игрок у пирса, свой корпус кроме «Стрижа» без страховки, касса ≥ взноса.
+       В окне считаются бумаги, которые игра и так кладёт на стол: счёт за смену (27ib), бумаги
+       диспетчера (28m, отдельно «ремонт» — его даёт мастер верфи), бумага стажёра на отметке часа */
+    const bare=Object.keys(G.owned).filter(id=>id!=="strizh"&&G.owned[id]&&!insOn(id));
+    if(TL.unins==null&&bare.length)TL.unins=m;
+    const dock=G.mode==="dock",win=dock&&bare.length>0&&G.credits>=Math.min.apply(null,bare.map(insFee));
+    if(dock&&!TL.inDock)TL.dockWon=false;
+    TL.inDock=dock;
+    if(win){TL.winMin=(TL.winMin||0)+dt0(TL,m);if(!firstHour())TL.winMinH=(TL.winMinH||0)+dt0(TL,m);
+      if(!TL.dockWon){TL.dockWon=true;(TL.winAt||(TL.winAt=[])).push(+m.toFixed(1));}}
+    const D=dispSt(),pn=P?P.n:0;
+    if(TL.dseq!=null&&D.seq>TL.dseq&&win){TL.oDisp=(TL.oDisp|0)+(D.seq-TL.dseq);
+      for(const x of D.it)if(x.id>TL.dseq&&x.v==="remont")TL.oRem=(TL.oRem|0)+1;}
+    if(TL.pn!=null&&pn>TL.pn){if(win)TL.oBill=(TL.oBill|0)+1;if(P.first)TL.oFirst={m:+m.toFixed(1),win,bare:bare.length};}
+    TL.dseq=D.seq;TL.pn=pn;
+    const dt=dt0(TL,m);TL.mPrev=m;
     if(TL.wait){const W=TL.waitMin||(TL.waitMin={});W[TL.wait]=(W[TL.wait]||0)+dt;}
     if(!TL.sl){TL.sl=[];TL.s0=snap(TL,BOOK);}
     while(m>=(TL.sl.length+1)*SL){const s=snap(TL,BOOK);TL.sl.push(cut(TL.s0,s,TL));TL.s0=s;}
   }
+  function dt0(TL,m){return TL.mPrev==null?0:m-TL.mPrev;}
   function snap(TL,B){const t={},bz=B.spend["закупка"]||0;for(const k in B.time)t[k]=B.time[k];
     return {m:fwMin(),cr:Math.round(G.credits),g:sum(B.gross)-bz,s:sum(B.spend)-bz-(B.spend["вложение"]||0),
       inv:B.spend["вложение"]||0,t,walk:TL.walk|0,laps:CNT.laps,mined:CNT.mined,full:TL.full|0,deeds:DSTAT.done};}
@@ -135,7 +151,13 @@ function ecoFresh(X){
       mark(TL,"t1hand");
     }finally{X.ph=PH;}
   }
-  return {tlSample,shop,holdMods,off};
+  /* M921 (ECO_LAPLOG=1): строка на круг — где сел на самом деле (тело и его живые залежи), сколько
+     взял, длина круга, добор у причала, дела после. Так нашлись пустые круги на луне 0,0:2m0 */
+  const LOG=!!ENV.ECO_LAPLOG;
+  function land(){const S=G.surf;return LOG?G.mode+" "+(S&&S.p&&S.p.key)+", живых залежей "+((S&&S.deposits)||[]).filter(d=>d.left>0).length:"";}
+  function lapLog(P,mined,land0,lapM,padM,dealM){if(LOG)console.log("  круг "+fwMin().toFixed(1)+"′ · цель "+P.key+" · сел "+land0+
+    " · взял "+mined+" · круг "+lapM.toFixed(1)+" мин · добор у причала "+padM.toFixed(1)+" · дела "+dealM.toFixed(1)+" · станция "+(G.sys&&G.sys.key));}
+  return {tlSample,shop,holdMods,off,land,lapLog};
 }
 /* печать: путь T0→T1 и срезы по десять минут (зовёт ecoPrint) */
 function ecoFreshPrint(rows){
@@ -152,5 +174,7 @@ function ecoFreshPrint(rows){
     const hr=[0,0,0];for(const s of L.sl){const h=Math.min(2,Math.floor((s.m-1)/60));hr[h]+=s.net;}
     const E=(globalThis.process&&globalThis.process.env)||{};
     console.log("  M920 "+JSON.stringify({seed:+E.ECO_SEED||0,t1:E.ECO_T1||"",coop:L.t1coop,drone:L.t1drone,hand:L.t1hand,
-      net:hr,wrecks:L.wrecks||[],insSeen:L.insSeen,yardN:L.yardN|0}));}
+      net:hr,wrecks:L.wrecks||[],insSeen:L.insSeen,yardN:L.yardN|0,
+      unins:L.unins,winMin:+(L.winMin||0).toFixed(1),winMinH:+(L.winMinH||0).toFixed(1),winAt:L.winAt||[],
+      oBill:L.oBill|0,oDisp:L.oDisp|0,oRem:L.oRem|0,oFirst:L.oFirst||null}));}
 }

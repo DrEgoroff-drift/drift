@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 648 · top-level symbols: 8768
+Files: 649 · top-level symbols: 8768
 
 ## SYMBOLS
 
@@ -326,8 +326,7 @@ CHRON_SEED                   src/12am-chron.js:28
 CHRON_SHIFT                  src/12am-chron.js:24
 CHRON_STAMP                  src/12am-chron.js:278
 CHRON_WANT                   src/12am-chron-agents.js:11-18
-CHUNK_KEEP                   src/18c-chunks.js:20
-CHUNK_W                      src/18c-chunks.js:19
+CHUNK_W                      src/18c-chunks.js:10
 CH_DIRS                      src/25n-chess.js:29-34
 CH_GLYPH                     src/25n-chess.js:243
 CH_PROMO                     src/25n-chess.js:35
@@ -718,7 +717,7 @@ GAL_STAR_RED                 src/17z3-map-gpu.js:164
 GAL_STAR_SCREEN              src/17z1-galaxy.js:82
 GAL_VER                      src/17z1-galaxy.js:18
 GAL_WGSL                     src/17z3-map-gpu.js:25
-GATE2D                       tests/91zzzzzzy3-gate2d.js:39-346
+GATE2D                       tests/91zzzzzzy3-gate2d.js:39-316
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GAUGE_MID                    src/28l-gauge.js:23
@@ -1355,7 +1354,7 @@ MAKER_G                      src/28y-look.js:318
 MAKER_KEYS                   src/03a-hull-maker.js:73
 MAKER_PX                     src/28y-look.js:313
 MAPGPU                       src/17z3-map-gpu.js:17
-MAP_BORDER_NB                src/18b-map-hold.js:79
+MAP_BORDER_NB                src/18b-map-hold.js:81
 MAP_BOX                      src/18-mode-map.js:29
 MAP_DOM                      src/18-mode-map.js:63
 MAP_DOMR                     src/18-mode-map.js:64
@@ -1474,6 +1473,7 @@ NODE_N                       src/05a-nodes.js:98
 NODE_PER_FAM                 src/05a-nodes.js:69
 NODE_WHERE                   src/05a-nodes.js:67
 NOTE_MAX                     src/12ap-notebook.js:32
+NO_LAYER                     src/18c-chunks.js:64
 NPC_BATTLE                   src/13d-npc.js:14
 NPC_PICKET                   src/13d-npc.js:13
 NPC_SHIPS                    src/03-ships.js:201
@@ -1805,16 +1805,16 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:665
+R3                           src/27f2-room3d.js:673
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:644
+R3_DOWN_WGSL                 src/27f2-room3d.js:652
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:815
+R3_POST_WGSL                 src/27f2-room3d.js:823
 R3_SCR                       src/27f2-room3d.js:45
 R3_UN                        src/27f2-room3d.js:30
 R3_VPOOL                     src/27f2-room3d.js:76
-R3_WGSL                      src/27f2-room3d.js:219
+R3_WGSL                      src/27f2-room3d.js:227
 RACK                         src/25d-instr-rack.js:44
 RACK_CH                      src/25d-instr-rack.js:26-32
 RACK_DQ                      src/25d-instr-rack.js:189
@@ -1904,7 +1904,7 @@ RARE_RES                     src/02-world.js:138
 RARE_SALT                    src/12m-rare.js:77
 RARE_WHERE                   src/12m-rare.js:26-33
 RARE_WHERE_IX                src/12m-rare.js:34
-RAST_MAX                     src/18c-chunks.js:40
+RAST_MAX                     src/18c-chunks.js:30
 RAY_R                        src/13a-guns.js:29
 RD                           src/27k-road.js:183
 RD_OVL                       src/27lc-road-gpu.js:37
@@ -2065,7 +2065,7 @@ SCALE_KEYS                   src/10-music.js:25
 SCAR_KEYS                    src/05b2-scars.js:14
 SCAR_KIND                    src/05b2-scars.js:9-13
 SCHEME_INK                   src/18k-rail-scheme.js:50
-SCK                          src/18c-chunks.js:39
+SCK                          src/18c-chunks.js:29
 SCOOP_BAND                   src/19a-mode-scoop.js:15
 SCOOP_PX                     src/19a-mode-scoop.js:16
 SCP                          src/19a1-scoop-gpu.js:15
@@ -2075,7 +2075,6 @@ SCP_FLOW                     src/19a1-scoop-gpu.js:158
 SCP_OB                       src/19a1-scoop-gpu.js:362
 SCP_OBS                      src/19a1-scoop-gpu.js:270
 SCP_SH                       src/19a1-scoop-gpu.js:363
-SCREEN_LAYERS                src/18c-chunks.js:111
 SCRIP_BASE                   src/12u-scrip.js:28
 SCRIP_LOG                    src/12u-scrip.js:32
 SCRIP_MIN                    src/12u-scrip.js:29
@@ -3296,8 +3295,8 @@ chronWaveLines               src/12am-chron-lines.js:143-157
 chronWaveNext                src/12am-chron-lines.js:120-123
 chronWaveSet                 src/12am-chron-lines.js:115-119
 chronYaltaKey                src/12am-chron.js:68-71
-chunkAt                      src/18c-chunks.js:79-87
-chunkStore                   src/18c-chunks.js:73-78
+chunkAt                      src/18c-chunks.js:67
+chunkStore                   src/18c-chunks.js:66
 ci                           src/19cb-gpu-sky-bodies.js:149
 circAll                      src/12aw-circ.js:21-25
 circApply                    src/12aw-circ.js:87-126
@@ -3949,7 +3948,7 @@ drawBillboard                src/17k-billboard.js:182-198
 drawBuilt                    src/21c-built.js:64-102
 drawCave                     src/22d-cave-pln.js:345-362
 drawCheburek                 src/17j-cheburek.js:78-109
-drawChunks                   src/18c-chunks.js:90-96
+drawChunks                   src/18c-chunks.js:68
 drawCombat                   src/13-pirates.js:378-486
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
@@ -4041,7 +4040,7 @@ drawStrata                   src/18b-geology.js:100
 drawSurface                  src/21pz-pln-frame.js:440-459
 drawSurfaceHud               src/21e-surface-draw.js:42-145
 drawSurvey                   src/12w-survey.js:63-81
-drawSysHud                   src/17-mode-system.js:748-1080
+drawSysHud                   src/17-mode-system.js:748-1093
 drawSysLane                  src/17g-sys-lane.js:112-138
 drawSysLaneShips             src/17g-sys-lane.js:168-196
 drawSysRail                  src/18f-rail-station.js:61-69
@@ -4113,8 +4112,8 @@ e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
 ecoEstate                    tests/91zzzw4-ecosim-est.js:5-221
-ecoFresh                     tests/91zzzw4-ecosim-t1.js:6-124
-ecoFreshPrint                tests/91zzzw4-ecosim-t1.js:126-136
+ecoFresh                     tests/91zzzw4-ecosim-t1.js:6-161
+ecoFreshPrint                tests/91zzzw4-ecosim-t1.js:163-180
 ecoLadder                    tests/91zzzw4-ecosim-rep.js:7-29
 ecoNormFold                  tests/91zzzw4-ecosim-rep.js:41-45
 ecoNormNow                   tests/91zzzw4-ecosim-rep.js:30-39
@@ -5831,7 +5830,7 @@ makerWear                    src/03a-hull-maker.js:456
 makerWidth                   src/03a-hull-maker.js:426-453
 mapAddrBox                   src/18a-map-addr.js:233-249
 mapBack                      src/18-mode-map.js:183-194
-mapBorderEdge                src/18b-map-hold.js:84-104
+mapBorderEdge                src/18b-map-hold.js:86-106
 mapBox                       src/18-mode-map.js:30
 mapCell                      src/18-mode-map.js:160
 mapCellXY                    src/18a-map-addr.js:52
@@ -5848,8 +5847,8 @@ mapGpuPass                   src/17z3-map-gpu.js:20-24
 mapGridDraw                  src/18a-map-addr.js:55-66
 mapHintHung                  src/18l-map-plate.js:37
 mapHit                       src/18-mode-map.js:76-115
-mapHoldingsDraw              src/18b-map-hold.js:105-201
-mapHoldingsTop               src/18b-map-hold.js:203-243
+mapHoldingsDraw              src/18b-map-hold.js:107-209
+mapHoldingsTop               src/18b-map-hold.js:211-251
 mapHousePatch                src/18b-map-hold.js:31-45
 mapInkBox                    src/18-mode-map.js:67
 mapInkPoly                   src/18-mode-map.js:65
@@ -5872,7 +5871,7 @@ mapOrbsDraw                  src/18l-map-plate.js:105-120
 mapOverOn                    src/18-mode-map.js:159
 mapOverTap                   src/18-mode-map.js:224-228
 mapOverview                  src/18-mode-map.js:202-223
-mapOwnHere                   src/18b-map-hold.js:63-68
+mapOwnHere                   src/18b-map-hold.js:64-69
 mapParseAddr                 src/18a-map-addr.js:229-232
 mapPeek                      src/18-mode-map.js:176-182
 mapPriceDraw                 src/12aa-need.js:336-346
@@ -5894,11 +5893,11 @@ mapSelInk                    src/18l-map-plate.js:54-58
 mapStarsGpu                  src/17z3-map-gpu.js:202-230
 mapTM                        src/18-mode-map.js:50
 mapTW                        src/18l-map-plate.js:12
-mapTagAt                     src/18b-map-hold.js:70-76
+mapTagAt                     src/18b-map-hold.js:71-78
 mapTopPlace                  src/18a-map-addr.js:259-286
-mapTrassaPairs               src/18b-map-hold.js:47-58
+mapTrassaPairs               src/18b-map-hold.js:47-59
 mapU                         src/18-mode-map.js:42
-mapUnderTrassa               src/18b-map-hold.js:59-62
+mapUnderTrassa               src/18b-map-hold.js:60-63
 mapViewC                     src/18-mode-map.js:149
 mapZoomK                     src/18-mode-map.js:158
 mapZoomSet                   src/18-mode-map.js:162
@@ -6035,7 +6034,7 @@ mixHex                       src/12x-suit.js:187-190
 mixNum                       src/02a-worldmix.js:43-45
 mixPal                       src/02a-worldmix.js:34-42
 mixc                         src/01-core.js:226
-mkCanvas                     src/18c-chunks.js:66-70
+mkCanvas                     src/18c-chunks.js:56-60
 mkMerc                       tests/90a-tools.js:718-726
 mkSystems                    tests/91zzzzzf-market.js:18-28
 modCard                      src/26b-ui-station-work.js:44-104
@@ -6160,6 +6159,7 @@ newsSpan                     src/12an-chron-news.js:90-102
 newsSysOf                    src/12an-chron-news.js:73-86
 newsTail                     src/12an-chron-news.js:373-376
 newsTick                     src/12p-news.js:153-180
+noLayer                      src/18c-chunks.js:65
 nodeCount                    src/05a-nodes.js:104-108
 nodeDrop                     src/05a-nodes.js:149-154
 nodeFound                    src/05a-nodes.js:109-118
@@ -7211,33 +7211,33 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:666-672
-r3Dev                        src/27f2-room3d.js:689-707
-r3DownDesc                   src/27f2-room3d.js:681-685
-r3Drop                       src/27f2-room3d.js:714
-r3Frame                      src/27f2-room3d.js:758-812
-r3Free                       src/27f2-room3d.js:716
-r3Kit                        src/27f2-room3d.js:84-216
+r3Desc                       src/27f2-room3d.js:674-680
+r3Dev                        src/27f2-room3d.js:697-715
+r3DownDesc                   src/27f2-room3d.js:689-693
+r3Drop                       src/27f2-room3d.js:722
+r3Frame                      src/27f2-room3d.js:766-820
+r3Free                       src/27f2-room3d.js:724
+r3Kit                        src/27f2-room3d.js:84-224
 r3Lin                        src/27f2-room3d.js:35
-r3Look                       src/27f2-room3d.js:50-216
-r3MeshR                      src/27f2-room3d.js:757
+r3Look                       src/27f2-room3d.js:50-224
+r3MeshR                      src/27f2-room3d.js:765
 r3Mix                        src/27f2-room3d.js:36
 r3MixI                       src/27f2-room3d.js:39
 r3Mul                        src/27f2-room3d.js:47
 r3Persp                      src/27f2-room3d.js:49
 r3Pivot                      src/27f2-room3d.js:66
-r3Proj                       src/27f2-room3d.js:69-216
+r3Proj                       src/27f2-room3d.js:69-224
 r3Pt                         src/27f2-room3d.js:67
 r3Sc                         src/27f2-room3d.js:37
 r3ScI                        src/27f2-room3d.js:40
 r3Scr                        src/27f2-room3d.js:46
-r3ShDesc                     src/27f2-room3d.js:673-678
-r3ShadowVP                   src/27f2-room3d.js:718-723
+r3ShDesc                     src/27f2-room3d.js:681-686
+r3ShadowVP                   src/27f2-room3d.js:726-731
 r3Step                       src/27f2-room3d.js:41
-r3Targets                    src/27f2-room3d.js:730-755
-r3Up                         src/27f2-room3d.js:709-713
-r3VB                         src/27f2-room3d.js:679
-r3Xf                         src/27f2-room3d.js:56-216
+r3Targets                    src/27f2-room3d.js:738-763
+r3Up                         src/27f2-room3d.js:717-721
+r3VB                         src/27f2-room3d.js:687
+r3Xf                         src/27f2-room3d.js:56-224
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
 rackBottom                   src/25d-instr-rack.js:331-336
@@ -7482,22 +7482,22 @@ regionPlace                  src/06c-regions.js:44-75
 regionPlainSys               src/06c-regions.js:77-86
 regionThemeAt                src/06c-regions.js:88
 relayAll                     src/11ap-relay.js:149-152
-relayArrive                  src/11ap-relay.js:178-182
+relayArrive                  src/11ap-relay.js:179-183
 relayAtFreq                  src/11ap-relay.js:134-145
-relayDial                    src/11ap-relay.js:206-251
+relayDial                    src/11ap-relay.js:207-252
 relayDrawSystem              src/11apa-relay-body.js:102-113
 relayEar                     src/11ap-relay.js:126-130
 relayFreq                    src/11ap-relay.js:99-103
-relayInteract                src/11ap-relay.js:354-367
+relayInteract                src/11ap-relay.js:358-371
 relayKnown                   src/11ap-relay.js:153
 relayLights                  src/11apa-relay-body.js:89-100
-relayList                    src/11ap-relay.js:188-198
+relayList                    src/11ap-relay.js:189-199
 relayMesh                    src/11apa-relay-body.js:14-86
 relayOf                      src/11ap-relay.js:81-97
-relayServe                   src/11ap-relay.js:331-353
-relaySpeak                   src/11ap-relay.js:166-173
-relaySpot                    src/11ap-relay.js:314-327
-relayWrite                   src/11ap-relay.js:156-163
+relayServe                   src/11ap-relay.js:334-357
+relaySpeak                   src/11ap-relay.js:167-174
+relaySpot                    src/11ap-relay.js:317-330
+relayWrite                   src/11ap-relay.js:156-164
 relaysNear                   src/11ap-relay.js:108-122
 releaseAllKeys               src/15-input.js:216-219
 relicDeep                    src/12h-relic.js:76
@@ -7531,7 +7531,7 @@ renderOpts                   src/27-ui-ship.js:21-329
 renderPrices                 src/12aa-need.js:265-292
 renderQsl                    src/11an-qsl.js:147-188
 renderRecord                 src/11aa-record.js:107-144
-renderRelays                 src/11ap-relay.js:252-298
+renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:342-441
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
@@ -7836,7 +7836,7 @@ scoopSunAt                   src/19a1-scoop-gpu.js:120-127
 scrOpen                      src/08-state.js:161
 scrapPart                    src/05-parts.js:451-461
 scrapYield                   src/05-parts.js:441-450
-screenLayer                  src/18c-chunks.js:112-121
+screenLayer                  src/18c-chunks.js:69
 scripBuy                     src/12u-scrip.js:99-111
 scripBuyPrice                src/12u-scrip.js:47
 scripDone                    src/12u-scrip.js:98
@@ -8439,8 +8439,8 @@ traitOf                      src/12a-crew.js:28
 tvHop                        tests/91zzzzzw-travel.js:36-48
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17-34
-uiFont                       src/18c-chunks.js:54
-uiK                          src/18c-chunks.js:53
+uiFont                       src/18c-chunks.js:44
+uiK                          src/18c-chunks.js:43
 uiScale                      src/08-state.js:28
 uiSelRestore                 tests/90-harness.js:257
 uidRand                      src/01-core.js:97-100
@@ -8734,8 +8734,8 @@ winTake                      src/29f-winter.js:95-111
 winTap                       src/29rc-winter-r3.js:280-292
 winWall                      src/29f-winter.js:162-172
 windOf                       src/19c-light.js:42-48
-withCtx                      src/18c-chunks.js:58-65
-withScale                    src/18c-chunks.js:41-47
+withCtx                      src/18c-chunks.js:48-55
+withScale                    src/18c-chunks.js:31-37
 worldCovered                 src/08-state.js:435
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
@@ -9018,9 +9018,9 @@ zoomTo                       src/15-input.js:358
 ## src/11ao-firsthour.js · 6 KB
   · первый час: сменщик в эфире:1
 
-## src/11ap-relay.js · 24 KB
+## src/11ap-relay.js · 25 KB
   · приёмники как места:1
-  · у мачты есть тело:300
+  · у мачты есть тело:303
 
 ## src/11apa-relay-body.js · 9 KB
 
@@ -9526,7 +9526,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/16gc-gpu-nebfade.js · 3 KB
 
-## src/17-mode-system.js · 85 KB
+## src/17-mode-system.js · 87 KB
   · режим: система:1
 
 ## src/17a-station-mod.js · 6 KB
@@ -9648,12 +9648,12 @@ zoomTo                       src/15-input.js:358
 ## src/17z4-map-pen.js · 11 KB
   · перо карты (G15: карта с #c на видеокарту):1
 
-## src/18-mode-map.js · 60 KB
+## src/18-mode-map.js · 62 KB
   · карта:1
   · где у карты пол и где правый борт:4
   · карта: ночное небо, а не схема молекулы:138
 
-## src/18a-map-addr.js · 20 KB
+## src/18a-map-addr.js · 21 KB
   · карта говорит адресами (M347):1
 
 ## src/18a-material.js · 29 KB
@@ -9668,8 +9668,8 @@ zoomTo                       src/15-input.js:358
 ## src/18b-map-hold.js · 16 KB
   · владения на карте (M348):1
 
-## src/18c-chunks.js · 9 KB
-  · кэш статичного: чанки и слои:1
+## src/18c-chunks.js · 5 KB
+  · масштаб мира и подмена холста:1
 
 ## src/18d-postfx.js · 2 KB
   · эффекты кадра: хроматика (M325):1
@@ -9680,12 +9680,12 @@ zoomTo                       src/15-input.js:358
 ## src/18e-rail-net.js · 16 KB
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 18 KB
+## src/18f-rail-station.js · 19 KB
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18fa-rail-ring.js · 7 KB
 
-## src/18g-rail-ride.js · 11 KB
+## src/18g-rail-ride.js · 12 KB
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/18ga-rail-gpu.js · 6 KB
@@ -10318,7 +10318,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 76 KB
+## src/27f2-room3d.js · 77 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 29 KB
@@ -10605,6 +10605,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd3-rail.js · 4 KB
   · поездка на движке (M828 · 18gb), кольцо станции телом (M806 · 18fa):1
 
+## tests/91qd4-chipcue.js · 3 KB
+
 ## tests/91qe-bar-seat.js · 7 KB
   · бар собран (M853):1
 
@@ -10667,9 +10669,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw4-ecosim-rep.js · 11 KB
 
-## tests/91zzzw4-ecosim-t1.js · 10 KB
+## tests/91zzzw4-ecosim-t1.js · 14 KB
 
-## tests/91zzzw4-ecosim.js · 38 KB
+## tests/91zzzw4-ecosim.js · 39 KB
   · проба · экономика (M903, M912):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
@@ -10751,7 +10753,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzw-travel.js · 8 KB
   · вечер не по времени, а по дороге (M359):1
 
-## tests/91zzzzzzy3-gate2d.js · 33 KB
+## tests/91zzzzzzy3-gate2d.js · 31 KB
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 12 KB

@@ -12,7 +12,7 @@
      ECO_HUMAN=1 темп человека · ECO_EST=0 без хозяйства · ECO_DRONE=dear дрон на дорогой руде ·
      ECO_LOGIST=1 логист на базе · ECO_SHOPS=N цехов (0 — база без них) · ECO_EATER=1 едок промтовара ·
      ECO_LEVER=abc рычаги цехов, ECO_LEVER_MUL цена × (-est) · ECO_SAVE=1 лестница после сейва ·
-     ECO_BUY=0 свежий без покупок · ECO_FRESH_H часы свежего · ECO_T1=1|2 путь T0→T1 · ECO_SEED=N сид · ECO_PAD=dock пауза у причала · ECO_TRACE подробности */
+     ECO_BUY=0 свежий без покупок · ECO_FRESH_H часы свежего · ECO_T1=1|2 путь T0→T1 · ECO_SEED=N сид · ECO_PAD=dock пауза у причала · ECO_LAPLOG=1 строка на круг · ECO_TRACE подробности */
 suite("проба · экономика",{tier:"probe"},()=>{
   const ENV=(globalThis.process&&globalThis.process.env)||{};
   const HOURS=Math.max(.1,+ENV.ECO_HOURS||1);
@@ -339,7 +339,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
         console.log("  след land: цель "+P.name+"/"+P.type+" d="+Math.round(Math.hypot(P.x-sh.x,P.y-sh.y))+" · ближние "+nr.map(q=>q.n+"/"+q.ty+" "+q.d).join(", ")+" · орбита "+(G.orbit?(G.orbit.p?G.orbit.p.name:G.orbit.kind||"?"):"нет")+" · топливо "+G.fuel.toFixed(0)+" · v "+Math.hypot(sh.vx,sh.vy).toFixed(1)+" · подсказка «"+G.prompt.replace(/\n/g," | ")+"» · находки "+((G.finds||[]).length)+" · relay "+(G.relay?1:0));}
       return false;}
     PHASE="грунт";
-    const st=stat();let mined=0;
+    const st=stat(),land0=FRESH.land();let mined=0;
     for(let i=0;i<12&&held()<st.cargoMax;i++){
       const S0=G.surf,x0=S0.x,t1=G.t;
       const dep=nearestDep();if(!dep){DONE.add(G.surf.p.key);break;}
@@ -409,7 +409,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
     billPay();
     PHASE="tick";
     if(tier.fresh&&FRESH_BUY){freshShop();FRESH.shop();}
-    dispPlay();
+    const tD=G.t;dispPlay();
+    FRESH.lapLog(P,mined,land0,(tD-t0)/FR/60,padL/60,(G.t-tD)/FR/60);
     return {frames:G.t-t0,mined};
   }
   /* свежий игрок покупает как человек (M912): пересаживается на выделенный «Вьюк», потом по очереди
