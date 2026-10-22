@@ -69,16 +69,15 @@ function giantMapGlyph(k,x,y,r,col){   /* пером карты (17z4), обво
 }
 function drawGiantsMap(V,cell){
   const vx=V.x,vy=V.y;
-  ctx.save();ctx.textAlign="center";
+  const MS=mapSave();MPN.textAlign="center";
   for(const g of giantsAll()){
     const x=W/2+(g.sx-vx)*cell,y=H/2+(g.sy-vy)*cell;
     if(x<-60||x>W+60||y<-60||y>H+60)continue;
     const r=Math.max(4,cell*.26);
-    ctx.lineJoin="round";
     giantMapGlyph(g.k,x,y,r,"rgba(240,220,170,.9)");
-    if(cell>=10){ctx.fillStyle="rgba(240,220,170,.9)";ctx.font=(typeof uiFont==="function")?uiFont(9):"9px monospace";mapLate(g.ru.toUpperCase(),[[x,y+r*1.9+11],[x,y-r*1.9-5]],4);}   /* под знаком, а занято — над ним (18, mapLate) */
+    if(cell>=10){MPN.fillStyle="rgba(240,220,170,.9)";MPN.font=(typeof uiFont==="function")?uiFont(9):"9px monospace";mapLate(g.ru.toUpperCase(),[[x,y+r*1.9+11],[x,y-r*1.9-5]],4);}   /* под знаком, а занято — над ним (18, mapLate) */
   }
-  ctx.restore();
+  mapRestore(MS);
 }
 /* ── система: само тело (D26, 18.09) ──
    Первый проход клал плоские фигуры — «наклейки». Тело печётся один раз на

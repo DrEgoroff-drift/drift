@@ -239,26 +239,30 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     let q = p*14.;
     let gl = 1. - smoothstep(.0, .05 + fw*14., min(abs(fract(q.x) - .5), abs(fract(q.z) - .5)));
     let gfade = 1. - smoothstep(.15, .5, fw*14.);
-    let basin = .08 + .12*smoothstep(-.3, -.04, n);
-    o.alb = ramp(k, mix(basin, .5 + .1*fbm(p*6., 3, fw), land) - .25*gl*dist*gfade - .08*dist);
+    /* M829 (СР · Визуал): суша .5 против впадин .08 давала p90 .76 при .66 у стенда — светлые пятна горели; перепад уже */
+    let basin = .13 + .12*smoothstep(-.3, -.04, n);
+    o.alb = ramp(k, mix(basin, .46 + .1*fbm(p*6., 3, fw), land) - .25*gl*dist*gfade - .08*dist);
     let pts = smoothstep(.85, .97, h3(floor(q) + 3.).x)*(1. - smoothstep(.0, .25, length(fract(q) - .5)))*gfade;
     o.emit = vec3f(1., .55, .25)*1.2*pts*dist;
   } else if (k == 3) {                          // gas: belts and zones of uneven width, turbulence at their edges, storms
     let sd = s.x/1.37;
     /* пояса (M703): число, ширина, тон и мягкость каждой кромки — от зерна мира; ровная тельняшка
        одинаковых полос читалась одной и той же планетой во всех системах */
-    let nb = 4. + floor(fract(sd*.618)*5.);
+    /* M829 (СР · Визуал): 4–8 поясов случайного тона сливались в три широкие зоны — шар читался стеклянным пятном;
+       поясов 6–10, и соседи обязаны различаться: к случайному тону пояса подмешана его чётность */
+    let nb = 6. + floor(fract(sd*.618)*5.);
     let tb = fbm(vec3f(p.x*2.5, p.y*14., p.z*2.5) + s, 4, fw);
     let lat = p.y + .03*tb + .045*fbm(warp(p*3. + s, .6, fw), 3, fw);
     let yy = lat*nb + .5*sin(lat*nb*.8 + sd) + .22*sin(lat*nb*2.1 + sd*1.7) - .5;
     let bi = floor(yy); let bf = fract(yy);
-    let ta = smoothstep(.15, .85, h3(vec3f(bi, sd, 1.)).x); let tb2 = smoothstep(.15, .85, h3(vec3f(bi + 1., sd, 1.)).x);
+    let par = f32(i32(bi) & 1);
+    let ta = mix(smoothstep(.15, .85, h3(vec3f(bi, sd, 1.)).x), par, .5); let tb2 = mix(smoothstep(.15, .85, h3(vec3f(bi + 1., sd, 1.)).x), 1. - par, .5);
     let ew = mix(.04, .3, h3(vec3f(bi, sd, 2.)).y);
     var tone = .12 + .66*mix(ta, tb2, smoothstep(.5 - ew, .5 + ew, bf + .06*tb));
     let fine = sin(yy*9. + 2.*tb)*(1. - smoothstep(.2, .6, fw*nb*9.));
     tone += .05*fine + .07*fbm(p*vec3f(4., 20., 4.) + s, 3, fw);
     /* полюса — без поясов, рябая шапка темнее */
-    let pol = smoothstep(.62, .9, abs(p.y));
+    let pol = smoothstep(.72, .95, abs(p.y));   /* шапка уже: при наклоне .38 полюс лежит на трети диска, и с .62 пояса кончались на полшара (M829) */
     tone = mix(tone, .2 + .22*fbm(p*7. + s, 3, fw), pol*.85);
     /* штормы: от нуля до трёх, место и размер — от зерна; светлый овал или тёмный глаз */
     let ns = i32(floor(fract(sd*.377)*3.999));
@@ -268,14 +272,15 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
       let la = (hj.x - .5)*1.1; let lo = hj.y*6.2832;
       let cs = vec3f(cos(lo)*sqrt(1. - la*la), la, sin(lo)*sqrt(1. - la*la));
       let ex = normalize(cross(vec3f(0., 1., 0.), cs)); let ey = cross(cs, ex);
-      let rw = mix(.11, .26, hj.z)/(1. + f32(j)*.4);
+      let rw = mix(.07, .14, hj.z)/(1. + f32(j)*.4);   /* шторм до .14 радиуса, не .26: овал в четверть диска читался пятном, не штормом (M829) */
       let d = p - cs; let sx = dot(d, ex)/rw; let sy = dot(d, ey)/(rw*.55);
       if (dot(d, cs) < -.2 || sx*sx + sy*sy > 2.) { continue; }
       let sr = sqrt(sx*sx + sy*sy); let ang = atan2(sy, sx) + 2.5*exp(-sr*1.5);
       let sw = fbm(vec3f(cos(ang)*sr, sin(ang)*sr, f32(j))*3. + s, 3, fw);
       let st = 1. - smoothstep(.75, 1.05, sr + .1*sw);
       let lit = step(.4, fract(hj.z*7.));
-      let core = mix(tone*.55 + .05*sw, .88 + .08*sw - .35*(1. - smoothstep(.1, .45, abs(sr - .62))), lit);
+      /* светлый шторм — на четверть светлее своего пояса, не .88 по всей площади: белый овал на тёмной стороне читался пятном (M829) */
+      let core = mix(tone*.55 + .05*sw, min(tone + .28, .92) + .08*sw - .25*(1. - smoothstep(.1, .45, abs(sr - .62))), lit);
       tone = mix(tone, core, st);
     }
     o.alb = ramp(k, tone);
@@ -463,11 +468,13 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
          монетой без терминатора; обёртку гиганта держим в пределах .5 и даём терминатору крутизну */
       let w = select(thick*3., min(thick*3., .25), k == 3);
       dif = clamp((mu0 + w)/(1. + w), 0., 1.)*smoothstep(-w, .05, m0g);
-      if (k == 3) { dif = dif*dif*(3. - 2.*dif)*.6; }   /* сливочная палитра под белёной звездой упиралась в 240: пересвет = монета */
+      if (k == 3) { dif = dif*dif*(3. - 2.*dif)*.68; }   /* .68, не .6: тело гиганта было темнее стенда (L .49 против .62); монеты нет — лимб гасит свой множитель ниже (M829, СР · Визуал) */   /* .74, не .6: тело гиганта было темнее стенда (L .49 против .62), монеты при этом нет — лимб гасит свой множитель ниже (M829, СР · Визуал) */   /* сливочная палитра под белёной звездой упиралась в 240: пересвет = монета */
     }
     /* стекло кристалла держит свой тон (M825c): тело освещено светом без его оттенка (8 % оттенка
        остаётся), цвет звезды — в блике и кромке */
-    let sunB = select(sun, mix(vec3f(dot(sun, vec3f(.2126, .7152, .0722))), sun, .08), k == 1);
+    /* гигант (M829, СР · Визуал): облака сами цветные, под синей звездой охра уходила в лайм (тон 94° при 60° у палитры) —
+       оттенок звезды на теле гиганта — на треть, остальное её яркостью; стекло кристалла — прежние 8 % */
+    let sunB = select(sun, mix(vec3f(dot(sun, vec3f(.2126, .7152, .0722))), sun, select(.08, .33, k == 3)), k == 1 || k == 3);
     var sc = sf.alb*dif*sunB;
     /* ночная сторона не чёрная (M804): пыль неба кладёт холодную заливку, воздух — свою, и у
        самого терминатора свет тёплый — в воздухе шире и краснее, на голом камне узкой кромкой */
@@ -527,12 +534,14 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
          у самого кольца; для тени высота светила над плоскостью кольца сжата (×.3, не меньше .25) —
          тень ложится на освещённый диск полосой за кольцом */
       let tt = v4.w; let RN = vec3f(0., sqrt(1. - tt*tt), -tt); let d0 = dot(L, RN);
-      var el = d0*.3; if (abs(el) < .25) { el = select(-.25, .25, d0 >= 0.); }
+      /* M829 (СР · Визуал): высота ×.3 с полом .25 клала тень на полшара — тело читалось стеклом с кольцом внутри;
+         высота ×.6 с полом .12: тень — полоса у экватора за кольцом, как у Сатурна */
+      var el = d0*.6; if (abs(el) < .12) { el = select(-.12, .12, d0 >= 0.); }
       let Ls = normalize(L - RN*(d0 - el)); let dq = dot(Ls, RN);
       if (abs(dq) > 1e-3) {
         let sh = -dot(N, RN)/dq;
         let rh = length(N + Ls*sh);
-        if (sh > 0.) { let rg = ring(rh, v4, v5, max(px*3., .004)); let ta = 1. - pow(1. - min(rg.a, .95), 1./max(abs(dq), .12)); sc *= 1. - ta*.9; }   /* луч к звезде идёт сквозь кольцо косо — тень плотнее самого кольца (M825) */
+        if (sh > 0.) { let rg = ring(rh, v4, v5, max(px*3., .004)); let ta = 1. - pow(1. - min(rg.a, .95), 1./max(abs(dq), .12)); sc *= 1. - ta*.7; }   /* .7: сквозь щели и пыль кольца свет проходит — тень не чёрная (M829) */   /* луч к звезде идёт сквозь кольцо косо — тень плотнее самого кольца (M825) */
       }
     }
     cov = clamp((1. - len)/px + .5, 0., 1.);

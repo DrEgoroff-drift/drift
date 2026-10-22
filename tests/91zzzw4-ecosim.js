@@ -10,8 +10,9 @@
    node test-node.js --only="проба · экономика", окружение:
      ECO_HOURS часов на ярус (1) · ECO_TIERS регулярка имён · ECO_DISP=0 без дел ·
      ECO_HUMAN=1 темп человека · ECO_EST=0 без хозяйства · ECO_DRONE=dear дрон на дорогой руде ·
-     ECO_LOGIST=1 логист на базе · ECO_SHOPS=0 база без цехов · ECO_EATER=1 едок промтовара ·
-     ECO_BUY=0 свежий без покупок · ECO_FRESH_H часы свежего · ECO_TRACE подробности */
+     ECO_LOGIST=1 логист на базе · ECO_SHOPS=N цехов (0 — база без них) · ECO_EATER=1 едок промтовара ·
+     ECO_LEVER=abc рычаги цехов, ECO_LEVER_MUL цена × (-est) · ECO_SAVE=1 лестница после сейва ·
+     ECO_BUY=0 свежий без покупок · ECO_FRESH_H часы свежего · ECO_T1=1|2 путь T0→T1 · ECO_TRACE подробности */
 suite("проба · экономика",{tier:"probe"},()=>{
   const ENV=(globalThis.process&&globalThis.process.env)||{};
   const HOURS=Math.max(.1,+ENV.ECO_HOURS||1);
@@ -81,7 +82,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       for(let i=0;i<max;i++){
         if(Math.abs(x-S.x)<within)return true;
         keys.left=x<S.x;keys.right=x>S.x;
-        stepWorld(1);G.t+=1;
+        stepWorld(1);G.t+=1;if(TL&&PHASE==="грунт")TL.walk=(TL.walk|0)+1;
         if(G.mode!=="surface")return false;
         if(Math.abs(S.x-last)<.01){if(++still>60){note("стоит на месте у "+Math.round(S.x)+": "+G.prompt.split("\n")[0]);return false;}}else still=0;
         last=S.x;
@@ -129,44 +130,15 @@ suite("проба · экономика",{tier:"probe"},()=>{
   /* главный приказ каждого домена — тот, без которого он не работает (12c MGR_RULES) */
   const MGR_MAIN={cmd:["repair"],keep:["sell","build"],fact:["run"],sci:[]};
   const MGR_ORDER=["fact","cmd","keep","sci"];
-  /* ── хронология первого часа (ярус «свежий») ── */
-  function tlSample(){
-    const m=fwMin(),A=dispLane(),B=billSt(),P=B.paper;
-    const mark=(k,c)=>{if(TL[k]==null&&c)TL[k]=m;};
-    mark("addr2",A.filter(x=>x.addr).length>=2);
-    mark("urg",A.some(x=>x.urg));
-    mark("long",A.some(x=>x.long));
-    mark("line",G.log.some(x=>/Смена пошла/.test(x.s)));
-    mark("fwEnd",fwSt().done);
-    mark("paper",P&&P.first);
-    mark("hour1",!firstHour());
-    TL.debt=Math.max(TL.debt,billDebt());
-    for(const t of [2,6,10,30,60,90,120,180])if(TL["cr"+t]==null&&m>=t){TL["cr"+t]=Math.round(G.credits);TL["fp"+t]=fuelPriceHere()+"/"+repFuelMul().toFixed(2)+"/"+actCoupons();}
-    TL.flown=G.flownMs/60000;TL.play=(G.playMs||0)/60000;
-    /* что игрок успевает за первый час (Контроль 22.10): первый раз — минута, к 60′ — срез */
-    if(G.mode==="dock"&&G.sys)CNT.docks.add(G.sys.key);
-    if(G.sys)CNT.sys.add(G.sys.key);
-    const cr=G.credits,H=G.home||{};
-    mark("undock",G.mode!=="dock");
-    mark("land",G.mode==="surface");
-    mark("sell",(BOOK.gross.sell||0)>0);
-    mark("deed1",DSTAT.done>=1);mark("deed3",DSTAT.done>=3);mark("deed5",DSTAT.done>=5);
-    mark("c900",cr>=modCost("hold",0));mark("c1250",cr>=modCost("drill",0));mark("c2k",cr>=2*modCost("drill",0));
-    mark("hire",cr>=HIRE_FEE);mark("drone",cr>=dronePrice());
-    mark("turn3k",(H.turn|0)>=3000);mark("alloc",!!H.alloc);mark("board",G.shipId==="vyuk");
-    mark("coop",!!coopHas());
-    mark("clr2",(G.clearance|0)>=2);mark("kill",(G.kills|0)>=1);
-    if(TL.h1==null&&m>=60)TL.h1={gross:Object.assign({},BOOK.gross),spend:Object.assign({},BOOK.spend),
-      deeds:DSTAT.done,pay:DSTAT.pay,took:Object.assign({},DSTAT.took),lost:dispSt().lost,poor:DSTAT.poor.size,
-      laps:CNT.laps,mined:CNT.mined,jumps:JUMPS,docks:CNT.docks.size,sys:CNT.sys.size,cr:Math.round(cr),
-      clr:G.clearance|0,kills:G.kills|0,turn:Math.round(H.turn|0),norm:normNow()};
-  }
   /* ── дела диспетчера (M912): ходить по шагам бумаги теми же целями бота ── */
   const DSTAT={done:0,pay:0,frames:0,skip:{},took:{},poor:new Set()},NET=new Map();
   const FUEL_KEEP=30,JUMP_F=8*60;
   /* счётчики первого часа: круги и добыча — из цикла яруса, станции и системы — из сэмплера */
   const CNT={laps:0,mined:0,docks:new Set(),sys:new Set()};
   let HIRE_FEE=1e9;
+  /* хронология первого часа и путь T0→T1 (M919) — в 91zzzw4-ecosim-t1.js */
+  const FRESH=ecoFresh({note,dockAt,DSTAT,CNT,FR,get order(){return BUY_ORDER;},get tl(){return TL;},get book(){return BOOK;},
+    get hire(){return HIRE_FEE;},get jumps(){return JUMPS;},get ph(){return PHASE;},set ph(v){PHASE=v;}}),tlSample=FRESH.tlSample;
   /* по карману ли бумага: прыжки туда-обратно по цене бака и груз по цене стойки; запас — на бак */
   function dispAfford(it){
     let hops=0,goods=0,lands=0,opp=0,a=G.sys.key;
@@ -378,8 +350,9 @@ suite("проба · экономика",{tier:"probe"},()=>{
         break;}
       mined++;
     }
+    if(TL&&held()>=st.cargoMax)TL.full=(TL.full|0)+1;
     /* дроны ставятся у первой залежи ярусом выше T0: инвентарь выдан заранее */
-    if(tier.drones>0&&G.droneInventory>0){
+    if((tier.drones>0||tier.fresh)&&G.droneInventory>0){
       /* ECO_DRONE=dear: игрок, который знает цену, ставит машину на самую дорогую руду, что она берёт */
       const S=G.surf,ok=(S.deposits||[]).filter(d=>d.left>0&&(ENV.ECO_DRONE!=="dear"||droneMayMine(d.res)));
       const dep=ENV.ECO_DRONE==="dear"?ok.sort((a,b)=>((RES[b.res]||{}).price|0)-((RES[a.res]||{}).price|0))[0]:ok[0];
@@ -434,7 +407,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     PHASE="счёт";
     billPay();
     PHASE="tick";
-    if(tier.fresh&&FRESH_BUY)freshShop();
+    if(tier.fresh&&FRESH_BUY){freshShop();FRESH.shop();}
     dispPlay();
     return {frames:G.t-t0,mined};
   }
@@ -442,7 +415,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
      трюм и бур, держа запас на бак и ремонт. Вложение — своей строкой: не расход и не валовый */
   const FRESH_BUY=ENV.ECO_BUY!=="0",BUY_ORDER=["hold","drill","hold","drill","engine","hold","drill"],BUY_KEEP=900;
   function freshShop(){
-    if(G.mode!=="dock")return;
+    if(G.mode!=="dock"||FRESH.holdMods())return;
     const PH=PHASE;PHASE="вложение";
     try{
       if(G.owned.vyuk&&G.shipId!=="vyuk"){
@@ -465,7 +438,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
   /* хозяйство T2–T3 — в 91zzzw4-ecosim-est.js */
   const {EST,estSetup,estDock,estHaul,estReport}=ecoEstate({note,idle,dockAt,sysOf,
     get ph(){return PHASE;},set ph(v){PHASE=v;},get book(){return BOOK;},get human(){return HUMAN;},
-    logist:ENV.ECO_LOGIST==="1",shops:ENV.ECO_SHOPS!=="0",eater:ENV.ECO_EATER==="1"});
+    logist:ENV.ECO_LOGIST==="1",lever:ENV.ECO_LEVER||"",mul:+ENV.ECO_LEVER_MUL||1,shops:ENV.ECO_SHOPS,eater:ENV.ECO_EATER==="1"});
   /* ── ярус: корпус, модули, руки, дроны, управляющие ── */
   function setup(tier){
     resetWorld();

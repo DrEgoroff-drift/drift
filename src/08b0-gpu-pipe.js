@@ -31,7 +31,7 @@ function gpuPipeline(key,mk,code){
 /* текст шейдера по имени gpuPipe — для прогрева: [код, раскладка]. Поля (fld.*) — тело поля,
    шапку и раскладку добавляет рецепт. Где выражение длиннее константы, место вызова берёт его отсюда */
 const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>GNB_EMI,"fld.gew":()=>GEW_WGSL,
-  "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsy.belt":()=>SBELT_HAZE_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY,
+  "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.rail.fx":()=>RAIL_FX_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsy.belt":()=>SBELT_HAZE_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY,
   "fld.abil.cone":()=>ABIL_CONE_WGSL,"fld.belt.rocklay":()=>BROCK_LAY_WGSL,
   /* поля режимов (поздний прогрев, GPU_LATE_KEYS ниже): шахта, база, дом, черпак, карта, «Сорока», комната 3D */
   "fld.gsky2":()=>GSK_WGSL,

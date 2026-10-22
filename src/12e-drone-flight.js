@@ -298,7 +298,7 @@ function drawDronesMap(vis){
   if(!list.length)return;
   const by={};
   for(const d of list){const k=d.sx+","+d.sy;by[k]=(by[k]||0)+1;}
-  ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
+  MPN.font="8px ui-monospace,monospace";MPN.textAlign="left";
   for(const v of vis){
     const n=by[v.gx+","+v.gy];
     if(!n)continue;

@@ -274,8 +274,8 @@ function drawRouteMap(vis){
   const pts=R.legs.map(at);
   const col="rgba(127,230,216,";
   const NX=routeNext();
-  ctx.save();
-  ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+  const MS=mapSave();
+  MPN.font="9px ui-monospace,monospace";MPN.textAlign="center";MPN.textBaseline="middle";
   if(R.legs.length>=2){
     const S=routeSum();
     let bestLeg=null;
@@ -295,7 +295,7 @@ function drawRouteMap(vis){
          на маршрут смотрят, — «где сейчас берут». */
       if(l===bestLeg){
         const label=RES[l.k].ru.toUpperCase()+" "+l.buy+" → "+l.sell;
-        const tw=ctx.measureText(label).width;
+        const tw=mapTM(label).width;
         const lx=mx+Math.cos(an+Math.PI/2)*14,ly=my+Math.sin(an+Math.PI/2)*14;
         mpRect(lx-tw/2-6,ly-8,tw+12,16,"rgba(6,10,16,.85)");mapInkBox(lx-tw/2-6,ly-8,tw+12,16);
         mpFrame(lx-tw/2-5.5,ly-7.5,tw+11,15,1,col+".4)");
@@ -311,8 +311,8 @@ function drawRouteMap(vis){
     mpDisc(p.x,p.y,11,next?"rgba(127,230,216,.85)":"rgba(6,10,16,.8)");
     mpText(String(i+1),p.x,p.y+.5,next?"#06101a":"#7fe6d8");mapInkBox(p.x-11,p.y-11,22,22);
   });
-  ctx.textBaseline="alphabetic";
-  ctx.restore();
+  MPN.textBaseline="alphabetic";
+  mapRestore(MS);
 }
 /* Строка подвала карты: с одного плеча — что маршрут заведён, с двух — куда
    лететь и что везти. Счёт за круг живёт на станции (routeSumLine): подвалу

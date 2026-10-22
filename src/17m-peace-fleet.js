@@ -38,30 +38,8 @@ function peaceShip(k,seed,by,x,y,a,Z,al){
 function peaceFlag(x,y,Z,t,limp,SH){
   const k=Math.max(.3,Z*1.2);if(x<-150*k||x>W+150*k||y<-200*k||y>H+60*k)return;
   const poleH=130*k,fw=78*k,fh=46*k,N=14,top=y-poleH;
-  if(SH){
-    /* с видеокарты: те же полосы четырёхугольниками (08c gpuQuad), звезда — веером */
-    SH.push([0,x-1.2*k,top-4*k,x+1.2*k,top+poleH,0,0,141,148,155,1],[1,x,top-5*k,2.6*k,0,0,0,201,166,74,1]);
-    const amp=limp?1.5*k:6*k,sp=limp?.6:3.2;
-    for(let i=0;i<N;i++){
-      const u0=i/N,u1=(i+1)/N,ph=t*sp-u0*6;
-      const dy0=Math.sin(ph)*amp*u0,dy1=Math.sin(ph-6/N)*amp*u1;
-      const sag=limp?u0*u0*fh*.9:0,sag1=limp?u1*u1*fh*.9:0;
-      const x0=x+fw*u0*(limp?.55:1),x1=x+fw*u1*(limp?.55:1)+.6;
-      const sh=Math.cos(ph)*(limp?.1:.28);
-      gpuQuad(SH,[x0,top+dy0+sag],[x1,top+dy1+sag1],[x1,top+fh+dy1+sag1*.6],[x0,top+fh+dy0+sag*.6],
-        [Math.round(clamp(178+sh*120,90,230)),Math.round(clamp(34+sh*25,10,70)),40],(i>0?8:0)|(i<N-1?2:0));
-    }
-    if(k>.4){
-      const sx=x+fw*.18,sy=top+fh*.3+Math.sin(t*sp-1)*amp*.18,R=6*k,P=[];
-      for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i&1?R*.42:R;P.push([sx+Math.cos(a)*rr,sy+Math.sin(a)*rr]);}
-      for(let i=0;i<10;i+=2){const a=P[i],b=P[(i+1)%10],c=P[(i+9)%10];SH.push([5,a[0],a[1],b[0],b[1],c[0],c[1],242,201,76,1],[2,b[0],b[1],c[0],c[1],.5,0,242,201,76,1]);}
-      for(let i=1;i<10;i+=2)SH.push([5,sx,sy,P[i][0],P[i][1],P[(i+2)%10][0],P[(i+2)%10][1],242,201,76,1]);
-      SH.push([1,sx,sy,R*.42*.81,0,0,0,242,201,76,1]);
-    }
-    return;
-  }
-  ctx.fillStyle="#8d949b";ctx.fillRect(x-1.2*k,top-4*k,2.4*k,poleH+4*k);
-  ctx.fillStyle="#c9a64a";ctx.beginPath();ctx.arc(x,top-5*k,2.6*k,0,TAU);ctx.fill();
+  /* полосы четырёхугольниками (08c gpuQuad), звезда — веером; 2D-ветки нет (M818) */
+  SH.push([0,x-1.2*k,top-4*k,x+1.2*k,top+poleH,0,0,141,148,155,1],[1,x,top-5*k,2.6*k,0,0,0,201,166,74,1]);
   const amp=limp?1.5*k:6*k,sp=limp?.6:3.2;
   for(let i=0;i<N;i++){
     const u0=i/N,u1=(i+1)/N,ph=t*sp-u0*6;
@@ -69,15 +47,15 @@ function peaceFlag(x,y,Z,t,limp,SH){
     const sag=limp?u0*u0*fh*.9:0,sag1=limp?u1*u1*fh*.9:0;
     const x0=x+fw*u0*(limp?.55:1),x1=x+fw*u1*(limp?.55:1)+.6;
     const sh=Math.cos(ph)*(limp?.1:.28);
-    const r=Math.round(clamp(178+sh*120,90,230)),g=Math.round(clamp(34+sh*25,10,70));
-    ctx.fillStyle="rgb("+r+","+g+",40)";
-    ctx.beginPath();ctx.moveTo(x0,top+dy0+sag);ctx.lineTo(x1,top+dy1+sag1);ctx.lineTo(x1,top+fh+dy1+sag1*.6);ctx.lineTo(x0,top+fh+dy0+sag*.6);ctx.closePath();ctx.fill();
+    gpuQuad(SH,[x0,top+dy0+sag],[x1,top+dy1+sag1],[x1,top+fh+dy1+sag1*.6],[x0,top+fh+dy0+sag*.6],
+      [Math.round(clamp(178+sh*120,90,230)),Math.round(clamp(34+sh*25,10,70)),40],(i>0?8:0)|(i<N-1?2:0));
   }
   if(k>.4){
-    const sx=x+fw*.18,sy=top+fh*.3+Math.sin(t*sp-1)*amp*.18,R=6*k;
-    ctx.fillStyle="#f2c94c";ctx.beginPath();
-    for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i&1?R*.42:R;ctx.lineTo(sx+Math.cos(a)*rr,sy+Math.sin(a)*rr);}
-    ctx.closePath();ctx.fill();
+    const sx=x+fw*.18,sy=top+fh*.3+Math.sin(t*sp-1)*amp*.18,R=6*k,P=[];
+    for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i&1?R*.42:R;P.push([sx+Math.cos(a)*rr,sy+Math.sin(a)*rr]);}
+    for(let i=0;i<10;i+=2){const a=P[i],b=P[(i+1)%10],c=P[(i+9)%10];SH.push([5,a[0],a[1],b[0],b[1],c[0],c[1],242,201,76,1],[2,b[0],b[1],c[0],c[1],.5,0,242,201,76,1]);}
+    for(let i=1;i<10;i+=2)SH.push([5,sx,sy,P[i][0],P[i][1],P[(i+2)%10][0],P[(i+2)%10][1],242,201,76,1]);
+    SH.push([1,sx,sy,R*.42*.81,0,0,0,242,201,76,1]);
   }
 }
 /* состав мирного флота по хозяину: [вид, сдвиг зерна, чей борт] — одна таблица на сцену и на зал,
@@ -88,10 +66,10 @@ function peaceShipsOf(S){return (S&&PEACE_SHIPS[S.by]||[]).map(q=>({k:q[0],seed:
 function drawPeaceFleet(zx,zy,Z){
   const S=peaceHere();if(!S||typeof drawFleetShip!=="function")return;
   const t=G.t/60,{by,cx,cy,seed}=S,Q=PEACE_SHIPS[by],ps=(i,x,y,a)=>peaceShip(Q[i][0],seed+Q[i][1],Q[i][2],x,y,a,Z);
-  /* с видеокарты (ступень 1): табло, флаг, дроны и камень — фигурами в проходе сцены,
-     подписи — слоем подписей (DOM); корабли флота уже там (12ai1 fleetShipGpu) */
-  const pass=gpuScene(),SH=pass?[]:null,lab=(k,text,x,y,col)=>{if(pass)domLabel("pf"+k,x,y,text,uiFont(8),col,"center");
-    else{ctx.fillStyle=col;ctx.font=uiFont(8);ctx.textAlign="center";ctx.fillText(text,x,y);}};
+  /* только видеокарта (M818): табло, флаг, дроны и камень — фигурами в проходе сцены,
+     подписи — слоем подписей (DOM); корабли флота уже там (12ai1 fleetShipGpu). Без прохода сцены нет */
+  const pass=gpuScene();if(!pass)return;
+  const SH=[],lab=(k,text,x,y,col)=>domLabel("pf"+k,x,y,text,uiFont(8),col,"center");
   if(by==="gt"&&!peaceSubbot()){
     /* будни: два буксира стоят у причала носом к станции */
     for(let i=0;i<2;i++)ps(i,zx(cx+(i?60:-60)),zy(cy+40),Math.atan2(S.P.st.y-cy,S.P.st.x-cx));
@@ -102,8 +80,7 @@ function drawPeaceFleet(zx,zy,Z){
     for(let i=0;i<2;i++){
       const a=t*.05+i*Math.PI+seed%7,x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R*.55;
       const rx=cx+Math.cos(a+.2)*R,ry=cy+Math.sin(a+.2)*R*.55;
-      if(SH)SH.push([1,zx(rx),zy(ry),Math.max(2,6*Z),0,0,0,58,52,46,1]);
-      else{ctx.fillStyle="#3a342e";ctx.beginPath();ctx.arc(zx(rx),zy(ry),Math.max(2,6*Z),0,TAU);ctx.fill();}
+      SH.push([1,zx(rx),zy(ry),Math.max(2,6*Z),0,0,0,58,52,46,1]);
       ps(i,zx(x),zy(y),a+Math.PI/2);
     }
   }else if(by==="co"){
@@ -112,18 +89,11 @@ function drawPeaceFleet(zx,zy,Z){
     /* экран на рекламном борту (дизайн 18.09): бегущие цветные полосы, как у
        дрона-встречающего, — «партнёр» виден и без подписи */
     {const k=clamp(Z,.6,1.5),sx=zx(x),sy=zy(y)-12*k,off=(G.t*.6)%40;
-      if(SH){const R=(x0,y0,w,h,c)=>{const a=Math.max(x0,-14),b=Math.min(x0+w,14);
+      {const R=(x0,y0,w,h,c)=>{const a=Math.max(x0,-14),b=Math.min(x0+w,14);
           if(b>a)SH.push([0,sx+a*k,sy+y0*k,sx+b*k,sy+(y0+h)*k,0,0,c[0],c[1],c[2],c[3]]);};
         SH.push([0,sx-16*k,sy-6*k,sx+16*k,sy+4*k,0,0,32,38,46,1],[0,sx-14*k,sy-4.5*k,sx+14*k,sy+2.5*k,0,0,11,16,22,1]);
         for(let i=-1;i<3;i++){const bx=-14+i*20-off*.5+20;
-          R(bx,-3,9,2,[255,90,170,.95]);R(bx+11,-3,6,2,[90,230,255,.9]);R(bx+2,.5,12,1.6,[255,230,120,.9]);}}
-      else{ctx.save();ctx.translate(sx,sy);ctx.scale(k,k);
-      ctx.fillStyle="#20262e";ctx.fillRect(-16,-6,32,10);ctx.fillStyle="#0b1016";ctx.fillRect(-14,-4.5,28,7);
-      ctx.beginPath();ctx.rect(-14,-4.5,28,7);ctx.clip();
-      for(let i=-1;i<3;i++){const bx=-14+i*20-off*.5+20;
-        ctx.fillStyle="rgba(255,90,170,.95)";ctx.fillRect(bx,-3,9,2);ctx.fillStyle="rgba(90,230,255,.9)";ctx.fillRect(bx+11,-3,6,2);
-        ctx.fillStyle="rgba(255,230,120,.9)";ctx.fillRect(bx+2,.5,12,1.6);}
-      ctx.restore();}}
+          R(bx,-3,9,2,[255,90,170,.95]);R(bx+11,-3,6,2,[90,230,255,.9]);R(bx+2,.5,12,1.6,[255,230,120,.9]);}}}
     lab(1,"РЕКЛАМА · ПАРТНЁР™",zx(x),zy(y)-24*clamp(Z,.6,1.5),"rgba(255,70,160,.8)");
     ps(1,zx(x-60),zy(y+40),a);
   }else if(by==="or"){
@@ -144,20 +114,14 @@ function drawPeaceFleet(zx,zy,Z){
       const x=cx+(i-2.5)*40,y=cy,off=((t*1.2-i*.35)%4+4)%4<.5,k=clamp(Z,.6,1.5);
       /* дрон-камера Хай-Фронта, как у встречающего (17h): диск, крест лопастей,
          глаз — а не точка (дизайн 18.09); при перезагрузке глаз гаснет */
-      if(SH){const X=zx(x),Y=zy(y);
+      const X=zx(x),Y=zy(y);
         SH.push([2,X-7*k,Y-5*k,X+7*k,Y+5*k,.4*k,0,130,255,236,.45],[2,X-7*k,Y+5*k,X+7*k,Y-5*k,.4*k,0,130,255,236,.45],
           [1,X,Y,4.2*k,0,0,0,216,224,232,1],[1,X,Y+1.4*k,2*k,0,0,0,16,22,28,1],
-          off?[1,X,Y+1.8*k,.8*k,0,0,0,60,60,60,.9]:[1,X,Y+1.8*k,.8*k,0,0,0,255,70,70,.95]);continue;}
-      ctx.save();ctx.translate(zx(x),zy(y));ctx.scale(k,k);
-      ctx.strokeStyle="rgba(130,255,236,.45)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(7,5);ctx.moveTo(-7,5);ctx.lineTo(7,-5);ctx.stroke();
-      ctx.fillStyle="#d8e0e8";ctx.beginPath();ctx.arc(0,0,4.2,0,TAU);ctx.fill();
-      ctx.fillStyle="#10161c";ctx.beginPath();ctx.arc(0,1.4,2,0,TAU);ctx.fill();
-      ctx.fillStyle=off?"rgba(60,60,60,.9)":"rgba(255,70,70,.95)";ctx.beginPath();ctx.arc(0,1.8,.8,0,TAU);ctx.fill();
-      ctx.restore();
+          off?[1,X,Y+1.8*k,.8*k,0,0,0,60,60,60,.9]:[1,X,Y+1.8*k,.8*k,0,0,0,255,70,70,.95]);
     }
     lab(4,"ОБНОВЛЕНИЕ УСТАНАВЛИВАЕТСЯ",zx(cx),zy(cy)-18*clamp(Z,.6,1.5),"rgba(130,255,236,.7)");
   }
-  if(SH&&SH.length)gpuShapes(pass,SH);
+  if(SH.length)gpuShapes(pass,SH);
   /* обряд державы из летописи (M455): строка над сценой, пока он идёт */
   {const R=peaceRite(by),D=R&&typeof RITES!=="undefined"?RITES[R.key]:null;
     if(D&&!(by==="gt"&&R.key==="subbot"))lab(9,D.ru.toUpperCase()+" · "+D.ru2,zx(cx),zy(cy)+46*clamp(Z,.6,1.5),"rgba(236,214,160,.85)");
