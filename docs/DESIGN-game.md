@@ -592,6 +592,15 @@ Read it:
   dead goods). The second hour's walls are the drone's price, the buying order and walking — none
   of them a code bug; they are listed for the author, nothing changed.
 
+Two caveats on these rows (accepted with M919):
+
+- *The hold is «not a wall» partly by the probe's own cap.* A landing digs at most 12 deposits
+  (`lap`, the ground loop), and the lap ends there with room in the hold. A person who walks further
+  for a 13th deposit could meet the hold — and would walk even more than the 48–63 % above.
+- *The drone goes where a beginner puts it.* It takes the first deposit of the next landing
+  (iron here), hence 87–215 cr/h. On the dearest ore it may take (`ECO_DRONE=dear`, M912) it pays
+  back far sooner, but a fresh player does not know the prices yet; the rows keep the beginner.
+
 **Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
 
 - **T0 +57 % at the bot's pace, −13 % / +9 % at a human's.** Closed by the pace table above:
@@ -1458,6 +1467,11 @@ in three of the ten dead-good chains (accum, hullsec, panel) because the probe's
 carbon (its worlds are fauna) and the bot does not haul it; carbon fibre runs only at a share on
 organics. Whatever the author picks from items 1–5, the home's carbon decides how deep a chain at
 home can go; the haul that would bring it costs what M915 measured (≈ 2.2k cr all-in).
+
+**The home rung in a fresh save stays at 5.** Three hours of play bring 19 points, but the
+landing gate (`rungOf`, `12ad-site.js:69-83`) holds the rung at 5: the fresh-save probe never lands
+in its home system (0,0) — it digs at the neighbours. Nothing on the T0 → T1 path asks for a rung
+(M919); a rung of 10 by the third hour needs a landing at home.
 
 ### Don't touch — the measurement said no
 
