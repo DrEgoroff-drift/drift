@@ -89,7 +89,8 @@ function plnGeo(m){
   return {vb,ib,n:ni,nv,gen:PLN_GPU.gen};
 }
 function plnGeoFree(g){if(g&&g.gen===PLN_GPU.gen){g.vb.destroy();g.ib.destroy();}if(g)g.n=0;}
-/* записи: по 16 чисел на штуку; cap — на сколько штук заведён буфер */
+/* записи: по 16 чисел на штуку; cap — на сколько штук заведён буфер. off — байт первой записи,
+   когда записи разных сеток лежат в одном буфере (кости человека, 21pha) */
 function plnInst(a,n,cap){
   const c=Math.max(1,cap||n||1);
   const buf=GPU.dev.createBuffer({size:c*64,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
@@ -338,7 +339,7 @@ function plnGpuFrame(F){
       const I=b.inst;if(I&&(I.n<=0||I.gen!==Q.gen))continue;
       const n=I?(b.count==null?I.n:b.count):1;
       if(n<=0)continue;
-      p.setVertexBuffer(0,b.geo.vb);p.setVertexBuffer(1,I?I.buf:(b.ride?Q.oneRide:Q.one));
+      p.setVertexBuffer(0,b.geo.vb);p.setVertexBuffer(1,I?I.buf:(b.ride?Q.oneRide:Q.one),I&&I.off||0);
       p.setIndexBuffer(b.geo.ib,"uint32");p.drawIndexed(b.geo.n,n,0,0,I?(b.first||0):0);
       calls++;tris+=b.geo.n/3*n;
     }

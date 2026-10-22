@@ -142,19 +142,6 @@ function qslDraw(c,x,y,w,h,o,seed){
   c.textAlign="left";
   c.restore();
 }
-/* стена дома: карточки в ряд, с нахлёстом, приколоты кнопками */
-function qslDrawWall(x,y,w,h){
-  const L=qslWall();
-  if(!L.length)return;
-  const cw=Math.min(w/4.2,h*0.62), ch=cw*0.62;
-  const per=Math.max(1,Math.floor(w/(cw*0.86)));
-  L.slice(0,per*3).forEach((o,i)=>{
-    const cx=x+(i%per)*cw*0.86, cy=y+Math.floor(i/per)*ch*0.88;
-    qslDraw(ctx,cx,cy,cw,ch,o,hashi(i,o.id.length,5));
-    ctx.fillStyle="rgba(190,80,60,.85)";
-    ctx.beginPath();ctx.arc(cx+cw*0.5,cy+ch*0.06,Math.max(1.4,ch*0.05),0,TAU);ctx.fill();
-  });
-}
 /* ── стол ──
    Кого слышал, кому послал, от кого пришло. Одна закладка на всё. */
 function renderQsl(box){

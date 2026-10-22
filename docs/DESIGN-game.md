@@ -301,6 +301,19 @@ and escorts; low on mood issues people — talk, carry, bring the doctor); every
 (a keeper, a clerk, a hand) and a clock; and **capacity exceeds the hour**: the four items above
 take ~80 minutes of a T1 player's hour. You choose. The ones you drop go to the cascade (§4.2).
 
+**Built 22.10 (M907, `28m-dispatch`).** Four slots — haul, task, urgent, long — filled at every dock
+and again the moment one is handed in at the counter; everything on the lane is already the
+player's, nothing is «taken». Twenty verbs (five hauls, seven tasks, five urgents, three long), each
+a chain of real steps caught by wrapping the real function: cargo (a button), dock, arrive, land
+(`enterSurface`), kill (`killPirate`), cant (`cantHall`). A dropped item hits the issuer's gauge by
+its class (stock −.1, mood or order −.06). The long order is written by the participation's
+диспетчер. Measured (`tests/91zzzw9e-dispatch.js`, 60 docks of a bot that plays): the lane full at
+every dock, 0 repeats in a window of five over 67 issues, the urgent at most 9.4 min, the four
+items' estimate ≥ 83 min. Gauge weights: low order 37 % order verbs against 15 %, low mood 51 %
+against 22 %, empty stock 66 % hauls-here against 17 %. Not built: the clerk handing the urgent
+paper in the walkable hall (§7.1) — it is on the board and over the ship as the alarm plate; «walk
+to a landmark» is counted as a landing in that system, the marks have no hook yet.
+
 ### 4.4 Credits buy things; access buys *the right* things
 
 The arc's law applied to the catalogue. Credits remain the price; **access is the gate**, and
@@ -319,6 +332,21 @@ the gates are the organs that already exist and currently do nothing:
 And the 30 rungs: every rung from 1 to 30 gets one line of consequence (a price, a face, a
 right), no rung is silent. The table is the builder's (M905); the rule is: a rung is a thing the
 *system* does for you, never a stat.
+
+**Built 22.10 (M908, `28n-access`).** Hull gates ride on `yardGate`, so the dock row shows the
+reason instead of a buy button («допуск II или разнарядка», «допуск III и поручитель», «нужен
+поручитель», «только по разнарядке»); a hull you own is never locked. Catalogue hulls follow the
+same ladder by price: up to «Скат»'s price free, up to «Топор»'s clearance II, above that III plus
+a sponsor; rare, legend and proto hulls are never sold for credits. An allocation by norm
+(`watchAllot`) sets a lasting right to the clearance-II hulls. The sponsor is a manager at level 3
+or higher, a house you had an episode with, or a station supplied on 8 separate visits (a need
+closed, an order delivered or a dispatcher haul handed in — once per visit). The 22 rungs without
+a ★ get a lever each — dispatcher pay, fuel, repair, the buyer's bid, the counter, gauge floors,
+barge rate — read inside the real price functions, and the lever's line is appended to the rung's
+note so the board and the dock moment say it in words. Tier-2 and tier-3 workshops (the slipway
+excepted) also need the last сводка at 75 % or more. Not built: the second participation (the
+watch has one participation). Test `tests/91zzzw9f-access.js` walks rungs 0→30 against a stub
+and holds that every step changes what the system does.
 
 ### 4.5 Seasons — the weather of demand
 
@@ -498,6 +526,40 @@ drawn from the chapter table (`12ud-smena-text`, `SMENA_TITLE`) by part, not wri
 table above as its test (a save at part N opens N+1 only through the named door, and the probe
 drives the deed); M911 adds the Blade as a scripted once-per-game run. Nothing else grows.
 
+**Built 22.10 (M910, `28p-doors`).** A landing is now only the *place* a chapter is lived; the
+door is a deed done after the previous chapter opened. A deed log (`G.wd`) is fed by hooks on
+what the game already does: a сводка ≥ 90 % (`norm`), a сводка ≥ 60 % right after a срыв
+(`srv`), a hull lost, a door shut (`folkShut`), a ransom or a storm that frees hands, a named
+offer taken, a landmark acted on (`mark`), one's own notch on an obelisk (`notch`), a watch
+handed over and taken back, a story turned by a deed. The part doors follow the table above
+(chapter 55 takes `blade` only since M911). Inside a part the door is drawn
+once per chapter, weighted 1/(1+times done); any two different deeds also open it, so nobody is
+stuck. Part I stays on landings. The диспетчер's 72 lines come from `SMENA_TEXT`: the chapter's
+first journal line, else its first spoken line without a «сказал» tag, cut at a sentence to 120
+characters. When a chapter opens, she says it on the ether, and for ten minutes it replaces her
+line on the participation plate. Thirty stories with no turns of their own get one: after their
+first trace, a deed of the watch (`norm`, `srv`, `notch`, `handover`, 7–8 stories each) done
+*after* meeting the story sets `wd`, and the last trace waits for it. Act 2: the circular's good
+is demanded only on the participation's boards, barges with people leave from its stations (mood
+−0.1 each), the sixth (`sixth_report`) has the new address `watch`, and «Есть место» is offered
+at a participation station once the run of ≥ 90 % сводки is 365 sky days old and holds at least
+two. Not done: the rivals' traces at your landmarks, «a face gone from the hall», the `bill`
+deed (no stranger's bill exists yet). The door table is `tests/91zzzw9h-doors.js`.
+
+**Built 22.10 (M911, `28q-fork`).** Every paper on the dock row has two sides: КУРС (yourself) and
+РУКОЙ (a hand). A hand is an idle hired hand with a ship and no order; it takes the job for
+85 % of the pay minus the goods at base price and its wage for the road, takes 0.8 of your
+minutes (at least 4), and fails 3 % of the time into a real hostage with a real ransom. The face
+remembers: a record line «сами не пришли» and a cold counter, no penalty yet. With no idle hand
+the second side is named in words («свободных рук нет», «рука не успеет»). A read obelisk notch
+always adds one access line — the rune's own, else a price on an unknown station within four
+hops, else an address within eight; carving your own adds +0.05 mood at the nearest station.
+The Blade: once part VI is open, Рыба says one ether line — Гуся sat down on a world with no
+station, reachable on a full tank and not back (path cost in hops of the jump range). Arriving
+there is the `blade` deed and the only door to chapter 55; on an empty tank there, the rescue
+offers «РЫБА» (a free tow, once) instead of tow, rail and reset. Not done: the four folk as
+hands, «Гуся's order is carried yourself». The fork table is `tests/91zzzw9i-fork.js`.
+
 ---
 
 ## 8. Combat — measured, fixed, and what «good» means
@@ -557,6 +619,23 @@ a «Стриж» and a kill for a warship, as §2 wanted. The remaining gaps:
   duel against each rank for 50 cr, the probe's rows as its pass marks.
 - **Stakes.** With §5.1 the fight has a cost; the salvage (the tow after a kill) is the money, a
   captured hull is access (§4.4), the bounty stays small.
+
+**Built 22.10 (M902c, `28r-fight`).** The slow-hull gap was a bug, not tuning: under 30 % hull the
+jackal re-entered his break every frame, and past 650 px the break handed over to a dash that the
+next frame turned back into a break — a hurt jackal flew nose-away for ever. The break under 30 %
+now fires once (`13c-roles`). After the fix every flying row resolves: «Вьюк» w2 at .2 kills in
+16.6 s (flank) and 7.8 s (orbit); the .8 orbit row, unresolved before, takes 17.4 s. The flee
+jump shows «УХОДИТ · N С» under the pirate's name while the clock runs. Rank was already on the
+hull as the name's prefix. «ОТПУСТИТЬ» is X, or ЦЕЛЬ held for 0.6 s (the press has already cycled
+the lock, so the pirate locked before the press is the one let go): a jackal takes the cheapest
+slot, a veteran the dearest, a captain the two dearest (there are no hands aboard — hands fly
+their own hulls), a baron, a renegade, a hunter and a rival do not deal; the pirate turns away,
+holds fire and jumps a second later; one КНИЖКА line in his voice. The duel: a row under the
+стрельбище, 50 cr, a real pirate of the next unbeaten rank (jackal, veteran, captain) at danger
+.5; under a quarter he yields; no bounty; «сбит» ends the duel with the hull returned; the best
+time per rank persists (`G.duel`). Marks are the probe's flank/orbit bounds: 17, 18, 38 s. Not
+done: shield type by where it glows, the rear hit as a brighter hit (pictures, for the remake).
+Tests: `tests/91zzzw9j-fight.js`.
 
 ---
 
@@ -702,6 +781,17 @@ the first undock; she says the line that names the watch. Hour 1: the first pape
 стажёр line. Four ether lines of `11ao-firsthour` stay. The eight board sections stay; the
 К ВАМ lane is first and has two things in it.
 
+**Built 22.10 (M909, `28o-firstwatch`).** The first hour paces the dispatcher by the game clock
+from the start of the save. The first counter gets the participation plate (28j) and two
+addressed items with faces, a haul and a task; the urgent and the three-station order are held
+back. At minute 6 the first urgent comes by itself, wherever the player is: a barge's pod, 8
+minutes, as the plate at the ship or a board row. The first undock carries the диспетчер's ether
+line naming the watch, once per save. The first hour flown brings the first paper with the стажёр
+line (27ib, unchanged), and the lane opens fully. While the watch is handed over, the first watch
+stands still with everything else. The «уезжаете надолго?» row is hidden in the first watch; the
+menu keeps the hand-over. Not done: the participation is still the 5×5 square of 28j, not «one
+station, hers». The Node scenario `tests/91zzzw9g-firstwatch.js` plays the hour.
+
 ### 10.8 The queue — M900+
 
 Build order; each closes on its own and is measured by the bot before the next starts. Builders
@@ -710,16 +800,16 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M | what | gate |
 |---|---|---|
 | M901 | `tests/91zzzw-fightsim.js` — the duel measured under Node — **done 09.10** | the table of TTK / hits / hull by hull × gun × rank × danger |
-| M902 | a/b **done 09.10** (cap, jump, captain, jammer); c: the slow-hull TTK at .2, readability, the стрельбище duel, «ОТПУСТИТЬ» (§8, §10.6) | the §8 table holds as `91zzzw-duel` asserts; the стрельбище sells the duel |
+| M902 | a/b **done 09.10** (cap, jump, captain, jammer); c: the slow-hull TTK at .2, readability, the стрельбище duel, «ОТПУСТИТЬ» (§8, §10.6) **done 22.10 (`28r-fight`)** | the §8 table holds as `91zzzw-duel` asserts; the стрельбище sells the duel |
 | M903 | the economy probe `tests/91zzzw4-ecosim.js` — **measured 14.10, §4.1a**: net 2.6–3.7× the oracle, U/G .06–.24 | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
 | M904 | the bill (§10.1) and manager wages to the player — **a done 14.10 (0.494.0, T2 U/G .22, T3 .36)**; b the ledger (§5.2) and c Страхкасса with hull loss (§5.1) **done 14.10 (0.495.0)** — debt is its own number, not credits below zero (twenty `min(credits, x)` sites); d the gross lever and the bad hour **done 14.10 (0.496.0, §4.1a): good T2 hour +14 900, uninsured wreck −14 500** | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
 | M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) **done 14.10 (0.497.0)**: `28j-watch`, `28k-offline`, the faucet in `12ab-hold` | the bot's norm moves with filled needs; handover stops every clock |
 | M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) **done 15.10 (0.498.0)**: `28l-gauge` | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
-| M907 | the dispatcher generator (§4.3) | at every dock К ВАМ has ≥ 2 addressed + 1 urgent; verbs vary over five |
-| M908 | access gates and the 30 rungs (§4.4) | no rung silent; «Мамонт» refused without clearance III + sponsor |
-| M909 | the first watch (§10.7) | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
-| M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) | chapter N+1's door is a deed; the sixth is met on the watch |
-| M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) | every order has both sides; a found notch gives one access line |
+| M907 | the dispatcher generator (§4.3) **done 22.10 (`28m-dispatch`)** | at every dock К ВАМ has ≥ 2 addressed + 1 urgent; verbs vary over five |
+| M908 | access gates and the 30 rungs (§4.4) **done 22.10 (`28n-access`)** | no rung silent; «Мамонт» refused without clearance III + sponsor |
+| M909 | the first watch (§10.7) **done 22.10 (`28o-firstwatch`)** | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
+| M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) **done 22.10 (`28p-doors`)** | chapter N+1's door is a deed; the sixth is met on the watch |
+| M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) **done 22.10 (`28q-fork`)** | every order has both sides; a found notch gives one access line |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),
@@ -737,6 +827,14 @@ real-time simulation while away (lazy with cap, as `DECISIONS.md:53`).
 - **F4 · Orders expire into faces, not log lines.** Default: yes. Price if refused: D2 is gone.
 - **F5 · The norm.** Closest thing to a progress number the game has ever had. Default: one line
   per сводка, paper only. Price if refused: nothing at the top says what to do next.
+- **F6 · Who is a hand (M911).** Default: only an idle hired hand with a ship and no order takes
+  the second side of a paper; the four of the settlement (Гуся, Рыба, Гвоздь, Птица) do not, and
+  «Гуся's order is carried yourself» is not built. Price if refused: the four need their own
+  availability and a voice per job, and Гуся's order needs a paper that refuses the hand.
+- **F7 · The counter's floor (M908).** Default: the counter stays 3 % (at least 1 cr) above the
+  buyback, but a rung never makes it dearer than without the rungs (cap at the price before the
+  buyback lever); the rung's promise wins over the 3 %. Price: on narrow-spread goods the top
+  rungs leave the counter at base with a 1 cr spread.
 
 ---
 

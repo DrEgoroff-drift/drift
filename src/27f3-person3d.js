@@ -38,6 +38,7 @@ function cpGene(m){
   const r5=faceRnd(m,5);g.hs=.95+r5()*.1;g.nose=r5();g.lip=r5();g.ear=r5();g.coat=r5();g.shirt=r5();
   g.loy=clamp((m.loy==null?55:m.loy)/100,0,1);
   g.lv=m.xp!=null?mgrLevel(m):1;
+  if(m.style!=null)g.style=m.style;   /* одежда места: капюшон зимовки (M850c) — лицо то же */
   return g;
 }
 /* одежда: куртка роли приглушённая, у остальных — из ткацкой палитры зала */
@@ -59,6 +60,8 @@ function cpPose(kind){
     elbow:{pel:.95,lean:.09,knee:[.11,.50,.05],ank:[.13,.085,-.02],elb:S([.24,1.04,.24],[-.25,1.12,-.02]),wr:S([.10,1.07,.44],[-.27,.87,.04])},
     hips:{pel:.95,lean:-.02,knee:[.12,.50,.03],ank:[.14,.085,-.01],elb:S([.37,1.07,-.10],[-.37,1.07,-.10]),wr:S([.2,.97,-.03],[-.2,.97,-.03])},
     frame:{pel:.95,lean:.05,knee:[.10,.50,.05],ank:[.12,.085,-.03],elb:S([.28,1.27,.20],[-.25,1.12,-.02]),wr:S([.25,1.47,.44],[-.27,.87,.03])},
+    /* спиной к перилам (санаторий, M850d): корпус чуть назад, ладони на поручне за спиной — руки опираются, а не висят */
+    rail:{pel:.95,lean:-.1,knee:[.11,.50,.07],ank:[.14,.085,.13],elb:S([.24,1.2,-.16],[-.24,1.2,-.16]),wr:S([.27,1.05,-.36],[-.27,1.05,-.36])},
     lean:{pel:.95,lean:-.07,knee:[.10,.50,.05],ank:[.13,.085,.06],elb:S([.25,1.06,-.08],[-.25,1.06,-.08]),wr:S([.19,.90,.07],[-.19,.90,.07])},
     stool0:{pel:.80,seat:1,lean:-.03,knee:[.13,.79,.40],ank:[.13,.36,.36],elb:S([.25,1.02,.10],[-.24,1.03,.12]),wr:S([.15,.86,.30],[-.13,.93,.36]),hold:-1},
     stool1:{pel:.80,seat:1,lean:-.13,knee:[.14,.79,.40],ank:[.15,.36,.36],elb:S([.31,1.11,-.34],[-.31,1.11,-.34]),wr:S([.37,1.13,-.58],[-.37,1.13,-.58])},
@@ -66,6 +69,10 @@ function cpPose(kind){
     stool3:{pel:.80,seat:1,lean:.32,knee:[.15,.79,.40],ank:[.14,.36,.38],elb:S([.15,.92,.33],[-.15,.92,.33]),wr:S([.04,.90,.46],[-.04,.90,.46])},
     chair:{pel:.52,seat:1,lean:.02,knee:[.12,.50,.42],ank:[.13,.08,.46],elb:S([.22,.72,.10],[-.22,.72,.10]),wr:S([.15,.57,.31],[-.15,.57,.31])},
     table:{pel:.52,seat:1,lean:.12,knee:[.12,.50,.42],ank:[.13,.08,.46],elb:S([.23,.80,.24],[-.23,.80,.24]),wr:S([.13,.79,.45],[-.14,.79,.44])},
+    /* лёжа (M850c): сон на спине — поза стоя, повёрнутая сценой навзничь; ноги прямо, руки вдоль тела (под одеялом) */
+    lie:{pel:.95,lean:.02,knee:[.10,.50,.03],ank:[.11,.085,0],elb:S([.22,1.12,-.01],[-.22,1.12,-.01]),wr:S([.21,.88,.05],[-.21,.88,.05])},
+    /* шезлонг (M850d): таз на полотне, спина по спинке (~37°), ноги на подставке, руки на животе */
+    recline:{pel:.38,seat:1,lean:-.65,knee:[.12,.44,.44],ank:[.12,.38,.88],elb:S([.25,.56,-.18],[-.25,.56,-.18]),wr:S([.1,.52,.06],[-.1,.52,.06])},
     /* шаг (M850b): четыре кадра — левая вперёд, перенос, правая вперёд, перенос; kneeR/ankR — правая нога своя, руки навстречу ногам */
     walk0:{pel:.93,lean:.05,knee:[.10,.50,.10],ank:[.11,.09,.22],kneeR:[.10,.47,-.08],ankR:[.11,.15,-.24],elb:S([.24,1.12,-.09],[-.24,1.12,.05]),wr:S([.25,.89,-.15],[-.24,.9,.16])},
     walk1:{pel:.96,lean:.04,knee:[.10,.50,.03],ank:[.11,.085,-.02],kneeR:[.10,.56,.10],ankR:[.11,.23,-.08],elb:S([.25,1.13,-.04],[-.25,1.13,-.01]),wr:S([.27,.88,-.04],[-.27,.88,.04])},
@@ -152,6 +159,7 @@ function* cpBodyGen(m,lod,poseK){
     for(let j=Math.ceil(.8*NV);j<=NV;j++){const v=j/NV,h=vh(v);ed[0].push(TA(h,v,1.004));ed[1].push(TA(-h,v,1.004));}
     for(const e of ed)K.tube(e,.0042,K.mt(mixc(jac,[0,0,0],.16),.2,5,P.cloth),4);
   }
+  yield;
   /* воротник, молния, карманы, снаряжение роли, пряжка, нашивка */
   const zf=v=>TA(0,v)[2],yf=v=>TA(0,v)[1];
   if(!ai){
@@ -222,6 +230,7 @@ function* cpBodyGen(m,lod,poseK){
   {const bp=TA(.55,.78,rk==="cmd"?1.08:1.01);K.box([bp[0],bp[1],bp[2]+.004],[.014,.009,.003],K.mt(rc,.3,8,0,g.lv>=6?2.2:.6,true),.002);}   /* нашивка роли; с 6-го уровня светится */
   const shW=.205*wB,shY=.458*TL;
   K.pop();
+  yield;
   /* плечи и шея в мире позы */
   const rot=(p)=>{const c=Math.cos(ln),s=Math.sin(ln);return [pel[0]+p[0],pel[1]+p[1]*c-p[2]*s,pel[2]+p[1]*s+p[2]*c];};
   const sh=[rot([shW-.02,shY,-.005]),rot([-(shW-.02),shY,-.005])],neck=rot([0,.53*TL,0]);
@@ -248,6 +257,7 @@ function* cpBodyGen(m,lod,poseK){
     K.pop();
     arms.push({S,E,W,f});
   }
+  yield;
   /* ноги: таз → колено → лодыжка, ботинок по стопе */
   K.part=0;
   for(let k=0;k<2;k++){const s=k?-1:1,kn=k&&J.kneeR?J.kneeR:J.knee,an=k&&J.ankR?J.ankR:J.ank,Hh=[s*.095*wB,J.pel-.03,0],Kn=[s*kn[0],kn[1],kn[2]],A=[s*an[0],an[1],an[2]];
@@ -259,6 +269,7 @@ function* cpBodyGen(m,lod,poseK){
     K.box([0,-.036,.004],[.05,.009,.122],K.mt([22,20,20],.2,4,0),.006);
     K.pop();
   }
+  yield;
   /* голова: в своей системе, шарнир — основание шеи */
   K.part=1;
   const hc=[neck[0],neck[1]+.155*hs,neck[2]+.022+Math.sin(ln)*.04];
@@ -268,6 +279,7 @@ function* cpBodyGen(m,lod,poseK){
   const rig=yield* cpHeadGen(K,g,lod,cl,m.seed);
   K.pop();
   K.part=0;
+  yield;   /* упаковка — свой шаг (M816c: тело одним шагом стоило до 70 мс) */
   const M=K.pack();
   const H=cpHeadFn(g.ai?{w:.27,h:.345,jaw:.8,chin:.8,brow:.9}:g);
   M.at={neck,head:hc,top:[hc[0],hc[1]+H.b*hs+.03,hc[2]],sh,arms,pel,hand:arms.map(a=>[a.W[0]+a.f[0]*.07,a.W[1]+a.f[1]*.07,a.W[2]+a.f[2]*.07]),hold:J.hold||0,seat:!!J.seat};
@@ -279,10 +291,11 @@ function* cpBodyGen(m,lod,poseK){
    играет cpRig */
 const CP_MESH=new Map();
 function cpMeshKey(m,pose,lod){
-  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"");
+  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"")+(m.style!=null?"|s"+m.style:"");
 }
 function cpMeshPut(key,M){
-  if(CP_MESH.size>=48){const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
+  if(CP_MESH.size>=96){   /* зал + кантина + портреты: 48 вытесняли друг друга по кругу */
+    const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
   CP_MESH.set(key,M);
 }
 function cpMesh(m,pose,lod){

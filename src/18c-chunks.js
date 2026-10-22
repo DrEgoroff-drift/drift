@@ -189,17 +189,6 @@ function gpuChunkPut(pass,B,x,y,w,h){
   gpuImage(pass,B,GPU_CH_R);
 }
 function gpuStoreDrop(store){if(store&&store.map)for(const B of store.map.values())gpuBakeDrop(B);}
-/* слой во весь экран → выпечка; ключ и вытеснение как у screenLayer */
-const GPU_SCREEN_LAYERS=new Map();
-function gpuScreenLayer(key,paint){
-  const full=key+"|"+W+"x"+H+"@"+DPR+"~"+SCK;
-  let B=GPU_SCREEN_LAYERS.get(full);
-  if(B){GPU_SCREEN_LAYERS.delete(full);GPU_SCREEN_LAYERS.set(full,B);return B;}
-  B=gpuChunkBake(W,H,0,0,paint);if(!B)return null;
-  GPU_SCREEN_LAYERS.set(full,B);
-  if(GPU_SCREEN_LAYERS.size>12){const k=GPU_SCREEN_LAYERS.keys().next().value;gpuBakeDrop(GPU_SCREEN_LAYERS.get(k));GPU_SCREEN_LAYERS.delete(k);}
-  return B;
-}
 /* ломти по X: хранилище как у chunkStore; сменился ключ — старые выпечки сдаются */
 function gpuChunkStore(store,key,top,ch){
   const k2=key+"~"+SCK;

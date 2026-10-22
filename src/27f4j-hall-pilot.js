@@ -34,7 +34,7 @@ function hallRigMesh(){
 }
 /* кости в мире: B — место человека в зале; матрица кости — поворот вокруг оси x зала (оси z рига) и сдвиг */
 function hallRigPose(M,base,B,kind,t){
-  const A=(HALL_RIG_POSE[kind]||HALL_RIG_POSE.stand).slice(),br=Math.sin(t*1.5),seat=HALL_RIG_SEAT[kind],W=[];
+  const A=(Array.isArray(kind)?kind:(HALL_RIG_POSE[kind]||HALL_RIG_POSE.stand)).slice(),br=Math.sin(t*1.5),seat=Array.isArray(kind)?null:HALL_RIG_SEAT[kind],W=[];   /* M816: на ходу углы приходят массивом */
   A[1]+=.012*br;A[2]+=.03*Math.sin(t*.19);
   for(let k=0;k<13;k++){const Bn=PLN_MAN_BONES[k],o=Bn.o,P=Bn.p<0?null:W[Bn.p],w={};
     if(P){w.a=P.a+A[k];w.x=P.x+P.c*o[0]-P.s*o[1];w.y=P.y+P.s*o[0]+P.c*o[1];w.z=P.z+o[2];}

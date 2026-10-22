@@ -147,7 +147,12 @@ function setBig(el,key,a,b){
   if(HUD_NUM[ka]===a&&HUD_NUM[kb]===b)return;
   HUD_NUM[ka]=a;HUD_NUM[kb]=b;
   if(!el.__big){el.textContent="";el.__big=[document.createTextNode(""),document.createElement("small")];el.append(el.__big[0],el.__big[1]);}
-  el.__big[0].data=String(a);el.__big[1].textContent="/"+b;
+  /* сравнение с самим DOM, не только с HUD_NUM: наблюдатель вёрстки (08-state) на любую мутацию зовёт
+     rectsDirty() -> hudNumDirty(), кэш чисел пуст, и без этой проверки setBig писал бы те же знаки снова ->
+     мутация .vitals -> наблюдатель -> rectsDirty -> hudFloorMeasure (20 мс) каждый кадр. Охотник, 22.10 */
+  const sa=String(a),sb="/"+b;
+  if(el.__big[0].data!==sa)el.__big[0].data=sa;
+  if(el.__big[1].textContent!==sb)el.__big[1].textContent=sb;
 }
 /* слово кнопки живёт в своём <span>: у пэда регистр как в предложении ставит
    CSS (у кнопки-решётки нет ::first-letter), у карты рядом живёт значок;
@@ -613,3 +618,20 @@ function hud(){
   const lk=G.mode+"|"+document.body.className+"|"+HUD_MAPROW;
   if(lk!==HUD_LKEY){HUD_LKEY=lk;rectsDirty();hudFloorMeasure(true);}
 }
+
+/* ── кнопка маяка без лишних записей ──
+   beaconTick (23-mode-dig:117, файл только для чтения) писал textContent, display и opacity каждый кадр без
+   сравнения; кнопка стоит в .rail под наблюдателем вёрстки, и каждая запись звала rectsDirty() ->
+   hudFloorMeasure (пять прямоугольников, ~20 мс) — петля на всех сценах с бортом (охотник, отчёт 10, 22.10).
+   Те же восемь строк, запись только при смене значения; подмена через window, как DISP_HOOKS (28m) */
+window.beaconTick=function(dt){
+  const S=G.surf,b=document.getElementById("beaconbtn");if(!b)return;
+  const hide=!S||(G.mode!=="surface"&&G.mode!=="dig"&&G.mode!=="cave")||
+    (G.mode==="surface"&&Math.abs(S.x-S.shipX)<shipZoneR());
+  if(hide){setSt(b,"display","none");return;}
+  if(S.beacon>0)S.beacon=Math.max(0,S.beacon-dt);
+  setSt(b,"display","");
+  const ready=S.beacon<=0;
+  setTx(b,ready?"→ КОРАБЛЬ":Math.ceil(S.beacon/60)+"с");
+  setSt(b,"opacity",ready?"1":".45");
+};

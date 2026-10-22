@@ -63,7 +63,9 @@ function pirateRoleTick(p,dt,d,want){
   const rank=p.rank|0;
   if(rank===0){
     /* шакал: бросок — залп — отход; под тридцатью процентами разрывает дистанцию */
-    if(hp<.3&&st.st!=="break"){st.st="break";st.t=160;}
+    /* один раз: прежде условие срабатывало каждый кадр — за 650 px отход сдавался броску и тут же
+       снова становился отходом, и битый шакал уходил носом от вас навсегда («Вьюк» при .2, M902c) */
+    if(hp<.3&&!st.hurt){st.hurt=1;st.st="break";st.t=160;}
     if(st.st==="dash"){
       roleSteer(p,want,dt,.045);roleThrust(p,dt,.06);
       if(d<500)roleFire(p,d,want,760,26);
