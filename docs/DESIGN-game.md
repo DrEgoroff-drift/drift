@@ -335,13 +335,38 @@ the dispatcher; it is listed under Disputed in the M912 report.
   which is the mining lap's. The pays of §4.3 stand: net ≈ 220 cr/min, urgent ≈ ×2 — a premium,
   not a second economy.
 
+**At a human's pace** (`ECO_HUMAN=1`, 22.10). The bot flies a lap in 3.8–4.1 minutes; a person
+does not. The probe now pauses where a person would: 13 s on each landing approach, 4 s to pick
+each deposit, 20 s at each dock for the сводка and the board, 7 s at the map before each jump,
+10 s on each leg of paper; the lap is padded to at least six minutes. The world lives through the
+pauses (wages, drones, deadlines). Three hours per tier, with the dispatcher / mining only:
+
+| tier | bot net | human net | oracle | bot vs oracle | human vs oracle | human U/G | lap, min | dispatcher cr/h (deeds) |
+|---|---|---|---|---|---|---|---|---|
+| T0 Стриж | 6 898 / 6 118 | 3 838 / 4 791 | 4 400 | +57 % / +39 % | **−13 % / +9 %** | .47 / .28 | 6.7 / 6.4 | 2 398 (11) |
+| T1 Вьюк | 20 704 / 17 000 | 15 635 / 13 606 | 13 900 | +49 % / +22 % | **+12 % / −2 %** | .24 / .16 | 8.8 / 7.6 | 6 240 (25) |
+| T2 Обод | 12 199 / 14 739 | 11 336 / 9 918 | 14 200 | −14 % / +4 % | −20 % / −30 % | .58 / .55 | 8.0 | 8 595 (25) |
+| T3 Мамонт | 7 294 / 7 890 | 9 234 / 1 764 | 12 700 | −43 % / −38 % | −27 % / −86 % | .75 / .92 | 9.5 | 16 393 (40) |
+| T0, fresh save | 18 428 / 15 429 | 14 915 / 12 285 | — | — | — | .26 | 7.8 | 5 874 gross |
+| T2, uninsured wreck | −694 | −615 / −2 326 | negative | ✓ | ✓ | 1.03 | 7.6 | — |
+| T2, insured wreck | 11 516 | 12 143 / 8 157 | — | — | — | .56 | 7.9 | — |
+
+Read it: **the T0 and T1 excess was the bot's pace.** At six minutes a lap and more, both rows sit
+inside ±20 % with and without paper; no lever is needed. T2 slides to the band's edge and T3 stays
+under: a slower lap pays the same wages per minute for less ore, and mining only at T3 nets almost
+nothing (the bill is 18 400 cr/h). The T3 gap's owner is below. The rows above (bot pace) stay as
+the probe's default — they find exploits; the human rows are the ones to hold against §4.1.
+
+Disputed: the «Вьюк» allotment comes at 8.3 minutes of play (7.7 in the first count) instead of
+§4.1's 25 — the bot's pace; the owner is the same as T0's excess above, and it is not changed.
+
 **Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
 
-- **T0 +25 % (fresh) / +57 %.** The lap is 3.8–4.1 minutes; §4.1a's owner stands (the lap a
-  human will not fly). The fresh save's *first hour* is in band; the excess is hours 2–3.
-- **T1 +49 %, U/G .24.** Nothing to pay at T1 but fuel and one hand; the dispatcher adds
-  8 900 cr/h on top of mining. A T1 line on the paper (the drone's parts, §3.1) is the lever
-  §4.1a already named; it waits for a drone that earns.
+- **T0 +57 % at the bot's pace, −13 % / +9 % at a human's.** Closed by the pace table above:
+  the lap of 3.8–4.1 minutes was the excess, as §4.1a guessed.
+- **T1 +49 % at the bot's pace, +12 % / −2 % at a human's.** In band; U/G .24 stays under the
+  .50 of §4.1 — nothing to pay at T1 but fuel and one hand. The drone's parts line (§3.1) is
+  measured below, not built.
 - **T3 −43 %.** Gross is −38 %: the probe builds no workshops and no base, which the oracle's T3
   gross assumes (five workshops, a base of 20). The commander and the keeper are multipliers on
   hands and drones and add nothing countable at level 1 — 3 500–4 200 cr/h of wages each. Owner:
@@ -930,7 +955,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M909 | the first watch (§10.7) **done 22.10 (`28o-firstwatch`)** | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
 | M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) **done 22.10 (`28p-doors`)** | chapter N+1's door is a deed; the sixth is met on the watch |
 | M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) **done 22.10 (`28q-fork`)** | every order has both sides; a found notch gives one access line |
-| M912 | economy after the dispatcher **measured 22.10, §4.1b**: the first hour counts play (`28v-playhour`); the probe plays the dispatcher and a fresh save | T2 within ±20 %; T0/T1 over and T3 under, each with an owner |
+| M912 | economy after the dispatcher **measured 22.10, §4.1b**: the first hour counts play (`28v-playhour`); the probe plays the dispatcher and a fresh save | at a human's pace T0, T1 within ±20 %, T2 at its edge; T3 under, with an owner |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),

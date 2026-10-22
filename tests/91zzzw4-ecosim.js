@@ -248,7 +248,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
       if(!j.ok){if(G.mode==="map")G.mode="system";note("дела: прыжок — "+j.why);return false;}
       JUMPS++;
       /* бот прыгает за кадр, игрок — картой: открыть, найти сектор, нажать; восемь секунд на прыжок */
-      for(let i=0;i<JUMP_F;i++){stepWorld(1);G.t+=1;}}
+      for(let i=0;i<JUMP_F;i++){stepWorld(1);G.t+=1;}
+      if(HUMAN)idle(HUM.jump);}
     return G.sx===tx&&G.sy===ty;
   }
   function refuelHere(){const need=Math.ceil(stat().fuelMax-G.fuel),per=fuelPriceHere();
@@ -263,6 +264,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       sh.x=S.x-dx/d*80;sh.y=S.y-dy/d*80;sh.vx=S.vx||0;sh.vy=S.vy||0;G.ap=null;G.orbit=null;r=botH("dock");}
     if(!r.ok){note("дела: dock — "+r.why);return false;}
     refuelHere();CNT.docks.add(G.sys.key);
+    if(HUMAN)idle(HUM.leg);
     return true;
   }
   /* сесть на планету системы и подняться: шаг «land» ловит enterSurface */
@@ -368,6 +370,13 @@ suite("проба · экономика",{tier:"probe"},()=>{
     }finally{PHASE=PH;}
   }
   /* ── один круг ── */
+  /* темп человека (M912, ECO_HUMAN=1): бот делает круг за 4 мин, человек так не летает. Паузы —
+     заход на посадку 20–30 с, выбор залежи, сводка и доска на стыковке, карта перед прыжком;
+     круг не короче 6 мин (остаток добирается в полёте к станции). Мир в паузах живёт: жалованье,
+     дроны, сроки бумаги */
+  const HUMAN=ENV.ECO_HUMAN==="1",HUM={land:13,dep:4,dock:20,jump:7,leg:10,lap:6*60};
+  function idle(sec,ph){const PH=PHASE;if(ph)PHASE=ph;const n=Math.round(sec*FR);
+    try{for(let i=0;i<n;i++){stepWorld(1);G.t+=1;}}finally{PHASE=PH;}}
   function lap(tier){
     const t0=G.t;
     if(G.mode==="dock"){PHASE="tick";closeStation();}
@@ -388,6 +397,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     PHASE="посадка";
     /* орбита автопилота бывает дальше порога подсказки: подойти на тормозе и ещё раз (landAt) */
     r={ok:landAt(P)};
+    if(r.ok&&HUMAN)idle(HUM.land,"паузы");
     if(!r.ok){
       if(ENV.ECO_TRACE){const sh=G.ship;const nr=(G.sys.planets||[]).map(q=>({n:q.name,ty:q.type,d:Math.round(Math.hypot(q.x-sh.x,q.y-sh.y))})).sort((a,b)=>a.d-b.d).slice(0,3);
         console.log("  след land: цель "+P.name+"/"+P.type+" d="+Math.round(Math.hypot(P.x-sh.x,P.y-sh.y))+" · ближние "+nr.map(q=>q.n+"/"+q.ty+" "+q.d).join(", ")+" · орбита "+(G.orbit?(G.orbit.p?G.orbit.p.name:G.orbit.kind||"?"):"нет")+" · топливо "+G.fuel.toFixed(0)+" · v "+Math.hypot(sh.vx,sh.vy).toFixed(1)+" · подсказка «"+G.prompt.replace(/\n/g," | ")+"» · находки "+((G.finds||[]).length)+" · relay "+(G.relay?1:0));}
@@ -397,6 +407,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     for(let i=0;i<12&&held()<st.cargoMax;i++){
       const S0=G.surf,x0=S0.x,t1=G.t;
       const dep=nearestDep();if(!dep){DONE.add(G.surf.p.key);break;}
+      if(HUMAN)idle(HUM.dep,"паузы");
       if(!walkTo(dep.x,14)){note("walk: до залежи не дошёл");break;}
       r=T.bot("mine");if(!r.ok){if(!/трюм полон|залежей/.test(r.why)){note("mine: "+r.why);
         if(ENV.ECO_TRACE)console.log("  след mine: x "+Math.round(x0)+"→"+Math.round(S0.x)+" за "+(G.t-t1)+" кадров · корабль "+Math.round(S0.shipX)+" · W "+(S0.tr&&S0.tr.W)+" · залежи "+(S0.deposits||[]).map(d=>Math.round(d.x)+":"+d.res+":"+d.left).join(" ")+" · режим "+G.mode+" · "+G.prompt.split("\n")[0]+" · ближняя "+JSON.stringify(nearestDep())+" · S.x "+S0.x.toFixed(2)+" on "+S0.on+" swim "+S0.swim+" walkTarget "+S0.walkTarget+" · стена "+S0._wallX+" · место "+settleSpotX(S0.p,S0.tr)+" · глушители "+JSON.stringify(depRoomBlockers(S0).map(b=>[Math.round(b.x),Math.round(b.r)])));if(ENV.ECO_DBG){const pr=G.prompt;G.prompt="";PLN_OWN_OLD_UPD(1);console.log("    голый updateSurface: «"+String(G.prompt).split("\n")[0]+"» · cave "+JSON.stringify(S0.cave)+" · dShip "+Math.abs(S0.x-S0.shipX).toFixed(0)+" · zone "+shipZoneR()+" · jet "+S0.jetOn+" · held "+held()+"/"+stat().cargoMax+" · own "+OWN.on+" · plants "+(S0.plants||[]).filter(p=>Math.abs(p.x-S0.x)<40).length+" · fauna "+(S0.fauna||[]).filter(b=>Math.abs(b.x-S0.x)<40).length+" · poi "+JSON.stringify(poiNear(S0,S0.tr)));G.prompt=pr;}}
@@ -424,6 +435,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
       G.hull=0;wreck("проба: авария");
       return {frames:G.t-t0,mined};
     }
+    /* человек: круг не короче шести минут, с учётом сводки на стыковке */
+    if(HUMAN){const pad=HUM.lap-HUM.dock-(G.t-t0)/FR;if(pad>0)idle(pad,"паузы");}
     PHASE="к станции";
     /* станция: продать, заправить, починить */
     r=T.bot("station");if(!r.ok){note("station: "+r.why);return false;}
@@ -435,6 +448,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       r=botH("dock");
     }
     if(!r.ok){note("dock: "+r.why);return false;}
+    if(HUMAN)idle(HUM.dock,"паузы");
     PHASE="sell";
     for(const k of TRADE_KEYS.concat(FAR_KEYS)){const q=G.cargo[k];if(q>0){const v=sellCargo(G.sys,k,q);
       const b=BOOK.sold[k]||(BOOK.sold[k]=[0,0,{},0]);b[0]+=q;b[1]+=v||0;b[2][G.sys.key]=1;b[3]+=q*(G.sys.station.prices[k]||0);}}
@@ -582,7 +596,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       tl:TL?Object.assign({},TL):null,norm:NORM,inv});
   }
   stepWorld=sw0;
-  console.log("экономика: "+HOURS+" ч игры на ярус · цеха и база T2–T3 не строятся · оракул DESIGN-game §4.1");
+  console.log("экономика: "+HOURS+" ч игры на ярус · цеха и база T2–T3 не строятся · оракул DESIGN-game §4.1"+(HUMAN?" · темп человека (круг ≥ 6 мин, паузы)":" · темп бота"));
   console.log("| ярус | корпус | кругов | мин/круг | добыто | валовый/ч | расход/ч | чистый/ч | U/G | против §4.1 (в/р/ч) | откуда | куда |");
   console.log("|---|---|---|---|---|---|---|---|---|---|---|---|");
   for(const r of rows)console.log("| "+r.tier+" | "+r.hull+" | "+r.laps+" | "+r.minLap.toFixed(1)+" | "+r.mined+" | "+Math.round(r.gross)+" | "+Math.round(r.spend)+" | "+Math.round(r.net)+" | "+r.press.toFixed(2)+" | "+r.dG+"% / "+r.dU+"% / "+r.dN+"% | "+r.gsrc+" | "+r.ssrc+" |");
