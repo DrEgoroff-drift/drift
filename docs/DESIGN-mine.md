@@ -220,6 +220,12 @@ the designer's.
   between workings stays the cave's dark section paper with its strata lines — the planet session's
   look; the mine fills it with ore bodies, not with a new paint.
 
+- The mine's words (22.10, `23cf-dig-words`): the move line `#prompt` is a plate by the man, cut to
+  what the instruments do not say (depth and rock are in the locus, suit and hold in the vitals) — the
+  horizon, the cage's load when not empty, the moves, boring, the biters; it keeps the prompt's capitals
+  as the cave does, since sentence case would spoil the key letters («A d w»). `#msg` hangs by the man
+  through the shared `hud.msg`; on a phone it often finds no room and stays the DOM line at the top.
+
 ## 8. Open
 
 (none)
