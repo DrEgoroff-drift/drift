@@ -38,6 +38,7 @@ function ecoPrint(rows,X){
   for(const r of rows)if(r.est){const E=r.est;
     console.log("  "+r.tier+" хозяйство: цеха "+(E.shops||"—")+" · рейсов в цех "+E.hauls+", в бункеры "+E.fed+" ед · промтовар сдан в цеха "+Math.round(E.indSold/r.hrs)+" кр/ч"+
       " · не нашёл едока "+E.indLeft+" кр "+E.indLeftQ+" · база "+E.base+": рейсов за рудой "+E.baseTrips+", забрано "+E.baseUnits+" ед, продано на "+Math.round(E.baseWorth/r.hrs)+" кр/ч");
+    if(E.survey)console.log("  "+r.tier+" едоки в 3 прыжках: "+E.survey);
     if(ENV.ECO_TRACE)console.log("    "+E.dbg+" · "+E.hop);}
   for(const r of rows)if(r.drn&&r.drn.length){const PARTS=6*60,price=DRONES.miner.price;
     console.log("  "+r.tier+" дроны (кр/ч за прогон · после запчастей 6 кр/мин · окупаемость "+price+" кр, ч): "+
