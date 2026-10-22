@@ -24,6 +24,18 @@ function gate2dChips(){
     G.ship.x=p.x+p.radius*1.6;G.ship.y=p.y;G.ship.vx=G.ship.vy=0;G.zoom=.6;G.zoomT=null;return {p};}
   return null;
 }
+/* система со станцией рельса (вестибюль или полустанок) ближе всего к ядру; борт рядом с кольцом, стоит */
+function gate2dRail(first,halt){
+  if(first){gate2dRail.at=null;
+    for(let r=0;r<=40&&!gate2dRail.at;r++)for(let x=-r;x<=r&&!gate2dRail.at;x++)for(let y=-r;y<=r;y++){
+      if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
+      G.sx=x;G.sy=y;G.sys=s;const R=railHere();if(R&&!!R.S.halt===halt){gate2dRail.at=[x,y];break;}}
+    if(!gate2dRail.at)return null;}
+  const [x,y]=gate2dRail.at;G.sx=x;G.sy=y;G.sys=getSystem(x,y);G.ap=null;G.orbit=null;
+  const R=railHere();if(!R)return null;
+  G.ship.x=R.x+40;G.ship.y=R.y+30;G.ship.vx=G.ship.vy=0;G.zoom=1;G.zoomT=null;if(!halt)RAIL_ARRIVE=G.t-6;   /* вспышка не стареет: railFx в каждом кадре */
+  return {R};
+}
 const GATE2D=[
   {name:"чужой след (21piib, M171): плита и груз — тела в кадре планеты, на #c ни штриха",
    painters:["plnTrcStep","plnTrcFrame","plnTrcMesh"],probe:["plnTrcFrame"],
@@ -282,17 +294,17 @@ const GATE2D=[
      return {};},
    done(){RAIL_RIDE=null;G.mode="system";},
    warm:30,probe:["railCarDraw","railStopShapes"]},
-  /* кольцо станции рельса в системе и вспышка выхода из поезда (M828): запасной 2D-ветки нет */
-  {name:"кольцо рельса и вспышка выхода (18f, 18g): без 2D",
-   painters:["drawSysRail","railGpu","railHaltShapes","drawRailArrive","railFx"],
-   place(){
-     for(let r=0;r<=20;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
-       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
-       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const R=railHere();if(!R)continue;
-       G.ship.x=R.x+40;G.ship.y=R.y+30;G.ship.vx=G.ship.vy=0;G.zoom=1;G.zoomT=null;RAIL_ARRIVE=G.t-6;return {R};}
-     return null;},
+  /* кольцо станции рельса в системе телом (M806) и вспышка выхода из поезда (M828): вестибюль и полустанок */
+  {name:"кольцо рельса, вестибюль и вспышка выхода (18f, 18fa, 18g): тело, без 2D",
+   painters:["drawSysRail","railGpu","railRingBody","railRingLights","drawRailArrive","railFx"],
+   place(first){return gate2dRail(first,false);},
    done(){RAIL_ARRIVE=-1e9;},
-   warm:30,probe:["railGpu","drawRailArrive"]},
+   warm:30,probe:["railGpu","railRingBody","drawRailArrive"]},
+  {name:"полустанок (18f, 18fa): кольцо и платформа телом, фонарь, без 2D",
+   painters:["drawSysRail","railGpu","railRingBody","railRingLights"],
+   place(first){return gate2dRail(first,true);},
+   done(){RAIL_ARRIVE=-1e9;},
+   warm:30,probe:["railGpu","railRingBody"]},
   /* карта (хвосты переписи M828): перо на видеокарте, регистр текста — поля пера (M817), мерка строк — мимо ctx;
      считаются и методы, и сеттеры */
   {name:"карта (18, 18a, 18b): подписи, кольца, линейки, роза, владения — без вызовов на ctx",
