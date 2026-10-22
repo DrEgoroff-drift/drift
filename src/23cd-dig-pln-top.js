@@ -326,12 +326,22 @@ function dig3TopDesc(d,ms){
     primitive:{topology:"triangle-list",cullMode:"none"}}};
 }
 GPU_LATE_GROUPS.push(()=>{const ms=PLN_QUAL[plnQualWant()].ms;return [["dig3.top"+ms,{desc:dig3TopDesc(GPU.dev,ms).desc}]];});
+/* конвейер сводки. Его строит поздний прогрев (GPU_LATE_GROUPS выше); вошёл раньше, чем прогрев до него
+   дошёл, — строится асинхронно сейчас, а до готовности сводки нет (null): кадр — планета, не стоп-кадр
+   на синхронной сборке (Dawn собирал её 0.4–1.5 с в первом кадре шахты) */
+function dig3TopReady(ms,X){
+  const key="dig3.top"+ms,w=GPU_PIPES.warm.get(key);
+  if(w&&w.p)return gpuPipeline(key,()=>X.desc);
+  if(!w){const d=GPU.dev,e={p:null};GPU_PIPES.warm.set(key,e);
+    d.createRenderPipelineAsync(X.desc).then(p=>{if(GPU_PIPES.dev===d)e.p=p;},()=>{if(GPU_PIPES.warm.get(key)===e)GPU_PIPES.warm.delete(key);});}
+  return null;
+}
 function dig3TopPipe(){
   const Z=DIG3_TOP,Q=CAVE3_GPU,d=GPU.dev,ms=Q.ms;
-  if(Z.P&&Z.dev===d&&Z.ms===ms&&Z.gen===PLN_GPU.gen)return Z.P;
-  const X=dig3TopDesc(d,ms),m=X.m;Z.L=X.L;
+  if(Z.dev===d&&Z.ms===ms&&Z.gen===PLN_GPU.gen){if(!Z.P)Z.P=dig3TopReady(ms,Z.X);return Z.P;}
+  const X=dig3TopDesc(d,ms),m=X.m;Z.L=X.L;Z.X=X;
   m.getCompilationInfo().then(i=>{for(const x of i.messages)if(x.type==="error"){Z.err="wgsl "+x.lineNum+":"+x.linePos+" "+x.message;plnLog("рудник: "+Z.err);}}).catch(()=>{});
-  Z.P=gpuPipeline("dig3.top"+ms,()=>X.desc);
+  Z.P=dig3TopReady(ms,X);
   Z.U=d.createBuffer({size:80,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   Z.pp=d.createBuffer({size:32,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   const K=CAVE3_K.comp;
@@ -341,6 +351,7 @@ function dig3TopPipe(){
 }
 function dig3TopComp(Tp){
   const Z=DIG3_TOP,P=dig3TopPipe(),Q=CAVE3_GPU,V=Q.V,Vp=PLN_GPU.V;
+  if(!P)return true;   /* сводка ещё собирается: кадр — планета без пещеры поверх */
   if(!Z.B||Z.Bc!==V||Z.Bp!==Vp||Z.Bd!==Q.D){
     Z.B=GPU.dev.createBindGroup({layout:Z.L,entries:[{binding:0,resource:{buffer:Q.U.main}},{binding:1,resource:{buffer:Z.pp}},
       {binding:2,resource:V.hdr},{binding:3,resource:V.up[0]},{binding:4,resource:V.air},{binding:5,resource:Q.S.lin},
