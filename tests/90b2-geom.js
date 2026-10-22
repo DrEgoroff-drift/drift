@@ -431,6 +431,30 @@ function geoDom(root,vp){
   return {texts,ctls,M,sty,box,cutBy,V,layer};
 }
 
+/* ── закон «касание»: фишки системы (SYS_CHIPS, 17-mode-system) берутся пальцем за зону CHIP_TOUCH вокруг плашки,
+   а из двух зон под пальцем 15-input берёт ту, чей центр ближе. Пересечение зон само по себе — замысел (заметка
+   «зоны»); брак — когда тычок в ВИДИМУЮ плашку фишки ставит автопилот на соседнюю: телефон 390, 22.10 — 13–18 %
+   плашки уходили соседу. Плашка меряется сеткой 9×5 точек; зоны в CSS px (SYS_CHIPS — в пикселях холста) ── */
+function geoChipZones(){
+  if(typeof SYS_CHIPS==="undefined"||G.mode!=="system"||document.querySelector(".scr.open"))return [];
+  const cv=document.getElementById("c"),w=cv?cv.getBoundingClientRect().width:0;if(!w)return [];
+  const k=cv.width/w;
+  return SYS_CHIPS.filter(c=>c.pl).map(c=>({l:c.l,x0:c.x/k,y0:c.y/k,x1:(c.x+c.w)/k,y1:(c.y+c.h)/k,p:c.pl.map(v=>v/k)}));
+}
+function geoChipTouch(Z,where){
+  const F=[],N=[],nm=z=>"фишка «"+String(z.l).slice(0,28)+"»";
+  const pick=(x,y)=>{let b=null,bd=1e9;for(const c of Z){if(x<c.x0||x>c.x1||y<c.y0||y>c.y1)continue;
+    const d=Math.hypot(x-(c.x0+c.x1)/2,y-(c.y0+c.y1)/2);if(d<bd){bd=d;b=c;}}return b;};
+  for(const a of Z){const [px,py,pw,ph]=a.p,to=new Map();let n=0;
+    for(let u=0;u<9;u++)for(let v=0;v<5;v++){const b=pick(px+pw*(u+.5)/9,py+ph*(v+.5)/5);n++;if(b&&b!==a)to.set(b,(to.get(b)||0)+1);}
+    for(const [b,m] of to)F.push({law:"касание",who:nm(a),with:nm(b),m:Math.round(100*m/n),where,kind:"тычок в видимую плашку берёт соседнюю фишку, % плашки"});}
+  for(let i=0;i<Z.length;i++)for(let j=i+1;j<Z.length;j++){const a=Z[i],b=Z[j];
+    const w=Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0),h=Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0);
+    if(w>0&&h>0&&!F.some(f=>(f.who===nm(a)&&f.with===nm(b))||(f.who===nm(b)&&f.with===nm(a))))
+      N.push({law:"зоны",who:nm(a),with:nm(b),m:Math.round(Math.min(w,h)*10)/10,where});}
+  return {F,N};
+}
+
 /* ── законы ── */
 function geoLaws(D,C,O,vp,where,opt){
   opt=opt||{};
@@ -807,6 +831,11 @@ function geoSelf(vp){
     ["мусор",/NaN/],["накрыта",/ПОД ПЛАШКОЙ/],["вылет",/ПЛАШКА С ДЛИННЫМ/],["наезд",/СТРОКА ОДИН|СТРОКА ДВА/],["наезд",/КОСАЯ ЛИНИЯ|ПОПЕРЁК/],["мусор",/НЕ ЧИСЛО/],["сжатие",/СЖАТО/],
     ["поверх",/ЧУЖАЯ/],["сквозь",/ПОДЛОЖКА/],["поверх",/ПРИШЕЛЕЦ/],["накрыта",/ПОД ВИДЖЕТОМ/],["кегль",/МЕЛКО/],["вылет",/ХОЛСТ ВЫЛЕТ/]];
   if(vp.touch)need.push(["цель",/button/]);
+  /* «касание»: широкая плашка, край которой ближе к центру нижней соседки, — брак; пара врозь — чисто */
+  {const z=(l,x0,y0,x1,y1,p)=>({l,x0,y0,x1,y1,p});
+   F=F.concat(geoChipTouch([z("ФИШКА ШИРОКАЯ",0,0,200,44,[6,14,188,16]),z("ФИШКА СОСЕДКА",150,24,230,68,[156,38,68,16]),
+     z("ЧИСТО ВЕРХ",0,300,120,344,[6,314,108,16]),z("ЧИСТО НИЗ",0,400,120,444,[6,414,108,16])],"тест теста").F);
+   need.push(["касание",/ФИШКА ШИРОКАЯ/]);}
   if(bk)need.push(["вылет",/ВЫПЕЧКА ВЫЛЕТ/],["вылет",/СЛОЙ ВЫЛЕТ/],["центр",/ВИСИТ В ЦЕНТРЕ/],["центр",/СБОКУ НИЗКО/],["центр",/ТРЕВОГА РАЗ/],["ряд",/РЯД ЛЕВЫЙ|РЯД ПРАВЫЙ/]);
   const miss=need.filter(([l,re])=>!has(l,re)).map(([l,re])=>l+" "+re.source);
   /* композиция: два соседа столбцом, левые края врозь на 2 px — заметка «ровно»; ровная пара рядом — без заметки */
@@ -886,6 +915,15 @@ function geoSettle(){for(const a of document.getAnimations()){try{const t=a.effe
   /* заход собирается за несколько кадров (21pz plnWarmStep): пока строится, спуск стоит и чип корабля
      ждёт на прежней сцене — два снимка (DPR 1 и 3) заставали разные стадии сборки. Достраиваем кадрами */
   if(G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone){for(let i=0;i<80&&!G.land.warmDone;i++)geoFrame1();}
+  /* фишки системы едут по настоящим часам (CHIP_T, 200 px/с, затухание): DPR 1 и 3 снимали разные
+     мгновения въезда, и сверка на 390 краснела через раз (22.10). Доводим фишки до места кадрами */
+  if((G.mode==="system"||G.mode==="landing")&&typeof CHIP_T==="number"){
+    for(let i=0;i<40;i++){CHIP_T=wallNow()-200;geoFrame1();}
+    CHIP_T=wallNow();
+  }
+  /* трюм на столе (27j1) покачивает корабль по настоящим часам (sway, период 19 с), метки подвеса едут
+     за ним — DPR 1 и 3 снимали разные мгновения, «+» уезжал на 11 px (22.10). Зрение берёт трюм без качки */
+  if(typeof HANGAR==="object"&&HANGAR)HANGAR.sway=0;
   /* зал пешком (27f4l, M816a): пилот идёт к месту по wallMs — ставим его в цель, объектив на нём */
   if(G.mode==="dock"&&typeof HALL==="object"&&HALL&&HALL.walk){
     /* тело вкладки на ходу спрятано, пока пилот не вошёл в место — экран «станция/market» без входа
@@ -948,7 +986,9 @@ function geoRun(o){
         for(const t of D.texts)put("dom",t,an.size?mv(t.p):0);for(const t of GEO.c)put("холст #c",t);for(const q in GEO.ov)for(const t of GEO.ov[q])put("слой "+q,t);
         for(const [n,L] of X)for(const t of L)put(n,t);out.geo.push([where,A]);}
       const F=geoLaws(D,GEO.c,GEO.ov,vp,where,{x:X}),st=F.st;
-      for(const f of F)out.findings.push(f);for(const f of geoCompose(D,vp,where))out.notes.push(f);out.screens++;out.sum.ctl+=st.ctl;out.sum.on+=st.on;out.sum.txt+=st.txt;out.sum.vis+=st.txt-st.txtHid;
+      for(const f of F)out.findings.push(f);for(const f of geoCompose(D,vp,where))out.notes.push(f);
+      {const ct=geoChipTouch(geoChipZones(),where);for(const f of ct.F)out.findings.push(f);for(const f of ct.N)out.notes.push(f);}
+      out.screens++;out.sum.ctl+=st.ctl;out.sum.on+=st.on;out.sum.txt+=st.txt;out.sum.vis+=st.txt-st.txtHid;
       /* слепота: кнопки есть — ни одной не видно, надписи есть — все спрятаны. Так было, пока плашка
          тестов лежала поверх игры: все законы DOM молчали, прогон — зелёный */
       if((st.ctl>=2&&!st.on)||(st.txt>=5&&st.txtHid>=st.txt))out.blind.push(where+": закрыто всё ("+st.on+"/"+st.ctl+" кнопок, "+(st.txt-st.txtHid)+"/"+st.txt+" надписей) — "+(st.by||"?"));

@@ -253,7 +253,7 @@ function report(all) {
     /* что меряет наезд: строители мерили рамки и спорили с воротами (22.10) — пишем прямо */
     lines.push({ n: g.hits.length, s: "  " + f.law.padEnd(7) + " " + place(g) + " › " + f.who + (f.with ? "  ⟷ " + f.with : "") + (f.by ? "  под " + f.by : "") +
       (f.law === "наезд" && GEO_MEAS[f.kind] ? "  [" + GEO_MEAS[f.kind] + "]" : "") +
-      (f.side ? "  " + f.side : "") + (m ? " до " + m + (f.law === "цель" ? " px" : f.law === "невидим" ? ":1" : f.law === "сжатие" ? " %" : " px") : "") +
+      (f.side ? "  " + f.side : "") + (m ? " до " + m + (f.law === "цель" ? " px" : f.law === "невидим" ? ":1" : f.law === "сжатие" || f.law === "касание" ? " %" : " px") : "") +
       (f.k ? "  контраст сквозь " + f.k + ":1" : "") + (f.al && Math.min(...f.al) < .5 ? "  непрозрачность " + f.al.join("/") : "") +
       (f.s ? "  «" + f.s + "»" : "") + "\n           " + wins(g.hits) + fontNote });
   }
