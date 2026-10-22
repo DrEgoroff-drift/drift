@@ -88,7 +88,7 @@ hangSurface=function(){
   const ow=plnOwnWordsAt(S);   /* у ворот базы и у крыльца дома (21pig, M628a) */
   /* на телефоне вещь своя (ворота, крыльцо) стоит в средней полосе: табличке место только сбоку, и
      «ДЕЙСТВИЕ — » туда не влезает — глагол уже на кнопке, на табличке остаётся само действие */
-  if(ow)plnWordsAt(pj,ow.c,ow.h,ow.id,W<=760?ln.map(s=>s.replace(/^ДЕЙСТВИЕ — /,"")):ln,Object.assign({up:ow.up},o));
+  if(ow)plnWordsAt(pj,ow.c,ow.h,ow.id,W<=760?ln.map(s=>s.replace(/^ДЕЙСТВИЕ — /,"")):ln,Object.assign({up:ow.up,left:W<=760},o));
   else if(Math.abs(S.x-S.shipX)<shipZoneR()){const s=PLN.shipW;plnWordsAt(pj,[s[0],s[1]+2,s[2]],4,"pln.ship",ln,o);}
   else{
     /* у человека нет вещи: глагол говорит кнопка ДЕЙСТВИЯ, табличка его не дублирует (M826); остаётся

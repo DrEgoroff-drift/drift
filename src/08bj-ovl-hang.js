@@ -139,7 +139,7 @@ function hangPlace(P,k,C){
   const S=hangSize(P,k),r=Math.max(4,P.o.r||10),mem=HANG.mem[P.id];
   let best=null;
   for(let di=0;di<8;di++){
-    const D=HANG_DIR[di],pref=P.o.up?(di===2?-12:di===1||di===3?-4:D[2]):D[2];
+    const D=HANG_DIR[di],pref=P.o.left?(di===4?-14:D[0]<-.5?-6:D[2]+12):P.o.up?(di===2?-12:di===1||di===3?-4:D[2]):D[2];
     for(let d=r+C.g;d<C.maxD;d+=C.step){
       const R=hangRectAt(P,D[0],D[1],d,S.w,S.h);
       /* запасной бок (o.spare): сбоку от вещи у пола или у шапки табличка съезжает вдоль неё в кадр — вещь

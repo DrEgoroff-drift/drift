@@ -182,3 +182,17 @@ TEST_SUITES.push(()=>suite("база и дом телами: тела на зе�
   }finally{plnLandRibAt=kRib;plnLandLift=kLift;plnOwnStep=kStep;plnInstSet=kSet;OWN.base=oB;OWN.home=oH;OWN.on=on;}
   resetWorld();
 }));
+/* плашка у ворот на телефоне — левее двери (o.left): без left предпочтение сторон прежнее (D[2], правая
+   выигрывает), с left — левая; человек с дверью справа от плашки, палец её не накрывает */
+TEST_SUITES.push(()=>suite("база и дом телами: плашка у ворот на телефоне — слева, без left — как была",()=>{
+  const C=()=>({band:{x0:-9,y0:-9,x1:-8,y1:-8},top:8,bot:H-6,O:[],placed:[],g:12,step:4,maxD:Math.max(W,H)*.7,Lmax:H*.25});
+  const P=o=>({id:"t-left-"+(o.left?1:0),lines:["ПЛАШКА"],x:W/2,y:H/2,o});
+  const a=hangPlace(P({r:10}),1,C()),b=hangPlace(P({r:10,left:true}),1,C());
+  ok(!!a&&!!b,"плашка нашла место в обоих случаях");
+  eq(a.di,0,"без left — справа, как было (D[2])");
+  eq(b.di,4,"с left — слева от вещи");
+  ok(b.R.x1<=W/2,"с left — плашка целиком левее двери");
+  /* фишки у кромки («КОРАБЛЬ 1848 м»): на телефоне не меньше 11px, на ПК прежние 9 под withScale */
+  const w0=W;try{W=390;ok(surfChipPx()>=11,"фишка на 390 — кегль "+surfChipPx()+" ≥ 11");
+    W=1600;eq(surfChipPx(),9,"фишка на ПК — прежний кегль");}finally{W=w0;}
+}));

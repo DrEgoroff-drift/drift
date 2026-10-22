@@ -321,7 +321,7 @@ async function g11RunDeep(){
     enterSurface();
     await sleep(5000);
     out.surface=await g11Deep(["drawSkyBase","drawSkyLayer","drawStars","drawTiles","drawGround",
-      "drawPOI","drawDeco","drawBuilt","drawRocks","glowDrawPatches","drawDustMotes",
+      "drawPOI","drawDeco","drawBuilt","drawRocks","drawDustMotes",
       "drawPlant","drawBeast","drawLander","drawForeground","drawWeather"]);
   }catch(e){err.push(""+(e&&e.message||e));}
   const box=document.createElement("div");
