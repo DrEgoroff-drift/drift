@@ -416,7 +416,9 @@ suite("проба · экономика",{tier:"probe"},()=>{
     }
     /* дроны ставятся у первой залежи ярусом выше T0: инвентарь выдан заранее */
     if(tier.drones>0&&G.droneInventory>0){
-      const S=G.surf,dep=(S.deposits||[]).find(d=>d.left>0);
+      /* ECO_DRONE=dear: игрок, который знает цену, ставит машину на самую дорогую руду, что она берёт */
+      const S=G.surf,ok=(S.deposits||[]).filter(d=>d.left>0&&(ENV.ECO_DRONE!=="dear"||droneMayMine(d.res)));
+      const dep=ENV.ECO_DRONE==="dear"?ok.sort((a,b)=>((RES[b.res]||{}).price|0)-((RES[a.res]||{}).price|0))[0]:ok[0];
       if(dep&&droneMayMine(dep.res)){
         PHASE="drone";droneTarget=dep.res;
         try{deployDrone();}catch(e){note("drone: "+(e&&e.message));}
@@ -593,7 +595,10 @@ suite("проба · экономика",{tier:"probe"},()=>{
       time:Object.entries(BOOK.time).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+" "+(laps?v/laps/FR/60:0).toFixed(2)).join(", "),
       hull:tier.fresh?G.shipId:tier.hull,credits:G.credits,
       disp:DSTAT.done+" дел · "+Math.round(DSTAT.pay/hrs)+" кр/ч · "+(DSTAT.frames/FR/60/hrs).toFixed(1)+" мин/ч · взято "+JSON.stringify(DSTAT.took)+(Object.keys(DSTAT.skip).length?" · сорвано "+JSON.stringify(DSTAT.skip):"")+" · ушло по сроку "+dispSt().lost+" · не взято (убыток, бак, касса) "+DSTAT.poor.size,
-      tl:TL?Object.assign({},TL):null,norm:NORM,inv});
+      tl:TL?Object.assign({},TL):null,norm:NORM,inv,
+      /* дроны (§3.1 строка запчастей — 6 кр/мин на машину): что каждая приносит в час */
+      drn:G.drones.map(d=>({res:d.res,h:Math.max(1e-9,(clockNow()-(d.bornMs||d.t0||clockNow()))/3600000),
+        earned:d.earned|0,trips:d.trips|0,down:d.down|0}))});
   }
   stepWorld=sw0;
   console.log("экономика: "+HOURS+" ч игры на ярус · цеха и база T2–T3 не строятся · оракул DESIGN-game §4.1"+(HUMAN?" · темп человека (круг ≥ 6 мин, паузы)":" · темп бота"));
@@ -605,6 +610,10 @@ suite("проба · экономика",{tier:"probe"},()=>{
   for(const r of rows)console.log("  "+r.tier+" продано (шт×кр): "+r.sold);
   for(const r of rows)if(r.fails)console.log("  "+r.tier+" сбои: "+r.fails);
   for(const r of rows)console.log("  "+r.tier+" диспетчер: "+r.disp);
+  for(const r of rows)if(r.drn&&r.drn.length){const PARTS=6*60,price=DRONES.miner.price;
+    console.log("  "+r.tier+" дроны (кр/ч за прогон · после запчастей 6 кр/мин · окупаемость "+price+" кр, ч): "+
+      r.drn.map(d=>{const g=Math.round(d.earned/r.hrs);return d.res+" "+g+" → "+(g-PARTS)+" · "+
+        (g>0?(price/g).toFixed(0):"∞")+" / "+(g>PARTS?(price/(g-PARTS)).toFixed(0):"∞")+" ч ("+d.trips+" рейсов)";}).join("; "));}
   for(const r of rows)if(r.norm){const N=r.norm;
     console.log("  "+r.tier+" норма участка: "+(N.with==null?"—":N.with+" %")+" · без вас "+(N.without==null?"—":N.without+" %")+
       " · нужд "+N.tot+", закрыто вами "+N.mine+", нарядов "+N.ord+" · окон "+N.win+" · сводок "+N.sv);}

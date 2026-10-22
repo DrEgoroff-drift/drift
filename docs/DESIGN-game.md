@@ -360,6 +360,28 @@ the probe's default — they find exploits; the human rows are the ones to hold 
 Disputed: the «Вьюк» allotment comes at 8.3 minutes of play (7.7 in the first count) instead of
 §4.1's 25 — the bot's pace; the owner is the same as T0's excess above, and it is not changed.
 
+**The drone's parts line, measured, not built** (§3.1: 6 cr/min = 360 cr/h per drone; 22.10).
+What one drone earns over three hours at a human's pace, where the probe puts it: on the first
+deposit of its world (as before), and with `ECO_DRONE=dear` on the dearest ore that drone may take
+(`droneMayMine`: the far bands are refused). Payback is against the first drone's 9 000 cr; the
+second costs ×1.6, the fourth 36 864.
+
+| drone, ore | cr/h | after parts | payback, h (now / with parts) | trips in 3 h |
+|---|---|---|---|---|
+| T1, first deposit: iron | 480 | 120 | 19 / 75 | 120 |
+| T1, dearest: silicon | 756 | 396 | 12 / 23 | 102 |
+| T2–T3, first deposit: iron, silicon | 419–646 | 59–286 | 14–21 / 31–153 | 60–129 |
+| T3, ice | 280 | −80 | 32 / never | 59 |
+| T2–T3, dearest: titan | 1 241–1 275 | 881–915 | 7 / 10 | 69–75 |
+| T3, dearest: isotopes | 1 466–1 519 | 1 106–1 159 | 6 / 8 | 55–57 |
+
+Whole rows with every drone on its dearest ore: T1 15 925 (+15 %), T2 13 172 (−7 %), T3 11 086
+(−13 %, from −23 %). Read it: at 6 cr/min the line is 2–3 % of a T1 row's net, so as pressure it
+does nothing T1 needs (T1 is in band at a human's pace). What it does is choose for the player: a
+drone on iron or ice stops paying, a drone on titan or isotopes hardly notices. That is a decision
+the line would create, which is the honest reason to build it — not the band. Not built; the
+placement is the player's lever already (where the drone sits moves T3 by ten points).
+
 **Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
 
 - **T0 +57 % at the bot's pace, −13 % / +9 % at a human's.** Closed by the pace table above:
