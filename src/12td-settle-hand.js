@@ -92,31 +92,6 @@ function settleHandPlan(P){
   P.yards.forEach(y=>{y.wx=x0+y.x;});
   return P;
 }
-/* мачта со знаком дома: единственное, что под рукой ДОБАВЛЯЕТСЯ в кадр.
-   Ставится у края улицы, и по ней посёлок узнают издали */
-function settleHandMast(P,camx,camy,pal){
-  if(!P)return;
-  /* мачта у НАЧАЛА улицы, а не за её краем: за краем она попадала мимо кадра */
-  const x=P.x0-camx-SD_MAN*0.9, y0=P.baseY-camy;
-  const h=SD_MAN*2.6;
-  ctx.fillStyle="rgba(0,0,0,.30)";
-  ctx.fillRect(x-SD_MAN*0.05,y0,SD_MAN*0.5,3);
-  ctx.fillStyle=sdRGB(sdMix(pal.wood||[110,92,70],[40,36,32],.25));
-  ctx.fillRect(x,y0-h,Math.max(2,SD_MAN*0.075),h);
-  ctx.fillStyle="rgba(255,255,255,.10)";
-  ctx.fillRect(x,y0-h,Math.max(1,SD_MAN*0.025),h);
-  /* вымпел: маленький, ровный, и он тут не праздник, а метка */
-  const w=SD_MAN*0.9,hh=SD_MAN*0.42;
-  ctx.fillStyle=sdRGB(sdMix(pal.roof||[120,100,80],[210,180,120],.5));
-  ctx.beginPath();
-  ctx.moveTo(x+SD_MAN*0.075,y0-h);
-  ctx.lineTo(x+SD_MAN*0.075+w,y0-h+hh*0.34);
-  ctx.lineTo(x+SD_MAN*0.075,y0-h+hh);
-  ctx.closePath();ctx.fill();
-  ctx.fillStyle="rgba(0,0,0,.22)";
-  ctx.fillRect(x+SD_MAN*0.075,y0-h+hh*0.62,w*0.5,Math.max(1,hh*0.10));
-}
-
 /* ── кнопка ──
    Появляется у посёлка со второй ступени и нигде больше. Ни предупреждения,
    ни «уверены?»: кнопка называет действие, и это всё, что игра говорит. */
