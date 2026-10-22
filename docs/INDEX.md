@@ -3984,7 +3984,7 @@ drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-271
 drawRingTape                 src/11x-ring.js:107-118
-drawRoad                     src/27l-road-draw.js:88-631
+drawRoad                     src/27l-road-draw.js:79-515
 drawRocks                    src/19-mode-landing-ground.js:323-415
 drawRouteMap                 src/12r-route.js:267-316
 drawRungRing                 src/12ae-ladder.js:72-86
@@ -7514,12 +7514,12 @@ roadFast                     src/27k-road.js:223
 roadFinish                   src/27k-road.js:256-271
 roadFit                      src/27lc-road-gpu.js:67-73
 roadFrame                    src/27l-road-draw.js:60-66
-roadFullscreen               src/27l-road-draw.js:635-641
+roadFullscreen               src/27l-road-draw.js:519-525
 roadGpuMount                 src/27lc-road-gpu.js:19-31
 roadHav                      src/27k-road.js:108-114
 roadHomeward                 src/27k-road.js:116
 roadHueMix                   src/27k-road.js:597
-roadHullHalf                 src/27l-road-draw.js:73-87
+roadHullHalf                 src/27l-road-draw.js:73-78
 roadLightFrac                src/27k-road.js:225
 roadMicOff                   src/27k-road.js:351-358
 roadMicOn                    src/27k-road.js:320-350
@@ -10308,7 +10308,7 @@ zoomTo                       src/15-input.js:358
 ## src/27k-road.js · 48 KB
   · дорожный спутник:1
 
-## src/27l-road-draw.js · 45 KB
+## src/27l-road-draw.js · 40 KB
   · дорожный спутник: экран:1
 
 ## src/27la-road-sky.js · 12 KB
