@@ -226,6 +226,12 @@ fn outside(w:vec3f)->vec3f{
   if(kind==3){   /* научная: туманность акцента и холодная планета краем */
     let nb=fb2(q*3.+vec2f(tt*.002,0.));c+=mix(vec3f(.05,.07,.14),ac*.35,nb)*smoothstep(.35,.85,nb)*1.4*select(1.,.45,pon);
     if(!pon){let pd=length(q-vec2f(.5,-1.4))-1.12;c=mix(c,vec3f(.03,.05,.09)*(1.+q.y),step(pd,0.));c+=vec3f(.3,.55,.9)*exp(-abs(pd)*40.)*.9;}}
+  else if(kind==10){   /* щель «Сороки» (M851): край холодной планеты низко и крупно, кромка светится, над ней слабая
+                         пыль акцента — узкое окно над стойкой видит только лимб и его ореол */
+    let qq=q-vec2f(u.win2.z*.013,0.);let pc=vec2f(.1,-.74);let pd=length(qq-pc)-.96;let nb=fb2(qq*2.2+vec2f(tt*.0015,.4));
+    c+=mix(vec3f(.03,.045,.09),ac*.25,nb)*smoothstep(.4,.9,nb)*.9*(1.-smoothstep(-.1,.3,pd));
+    let body=vec3f(.012,.02,.04)+vec3f(.05,.09,.16)*fb2(qq*6.+pc)*(.3+.7*clamp(-pd*4.,0.,1.));
+    c=mix(c,body,step(pd,0.));c+=vec3f(.42,.62,.95)*exp(-abs(pd)*28.)*.75+vec3f(.1,.2,.4)*exp(-max(pd,0.)*6.)*.35;}
   else if(kind==5){   /* аванпост: звёзды, полоса пыли и патруль, что идёт медленно, огни ровные */
     c+=vec3f(.05,.04,.06)*fb2(q*1.5+vec2f(3.,1.))*(1.-smoothstep(-.7,.4,q.y));
     let d=q-vec2f(fract(tt*.004+u.win2.z*.0071)*3.6-1.8,.34);

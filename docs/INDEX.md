@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 631 · top-level symbols: 8879
+Files: 631 · top-level symbols: 8881
 
 ## SYMBOLS
 
@@ -1828,12 +1828,12 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:541
+R3                           src/27f2-room3d.js:547
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:520
+R3_DOWN_WGSL                 src/27f2-room3d.js:526
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:691
+R3_POST_WGSL                 src/27f2-room3d.js:697
 R3_UN                        src/27f2-room3d.js:30
 R3_WGSL                      src/27f2-room3d.js:161
 RACK                         src/25d-instr-rack.js:44
@@ -2401,15 +2401,16 @@ WALL_KIND_RU                 src/11ah-wall.js:42
 WALL_MAX                     src/11ah-wall.js:40
 WALL_POEMS                   src/11ae-concert.js:16-21
 WALL_S                       src/11ah-wall.js:41
-WAN3                         src/29re-wander-r3.js:19
-WAN3_BRASS                   src/29re-wander-r3.js:27
-WAN3_CZ                      src/29re-wander-r3.js:21
-WAN3_HANG                    src/29re-wander-r3.js:26
-WAN3_L                       src/29re-wander-r3.js:20
-WAN3_LAMP                    src/29re-wander-r3.js:23
-WAN3_M                       src/29re-wander-r3.js:24
-WAN3_TURN                    src/29re-wander-r3.js:32
-WAN3_WIN                     src/29re-wander-r3.js:22
+WAN3                         src/29re-wander-r3.js:21
+WAN3_BRASS                   src/29re-wander-r3.js:30
+WAN3_CZ                      src/29re-wander-r3.js:23
+WAN3_HANG                    src/29re-wander-r3.js:29
+WAN3_L                       src/29re-wander-r3.js:22
+WAN3_LAMP                    src/29re-wander-r3.js:25
+WAN3_LANT                    src/29re-wander-r3.js:26
+WAN3_M                       src/29re-wander-r3.js:27
+WAN3_TURN                    src/29re-wander-r3.js:35
+WAN3_WIN                     src/29re-wander-r3.js:24
 WANDER_BY_ID                 src/12v-wander-shop.js:70
 WANDER_CAT                   src/12v-wander-shop.js:27-69
 WANDER_LINES                 src/12v-wander-shop.js:255-262
@@ -4165,7 +4166,7 @@ drawVan                      src/21ac3-base-van.js:71-137
 drawVanSmall                 src/21ac3-base-van.js:139-145
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
-drawWanderRoom               src/29re-wander-r3.js:278-281
+drawWanderRoom               src/29re-wander-r3.js:343-346
 drawWanderer                 src/12v-wander.js:339-443
 drawWater                    src/21e-surface-draw.js:221-309
 drawWear                     src/12s-wear.js:102-171
@@ -7274,16 +7275,16 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:542-548
-r3Dev                        src/27f2-room3d.js:565-583
-r3DownDesc                   src/27f2-room3d.js:557-561
-r3Drop                       src/27f2-room3d.js:590
-r3Frame                      src/27f2-room3d.js:634-688
-r3Free                       src/27f2-room3d.js:592
+r3Desc                       src/27f2-room3d.js:548-554
+r3Dev                        src/27f2-room3d.js:571-589
+r3DownDesc                   src/27f2-room3d.js:563-567
+r3Drop                       src/27f2-room3d.js:596
+r3Frame                      src/27f2-room3d.js:640-694
+r3Free                       src/27f2-room3d.js:598
 r3Kit                        src/27f2-room3d.js:66-158
 r3Lin                        src/27f2-room3d.js:35
 r3Look                       src/27f2-room3d.js:43-158
-r3MeshR                      src/27f2-room3d.js:633
+r3MeshR                      src/27f2-room3d.js:639
 r3Mix                        src/27f2-room3d.js:36
 r3Mul                        src/27f2-room3d.js:40
 r3Persp                      src/27f2-room3d.js:42
@@ -7291,12 +7292,12 @@ r3Pivot                      src/27f2-room3d.js:57
 r3Proj                       src/27f2-room3d.js:60-158
 r3Pt                         src/27f2-room3d.js:58
 r3Sc                         src/27f2-room3d.js:37
-r3ShDesc                     src/27f2-room3d.js:549-554
-r3ShadowVP                   src/27f2-room3d.js:594-599
+r3ShDesc                     src/27f2-room3d.js:555-560
+r3ShadowVP                   src/27f2-room3d.js:600-605
 r3Step                       src/27f2-room3d.js:38
-r3Targets                    src/27f2-room3d.js:606-631
-r3Up                         src/27f2-room3d.js:585-589
-r3VB                         src/27f2-room3d.js:555
+r3Targets                    src/27f2-room3d.js:612-637
+r3Up                         src/27f2-room3d.js:591-595
+r3VB                         src/27f2-room3d.js:561
 r3Xf                         src/27f2-room3d.js:49-158
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
@@ -8682,18 +8683,19 @@ wallSpot                     src/11ah-wall.js:132-147
 wallStone                    src/11ah-wall.js:189-221
 wallStore                    src/11ah-wall.js:81-90
 wallWrap                     src/11ae-concert.js:72-80
-wan3Cam                      src/29re-wander-r3.js:231-239
-wan3Canvas                   src/29re-wander-r3.js:215-222
-wan3Case                     src/29re-wander-r3.js:33
-wan3Frame                    src/29re-wander-r3.js:241-262
-wan3Hide                     src/29re-wander-r3.js:269-274
-wan3Item                     src/29re-wander-r3.js:37-86
-wan3Keeper                   src/29re-wander-r3.js:174
-wan3Mesh                     src/29re-wander-r3.js:89-171
-wan3Ok                       src/29re-wander-r3.js:240
-wan3Scene                    src/29re-wander-r3.js:178-212
-wan3Station                  src/29re-wander-r3.js:224-230
-wan3Tags                     src/29re-wander-r3.js:264
+wan3Cam                      src/29re-wander-r3.js:296-304
+wan3Canvas                   src/29re-wander-r3.js:280-287
+wan3Case                     src/29re-wander-r3.js:36
+wan3Frame                    src/29re-wander-r3.js:306-327
+wan3Hide                     src/29re-wander-r3.js:334-339
+wan3Item                     src/29re-wander-r3.js:40-109
+wan3Keeper                   src/29re-wander-r3.js:236
+wan3Lantern                  src/29re-wander-r3.js:112-121
+wan3Mesh                     src/29re-wander-r3.js:124-233
+wan3Ok                       src/29re-wander-r3.js:305
+wan3Scene                    src/29re-wander-r3.js:240-277
+wan3Station                  src/29re-wander-r3.js:289-295
+wan3Tags                     src/29re-wander-r3.js:329
 wanAll                       src/24c-mode-wanderer.js:21
 wanCur                       src/24c-mode-wanderer.js:50
 wanLots                      src/24c-mode-wanderer.js:49
@@ -10438,7 +10440,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 63 KB
+## src/27f2-room3d.js · 65 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 29 KB
@@ -10628,7 +10630,7 @@ zoomTo                       src/15-input.js:358
 ## src/29rd-spa-r3.js · 21 KB
   · санаторий на движке (M850d, docs/DESIGN-rooms.md §4):1
 
-## src/29re-wander-r3.js · 26 KB
+## src/29re-wander-r3.js · 33 KB
   · «Сорока» на движке (M851, docs/DESIGN-rooms.md §4):1
 
 ## src/29rz-snap-over.js · 1 KB
