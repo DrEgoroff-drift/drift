@@ -483,8 +483,8 @@ DIG3_HOOKS                   src/23c0-dig-hooks.js:6-10
 DIG3_LENS                    src/23c-dig-pln.js:17
 DIG3_LIP                     src/23ca-dig-pln-rock.js:26
 DIG3_NOSCENE                 src/23cd-dig-pln-top.js:374
-DIG3_OLD_HSURF               src/23cf-dig-words.js:36
-DIG3_OLD_HUD                 src/23cf-dig-words.js:53
+DIG3_OLD_HSURF               src/23cf-dig-words.js:37
+DIG3_OLD_HUD                 src/23cf-dig-words.js:54
 DIG3_OLD_WALK                src/23c-dig-pln.js:278
 DIG3_ORE                     src/23cb-dig-pln-dress.js:101
 DIG3_PAINT_W                 src/23ca-dig-pln-rock.js:142
@@ -1362,7 +1362,7 @@ MAP_DRY_INK                  src/18-mode-map.js:3
 MAP_INK                      src/18-mode-map.js:51
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
-MAP_ORB                      src/18l-map-plate.js:75
+MAP_ORB                      src/18l-map-plate.js:80
 MAP_OVER                     src/18-mode-map.js:146
 MAP_SPIKE_N                  src/17z3-map-gpu.js:201
 MAP_TOP                      src/18a-map-addr.js:253
@@ -3727,7 +3727,7 @@ dig3HeapTint                 src/23cb-dig-pln-dress.js:253-258
 dig3Hex                      src/23cb-dig-pln-dress.js:179-185
 dig3InstPut                  src/23c-dig-pln.js:121-127
 dig3IsKey                    src/23cf-dig-words.js:25
-dig3KeyLine                  src/23cf-dig-words.js:27-35
+dig3KeyLine                  src/23cf-dig-words.js:27-36
 dig3Land                     src/23ca-dig-pln-rock.js:75-81
 dig3Lens                     src/23c-dig-pln.js:19-26
 dig3LensMk                   src/23cd-dig-pln-top.js:52-55
@@ -4602,12 +4602,12 @@ gnbFadeDesc                  src/16gc-gpu-nebfade.js:16-20
 gnbGenDesc                   src/16gba-gpu-nebula-comp.js:147
 gnbGenView                   src/16gc-gpu-nebfade.js:22-35
 gnbLandmark                  src/16gba-gpu-nebula-comp.js:174-189
-gnbLfr                       src/16gba-gpu-nebula-comp.js:192-208
+gnbLfr                       src/16gba-gpu-nebula-comp.js:192-210
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
 gnbPalette                   src/16gba-gpu-nebula-comp.js:163-171
 gnbPipe                      src/16gba-gpu-nebula-comp.js:146
-gnbStar                      src/16gba-gpu-nebula-comp.js:210-215
+gnbStar                      src/16gba-gpu-nebula-comp.js:212-217
 gnbStars                     src/16gba-gpu-nebula-comp.js:42-49
 gnbTarget                    src/16gba-gpu-nebula-comp.js:138-145
 goalCard                     src/13b-occupy.js:233-262
@@ -4685,8 +4685,8 @@ gpuMipDrop                   src/08c-gpu-kit.js:112
 gpuMipSmp                    src/08c-gpu-kit.js:113
 gpuMipTex                    src/08c-gpu-kit.js:99-111
 gpuMoon                      src/17ga-gpu-planets.js:441-447
-gpuNebulaComp                src/16gba-gpu-nebula-comp.js:275-285
-gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:218-272
+gpuNebulaComp                src/16gba-gpu-nebula-comp.js:277-287
+gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:220-274
 gpuNext                      src/08b-gpu.js:630-639
 gpuNoise                     src/08b-gpu.js:394-399
 gpuNone                      src/08b2-gpu-loss.js:6-14
@@ -5851,9 +5851,9 @@ mapMarkAt                    src/18a-map-addr.js:31
 mapMarkToggle                src/18a-map-addr.js:33-41
 mapMarks                     src/18a-map-addr.js:30
 mapMarksDraw                 src/18a-map-addr.js:98-113
-mapOrbFan                    src/18l-map-plate.js:78-92
-mapOrbInk                    src/18l-map-plate.js:76
-mapOrbsDraw                  src/18l-map-plate.js:93-108
+mapOrbFan                    src/18l-map-plate.js:83-102
+mapOrbInk                    src/18l-map-plate.js:81
+mapOrbsDraw                  src/18l-map-plate.js:103-118
 mapOverOn                    src/18-mode-map.js:148
 mapOverTap                   src/18-mode-map.js:213-217
 mapOverview                  src/18-mode-map.js:191-212
@@ -5871,7 +5871,7 @@ mapRoseDraw                  src/18a-map-addr.js:191-214
 mapRulerTop                  src/18a-map-addr.js:53
 mapRulersDraw                src/18a-map-addr.js:115-189
 mapRumoursDraw               src/18a-map-addr.js:82-96
-mapSelBlock                  src/18l-map-plate.js:61-66
+mapSelBlock                  src/18l-map-plate.js:61-68
 mapSelHang                   src/18l-map-plate.js:18-35
 mapSelInk                    src/18l-map-plate.js:54-58
 mapStarsGpu                  src/17z3-map-gpu.js:202-230
@@ -9646,7 +9646,7 @@ zoomTo                       src/15-input.js:358
 ## src/18k-rail-scheme.js · 19 KB
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
-## src/18l-map-plate.js · 10 KB
+## src/18l-map-plate.js · 12 KB
   · карта: веса и таблички (M822):1
 
 ## src/19-mode-landing-ground.js · 27 KB
@@ -10575,7 +10575,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim.js · 42 KB
+## tests/91zzzw4-ecosim.js · 45 KB
   · проба · экономика (M903):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB

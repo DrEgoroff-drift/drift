@@ -30,8 +30,9 @@ function dig3KeyLine(s){
     const p=/\(([^)]+)\)$/.exec(m[1]),K=p?[p[1]]:m[1].split(" ");
     if(K.every(dig3IsKey))return K.map(t=>"["+(t.length>2&&/^[А-ЯЁ]+$/.test(t)?t[0]+t.slice(1).toLowerCase():t)+"]").join("")+" "+m[2].toLowerCase();
   }
-  /* «12 м» — единица строчной: hangCase молчит над строкой, где строчная уже есть */
-  return hangCase(s.replace(/(\d) м(?![А-Яа-яЁё])/g,"$1 М"));
+  /* «12 м» — единица строчной: hangCase молчит над строкой, где строчная уже есть; «ДО ГОРИЗОНТА 1: 12 м» —
+     через точку, как фишки и строка места (двоеточие после цифры моноширинной мерки встаёт с разрядкой) */
+  return hangCase(s.replace(/(\d): (?=\d)/g,"$1 · ").replace(/(\d) м(?![А-Яа-яЁё])/g,"$1 М"));
 }
 const DIG3_OLD_HSURF=hangSurface;
 hangSurface=function(){
