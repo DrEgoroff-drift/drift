@@ -465,6 +465,7 @@ function plnOwnStep(L,S,lim){
   }else{plnOwnFree(O.home);O.home=null;O.porch=null;}
   if(lim!=null&&wallMs()-t0>lim)return false;
   if(typeof plnTinStep==="function")plnTinStep(L,S);   /* Жестянка (21piia) */
+  if(typeof plnTrcStep==="function")plnTrcStep(L,S);   /* чужой след (21piib) */
   return typeof plnSetStep==="function"?plnSetStep(L,S):true;   /* посёлок (21pii) */
 }
 /* Ставит свои вещи в кадр: тела, свет записями, лампы ночью. ex — где объектив, V — {hw, D}, nk — ночь */
@@ -513,6 +514,7 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
   b[0]=n;
   if(typeof plnSetFrame==="function")plnSetFrame(F,S,ex,V,nk,want);   /* посёлок (21pii): тела, огонь, дым, лампа очага */
   if(typeof plnTinFrame==="function")plnTinFrame(F,S,ex,V,nk,want);   /* Жестянка (21piia): тело, рёбра хода, дым, мигалка */
+  if(typeof plnTrcFrame==="function")plnTrcFrame(F,ex,V);   /* чужой след (21piib): плита со знаком, мешки */
   want.sort((u,v)=>u.o-v.o);
   /* в кадр — две по старшинству из тех, чей свет до кадра достаёт: пирс за кромкой уступает лампе кромки у ворот */
   const seen=want.filter(w=>Math.abs(w.l.p[0]-ex)<V.hw*(1+Math.max(0,w.l.p[2])/V.D)+w.l.r);
@@ -549,6 +551,8 @@ function plnOwnPads(tr,p,L){
   if(bx!=null)o.push([bx/PLN_M,OWN.yardZ,11,8,9]);
   const v=typeof plnSetPad==="function"?plnSetPad(tr,p):null;if(v)o.push(v);   /* полка посёлка (21pii) */
   const j=typeof plnTinPad==="function"?plnTinPad(tr,p):null;if(j)o.push(j);   /* плита Жестянки (21piia) */
+  const t=typeof traceHere==="function"&&G.surf&&G.surf.p===p?traceHere():null;   /* чужой след (21piib) */
+  if(t&&t.x!=null)o.push([t.x/PLN_M+.9,1.9,2.4,1.4,3]);
   return o;
 }
 
