@@ -60,7 +60,7 @@ function mapInkText(s,x,y){const m=ctx.measureText(s);
 /* подпись мира: запомнить, как её рисовать, и места — [x,y] или [x,y,поворот]; plate — подложка
    [dx,dy,w,h,цвет] от точки строки. Выше prio — раньше выбирает место */
 function mapLate(s,spots,prio,plate){MAP_LATE.push({s,spots,prio:prio||0,plate:plate||null,n:MAP_LATE.length,
-  font:ctx.font,fill:ctx.fillStyle,align:ctx.textAlign,base:ctx.textBaseline,alpha:MPN.gpu?MPN.al:ctx.globalAlpha});}   /* прозрачность пера (17z4): на видеокарте ctx.globalAlpha её не знает */
+  font:ctx.font,fill:ctx.fillStyle,align:ctx.textAlign,base:ctx.textBaseline,alpha:MPN.al});}   /* прозрачность пера (17z4): ctx.globalAlpha её не знает */
 /* заходят ли два выпуклых четырёхугольника друг в друга ближе, чем на pad (разделяющие оси) */
 function mapHit(P,Q,pad){
   for(const S of [P,Q])for(let i=0;i<4;i++){const a=S[i],b=S[(i+1)%4];let nx=b[1]-a[1],ny=a[0]-b[0];const l=Math.hypot(nx,ny);if(l<1e-9)continue;nx/=l;ny/=l;
@@ -95,8 +95,7 @@ function mapLateFlush(){
         else{const R=(u,v)=>[x+u*c-v*s,y+u*s+v*c],A=R(pl[0],pl[1]),B=R(pl[0]+pl[2],pl[1]),C=R(pl[0]+pl[2],pl[1]+pl[3]),D=R(pl[0],pl[1]+pl[3]);
           mpQuad(A[0],A[1],B[0],B[1],C[0],C[1],D[0],D[1],pl[4]);}}
       if(!a)mpText(q.s,x,y,q.fill);
-      else if(MPN.gpu)ovTextRot(OVL.uq,x,y,q.s,q.font,q.fill,q.align,q.base,MPN.al,a);
-      else{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle=q.fill;ctx.fillText(q.s,0,0);ctx.restore();}
+      else if(MPN.dev)ovTextRot(OVL.uq,x,y,q.s,q.font,q.fill,q.align,q.base,MPN.al,a);
       MAP_INK.push({P,x0,y0,x1,y1});break;
     }
   }
@@ -612,6 +611,7 @@ function drawMapIn(){
       const a=Math.PI/4+i*Math.PI/2, r0=rr+13, r1=rr+20;
       mpLine(x+Math.cos(a)*r0,y+Math.sin(a)*r0,x+Math.cos(a)*r1,y+Math.sin(a)*r1,1.2,"#f2b25c");
     }
+    mapOrbsDraw(sel,cell);   /* миры выбора — шарами 17gab, в чернилах (18l, M822b) */
     if(hung)mapSelHang(sel,dsel,cost,st);
     /* ширину карточка берёт до правого борта, а не до края экрана: кнопки
        КАРТА и МЕНЮ стоят там всегда, и угол карточки уезжал под них */

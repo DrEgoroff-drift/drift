@@ -312,9 +312,7 @@ function drawFactRoute(vis){
   const col="rgba(242,178,92,";
   ctx.save();
   /* пером карты (17z4): точки по плечам — пунктир 1/5 с круглыми концами */
-  if(!MPN.gpu)ctx.lineCap="round";
   for(let i=1;i<pts.length;i++)mpDash(pts[i-1].x,pts[i-1].y,pts[i].x,pts[i].y,1.2,col+".45)",[1,5]);
-  if(!MPN.gpu)ctx.lineCap="butt";
   /* борт идёт по маршруту: точка, ползущая от плеча к плечу, — это и есть
      «домен работает», видимое без единой цифры */
   if(pts.length>1){

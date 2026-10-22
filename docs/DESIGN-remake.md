@@ -486,6 +486,27 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   only what stays while it hangs (its fallbacks — the prompt, the footer's selection rows, the
   course label — do not hold its place) and world labels yield to it; `mpPlate`, `mapFace` and
   `mapTW` (widths as the layer draws digits) for the header, footer, tag and card.
+  *M822b (22.10), the map without 2D and with the orbs.* What leaves:
+  1. The pen's 2D fallback for the map. `drawMap` always writes to the pen's queue (`mpBegin` no
+     longer asks for a device); without one the frame is not submitted and the player sees the
+     08b2 plate, never a 2D map. The rotated-label `ctx` branch of `mapLateFlush` and the
+     `ctx.globalAlpha` mirror of `mpAlpha`/`mapLate` go with it.
+  2. `17z-map-backdrop` (8 KB: nebula, band, rhumbs, grid, star) leaves the game bundle: since
+     M447 the game calls none of it (the sky is 17z3). It moves to `site/war-backdrop.js` for the
+     war page, which is a 2D page and not the game; `mapGridPaint` has no caller anywhere and is
+     deleted.
+  What stays, named: the pen's 2D target only as `mp2d` — a bake into a foreign canvas, used by
+  the war page (`powerEmblem`) and by the slipway plaque of `26e2` (remake-a3's zone; when the
+  plaque moves to the engine, the 2D target moves to the site with the backdrop). `ctx` stays in
+  the map as a text register and ruler (font, align, baseline, `measureText`): no pixel goes
+  through it.
+  What changes: the selected system shows its planets as `17gab` orbs — a fan beside its star in
+  the map's scene, in orbit order, 4–9 px at the cell, lit from the star; the fan is ink
+  (`mapInkBox`) so world labels and the selection plate avoid it; on the phone the fan turns
+  inward when the star is near the edge. Only the selection carries orbs (a whole sky of orbs
+  would be noise and cost). Suite `91qk-map`: the map frame without a device paints nothing on
+  `ctx`, the backdrop names are absent from the game and present in `war.js`, the fan is inside
+  the frame and clear of the plate at 1920 and 390.
 - **M823 The nebula far from the star**: inner structure and a depth ramp, no straight streaks
   (the look near the star is the author's and stays). **M824 Belt**: rocks clustered round the
   actor, haze instead of the band. **M825 The orbs' second pass**: crystal, ice, jungle, rocky,

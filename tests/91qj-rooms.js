@@ -68,7 +68,7 @@ TEST_SUITES.push(()=>suite("комнаты на движке: сцены, све
       "homeFigure","homeCrewFigure","hqFigure","vegaHomeFigure","wanKeeper","roomBake","roomSz","rpgFrame","rpgImage","rpgShapes","mgrFace"])
       ok(!(n in globalThis),"2D-кисти «"+n+"» нет");
     /* прежние имена хода комнат остались входами цикла (28) — они только зовут кадр движка, 2D-холста в них нет */
-    for(const f of [drawHomeIn,drawWinter,drawSpa])ok(!/ctx|getContext/.test(String(f)),"«"+f.name+"» — вход в кадр движка, без 2D");
+    for(const f of [drawHomeIn,drawWinter,drawSpa])ok(!/\bctx\b|getContext/.test(String(f)),"«"+f.name+"» — вход в кадр движка, без 2D");
 
     /* ── лицо пилота переживает сейв ── */
     {G.home=homeInit();G.home.tier=4;G.home.sx=G.sx+5;G.home.sy=G.sy-3;

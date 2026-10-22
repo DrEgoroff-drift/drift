@@ -34,6 +34,7 @@
   "tests/91qj-pace.js": ["src/06-galaxy.js", "src/08-state.js", "src/20e-species.js", "src/21pib-pln-beast.js"],
   "tests/91qj-rooms.js": ["src/01-core.js", "src/08-state.js", "src/12j-home.js", "src/14-save.js", "src/21pb-pln-wgsl-air.js", "src/24c-mode-wanderer.js", "src/26-ui-station.js", "src/27f2-room3d.js", "src/27f4a-hall.js", "src/29c-home-in.js", "src/29f-winter.js", "src/29h-spa.js", "src/29r-rooms-r3.js", "src/29rb-home-r3.js", "src/29rc-winter-r3.js", "src/29rd-spa-r3.js", "src/29re-wander-r3.js", "src/29rf-home-still.js"],
   "tests/91qk-ground.js": ["src/01-core.js", "src/07a-terrain.js", "src/08-state.js", "src/21e-surface-draw.js", "src/21p-pln.js", "src/21pb-pln-wgsl-air.js", "src/21pf-pln-land.js", "src/21pi-pln-things.js", "src/23cc-mine-play.js"],
+  "tests/91qk-map.js": ["src/01-core.js", "src/06-galaxy.js", "src/08-state.js", "src/08bj-ovl-hang.js", "src/18-mode-map.js", "src/18l-map-plate.js", "src/27z-telemetry.js"],
   "tests/91ql-light.js": ["src/01-core.js", "src/06a-celest.js", "src/08-state.js", "src/21p-pln.js", "src/21pf-pln-land.js", "src/21pz-pln-frame.js", "src/28y-look.js"],
   "tests/91qm-seeds.js": ["src/06-galaxy.js", "src/07a-terrain.js", "src/08-state.js", "src/16-flight.js", "src/19f-lander.js", "src/20a-poi.js", "src/21-mode-surface.js", "src/21b-surface-deco.js", "src/21e-surface-draw.js", "src/21p-pln.js", "src/21pf-pln-land.js"],
   "tests/91qn-arb.js": ["src/01-core.js", "src/02-world.js", "src/06-galaxy.js", "src/08-state.js", "src/12-economy.js", "src/12ab-hold.js"],
