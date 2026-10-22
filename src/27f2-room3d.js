@@ -488,7 +488,7 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
     let sc=vn3(vec3f(floor(t*6.),11.,0.));f+=.35*step(.7,sc)*smoothstep(.0025,0.,abs(p.x-fract(sc*7.3)));
     f*=(.9+.1*sin(t*47.)*sin(t*29.))*(1.-.42*dot(c2/vec2f(1.3,.62),c2/vec2f(1.3,.62)));
     f*=smoothstep(0.,.05,ph)*smoothstep(1.,.95,ph);
-    let v=clamp(f,0.,1.);a=mix(vec3f(.003,.003,.004),vec3f(1.,.88,.7),pow(v,2.4));em=2.2*step(.5,u.flm2.y);sp=0.;}
+    let v=clamp(f,0.,1.);a=mix(vec3f(.003,.003,.004),vec3f(1.,.9,.74),pow(v,1.7));em=2.7*step(.5,u.flm2.y);sp=0.;}
   else if(pat==13u){a*=.9+.2*vn3(i.l*vec3f(160.));}   /* кожа сиденья */
   else if(pat==14u){   /* опасность: косые полосы */
     let q=pl2(W,n);let s=step(.5,fract((q.x+q.y)*4.));a=mix(vec3f(.05,.045,.04),vec3f(.75,.55,.08),s);}
