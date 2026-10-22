@@ -155,38 +155,46 @@ function r3Kit(){
   /* поверхность по шагам: ms — бюджет шага (yield между рядами), без него — одним куском; K.surf гонит до конца */
   /* точки, краска и вес — плоскими массивами (ни массива на точку, ни замыкания на треугольник); o.src={P,C?,W?} —
      готовые плоские массивы вместо f (кожа головы, 27f3a); краска без своей — краска материала */
-  K.surfG=function*(nu,nv,f,M,o,ms){o=o||{};const n=(nu+1)*(nv+1),mc=M.c;let t0=ms?wallMs():0,P,C,Wt;
-    const brk=()=>ms&&wallMs()-t0>ms,pool=sgTake();
-    try{
-    if(o.src){P=o.src.P;C=o.src.C||null;Wt=o.src.W||null;}
-    else{P=sgArr(0,3*n,pool);C=sgArr(1,3*n,pool);Wt=null;
-      for(let j=0,k=0;j<=nv;j++)for(let i=0;i<=nu;i++,k++){const r=f(i/nu,j/nv),p=r[0],c=r[1]||mc,w=r[2];
-        P[3*k]=p[0];P[3*k+1]=p[1];P[3*k+2]=p[2];C[3*k]=c[0];C[3*k+1]=c[1];C[3*k+2]=c[2];
-        if(w){if(!Wt){Wt=sgArr(3,n,pool);Wt.fill(0,0,n);}
-          if(typeof w==="number")Wt[k]=w;else{const wq=Math.round(clamp(w[1],0,1)*255);if(wq)Wt[k]=2048*w[0]+32768*wq;}}}}
-    const ix=(i,j)=>{if(o.wrap)i=(i+nu)%nu;else i=Math.max(0,Math.min(nu,i));j=Math.max(0,Math.min(nv,j));return 3*(j*(nu+1)+i);};
-    /* нормали — плоским Float32Array (та же математика: центральные разности, cross, flip) */
-    const NN=sgArr(2,3*n,pool),sg=o.flip?-1:1;let k3=0;
-    for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){
-      const a=ix(i+1,j),b=ix(i-1,j),c=ix(i,j+1),d=ix(i,j-1);
+  /* перф-проход 5 (22.10): горячие циклы — обычными функциями, не в теле генератора: генератор с yield внутри цикла
+     V8 не поднимает в оптимизирующий ярус, и каждая дробь P[k]/NN[k] и аргументы vx3c коробились в HeapNumber —
+     ≈2 КБ мусора на точку (hunter, отчёты 22–23). Математика и байты те же */
+  const sgSample=(nu,nv,f,mc,P,C,pool)=>{const n=(nu+1)*(nv+1);let Wt=null;
+    for(let j=0,k=0;j<=nv;j++)for(let i=0;i<=nu;i++,k++){const r=f(i/nu,j/nv),p=r[0],c=r[1]||mc,w=r[2];
+      P[3*k]=p[0];P[3*k+1]=p[1];P[3*k+2]=p[2];C[3*k]=c[0];C[3*k+1]=c[1];C[3*k+2]=c[2];
+      if(w){if(!Wt){Wt=sgArr(3,n,pool);Wt.fill(0,0,n);}
+        if(typeof w==="number")Wt[k]=w;else{const wq=Math.round(clamp(w[1],0,1)*255);if(wq)Wt[k]=2048*w[0]+32768*wq;}}}
+    return Wt;};
+  /* нормали одного ряда j (та же математика: центральные разности, cross, flip; индексы — как ix: по кругу или с зажимом) */
+  const sgNormRow=(P,NN,nu,nv,j,wrap,sg)=>{const w1=nu+1,jr=j*w1,jc=Math.min(nv,j+1)*w1,jd=Math.max(0,j-1)*w1;
+    const je=Math.max(0,Math.min(nv,j+(j<nv?2:-2)))*w1,s=j<nv?1:-1;let k3=3*jr;
+    for(let i=0;i<=nu;i++){
+      let ia=i+1,ib=i-1,ic=i;if(wrap){ia=(ia+nu)%nu;ib=(ib+nu)%nu;ic=(i+nu)%nu;}else{ia=Math.min(nu,ia);ib=Math.max(0,ib);}
+      const a=3*(jr+ia),b=3*(jr+ib),c=3*(jc+ic),d=3*(jd+ic);
       const ux=P[a]-P[b],uy=P[a+1]-P[b+1],uz=P[a+2]-P[b+2];let vx=P[c]-P[d],vy=P[c+1]-P[d+1],vz=P[c+2]-P[d+2];
       let x=uy*vz-uz*vy,y=uz*vx-ux*vz,z=ux*vy-uy*vx;
-      if(Math.sqrt(x*x+y*y+z*z)<1e-14){const e=ix(i,j+(j<nv?2:-2)),g=ix(i,j),s=j<nv?1:-1;vx=(P[e]-P[g])*s;vy=(P[e+1]-P[g+1])*s;vz=(P[e+2]-P[g+2])*s;
+      if(Math.sqrt(x*x+y*y+z*z)<1e-14){const e=3*(je+ic),g=3*(jr+ic);vx=(P[e]-P[g])*s;vy=(P[e+1]-P[g+1])*s;vz=(P[e+2]-P[g+2])*s;
         x=uy*vz-uz*vy;y=uz*vx-ux*vz;z=ux*vy-uy*vx;}
       const l=Math.sqrt(x*x+y*y+z*z);if(l>1e-12){NN[k3]=x/l*sg;NN[k3+1]=y/l*sg;NN[k3+2]=z/l*sg;}else{NN[k3]=0;NN[k3+1]=sg;NN[k3+2]=0;}
-      k3+=3;
-      if(i===nu&&brk()){yield;t0=wallMs();}}
-    const w1=nu+1;
-    for(let j=0;j<nv;j++){for(let i=0;i<nu;i++){
-      if(o.keep&&!o.keep((i+.5)/nu,(j+.5)/nv))continue;
+      k3+=3;}};
+  /* треугольники одного ряда клеток j */
+  const sgTriRow=(P,NN,C,Wt,M,nu,nv,j,keep)=>{const w1=nu+1;
+    for(let i=0;i<nu;i++){
+      if(keep&&!keep((i+.5)/nu,(j+.5)/nv))continue;
       const q0=j*w1+i,q1=q0+1,q2=q1+w1,q3=q0+w1;
       let k=3*q0;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q0]:0);
       k=3*q1;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q1]:0);
       k=3*q2;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q2]:0);
       k=3*q0;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q0]:0);
       k=3*q2;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q2]:0);
-      k=3*q3;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q3]:0);}
-      if(brk()){yield;t0=wallMs();}}
+      k=3*q3;vx3c(P[k],P[k+1],P[k+2],NN[k],NN[k+1],NN[k+2],M,C[k],C[k+1],C[k+2],Wt?Wt[q3]:0);}};
+  K.surfG=function*(nu,nv,f,M,o,ms){o=o||{};const n=(nu+1)*(nv+1),mc=M.c;let t0=ms?wallMs():0,P,C,Wt;
+    const brk=()=>ms&&wallMs()-t0>ms,pool=sgTake();
+    try{
+    if(o.src){P=o.src.P;C=o.src.C||null;Wt=o.src.W||null;}
+    else{P=sgArr(0,3*n,pool);C=sgArr(1,3*n,pool);Wt=sgSample(nu,nv,f,mc,P,C,pool);}
+    const NN=sgArr(2,3*n,pool),sg=o.flip?-1:1,wrap=!!o.wrap,keep=o.keep||null;
+    for(let j=0;j<=nv;j++){sgNormRow(P,NN,nu,nv,j,wrap,sg);if(brk()){yield;t0=wallMs();}}
+    for(let j=0;j<nv;j++){sgTriRow(P,NN,C,Wt,M,nu,nv,j,keep);if(brk()){yield;t0=wallMs();}}
     }finally{if(pool)SG_FREE.push(pool);}};
   K.surf=(nu,nv,f,M,o)=>{const it=K.surfG(nu,nv,f,M,o,0);while(!it.next().done);};
   /* труба по ломаной P с радиусом r (число или массив); N — граней; кольца — параллельным переносом */

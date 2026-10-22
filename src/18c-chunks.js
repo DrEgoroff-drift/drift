@@ -1,23 +1,13 @@
-/* ══════════════ кэш статичного: чанки и слои ══════════════
-   Замер 0.87 показал, где уходит кадр на поверхности: не в логике (≤4 мс),
-   а в растре — полноэкранные заливки паттерном и градиентом под clip-путём
-   из двухсот вершин, по десятку за кадр, и всё это на ретине вчетверо.
-   При этом разрез грунта от кадра к кадру не меняется: камера его только
-   двигает. То, что не меняется, рисуется один раз в offscreen и дальше
-   кладётся одним drawImage.
-
-   Два вида кэша:
-   · chunkAt(store,k,...) — ломоть мира по X шириной CW, для длинных полос
-     (грунт, свод пещеры); живёт, пока игрок рядом, старые вытесняются;
-   · screenLayer(key,paint) — слой во весь экран, для того, что сидит в
-     экранных координатах (зарево звезды, пелена погоды).
-
-   Рисовальщик получает тот же глобальный ctx, W и H, что и обычный кадр —
-   на время покраски они подменяются (withCtx), поэтому существующие
-   функции рисуют в чанк, не зная об этом. */
+/* ══════════════ масштаб мира и подмена холста ══════════════
+   Здесь жил кэш статичного 2D: ломти мира по X (chunkStore/chunkAt/drawChunks — разрез грунта)
+   и слои во весь экран (screenLayer — зарево звезды, пелена погоды). С M807b их нет: без
+   видеокарты поверхности нет, грунт, свет и погоду кладёт движок (21p*). Имена остались
+   заглушками — их зовут только запертые 19-mode-landing-ground, 19c-light (gradePass) и
+   19d-weather (drawWeather) на старом пути drawLanding (?pln=0, без устройства); ждёт разблокировки автора.
+   Живое здесь — withScale (мера мира по окну), uiK/uiFont (кегль), withCtx/mkCanvas (выпечки
+   20ab/21bc/21fa) и CHUNK_W (ширина ломтя, её читает и 19c1-cast). */
 
 const CHUNK_W=512;        // ширина ломтя в мировых пикселях
-const CHUNK_KEEP=7;       // сколько ломтей держать (W/CW+2 на экран плюс запас)
 
 /* ── МАСШТАБ МИРА ПО РАЗМЕРУ ОКНА (M217) ──
    Камера поверхности была приклеена к пикселю: чем больше окно, тем больше
@@ -68,65 +58,12 @@ function mkCanvas(w,h){
   cn.width=Math.max(1,Math.round(w*DPR*SCK));cn.height=Math.max(1,Math.round(h*DPR*SCK));
   return cn;
 }
-/* хранилище ломтей: {key, top, ch, map:Map<k,canvas>, order:[k...]}.
-   key — от чего зависит картинка (планета, DPR, высота); сменился — всё вон */
-function chunkStore(store,key,top,ch){
-  key+="~"+SCK;   /* испечённое под другой масштаб мира не переиспользуется */
-  if(!store||store.key!==key||store.ch!==ch||store.top!==top)
-    store={key,top,ch,sck:SCK,map:new Map(),order:[]};
-  return store;
-}
-function chunkAt(store,k,paint){
-  let cn=store.map.get(k);
-  if(cn)return cn;
-  cn=mkCanvas(CHUNK_W,store.ch);
-  withCtx(cn,CHUNK_W,store.ch,k*CHUNK_W,store.top,paint);
-  store.map.set(k,cn);store.order.push(k);
-  while(store.order.length>CHUNK_KEEP)store.map.delete(store.order.shift());
-  return cn;
-}
-/* выложить ломти под камеру: paint(g,wx0,wy0) красит мир в диапазоне
-   [wx0,wx0+CW)×[wy0,wy0+ch) в координатах экрана-ломтя */
-function drawChunks(store,camx,camy,paint){
-  const k0=Math.floor(camx/CHUNK_W),k1=Math.floor((camx+W)/CHUNK_W);
-  for(let k=k0;k<=k1;k++){
-    const cn=chunkAt(store,k,paint);
-    ctx.drawImage(cn,k*CHUNK_W-camx,store.top-camy,CHUNK_W,store.ch);
-  }
-}
-
-/* слои во весь экран: ключ описывает всё, от чего зависит картинка.
-
-   ── вытесняется ДАВНО НЕ НУЖНОЕ, а не давно испечённое (M360) ──
-   Map отдаёт ключи в порядке ВСТАВКИ, поэтому `keys().next()` — самый старый
-   по времени выпечки, а не по времени последнего обращения. Ровно наоборот
-   тому, что нужно: слой, который рисуется каждый кадр всю игру (зарево звезды,
-   фон неба), испечён раньше всех и потому вылетает первым, как только придёт
-   тринадцатый ключ. Дальше он печётся заново, встаёт в конец очереди — и через
-   двенадцать чужих слоёв вылетает опять. Замер 05.09.2026 (проба «долгий
-   вечер», восемь кругов «система → посадка → прогулка»): кэш всё время стоял
-   в потолке, на круг в 450 кадров печаталось 50–99 полноэкранных холстов.
-   Освежение при попадании превращает очередь из «кто раньше испёкся» в
-   «кто дольше всех не нужен» — две строки, и горячий набор перестаёт вылетать. */
-const SCREEN_LAYERS=new Map();
-function screenLayer(key,paint){
-  const full=key+"|"+W+"x"+H+"@"+DPR+"~"+SCK;
-  let cn=SCREEN_LAYERS.get(full);
-  if(cn){SCREEN_LAYERS.delete(full);SCREEN_LAYERS.set(full,cn);return cn;}
-  cn=mkCanvas(W,H);
-  withCtx(cn,W,H,0,0,paint);
-  SCREEN_LAYERS.set(full,cn);
-  if(SCREEN_LAYERS.size>12)SCREEN_LAYERS.delete(SCREEN_LAYERS.keys().next().value);
-  return cn;
-}
-
-
-/* ── то же на видеокарте (флот GPU, кит): выпечки GPU-холста вместо 2D-холстов ──
-   Договор рисовальщика тот же: paint(g,wx0,wy0) рисует в глобальный ctx (на время выпечки это
-   GcCtx), W и H — размер ломтя, плотность — DPR·SCK, как у mkCanvas. Выпечка переживает потерю
-   устройства: gpuImage печёт её заново тем же draw, поэтому draw сам ставит W, H и матрицу.
-   Кладётся не в ctx, а в проход (gpuScene/gpuOver) через gpuImage; место — из текущей матрицы
-   ctx (withScale, сдвиги), поворот не поддержан. Старые screenLayer/drawChunks
-   остаются для тех, кто ещё рисует 2D-холстом. */
-/* положить выпечку в проход: x,y,w,h — в координатах текущего ctx (как у drawImage) */
-/* ломти по X: хранилище как у chunkStore; сменился ключ — старые выпечки сдаются */
+/* ── ломти и экранные слои 2D сняты (M807b) — заглушки для запертого старого пути ──
+   Вернуть то, что вызывающий ждёт по форме (хранилище с top/ch, холст), чтобы старый путь
+   не падал, а рисовал пусто: ждёт разблокировки автора. */
+let NO_LAYER=null;
+function noLayer(){return NO_LAYER||(NO_LAYER=mkCanvas(1,1));}
+function chunkStore(store,key,top,ch){return {key,top,ch};}
+function chunkAt(){return noLayer();}
+function drawChunks(){}
+function screenLayer(){return noLayer();}
