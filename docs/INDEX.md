@@ -718,7 +718,7 @@ GAL_STAR_RED                 src/17z3-map-gpu.js:164
 GAL_STAR_SCREEN              src/17z1-galaxy.js:82
 GAL_VER                      src/17z1-galaxy.js:18
 GAL_WGSL                     src/17z3-map-gpu.js:25
-GATE2D                       tests/91zzzzzzy3-gate2d.js:39-315
+GATE2D                       tests/91zzzzzzy3-gate2d.js:39-346
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GAUGE_MID                    src/28l-gauge.js:23
@@ -4113,8 +4113,8 @@ e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
 ecoEstate                    tests/91zzzw4-ecosim-est.js:5-221
-ecoFresh                     tests/91zzzw4-ecosim-t1.js:6-139
-ecoFreshPrint                tests/91zzzw4-ecosim-t1.js:141-156
+ecoFresh                     tests/91zzzw4-ecosim-t1.js:6-124
+ecoFreshPrint                tests/91zzzw4-ecosim-t1.js:126-136
 ecoLadder                    tests/91zzzw4-ecosim-rep.js:7-29
 ecoNormFold                  tests/91zzzw4-ecosim-rep.js:41-45
 ecoNormNow                   tests/91zzzw4-ecosim-rep.js:30-39
@@ -10667,9 +10667,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw4-ecosim-rep.js · 11 KB
 
-## tests/91zzzw4-ecosim-t1.js · 11 KB
+## tests/91zzzw4-ecosim-t1.js · 10 KB
 
-## tests/91zzzw4-ecosim.js · 39 KB
+## tests/91zzzw4-ecosim.js · 38 KB
   · проба · экономика (M903, M912):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
@@ -10751,7 +10751,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzw-travel.js · 8 KB
   · вечер не по времени, а по дороге (M359):1
 
-## tests/91zzzzzzy3-gate2d.js · 31 KB
+## tests/91zzzzzzy3-gate2d.js · 33 KB
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 12 KB
