@@ -937,7 +937,9 @@ body:has(.scr.open) #msg.dim{box-shadow:none}
 #console{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 18px);transform:translateX(-50%);
   z-index:5;display:flex;align-items:flex-end;gap:10px;max-width:min(560px,calc(100vw - 400px));
   pointer-events:none;transition:opacity .25s}
-#console.quiet{opacity:.45}
+/* тихий пульт гасит начинку, не стекло: стекло на .45 пускало мир наполовину без размытия, и щит
+   «ТРАССА — ДЕЛО КАЖДОГО» с ларьками читался сквозь «ПРИЁМНИК» кашей (1600, 22.10) */
+#console.quiet>*>*{opacity:.45}
 body.screen #console{opacity:1}
 #rx{display:flex;flex-direction:column;gap:5px;min-width:0;width:min(360px,44vw);pointer-events:auto;
   background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);padding:8px 11px 9px;
