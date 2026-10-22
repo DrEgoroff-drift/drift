@@ -306,11 +306,6 @@ Check each against the code before building — some may already hold.
   functions, on touch only; the button family merge; `-Times` for the Node tier.
 - [ ] **The tether crosses the name (22.10):** the veteran's tether line is drawn through his own name
   plate (`13-pirates` labels against the tether pass) — route the line under the plate or break it there; not touched.
-- [ ] **The volume hull reads double up close (22.10, the road on a phone):** 17c2a lays the top-view bake on
-  the mesh from above, so the bake's inserts (the dish, the plate, the bar) and its outline land on whatever
-  surface is under them; where that is a wing, not the body, they show as a second outline, and the hull
-  reads see-through. Not the road's pass: the layer cap (1024) and a full-size bake change nothing, the
-  sprite path is clean. Fix in 17c2a: inserts outside the body silhouette become parts or are masked to it.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
   the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
