@@ -22,11 +22,11 @@ function drawRailArrive(zx,zy){
 function railRideStart(t){
   const l=t.l,n=l.stops.length,seq=[];
   for(let m=0;m<=t.k;m++){let i=t.i0+t.dir*m;if(l.loop)i=((i%n)+n)%n;seq.push(i);}
-  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t,flash:G.t,next:(typeof railNextLeg==="function")?railNextLeg(t):null};
-  if(t.bus&&typeof railBusTalk==="function")railBusTalk();   /* водитель маршрутки знает, почему (M510) */
+  RAIL_RIDE={l,seq,seg:0,phase:"go",t:0,dur:railSegDur(l,seq,0)*(t.bus?1.6:1),pause:0,express:!!t.express,bus:!!t.bus,t0:G.t,flash:G.t,next:railNextLeg(t)};
+  if(t.bus)railBusTalk();   /* водитель маршрутки знает, почему (M510) */
   G.mode="rail";G.ap=null;
-  if(typeof socCount==="function")socCount("rides");   /* «Знающие» считают поездки (M512) */
-  if(typeof cueReset==="function")cueReset();   /* оклик кольца остался в системе — в вагоне его нет */
+  socCount("rides");   /* «Знающие» считают поездки (M512) */
+  cueReset();   /* оклик кольца остался в системе — в вагоне его нет */
   sfx("jump");
   say("Поезд отправляется\n"+l.ru+" · до «"+railStopName(l.stops[seq[seq.length-1]])+"»",120);
 }
@@ -52,8 +52,8 @@ function updateRail(dt){
   const R=RAIL_RIDE;if(!R){G.mode="system";return;}
   const sec=dt/60;
   if(R.phase==="go"){
-    if(typeof cueReset==="function")cueReset();   /* на перегоне выйти нельзя — пульт молчит */
-    if(R.bus){if(actEdge&&typeof railBusDrop==="function"&&railBusDrop())return;}   /* «остановите здесь» (M474) */
+    cueReset();   /* на перегоне выйти нельзя — пульт молчит */
+    if(R.bus){if(actEdge&&railBusDrop())return;}   /* «остановите здесь» (M474) */
     R.t+=sec*(keys.act&&!R.bus?2:1);   /* зажатый пэд — вдвое быстрее, но не пропуск (M473, §4) */
     R.fast=!!keys.act&&!R.bus;
     if(R.t>=R.dur){R.seg++;R.phase="stop";R.pause=0;R.hold=2;
@@ -62,25 +62,25 @@ function updateRail(dt){
       if(R.seg>=R.seq.length-1&&R.next){
         const nx=R.next;R.next=null;R.l=nx.l;R.seq=nx.seq;R.seg=0;R.hold=3;
         say("Пересадка · «"+railStopName(s)+"»\nдальше — "+nx.l.ru,150);
-        if(typeof voiceSay==="function")voiceSay(["Станция "+railStopName(s)+".","Пересадка на линию "+nx.l.ru+"."],"disp");
+        voiceSay(["Станция "+railStopName(s)+".","Пересадка на линию "+nx.l.ru+"."],"disp");
         R.flash=G.t;return;
       }
       /* EXPRESS™ проходит мимо: остановки нет, только конечная (M474) */
       if(R.express&&!last){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*.92;return;}
       /* путь дальше перерезан (M510): фронт встал на линию за время поездки — конечная здесь */
-      if(!last&&typeof railCut==="function"&&!R.next&&railCut(s,R.l.stops[R.seq[R.seg+1]])){R.seq=R.seq.slice(0,R.seg+1);
+      if(!last&&!R.next&&railCut(s,R.l.stops[R.seq[R.seg+1]])){R.seq=R.seq.slice(0,R.seg+1);
         say("«"+railStopName(s)+"» — дальше путь перерезан\nфронт · поезд дальше не идёт",170);R.hold=2;R.flash=G.t;return;}
       /* закрытая остановка фронта (M474): проходим без остановки, объявляют */
-      if(!last&&typeof railFrontShut==="function"&&railFrontShut(s)){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg);
+      if(!last&&railFrontShut(s)){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg);
         say("«"+railStopName(s)+"» — остановка закрыта\nфронт · проследуем без остановки",110);return;}
       /* Хай-Фронт: «обновление установлено» — линия стоит на первой остановке */
-      const hp=(typeof railHfPauseAt==="function"&&R.seg===1)?railHfPauseAt(R):0;
+      const hp=(R.seg===1)?railHfPauseAt(R):0;
       if(hp){R.hfDone=1;R.hold=2+hp;say("Обновление установлено\nперезагрузка линии · "+hp+" с",200);return;}
-      if(typeof railLifeStop==="function")railLifeStop(R);   /* чай, попутчик (M501–M502) */
+      railLifeStop(R);   /* чай, попутчик (M501–M502) */
       if(last)say("Конечная. «"+railStopName(s)+"»\nпоезд дальше не идёт, просьба освободить вагоны",150);
       else say("Станция «"+railStopName(s)+"»\nследующая — «"+railStopName(R.l.stops[R.seq[R.seg+1]])+"»",110);
       /* объявитель (M473 хвост): голос диспетчера, если голос включён в ЗВУКЕ */
-      if(typeof voiceSay==="function")voiceSay(last?["Конечная, "+railStopName(s)+".","Поезд дальше не идёт."]:["Станция "+railStopName(s)+".","Следующая — "+railStopName(R.l.stops[R.seq[R.seg+1]])+"."],"disp");
+      voiceSay(last?["Конечная, "+railStopName(s)+".","Поезд дальше не идёт."]:["Станция "+railStopName(s)+".","Следующая — "+railStopName(R.l.stops[R.seq[R.seg+1]])+"."],"disp");
       R.flash=G.t;   /* прибытие на остановку — вспышка выхода из гипера */
     }
     return;
@@ -105,7 +105,7 @@ function railExit(){
     const P=sysLane(sys);
     if(P){const x=P.st.x-P.ux*RAIL_RING_OFF,y=P.st.y-P.uy*RAIL_RING_OFF;at={x:x+P.ux*60,y:y+P.uy*60,a:Math.atan2(P.uy,P.ux)};}
   }
-  if(typeof railLifeExit==="function")railLifeExit(s);   /* посылка, попутчик, пломба (M499–M508) */
+  railLifeExit(s);   /* посылка, попутчик, пломба (M499–M508) */
   arriveSystem(s.sx,s.sy,{rail:true,at});
   RAIL_ARRIVE=G.t;   /* вспышка выхода в системе (M473 хвост) */
   G.ship.vx=(at?Math.cos(at.a):0)*.5;G.ship.vy=(at?Math.sin(at.a):0)*.5;

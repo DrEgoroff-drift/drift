@@ -1355,7 +1355,7 @@ MAKER_G                      src/28y-look.js:318
 MAKER_KEYS                   src/03a-hull-maker.js:73
 MAKER_PX                     src/28y-look.js:313
 MAPGPU                       src/17z3-map-gpu.js:17
-MAP_BORDER_NB                src/18b-map-hold.js:81
+MAP_BORDER_NB                src/18b-map-hold.js:79
 MAP_BOX                      src/18-mode-map.js:29
 MAP_DOM                      src/18-mode-map.js:63
 MAP_DOMR                     src/18-mode-map.js:64
@@ -5831,7 +5831,7 @@ makerWear                    src/03a-hull-maker.js:456
 makerWidth                   src/03a-hull-maker.js:426-453
 mapAddrBox                   src/18a-map-addr.js:233-249
 mapBack                      src/18-mode-map.js:183-194
-mapBorderEdge                src/18b-map-hold.js:86-106
+mapBorderEdge                src/18b-map-hold.js:84-104
 mapBox                       src/18-mode-map.js:30
 mapCell                      src/18-mode-map.js:160
 mapCellXY                    src/18a-map-addr.js:52
@@ -5848,8 +5848,8 @@ mapGpuPass                   src/17z3-map-gpu.js:20-24
 mapGridDraw                  src/18a-map-addr.js:55-66
 mapHintHung                  src/18l-map-plate.js:37
 mapHit                       src/18-mode-map.js:76-115
-mapHoldingsDraw              src/18b-map-hold.js:107-209
-mapHoldingsTop               src/18b-map-hold.js:211-251
+mapHoldingsDraw              src/18b-map-hold.js:105-201
+mapHoldingsTop               src/18b-map-hold.js:203-243
 mapHousePatch                src/18b-map-hold.js:31-45
 mapInkBox                    src/18-mode-map.js:67
 mapInkPoly                   src/18-mode-map.js:65
@@ -5872,7 +5872,7 @@ mapOrbsDraw                  src/18l-map-plate.js:105-120
 mapOverOn                    src/18-mode-map.js:159
 mapOverTap                   src/18-mode-map.js:224-228
 mapOverview                  src/18-mode-map.js:202-223
-mapOwnHere                   src/18b-map-hold.js:64-69
+mapOwnHere                   src/18b-map-hold.js:63-68
 mapParseAddr                 src/18a-map-addr.js:229-232
 mapPeek                      src/18-mode-map.js:176-182
 mapPriceDraw                 src/12aa-need.js:336-346
@@ -5894,11 +5894,11 @@ mapSelInk                    src/18l-map-plate.js:54-58
 mapStarsGpu                  src/17z3-map-gpu.js:202-230
 mapTM                        src/18-mode-map.js:50
 mapTW                        src/18l-map-plate.js:12
-mapTagAt                     src/18b-map-hold.js:71-78
+mapTagAt                     src/18b-map-hold.js:70-76
 mapTopPlace                  src/18a-map-addr.js:259-286
-mapTrassaPairs               src/18b-map-hold.js:47-59
+mapTrassaPairs               src/18b-map-hold.js:47-58
 mapU                         src/18-mode-map.js:42
-mapUnderTrassa               src/18b-map-hold.js:60-63
+mapUnderTrassa               src/18b-map-hold.js:59-62
 mapViewC                     src/18-mode-map.js:149
 mapZoomK                     src/18-mode-map.js:158
 mapZoomSet                   src/18-mode-map.js:162
@@ -7482,22 +7482,22 @@ regionPlace                  src/06c-regions.js:44-75
 regionPlainSys               src/06c-regions.js:77-86
 regionThemeAt                src/06c-regions.js:88
 relayAll                     src/11ap-relay.js:149-152
-relayArrive                  src/11ap-relay.js:179-183
+relayArrive                  src/11ap-relay.js:178-182
 relayAtFreq                  src/11ap-relay.js:134-145
-relayDial                    src/11ap-relay.js:207-252
+relayDial                    src/11ap-relay.js:206-251
 relayDrawSystem              src/11apa-relay-body.js:102-113
 relayEar                     src/11ap-relay.js:126-130
 relayFreq                    src/11ap-relay.js:99-103
-relayInteract                src/11ap-relay.js:358-371
+relayInteract                src/11ap-relay.js:354-367
 relayKnown                   src/11ap-relay.js:153
 relayLights                  src/11apa-relay-body.js:89-100
-relayList                    src/11ap-relay.js:189-199
+relayList                    src/11ap-relay.js:188-198
 relayMesh                    src/11apa-relay-body.js:14-86
 relayOf                      src/11ap-relay.js:81-97
-relayServe                   src/11ap-relay.js:334-357
-relaySpeak                   src/11ap-relay.js:167-174
-relaySpot                    src/11ap-relay.js:317-330
-relayWrite                   src/11ap-relay.js:156-164
+relayServe                   src/11ap-relay.js:331-353
+relaySpeak                   src/11ap-relay.js:166-173
+relaySpot                    src/11ap-relay.js:314-327
+relayWrite                   src/11ap-relay.js:156-163
 relaysNear                   src/11ap-relay.js:108-122
 releaseAllKeys               src/15-input.js:216-219
 relicDeep                    src/12h-relic.js:76
@@ -7531,7 +7531,7 @@ renderOpts                   src/27-ui-ship.js:21-329
 renderPrices                 src/12aa-need.js:265-292
 renderQsl                    src/11an-qsl.js:147-188
 renderRecord                 src/11aa-record.js:107-144
-renderRelays                 src/11ap-relay.js:253-301
+renderRelays                 src/11ap-relay.js:252-298
 renderRoute                  src/12r-route.js:342-441
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
@@ -9018,9 +9018,9 @@ zoomTo                       src/15-input.js:358
 ## src/11ao-firsthour.js · 6 KB
   · первый час: сменщик в эфире:1
 
-## src/11ap-relay.js · 25 KB
+## src/11ap-relay.js · 24 KB
   · приёмники как места:1
-  · у мачты есть тело:303
+  · у мачты есть тело:300
 
 ## src/11apa-relay-body.js · 9 KB
 
@@ -9648,12 +9648,12 @@ zoomTo                       src/15-input.js:358
 ## src/17z4-map-pen.js · 11 KB
   · перо карты (G15: карта с #c на видеокарту):1
 
-## src/18-mode-map.js · 62 KB
+## src/18-mode-map.js · 60 KB
   · карта:1
   · где у карты пол и где правый борт:4
   · карта: ночное небо, а не схема молекулы:138
 
-## src/18a-map-addr.js · 21 KB
+## src/18a-map-addr.js · 20 KB
   · карта говорит адресами (M347):1
 
 ## src/18a-material.js · 29 KB
@@ -9680,12 +9680,12 @@ zoomTo                       src/15-input.js:358
 ## src/18e-rail-net.js · 16 KB
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 19 KB
+## src/18f-rail-station.js · 18 KB
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18fa-rail-ring.js · 7 KB
 
-## src/18g-rail-ride.js · 12 KB
+## src/18g-rail-ride.js · 11 KB
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/18ga-rail-gpu.js · 6 KB

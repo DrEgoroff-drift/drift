@@ -145,7 +145,7 @@ function mpRhumb(ox,oy){
 /* плашка материалом «Борта» (M720, 08bj): графит, кайма, срезы справа сверху и слева снизу. Над
    звёздами (слой "o") — тем же шестиугольником, что табличка у вещи; под звёздами — прямоугольником */
 function mpPlate(x,y,w,h){
-  const U=(typeof mapU==="function")?mapU():1;
+  const U=mapU();
   if(MPN.lay==="u"){mpRect(x,y,w,h,HANG.BODY);return;}
   const nd=ovNd(),sn=v=>Math.round(v*nd)/nd,x0=sn(x),y0=sn(y),x1=sn(x+w),y1=sn(y+h),c=sn(5*U),e=1*U;
   hangHex(sn(x0-e),sn(y0-e),sn(x1+e),sn(y1+e),sn(c+e*.42),HANG.EDGE,.17*MPN.al);

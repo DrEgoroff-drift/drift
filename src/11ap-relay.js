@@ -81,7 +81,7 @@ const RELAY_PAY_WIN=3;      /* платят раз в трое суток: эт�
 function relayOf(sx,sy){
   sx|=0;sy|=0;
   if(!starAt(sx,sy))return null;
-  if(typeof holdRelay==="function"){const H=holdRelay(sx,sy);if(H)return H;}   /* Радиомачта (I5): своя мачта */
+  const H=holdRelay(sx,sy);if(H)return H;   /* Радиомачта (I5): своя мачта */
   const r=rng(hashi(sx,sy,0x9EA1));
   const far=sysDanger(sx,sy);
   if(r()>=.09+.23*far)return null;
@@ -157,9 +157,8 @@ function relayWrite(R){
   const A=relayAll();
   if(A[R.key])return false;
   A[R.key]={k:R.k,call:R.call,name:R.name,sx:R.sx,sy:R.sy,
-            day:(typeof celDay==="function"?celDay():0)};
-  if(typeof logAdd==="function")
-    logAdd("ether",R.call+" «"+R.name+"» · "+R.ru+" · сектор "+R.sx+":"+R.sy+" — записан");
+            day:celDay()};
+  logAdd("ether",R.call+" «"+R.name+"» · "+R.ru+" · сектор "+R.sx+":"+R.sy+" — записан");
   return true;
 }
 /* что сказать в эфир, когда ручка стоит на его частоте: сперва он называется
@@ -255,13 +254,13 @@ function renderRelays(box){
   /* пеленг на управляющего (M406, §24.4): направление и ни слова о расстоянии.
      Два пеленга из двух далёких систем в пределах нескольких смен пересекаются
      там, где он сейчас, — и это единственное настоящее умение в охоте */
-  if(typeof mgrBearLine==="function"&&typeof baseList==="function"&&baseList().length){
+  if(baseList().length){
     tableRow(box,"head","","ЧУЖОЙ ПОЗЫВНОЙ · ПЕЛЕНГ БЕЗ ДАЛЬНОСТИ");
     tableRow(box,"","",mgrBearLine());
   }
   /* свои базы (M394, §38): та же панель, тот же приёмник — потому что это и
      есть приёмник, а не второй экран про базы */
-  if(typeof renderBaseLink==="function")renderBaseLink(box);
+  renderBaseLink(box);
   const L=relayList();
   if(!L.length){
     tableRow(box,"dim","","приёмников ещё не слышали: их частоты лежат в шуме, между диапазонами");
@@ -289,13 +288,11 @@ function renderRelays(box){
       "<br>"+away+" · "+(near?"слышно отсюда":"отсюда не слышно")+
       " · частота "+R.f.toFixed(3)+" · записан в день "+R.day;
     row.appendChild(em);row.appendChild(sp);
-    if(typeof gotoSector==="function"){
-      row.style.cursor="pointer";
-      /* куда ведёт тычок — сказано на самой строке (P11) */
-      const go=document.createElement("b");go.className="rl-go";go.textContent="НА КАРТУ ›";
-      sp.appendChild(document.createElement("br"));sp.appendChild(go);
-      row.onclick=()=>{G.mapBackTable="relay";gotoSector(R.sx,R.sy,R.call+" · "+R.ru);};
-    }
+    row.style.cursor="pointer";
+    /* куда ведёт тычок — сказано на самой строке (P11) */
+    const go=document.createElement("b");go.className="rl-go";go.textContent="НА КАРТУ ›";
+    sp.appendChild(document.createElement("br"));sp.appendChild(go);
+    row.onclick=()=>{G.mapBackTable="relay";gotoSector(R.sx,R.sy,R.call+" · "+R.ru);};
     box.appendChild(row);
   }
 }
@@ -333,15 +330,15 @@ function relaySpot(R){
    кончается одной строкой в тетради: больше там ничего не происходит. */
 function relayServe(R){
   relayWrite(R);
-  const rec=relayAll()[R.key],day=(typeof celDay==="function"?celDay():0);
+  const rec=relayAll()[R.key],day=celDay();
   if(!rec)return 0;
   if(R.give!=="pay"){
-    if(typeof logAdd==="function")logAdd("ether",R.call+" · "+R.line);
-    if(typeof say==="function")say(R.call+"\n"+R.line,240);
+    logAdd("ether",R.call+" · "+R.line);
+    say(R.call+"\n"+R.line,240);
     return 0;
   }
   if(rec.paid!=null&&day-rec.paid<RELAY_PAY_WIN){
-    if(typeof say==="function")say(R.call+" · новости уже привозили",200);
+    say(R.call+" · новости уже привозили",200);
     return 0;
   }
   const sum=30+Math.round(70*sysDanger(R.sx,R.sy));
@@ -349,10 +346,9 @@ function relayServe(R){
   /* через единственную воронку дохода (12j-home) */
   earn(sum,"приёмник");
   const who=R.k==="winter"?"зимовка":"метеопост";
-  if(typeof logAdd==="function")
-    logAdd("good",R.call+" · "+who+" «"+R.name+"»: «Спасибо, что зашли. За новости — "+
+  logAdd("good",R.call+" · "+who+" «"+R.name+"»: «Спасибо, что зашли. За новости — "+
            sum+" кр, у нас на это статья есть»");
-  if(typeof say==="function")say(R.call+" · за новости "+sum+" кр",240);
+  say(R.call+" · за новости "+sum+" кр",240);
   return sum;
 }
 function relayInteract(sh){
@@ -360,7 +356,7 @@ function relayInteract(sh){
   if(!R)return false;
   const P=relaySpot(R);
   if(Math.hypot(sh.x-P.x,sh.y-P.y)>250)return false;
-  const rec=relayAll()[R.key],day=(typeof celDay==="function"?celDay():0);
+  const rec=relayAll()[R.key],day=celDay();
   const fresh=!!(rec&&rec.paid!=null&&day-rec.paid<RELAY_PAY_WIN);
   const shown=cue(R.call+" · "+R.ru.toUpperCase()+" «"+R.name.toUpperCase()+"»"+
     (R.give==="pay"

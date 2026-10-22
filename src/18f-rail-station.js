@@ -20,7 +20,7 @@ const RAIL_HAIL_R=300,RAIL_CONE_R=110,RAIL_SLOW=1.2;
 const RAIL_BUFFET={gt:"лимонад «Звёздный»",co:"«Кола Партнёр™»",or:"вода минеральная, 0,33 л, № 2",
   km:"кофе с круассаном (круассаны закончились)",ra:"чай из общего котла",hf:"энергетик v4"};
 let RAIL_DOCK=null,RAIL_WAIT=null;
-function railReady(){if(!RAIL_NET&&typeof railNetPartial==="function")railNetPartial();return !!RAIL_NET;}
+function railReady(){if(!RAIL_NET)railNetPartial();return !!RAIL_NET;}
 function railHere(){
   if(!G.sys||!G.sys.station||!railReady())return null;
   const S=railStation(G.sx,G.sy);if(!S)return null;
@@ -62,7 +62,7 @@ function drawSysRail(zx,zy,Z){
   const R=railHere();if(!R)return;
   const x=zx(R.x),y=zy(R.y),s=clamp(Z,.5,1.5);
   if(x<-400||x>W+400||y<-400||y>H+400)return;
-  const col=(typeof laneLampCol==="function")?laneLampCol(R.by):[255,190,110];
+  const col=laneLampCol(R.by);
   const ts=G.t/60,fast=RAIL_WAIT&&RAIL_WAIT.t<3?3:1,pass=gpuScene();
   /* без видеокарты кольца нет: 2D-запасной путь снят (M828) */
   if(pass)railGpu(pass,R,x,y,s,col,ts,fast,zx,zy);
@@ -104,7 +104,7 @@ function railDocked(auto){
   RAIL_DOCK=null;const R=railHere();if(!R)return;
   G.ship.vx=G.ship.vy=0;G.ship.x=R.x-R.uy*70+R.ux*30;G.ship.y=R.y+R.ux*70+R.uy*30;
   if(auto){say("Автостыковка\nпросьба не мешать",120);
-    if(typeof recordAdd==="function")recordAdd("станция «"+R.name+"»","стыковка выполнена автоматикой.");}
+    recordAdd("станция «"+R.name+"»","стыковка выполнена автоматикой.");}
   else say("ПРИНЯТО",60);
   railWinShow();
 }
@@ -120,11 +120,11 @@ function railFlap(i,txt){
 }
 /* ── вестибюль: одна страница ── */
 function railInterval(sx,sy){const r=Math.hypot(sx,sy);const I=r<=RAIL_METRO_R?10:Math.round(30+60*clamp((r-12)/28,0,1));
-  return (typeof rushAt==="function"&&rushAt(sx,sy))?Math.max(5,Math.round(I/2)):I;}   /* ажиотаж: дополнительный поезд (M504) */
+  return rushAt(sx,sy)?Math.max(5,Math.round(I/2)):I;}   /* ажиотаж: дополнительный поезд (M504) */
 function railWaitNow(sx,sy){const I=railInterval(sx,sy);return Math.ceil(I-((G.t/60)%I));}
 function railFmt(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
 function railStopName(st){const s=getSystem(st.sx,st.sy),base=s.station?s.station.name:s.name;
-  return (st.halt?"полустанок "+base:(typeof ownerName==="function"?ownerName(base,st.sx,st.sy):base));}   /* по хозяину земли (M489) */
+  return (st.halt?"полустанок "+base:ownerName(base,st.sx,st.sy));}   /* по хозяину земли (M489) */
 /* куда можно доехать отсюда: по каждой линии до шести остановок в обе стороны */
 function railDestinations(){
   const out=[],me=G.sx+","+G.sy;
@@ -134,26 +134,26 @@ function railDestinations(){
       let i=i0+dir*k;
       if(l.loop)i=((i%n)+n)%n;else if(i<0||i>=n)break;
       if(i===i0)break;
-      if(typeof railCut==="function"&&railCut(l.stops[railNextIdx(l,i,-dir)],l.stops[i]))break;   /* путь перерезан (M510) */
+      if(railCut(l.stops[railNextIdx(l,i,-dir)],l.stops[i]))break;   /* путь перерезан (M510) */
       let dist=0;for(let m=0;m<k;m++){const a=l.stops[l.loop?((i0+dir*m)%n+n)%n:i0+dir*m],b=l.stops[l.loop?((i0+dir*(m+1))%n+n)%n:i0+dir*(m+1)];dist+=Math.hypot(a.sx-b.sx,a.sy-b.sy);}
-      if(typeof railFrontShut==="function"&&railFrontShut(l.stops[i]))continue;   /* фронт — касса не продаёт (M474) */
+      if(railFrontShut(l.stops[i]))continue;   /* фронт — касса не продаёт (M474) */
       out.push({l,i0,i1:i,dir,k,dist,to:l.stops[i]});
     }
   }
   /* через один узел (M472 хвост): после прямых, по цене всего пути */
-  if(typeof railDestinationsVia==="function")return out.concat(railDestinationsVia(out));
+  return out.concat(railDestinationsVia(out));
   return out;
 }
 function railFare(t){
   const metro=Math.hypot(G.sx,G.sy)<=RAIL_METRO_R&&Math.hypot(t.to.sx,t.to.sy)<=RAIL_METRO_R;
   const fare=metro?5:Math.max(4,Math.round(2*t.dist));
   /* крупногабаритный (M472, §3): тяжёлое в трюме (осмий, крошка) — багаж ×3 */
-  const big=!metro&&typeof resW==="function"&&Object.keys(G.cargo).some(k=>(G.cargo[k]|0)>0&&resW(k)>1);
+  const big=!metro&&Object.keys(G.cargo).some(k=>(G.cargo[k]|0)>0&&resW(k)>1);
   const bag=metro?0:Math.ceil(held()/5)*(big?3:1);
   let F={fare,bag,sum:fare+bag,metro,big};
-  if(typeof railPassFare==="function")F=railPassFare(F);   /* проездной (M500) */
+  F=railPassFare(F);   /* проездной (M500) */
   /* жетон замполита (§9, 11ao): первый проезд в метро — за счёт трассы */
-  if(metro&&typeof firstSaid==="function"&&firstSaid("tok")&&!firstSaid("tokUsed")){F.fare=0;F.sum=F.bag;F.tok=1;}
+  if(metro&&firstSaid("tok")&&!firstSaid("tokUsed")){F.fare=0;F.sum=F.bag;F.tok=1;}
   return F;
 }
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
@@ -176,9 +176,9 @@ function railWinRender(){
     h+="<div class='rw-sec'>ВАШ ПОЕЗД</div><div class='rw-row'><span>до «"+railStopName(RAIL_WAIT.to)+"» · "+RAIL_WAIT.k+" "+pl3(RAIL_WAIT.k,"остановка","остановки","остановок")+"</span><em>поезд прибывает через "+Math.ceil(RAIL_WAIT.t)+" с</em></div>";
   }else{
     /* жетон замполита (§9) объяснён один раз здесь; на кнопках — короткое ЖЕТОН вместо цены */
-    const tok=typeof firstSaid==="function"&&firstSaid("tok")&&!firstSaid("tokUsed");
+    const tok=firstSaid("tok")&&!firstSaid("tokUsed");
     h+="<div class='rw-sec'>КУДА ВАМ · КАССА"+(tok?" · ЖЕТОН ЗАМПОЛИТА: ОДНА ПОЕЗДКА НА МЕТРО ДАРОМ":"")+"</div>";
-    const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
+    const why=railClosedWhy();   /* Коммуна: обед, забастовка (M474) */
     if(why){h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
       /* компенсационная маршрутка Рассвета (M510): по той же линии, остановка за остановкой */
       if(!why.startsWith("ФРОНТ")){   /* на фронт маршрутка не едет (M474) */
@@ -191,45 +191,45 @@ function railWinRender(){
       h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+(F.tok?"ЖЕТОН":F.fare+" КР")+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
       /* Рассвет: та же дорога маршруткой — остановит где скажете (M474) */
-      if(typeof railOwner==="function"&&railOwner()==="ra")
+      if(railOwner()==="ra")
         h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА «ДО КУДА?» · ПО ЛИНИИ К «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>остановит где скажете, хоть у звезды без станции</s></button>";
-      if(typeof railOwner==="function"&&railOwner()==="co"&&t.k>=2)
+      if(railOwner()==="co"&&t.k>=2)
         h+="<button class='act rw-go' data-i='"+i+"' data-x='1'>EXPRESS™ ДО «"+railStopName(t.to).toUpperCase()+"» · "+(F.fare*RAIL_EXPRESS_MUL)+" КР<s>на три секунды быстрее!</s></button>";
     });
   }
-  if(typeof railLifeHtml==="function")h+=railLifeHtml();   /* посылка, проездной, попутчик, пломба (M499–M508) */
+  h+=railLifeHtml();   /* посылка, проездной, попутчик, пломба (M499–M508) */
   h+="<button class='act rw-map'>СХЕМА ЛИНИЙ · КУДА ВАМ<s>развернуть бумагу и выбрать остановку</s></button>";
   if(S.halt)h+="<div class='rw-sec'>ПЛАТФОРМА</div><div class='rw-row'><span>скамья и фонарь · буфета нет</span><em>кипяток — свой</em></div>";   /* полустанок (M471) */
   else h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
   h+="<button class='act rw-out'>ВЫЙТИ НА ПЕРРОН</button>";
   w.innerHTML=h;w.dataset.by=S.halt?"halt":(by||"gt");   /* отделка вестибюля по хозяину (M471, CSS) */
-  if(typeof railLifeBind==="function")railLifeBind(w);
+  railLifeBind(w);
   const D=railDestinations();
   w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x,!!b.dataset.b));
   {const bb=w.querySelector(".rw-buf");if(bb)bb.onclick=railBuffet;}
-  const bm=w.querySelector(".rw-map");if(bm)bm.onclick=()=>{if(typeof railSchemeOpen==="function")railSchemeOpen();};
+  const bm=w.querySelector(".rw-map");if(bm)bm.onclick=()=>{railSchemeOpen();};
   w.querySelector(".rw-out").onclick=railWinClose;
 }
 function railBuy(t,express,bus){
   if(!t||RAIL_WAIT)return;
-  if(!bus&&typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
-  if(typeof volRail==="function"&&!volRail())return;   /* животное без бумаг — проводник не пускает (M511) */
+  if(!bus&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
+  if(!volRail())return;   /* животное без бумаг — проводник не пускает (M511) */
   const F=railFare(t);
   if(F.tok&&(express||bus)){F.fare=5;F.sum=F.fare+F.bag;F.tok=0;}   /* жетон — на поезд, не на экспресс и маршрутку */
   if(express){F.fare*=RAIL_EXPRESS_MUL;F.sum=F.fare+F.bag;}
   if(G.credits<F.sum){say("Не хватает на билет\nнужно "+F.sum+" кр",90);return;}
   G.credits-=F.sum;
   if(F.tok)firstAll().push("tokUsed");
-  if(typeof railLifeBoard==="function")railLifeBoard(t,F);
+  railLifeBoard(t,F);
   logAdd("money",(F.tok?"Жетон замполита":F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
   RAIL_WAIT={...t,express:!!express,bus:!!bus,t:bus?3:railWaitNow(G.sx,G.sy)};
   railWinRender();
 }
 function railBuffet(){
-  const free=typeof socIn==="function"&&socIn("know");   /* «Знающим» чай даром (M512) */
+  const free=socIn("know");   /* «Знающим» чай даром (M512) */
   if(!free&&G.credits<3){say("Буфет: «мелочи нет? и у нас нет»",90);return;}
   if(!free)G.credits-=3;else socGot("know",3,1);
-  const L=(typeof rumoursHere==="function")?rumoursHere():[];
+  const L=rumoursHere();
   const line=L.length?"говорят, есть "+L[Math.floor(rnd()*L.length)].short:"сегодня ничего не говорят, пейте молча";
   peopleLine(line,"буфетчица",true);
 }
@@ -238,5 +238,5 @@ function railTick(dt){
   if(!RAIL_WAIT)return;
   RAIL_WAIT.t-=dt/60;
   if((G.t|0)%20===0)railWinRender();
-  if(RAIL_WAIT.t<=0){const t=RAIL_WAIT;RAIL_WAIT=null;railWinClose();if(typeof railRideStart==="function")railRideStart(t);}
+  if(RAIL_WAIT.t<=0){const t=RAIL_WAIT;RAIL_WAIT=null;railWinClose();railRideStart(t);}
 }
