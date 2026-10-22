@@ -54,6 +54,13 @@ setTimeout(function(){
     G.t=period*((ph-(p.seed%100)/100+1)%1);
   }
   function run(n,u,d){for(var f=0;f<n;f++){G.t+=.01;u(1);d();}}
+  /* устье шахты — там, где его ставит игра (23cc mineLayAt, закон «опора» 91qk): новый ствол ищет
+     ровное по земле планеты, а без неё садится, где стоит человек. Землю строим тем же plnLand, что
+     кадр (23cd), — кадр стенда = кадр игры. Без видеокарты земли нет: устье как было, сказано в консоли */
+  function standMineLay(){
+    try{plnLand(G.surf.tr,G.surf.p,G.surf.shipX);}
+    catch(e){console.warn("стенд шахты: земли планеты нет — устье без mineLayAt: "+e);}
+  }
   if(scene==="hold"){
     /* холдинг (M296): станция с постройками, своей баржей у Причала и огнями на планете */
     var K=G.sys.key,HH=holdOf(K),now=Date.now();HH.bld={};
@@ -381,6 +388,7 @@ setTimeout(function(){
        судить, читаются ли они, нужен именно вертикальный ход, а не штрек */
     land("terran");
     G.surf.x=G.surf.tr.W*.5;
+    standMineLay();
     enterDig();
     var Ds=G.dig;
     for(var q4=0;q4<22;q4++)digCell(Ds,0,q4).dug=true;
@@ -392,6 +400,7 @@ setTimeout(function(){
        кадре была и выработка, и нетронутый массив, — иначе судить не о чем */
     land("terran");
     G.surf.x=G.surf.tr.W*.5;
+    standMineLay();
     enterDig();
     var D=G.dig;
     for(var q3=0;q3<9;q3++){
