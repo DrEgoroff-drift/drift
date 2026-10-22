@@ -33,6 +33,17 @@ const PLN_HERB={z0:1.9,zk:2.6,          /* куртина в глубину: о�
   teal:[127,230,216]};
 
 function plnHerbZ(pl){return PLN_HERB.z0+clamp(pl.z==null?.5:pl.z,0,1)*PLN_HERB.zk;}
+/* глубина куртины с поправкой на свои площадки (настил базы, двор дома — 21pig plnOwnPads): трава
+   под настилом прорастала сквозь него шляпкой (брак M628, 22.10). Куртина остаётся на месте по x —
+   её сканируют, — а в глубину выходит из-под настила вперёд на радиус кроны */
+function plnHerbPads(L,p){return typeof plnOwnPads==="function"&&L&&L.tr?plnOwnPads(L.tr,p,L):[];}
+function plnHerbZAt(q,P){
+  const z=plnHerbZ(q);
+  if(!P||!P.length)return z;
+  const x=q.x/PLN_M,r=clamp(Math.max(4,q.h||20)/PLN_M*.45,.6,3.5);
+  for(const d of P)if(Math.abs(x-d[0])<d[2]+r&&z+r>d[1]-d[3]&&z-r<d[1]+d[3])return Math.max(.4,Math.min(z,d[1]-d[3]-r));
+  return z;
+}
 /* гасит чистоту цвета: доля k уходит в серое той же светлоты */
 function plnHerbSoft(c,k){const l=c[0]*.3+c[1]*.55+c[2]*.15;return plnMix3(c,[l,l,l],k);}
 /* Цвет вида в красках этого мира. У игры лист — чистая зелень на палитре планеты: в кадре, где
@@ -350,7 +361,8 @@ function plnHerbs(L,S,p,lim){
   let Q=L.herbs;
   if(Q&&Q.gen!==PLN_GPU.gen){plnHerbDrop(L);Q=null;}
   const list=S.plants||[];
-  let sig=list.length;
+  const pads=plnHerbPads(L,p);
+  let sig=list.length+pads.length*7919;
   for(const q of list)if(q.scanned)sig+=977;
   if(Q&&Q.sig===sig)return Q;
   const t0=wallMs(),M=PLN_M,lake=L.lake,T=plnRgb(PLN_HERB.teal);
@@ -380,7 +392,7 @@ function plnHerbs(L,S,p,lim){
     if(!Q.geo[key])Q.geo[key]=plnGeo(plnHerbMesh(sp,si,key%3));
     const first=n,druse=sp.kind===4;
     for(const q of by[key]){
-      const x=q.x/M,z=plnHerbZ(q),h=Math.max(4,q.h||20)/M,hh=hashi(Math.round(q.x),Math.round(q.h),0x9E11);
+      const x=q.x/M,z=plnHerbZAt(q,pads),h=Math.max(4,q.h||20)/M,hh=hashi(Math.round(q.x),Math.round(q.h),0x9E11);
       const jt=1+(((hh>>>9)&255)/255-.5)*.24,C=plnHerbTone(PLN_TINTS[tint[si]],q.leaf||sp.leaf);
       let top=plnMul(C.top,jt),under=plnMul(C.under,jt);
       if(q.scanned){top=plnMix3(top,T,.5);under=plnMix3(under,plnMul(T,.3),.5);}
