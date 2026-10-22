@@ -52,7 +52,7 @@ function homeStillPaint(cv,nd){
   G.hin={x:mid.x+mid.w*.5,vx:0,face:-1,walk:0,phase:0,cam:0,up:0,look:null,lookT:0,folk:hinFolkMake(),t0:G.t};
   HOME3.mesh=HST.mesh;
   try{
-    const asp=w/h,cam=homeStillCam(R.length,asp),t=wallMs()/1000,S=home3Scene(cam,t);
+    const asp=w/h,cam=homeStillCam(R.length,asp),t=wallMs()/1000,S=home3Scene(cam,t,true);
     S.fog[3]*=.35;   /* дымка сцены рассчитана на 6 м до хозяина; общий план втрое дальше — иначе дом белеет */
     const U=new Float32Array(60);
     S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,w/nd,h/nd),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],w/nd,h/nd);

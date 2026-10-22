@@ -4088,7 +4088,7 @@ drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
 drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
-drawHomeIn                   src/29rb-home-r3.js:453-458
+drawHomeIn                   src/29rb-home-r3.js:455-460
 drawHomeOut                  src/21f-home-out.js:75-265
 drawHotel                    src/17l-hotel.js:147-174
 drawHull                     src/03e-hull-draw.js:1-80
@@ -5362,29 +5362,29 @@ holdTechMul                  src/12ag-holdfx.js:119
 holdUklad                    src/12ah-holdnews.js:19-24
 holdWorth                    src/27j-ui-opis.js:596-604
 home3Arc                     src/29rba-home-shell.js:11
-home3Cam                     src/29rb-home-r3.js:403-414
-home3Canvas                  src/29rb-home-r3.js:386-393
-home3Cost                    src/29rb-home-r3.js:450
+home3Cam                     src/29rb-home-r3.js:405-416
+home3Canvas                  src/29rb-home-r3.js:388-395
+home3Cost                    src/29rb-home-r3.js:452
 home3FolkM                   src/29rb-home-r3.js:39
-home3Frame                   src/29rb-home-r3.js:416-434
-home3Hide                    src/29rb-home-r3.js:443-448
-home3LookAt                  src/29rb-home-r3.js:380
+home3Frame                   src/29rb-home-r3.js:418-436
+home3Hide                    src/29rb-home-r3.js:445-450
+home3LookAt                  src/29rb-home-r3.js:382
 home3Man                     src/29rb-home-r3.js:322-333
 home3Mesh                    src/29rb-home-r3.js:43-139
-home3Night                   src/29rb-home-r3.js:378
-home3Ok                      src/29rb-home-r3.js:415
+home3Night                   src/29rb-home-r3.js:380
+home3Ok                      src/29rb-home-r3.js:417
 home3PilotM                  src/29rb-home-r3.js:33
 home3Pose                    src/29rb-home-r3.js:320
-home3Scene                   src/29rb-home-r3.js:335-376
-home3Size                    src/29rb-home-r3.js:394-400
+home3Scene                   src/29rb-home-r3.js:335-378
+home3Size                    src/29rb-home-r3.js:396-402
 home3Skin                    src/29rba-home-shell.js:37-45
 home3StoolMesh               src/29rb-home-r3.js:314
 home3Str                     src/29rb-home-r3.js:38
 home3Stuff                   src/29rb-home-r3.js:141-312
-home3Tags                    src/29rb-home-r3.js:437
+home3Tags                    src/29rb-home-r3.js:439
 home3Under                   src/29rba-home-shell.js:47-64
 home3Up                      src/29rb-home-r3.js:30
-home3UpRooms                 src/29rb-home-r3.js:377
+home3UpRooms                 src/29rb-home-r3.js:379
 home3Vault                   src/29rba-home-shell.js:14-35
 home3X                       src/29rb-home-r3.js:27
 home3Yard                    src/29rba-home-shell.js:66-104
@@ -10619,7 +10619,7 @@ zoomTo                       src/15-input.js:358
 ## src/29r-rooms-r3.js · 28 KB
   · комнаты игрока на движке (M850, docs/DESIGN-rooms.md):1
 
-## src/29rb-home-r3.js · 38 KB
+## src/29rb-home-r3.js · 39 KB
   · дом на движке (M850b, docs/DESIGN-rooms.md §4):1
 
 ## src/29rba-home-shell.js · 10 KB
