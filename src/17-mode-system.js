@@ -621,12 +621,7 @@ function drawSystem(){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;   /* диск — физический (16c, п. 2): зум делает планету большой, не корабль */
     sysOcPush(x,y,r,ox,oy);   /* тень на корабли — и от планеты за краем экрана */
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
-    if(p.ring===undefined){
-      const rr=rng(p.seed^0x21A9);
-      p.ring=(p.type==="gas"&&rr()<.62)
-        ? {i:1.34+rr()*.26,o:1.85+rr()*.7,tilt:.16+rr()*.26,n:3+Math.floor(rr()*4),s:p.seed}
-        : null;
-    }
+    if(p.ring===undefined)p.ring=planetRing(p);   /* бросок — 17gab1, его же спрашивает карта */
     gpuPlanet(p,x,y,r,planetLightsOn(sys,p,r));   /* шар, свет, воздух, облака, кольцо; огни ваших построек (M296) — городами (17ga) */
     if(typeof drawPlanetWorks==="function")drawPlanetWorks(sys,p,x,y,r);     /* отвал, купол, полоса (M306) */
     /* конец света виден с орбиты (хвост M114): у обречённой планеты рыжий

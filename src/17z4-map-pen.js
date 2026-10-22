@@ -8,21 +8,24 @@
      в очередь интерфейса #ovl (OVL.uq) на родном DPR, в порядке вызовов;
    · текст — всегда в OVL.uq: шрифт, выравнивание и линия — из ctx, как у fillText
      (mapFont и textAlign ставятся как прежде; ctx только мерит, не рисует).
-   Без видеокарты (Node-ярус, Chrome без WebGPU) каждое движение пера — тот же
-   вызов на ctx, что был. Прозрачность пера — mpAlpha (без видеокарты она же
-   ctx.globalAlpha). Цвет — строкой, как у 2D */
-const MPN={q:[],lay:"u",gpu:false,al:1,a0:1,w:1};
-function mpBegin(){MPN.gpu=typeof GPU!=="undefined"&&!!GPU.ok&&!!GPU.on&&!!GPU.enc;MPN.lay="u";MPN.q.length=0;MPN.al=MPN.a0=MPN.w=1;}
-function mpEnd(){mpFlush();MPN.gpu=false;MPN.al=MPN.a0=MPN.w=1;if(typeof ctx!=="undefined"&&ctx)ctx.globalAlpha=1;}
+   Прозрачность пера — mpAlpha. Цвет — строкой, как у 2D.
+   2D-запасного пути у карты нет (M822b, 22.10): кадр карты всегда пишет в очереди; без
+   видеокарты кадр не отправляется, и игрок видит плашку 08b2, а не 2D-карту. MPN.gpu —
+   «перо пишет в очереди»; false только внутри mp2d — выпечка в чужой холст (ctx подменён
+   зовущим): страница войны сайта и табличка стапеля 26e2. На ctx игры перо не красит */
+const MPN={q:[],lay:"u",gpu:true,al:1,a0:1,w:1};
+/* MPN.dev — устройство есть: без него у слоя нет атласа и кадр не уйдёт — строки не кладутся (мерка у карты своя) */
+function mpBegin(){MPN.gpu=true;MPN.dev=typeof GPU!=="undefined"&&!!GPU.ok&&!!GPU.dev;MPN.lay="u";MPN.q.length=0;MPN.al=MPN.a0=MPN.w=1;}
+function mpEnd(){mpFlush();MPN.al=MPN.a0=MPN.w=1;}
 /* слой: с "u" на "o" — сначала сброс фигур под звёздами */
 function mpLay(l){if(MPN.lay==="u"&&l!=="u")mpFlush();MPN.lay=l;}
-function mpFlush(){const q=MPN.q;if(q.length&&MPN.gpu){const p=gpuNext();if(p)gpuShapes(p,q,{blend:"over"});}q.length=0;}
+function mpFlush(){const q=MPN.q;if(q.length&&MPN.gpu&&typeof GPU!=="undefined"&&GPU.ok&&GPU.enc){const p=gpuNext();if(p)gpuShapes(p,q,{blend:"over"});}q.length=0;}
 function mpAlpha(a){MPN.a0=a;MPN.al=a*MPN.w;if(!MPN.gpu)ctx.globalAlpha=MPN.al;}
 /* вес слоя (M822): у карты три веса — «вы» (вы, выбор, курс), путь (круг прыжка, связи, свой
    маршрут) и всё остальное. Вес множит прозрачность каждого движения пера, mpAlpha слоя — внутри
    него: слой, который сам гасит дальнее, гасит его от своего веса */
 function mpWeight(w){MPN.w=w;mpAlpha(MPN.a0);}
-/* рисунок без видеокарты на время fn (выпечка в чужой холст: ctx подменён) */
+/* рисунок на 2D на время fn — только выпечка в чужой холст (ctx подменён зовущим), не кадр игры */
 function mp2d(fn){const g=MPN.gpu,a=MPN.al;MPN.gpu=false;MPN.al=1;try{return fn();}finally{MPN.gpu=g;MPN.al=a;}}
 function mpU(){return MPN.gpu&&MPN.lay==="u";}
 function mpS(kind,a,b,c,d,hw,soft,col,al){const C=gcColor(col),A=C[3]*MPN.al*(al==null?1:al);
@@ -147,11 +150,11 @@ function mpHatch(x0,y0,w,h,st,dir,lw,col){
 function mpTextAlong(t,x,y,ang,dy,col){
   const ca=Math.cos(ang),sa=Math.sin(ang),al=ctx.textAlign;
   /* на видеокарте — вся строка одной повёрнутой маской (08bi ovTextRot), как 2D под rotate */
-  if(MPN.gpu){ovTextRot(OVL.uq,x-dy*sa,y+dy*ca,t,ctx.font,col,"center",ctx.textBaseline,MPN.al,ang);return;}
+  if(MPN.gpu){if(MPN.dev)ovTextRot(OVL.uq,x-dy*sa,y+dy*ca,t,ctx.font,col,"center",ctx.textBaseline,MPN.al,ang);return;}
   ctx.save();ctx.translate(x-dy*sa,y+dy*ca);ctx.rotate(ang);ctx.textAlign="center";ctx.fillStyle=col;
   ctx.fillText(t,0,0);ctx.restore();ctx.textAlign=al;
 }
-/* сеть пеленгов — mapRhumbPaint (17z-map-backdrop, её же рисует карта войны сайта) пером:
+/* сеть пеленгов — mapRhumbPaint (site/war-backdrop.js, ею рисует карта войны сайта) пером:
    шестнадцать румбов из вашей системы до дальнего угла кадра и окружность построения */
 function mpRhumb(ox,oy){
   let L=0;
@@ -173,6 +176,6 @@ function mpPlate(x,y,w,h){
 /* подпись: шрифт, выравнивание и линия — нынешние ctx (mapFont, textAlign, textBaseline) */
 function mpText(t,x,y,col){
   if(!MPN.gpu){ctx.fillStyle=col;ctx.fillText(t,x,y);return;}
-  if(!t&&t!==0)return;
+  if((!t&&t!==0)||!MPN.dev)return;
   ovText(OVL.uq,x,y,String(t),ctx.font,col,ctx.textAlign,ctx.textBaseline,MPN.al,1);
 }

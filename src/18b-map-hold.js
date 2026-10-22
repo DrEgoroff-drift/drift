@@ -86,10 +86,9 @@ const MAP_BORDER_NB=[[1,0,1,0,1,1],[-1,0,0,0,0,1],[0,1,0,1,1,1],[0,-1,0,0,1,0]];
 function mapBorderEdge(key,ax,ay,bx,by,a,cell,nx,ny){   /* nx,ny — внутрь своей клетки */
   const P=powerOf(key),col=rgba(hex2rgb(P.col),a.toFixed(3));
   const L=Math.hypot(bx-ax,by-ay);if(L<1)return;
-  const ux=(bx-ax)/L,uy=(by-ay)/L,g=!MPN.gpu,al=MPN.a0;
-  if(g)ctx.save();
+  const ux=(bx-ax)/L,uy=(by-ay)/L,al=MPN.a0;
   const along=(step,fn)=>{const n=Math.max(1,Math.round(L/step));for(let i=0;i<n;i++){const t=(i+.5)/n*L;fn(ax+ux*t,ay+uy*t,i);}};
-  if(cell<24){mpAlpha(al*.7);mpLine(ax,ay,bx,by,1,col);mpAlpha(al);if(g)ctx.restore();return;}
+  if(cell<24){mpAlpha(al*.7);mpLine(ax,ay,bx,by,1,col);mpAlpha(al);return;}
   const e=P.emblem;
   if(e==="star")along(7,(x,y)=>{   /* звёздочка — четыре луча, заливка на 3 px стала бы кляксой */
     mpLine(x-1.8,y,x+1.8,y,1,col);mpLine(x,y-1.8,x,y+1.8,1,col);});
@@ -104,7 +103,6 @@ function mapBorderEdge(key,ax,ay,bx,by,a,cell,nx,ny){   /* nx,ny — внутр�
   else if(e==="sun"){mpDash(ax,ay,bx,by,1,col,[7,3,3,3,10,3]);
     along(16,(x,y)=>mpDisc(x+nx*2.5,y+ny*2.5,1.3,col));}
   else along(4,(x,y)=>mpDisc(x,y,.9,col));
-  if(g)ctx.restore();
 }
 function mapHoldingsDraw(vis,cell,V,st){
   if(!mapLayerOn("own"))return;
@@ -189,7 +187,6 @@ function mapHoldingsDraw(vis,cell,V,st){
   const pairs=mapTrassaPairs(vis,cell);
   for(const [a,b] of pairs){
     const k=(a.near||b.near)?1:.4;                       // закон темноты: за кромкой полоса тише
-    if(!MPN.gpu)ctx.lineCap="round";
     mpLine(a.x,a.y,b.x,b.y,cell*.55,"rgba(236,232,220,"+(.07*k).toFixed(3)+")");
   }
   /* пираты: ржавый косой штрих; у пятна дома — фронт ярче */

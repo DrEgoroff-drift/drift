@@ -324,7 +324,7 @@ function drawMap(st,n,t){
     c2.restore();
     c2.strokeStyle=hexA(COLS[i],.9);c2.lineWidth=1.5;
     c2.beginPath();c2.arc(x,y,c*.6,0,TAU);c2.stroke();
-    powerEmblem(MAKER_KEYS[i],x,y,c*.38);
+    mp2d(()=>powerEmblem(MAKER_KEYS[i],x,y,c*.38));   /* перо игры красит 2D только в mp2d (M822b) */
     const label=NAMES[i].toUpperCase(),ly=y+(hy>=0?c*.95:-c*.95);
     c2.font="500 "+Math.max(9,c*.27)+"px "+font;c2.textAlign="center";c2.textBaseline="middle";
     const tw=c2.measureText(label).width+c*.5;
@@ -475,7 +475,7 @@ function drawPanel(st,n){
   $("#panel").innerHTML=h;
   document.querySelectorAll("#panel canvas[data-em]").forEach(el=>{
     const c=el.getContext("2d");c.clearRect(0,0,60,60);c.setTransform(2,0,0,2,0,0);
-    const keep=ctx;ctx=c;powerEmblem(el.dataset.em,15,15,12);ctx=keep;
+    const keep=ctx;ctx=c;mp2d(()=>powerEmblem(el.dataset.em,15,15,12));ctx=keep;
   });
   /* искры: ход владений за месяц; засечка — где стоит ползунок */
   let hi=1;for(const s of H)for(const q of s)hi=Math.max(hi,q.h);
