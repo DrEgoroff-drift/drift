@@ -126,30 +126,26 @@ setTimeout(function(){
       document.body.appendChild(lo);
       var lc=lo.getContext("2d");
       lc.imageSmoothingEnabled=false;
-      /* НАВОДИТСЯ САМА. Раньше вырезка бралась от середины кадра, и в пещере
-         лупа смотрела в пустую породу: знаки оказались правее. Считать их
-         экранное место по камере значит повторить в стенде половину отрисовки;
-         проще найти их так же, как их находит глаз, — по светлому пятну.
-         Один проход по кадру, один раз, дальше держимся найденной точки */
-      var aim=null;
+      /* НАВОДИТСЯ НА ЧЕЛОВЕКА. Стенд ставит его вплотную к стене знаков (на
+         поверхности — settleWallHereX, в пещере — середина устья), так что вырезка
+         берётся у него: на поверхности по точке, которую кладёт сама игра
+         (HANG.at.man, 08bj — середина роста в px экрана), в пещере камера держит
+         человека в середине кадра. Наводка по светлому пятну жила, пока кадр был
+         2D; в кадре движка самое светлое — небо, она смотрела в дождь.
+         КАДР — СНИМОК ВИДЕОКАРТЫ. Мир рисует движок, #c пуст (22.10: краски на нём
+         нет ни в одной сцене), а холст WebGPU после показа не читается. Поэтому
+         каждый кадр просим снимок (GPU.wantSnap → gpuTakeSnap, 08b: кадр движка,
+         слои GPU_SNAP_OVER, фишки) и смотрим в него; без видеокарты — в #c, как было */
       (function tick(){
-        if(!aim){
-          var g0=cvv.getContext("2d"), d=null;
-          try{d=g0.getImageData(0,0,cvv.width,cvv.height).data;}catch(e){}
-          if(d){
-            var sx2=0,sy2=0,n2=0;
-            for(var y2=0;y2<cvv.height;y2+=2)for(var x2=0;x2<cvv.width;x2+=2){
-              var i2=(y2*cvv.width+x2)*4;
-              if(d[i2]>150&&d[i2+1]>140&&d[i2+2]>110){sx2+=x2;sy2+=y2;n2++;}
-            }
-            if(n2>8)aim=[Math.round(sx2/n2),Math.round(sy2/n2)];
-          }
-        }
-        var ax=aim?aim[0]:Math.round(cvv.width*.5), ay=aim?aim[1]:Math.round(cvv.height*.6);
-        var pxx=Math.max(0,Math.min(cvv.width-220,ax-110));
-        var pyy=Math.max(0,Math.min(cvv.height-120,ay-60));
+        var gpu=typeof GPU!=="undefined"&&GPU.ok&&!GPU.lost;
+        if(gpu)GPU.wantSnap=true;
+        var src=gpu&&GPU.snap&&GPU.snapNo>0?GPU.snap:cvv,k=src.width/Math.max(1,W);
+        var man=typeof HANG!=="undefined"&&HANG.at&&HANG.at.man;
+        var ax=man?man.x*k:src.width*.5, ay=man?man.y*k:src.height*.6;
+        var pxx=Math.max(0,Math.min(src.width-220,Math.round(ax-110)));
+        var pyy=Math.max(0,Math.min(src.height-120,Math.round(ay-60)));
         lc.clearRect(0,0,lo.width,lo.height);
-        lc.drawImage(cvv,pxx,pyy,220,120,2,2,880,480);
+        lc.drawImage(src,pxx,pyy,220,120,2,2,880,480);
         requestAnimationFrame(tick);
       })();
     })();
