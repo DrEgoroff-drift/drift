@@ -359,6 +359,9 @@ function geoBoxy(e,s){
 function geoOpaque(e,s){
   if(/^(IMG|VIDEO|CANVAS)$/.test(e.tagName))return true;
   if(+s.opacity<.9)return false;
+  /* непрозрачность — сквозная: стекло со своей 1 в пульте на .45 (#console.quiet) пропускает мир на 55 %
+     без размытия, щит «ТРАССА — ДЕЛО КАЖДОГО» читался сквозь «ПРИЁМНИК» на 1600 — зрение звало это крышкой (22.10) */
+  {let o=1;for(let a=e.parentElement;a&&a!==document.documentElement;a=a.parentElement){o*=+getComputedStyle(a).opacity;if(o<.9)return false;}}
   /* матовое стекло: размытие фона от 4 px сливает штрихи соседних букв (кегль 8–12, штрих 1–1.5 px) —
      надпись под ним не читается, для надписей это крышка */
   const bf=/blur\(\s*([\d.]+)px/.exec(s.backdropFilter||s.webkitBackdropFilter||"");if(bf&&+bf[1]>=4)return true;
@@ -826,11 +829,20 @@ function geoSelf(vp){
     const yr=vp.h*.84;
     hangPass([["РЯД ЛЕВЫЙ",12,yr,false],["РЯД ПРАВЫЙ",12+hangSize({lines:["РЯД ЛЕВЫЙ"],o:{}},1).w+40,yr,false]]);
     hangPass([["ЧИСТО ВЕРХ",12,yr-44,false],["ЧИСТО НИЗ",12,yr,false]]);}
+  /* стекло в тихом пульте (22.10): матовая плашка со своей 1 внутри родителя на .45 — мир сквозь неё виден
+     наполовину без размытия, строка под ней — наезд; то же стекло без приглушки — крышка, чисто */
+  {const gl=document.createElement("div");gl.style.cssText="position:fixed;left:0;top:0;width:300px;height:80px;z-index:2147483647;font:12px monospace;background:#101418;color:#fff";
+   const pane=(l,o,s)=>'<div style="position:absolute;left:'+l+'px;top:4px;opacity:'+o+'"><div style="backdrop-filter:blur(12px);padding:4px 6px;border:1px solid #9cf"><div style="white-space:nowrap">'+s+'</div></div></div>';
+   gl.innerHTML='<div style="position:absolute;left:12px;top:10px;white-space:nowrap">МИР ПОД СТЕКЛОМ</div>'+pane(4,.45,"СТЕКЛО ТИХОЕ")+
+     '<div style="position:absolute;left:162px;top:10px;white-space:nowrap">ЧИСТО ПОД КРЫШКОЙ</div>'+pane(154,1,"ЧИСТО СТЕКЛО");
+   document.body.appendChild(gl);try{F=F.concat(geoLaws(geoDom(gl,vp),[],{lab:[],chip:[],ui:[],dock:[]},vp,"тест теста",{x:geoExtra(vp,gl)}).filter(f=>f.law==="наезд"));}finally{gl.remove();}
+  }
   const has=(law,re)=>F.some(f=>f.law===law&&re.test(f.who+" "+(f.with||"")+" "+(f.s||"")));
   const need=[["вылет",/ПРОВЕРКА ВЫЛЕТА/],["наезд",/НАЛОЖЕНИЕ/],["край",/КРАЙ ЭКРАНА/],["срез",/СРЕЗАННАЯ/],["невидим",/НЕВИДИМКА/],
     ["мусор",/NaN/],["накрыта",/ПОД ПЛАШКОЙ/],["вылет",/ПЛАШКА С ДЛИННЫМ/],["наезд",/СТРОКА ОДИН|СТРОКА ДВА/],["наезд",/КОСАЯ ЛИНИЯ|ПОПЕРЁК/],["мусор",/НЕ ЧИСЛО/],["сжатие",/СЖАТО/],
     ["поверх",/ЧУЖАЯ/],["сквозь",/ПОДЛОЖКА/],["поверх",/ПРИШЕЛЕЦ/],["накрыта",/ПОД ВИДЖЕТОМ/],["кегль",/МЕЛКО/],["вылет",/ХОЛСТ ВЫЛЕТ/]];
   if(vp.touch)need.push(["цель",/button/]);
+  need.push(["наезд",/МИР ПОД СТЕКЛОМ|СТЕКЛО ТИХОЕ/]);
   /* «касание»: широкая плашка, край которой ближе к центру нижней соседки, — брак; пара врозь — чисто */
   {const z=(l,x0,y0,x1,y1,p)=>({l,x0,y0,x1,y1,p});
    F=F.concat(geoChipTouch([z("ФИШКА ШИРОКАЯ",0,0,200,44,[6,14,188,16]),z("ФИШКА СОСЕДКА",150,24,230,68,[156,38,68,16]),
