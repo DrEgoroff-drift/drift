@@ -35,6 +35,16 @@ const GATE2D=[
      return {S};},
    done(){ok(!!TRC.it,"чужой след: тело собрано");
      if(G.surf)G.surf.trace=null;}},
+  {name:"мат свидетеля (21piid, 20c): пластинки и свечение затмения — тела в кадре планеты, на #c ни штриха",
+   painters:["peepDrawMat","plnPeepStep","plnPeepFrame","plnPeepMesh"],probe:["plnPeepFrame"],
+   place(first){
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
+     const S=G.surf;if(!S)return null;
+     if(!S.peep||S.peep.gate2d!==1)S.peep={gate2d:1,x:S.x+30,r:PEEP_R,ph:0,watch:0,dk:0,paid:0,scene:peepScene(S.p)};
+     return {S};},
+   done(){ok(!!PEEP3.it&&PEEP3.it.parts.length>0,"мат свидетеля: тело собрано");
+     if(G.surf)G.surf.peep=null;}},
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
    place(){
