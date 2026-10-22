@@ -23,6 +23,7 @@ import shot  # WS, ev, CHROMES, BLOCK, CATCH, stand_tail
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import noise  # сторож шума: чужие хромы и процессор
 
+WALK = {"dig": ("ArrowDown", "ArrowLeft")}
 SCENES = ["surface", "landing", "things", "night", "cave", "dig", "shaft", "map", "system", "dock", "hq", "raid"]
 ENTRY_MS, RUN_MAX, LONG, LONG_SHARE, ENTRY_MAX = 2000, 100, 33.4, .02, 250
 
@@ -36,7 +37,10 @@ try{["createRenderPipeline","createComputePipeline","createShaderModule","create
 __J.q=[];
 try{[["submit",function(a){return (a[0]||[]).length;}],["writeBuffer",function(a){var d=a[2];return d&&(a[4]!=null?a[4]*(d.BYTES_PER_ELEMENT||1):d.byteLength)||0;}],
   ["writeTexture",function(a){var s=a[3]||{};return (s.width||s[0]||0)*(s.height||s[1]||1)*4;}],["copyExternalImageToTexture",function(a){var s=a[2]||{};return (s.width||s[0]||0)*(s.height||s[1]||1)*4;}]].forEach(function(p){
-  var o=GPUQueue.prototype[p[0]];if(!o)return;GPUQueue.prototype[p[0]]=function(){if(__J.on){var s=performance.now(),r=o.apply(this,arguments);__J.q.push([s-__J.t0,p[0],p[1](arguments),performance.now()-s]);return r;}return o.apply(this,arguments);};});}catch(e){}
+  var o=GPUQueue.prototype[p[0]];if(!o)return;GPUQueue.prototype[p[0]]=function(){if(__J.on){var s=performance.now(),r=o.apply(this,arguments);var e=[s-__J.t0,p[0],p[1](arguments),performance.now()-s];
+    /* копия 2D-холста в текстуру: кто копирует (три верхние функции стека) и размер источника */
+    if(p[0]==="copyExternalImageToTexture"){var sr=(arguments[0]||{}).source||{};e.push((new Error().stack||"").split(String.fromCharCode(10)).slice(4,9).map(function(l){l=l.trim().replace("at ","");var u=l.lastIndexOf("/"),c=l.lastIndexOf(":");var f=l.split(" (")[0];return f+(u>=0&&c>u?" "+l.slice(u+1,c):"");}).join(" < ")+" ["+(sr.width|0)+"x"+(sr.height|0)+"]");}
+    __J.q.push(e);return r;}return o.apply(this,arguments);};});}catch(e){}
 try{["beginRenderPass","beginComputePass"].forEach(function(n){var o=GPUCommandEncoder.prototype[n];if(!o)return;
   GPUCommandEncoder.prototype[n]=function(){if(__J.on)__J.q.push([performance.now()-__J.t0,n,0,0]);return o.apply(this,arguments);};});}catch(e){}
 /* долгий кадр с виновником (Long Animation Frames): какая функция из какого файла съела кадр */
@@ -68,7 +72,7 @@ def page(tail, root):
 
 
 def key(ws, k, down):
-    code = {"ArrowRight": 39, "ArrowLeft": 37}[k]
+    code = {"ArrowRight": 39, "ArrowLeft": 37, "ArrowDown": 40, "ArrowUp": 38}[k]
     ws.call("Input.dispatchKeyEvent", type="rawKeyDown" if down else "keyUp", key=k, code=k,
             windowsVirtualKeyCode=code, nativeVirtualKeyCode=code)
 
@@ -348,8 +352,10 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
         ws.call("Performance.enable")
         res0, p0, w0 = metrics(ws), procs(a), time.time()
         shot.ev(ws, "__J.gpu=null;if(typeof g11GpuMs==='function')g11GpuMs(%.1f).then(function(o){__J.gpu=o;});" % max(2, half - 1))
-        key(ws, "ArrowRight", True); time.sleep(half); key(ws, "ArrowRight", False)
-        key(ws, "ArrowLeft", True); time.sleep(half)
+        # в копе шаг вбок с верхней клетки выводит из устья на грунт — там идём вниз, потом вбок по глубине
+        k1, k2 = WALK.get(sc, ("ArrowRight", "ArrowLeft"))
+        key(ws, k1, True); time.sleep(half); key(ws, k1, False)
+        key(ws, k2, True); time.sleep(half)
         res1, p1, w1 = metrics(ws), procs(a), time.time()
         gms = shot.ev(ws, "JSON.stringify(__J.gpu)")
         # скачок времени посреди хода: главный поток встал на три секунды (ноутбук уснул, ОС подвисла,
@@ -358,7 +364,7 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
         if a.pause:
             shot.ev(ws, "__J.pz=performance.now()-__J.t0;var __e=performance.now()+%d;while(performance.now()<__e){}" % int(a.pause * 1000))
             time.sleep(3)   # после разрыва — ещё ход: хвосту нужна длина, чтобы законы плавности судили его
-        key(ws, "ArrowLeft", False)
+        key(ws, k2, False)
         time.sleep(2)   # остановка — тоже кадр игры: герой встал, камера тормозит, зум доезжает (рывок 15.10 жил тут)
         st = shot.ev(ws, "__J.on=false;JSON.stringify({f:__J.f,lt:__J.lt,pp:__J.pp,la:__J.la,pz:__J.pz,q:__J.q,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
                          "errs:(window.__errs||[]).filter(function(e){return e[0]!=='W'}).slice(0,4)})")
@@ -395,6 +401,13 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
             print("%-8s на кадр: %s · JS p50 %.1f p99 %.1f · ГП-ожидание p50 %s p99 %s" % (sc, " · ".join(
                 "%s %.1f (%.0f КБ)" % (k, v[0] / nf, v[1] / nf / 1e3) for k, v in sorted(qa.items())),
                 js[len(js) // 2], js[int(len(js) * .99)], "%.1f" % gg[len(gg) // 2] if gg else "?", "%.1f" % gg[int(len(gg) * .99)] if gg else "?"))
+            # кто копирует 2D в текстуру: место, копий за ход, КБ на копию
+            cw = {}
+            for q in d["q"]:
+                if q[0] >= ENTRY_MS and len(q) > 4:
+                    e = cw.setdefault(q[4], [0, 0]); e[0] += 1; e[1] += q[2]
+            for k, v in sorted(cw.items(), key=lambda z: -z[1][1])[:4]:
+                print("%-8s   копия 2D: %d раз, %.0f КБ/копия ← %s" % (sc, v[0], v[1] / v[0] / 1e3, k))
         row = heavy(sc, d, res0, res1, p0, p1, w1 - w0, gms, bad)
         if not plant: regress(sc, row, bad, shot.ev(ws, "typeof VER!=='undefined'?VER:'?'"))
     finally:
