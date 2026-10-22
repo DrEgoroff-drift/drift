@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 633 · top-level symbols: 8731
+Files: 633 · top-level symbols: 8733
 
 ## SYMBOLS
 
@@ -873,8 +873,8 @@ GPU_FRONT_LIKE               src/08b-gpu.js:533
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:193
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:167
-GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:103
-GPU_LATE_KEYS                src/08b0-gpu-pipe.js:95-123
+GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:106
+GPU_LATE_KEYS                src/08b0-gpu-pipe.js:95-126
 GPU_LIT_DK                   src/17c-system-draw.js:25
 GPU_LIT_SH                   src/17c-system-draw.js:23
 GPU_MIP                      src/08c-gpu-kit.js:98
@@ -1793,14 +1793,14 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:586
+R3                           src/27f2-room3d.js:605
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:565
+R3_DOWN_WGSL                 src/27f2-room3d.js:584
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:736
+R3_POST_WGSL                 src/27f2-room3d.js:755
 R3_UN                        src/27f2-room3d.js:30
-R3_WGSL                      src/27f2-room3d.js:161
+R3_WGSL                      src/27f2-room3d.js:180
 RACK                         src/25d-instr-rack.js:44
 RACK_CH                      src/25d-instr-rack.js:26-32
 RACK_DQ                      src/25d-instr-rack.js:189
@@ -4726,7 +4726,7 @@ gpuPipeRecipe                src/08b0-gpu-pipe.js:56-64
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
 gpuPipes                     src/08b-gpu.js:370-391
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
-gpuPipesLate                 src/08b0-gpu-pipe.js:106-123
+gpuPipesLate                 src/08b0-gpu-pipe.js:109-126
 gpuPipesWarm                 src/08b0-gpu-pipe.js:67-79
 gpuPirateBody                src/12i-pirate-hull.js:425-436
 gpuPirateLive                src/12i-pirate-hull.js:443-489
@@ -7161,30 +7161,32 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:587-593
-r3Dev                        src/27f2-room3d.js:610-628
-r3DownDesc                   src/27f2-room3d.js:602-606
-r3Drop                       src/27f2-room3d.js:635
-r3Frame                      src/27f2-room3d.js:679-733
-r3Free                       src/27f2-room3d.js:637
-r3Kit                        src/27f2-room3d.js:66-158
+r3Desc                       src/27f2-room3d.js:606-612
+r3Dev                        src/27f2-room3d.js:629-647
+r3DownDesc                   src/27f2-room3d.js:621-625
+r3Drop                       src/27f2-room3d.js:654
+r3Frame                      src/27f2-room3d.js:698-752
+r3Free                       src/27f2-room3d.js:656
+r3Kit                        src/27f2-room3d.js:69-177
 r3Lin                        src/27f2-room3d.js:35
-r3Look                       src/27f2-room3d.js:43-158
-r3MeshR                      src/27f2-room3d.js:678
+r3Look                       src/27f2-room3d.js:46-177
+r3MeshR                      src/27f2-room3d.js:697
 r3Mix                        src/27f2-room3d.js:36
-r3Mul                        src/27f2-room3d.js:40
-r3Persp                      src/27f2-room3d.js:42
-r3Pivot                      src/27f2-room3d.js:57
-r3Proj                       src/27f2-room3d.js:60-158
-r3Pt                         src/27f2-room3d.js:58
+r3MixI                       src/27f2-room3d.js:39
+r3Mul                        src/27f2-room3d.js:43
+r3Persp                      src/27f2-room3d.js:45
+r3Pivot                      src/27f2-room3d.js:60
+r3Proj                       src/27f2-room3d.js:63-177
+r3Pt                         src/27f2-room3d.js:61
 r3Sc                         src/27f2-room3d.js:37
-r3ShDesc                     src/27f2-room3d.js:594-599
-r3ShadowVP                   src/27f2-room3d.js:639-644
-r3Step                       src/27f2-room3d.js:38
-r3Targets                    src/27f2-room3d.js:651-676
-r3Up                         src/27f2-room3d.js:630-634
-r3VB                         src/27f2-room3d.js:600
-r3Xf                         src/27f2-room3d.js:49-158
+r3ScI                        src/27f2-room3d.js:40
+r3ShDesc                     src/27f2-room3d.js:613-618
+r3ShadowVP                   src/27f2-room3d.js:658-663
+r3Step                       src/27f2-room3d.js:41
+r3Targets                    src/27f2-room3d.js:670-695
+r3Up                         src/27f2-room3d.js:649-653
+r3VB                         src/27f2-room3d.js:619
+r3Xf                         src/27f2-room3d.js:52-177
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
 rackBottom                   src/25d-instr-rack.js:331-336
@@ -8877,7 +8879,7 @@ zoomTo                       src/15-input.js:358
 ## src/08b-gpu.js · 54 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08b0-gpu-pipe.js · 10 KB
+## src/08b0-gpu-pipe.js · 11 KB
   · конвейеры: одна воронка и прогрев (DESIGN-gpu §G):1
   · поздний прогрев: конвейеры режимов:86
 
@@ -10279,7 +10281,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 67 KB
+## src/27f2-room3d.js · 69 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 29 KB
