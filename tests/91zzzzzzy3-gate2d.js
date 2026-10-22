@@ -56,6 +56,17 @@ const GATE2D=[
      return {S};},
    done(){ok(!!SLOW3.it,"выкладка: тело собрано");
      if(globalThis.__g2slow){slowIsCore=globalThis.__g2slow.core;slowSpotX=globalThis.__g2slow.spot;G.slow=globalThis.__g2slow.slow;globalThis.__g2slow=null;}}},
+  {name:"корабль перевала (21piif, 11p): корпус, иллюминаторы со светом, трап и паломники — тела, на #c ни штриха",
+   painters:["plnPassStep","plnPassFrame","plnPassMesh"],probe:["plnPassFrame"],
+   place(first){
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
+     const S=G.surf;if(!S)return null;
+     if(!globalThis.__g2pass){globalThis.__g2pass={core:passIsCore,pass:G.pass};
+       passIsCore=q=>!!G.surf&&q===G.surf.p;G.pass={lit:1,told:0};S.x=passShipX(S.tr,S.p);}
+     return {S};},
+   done(){ok(!!PASS3.it&&PASS3.it.geo.length===2,"перевал: тело и свет окон собраны");
+     if(globalThis.__g2pass){passIsCore=globalThis.__g2pass.core;G.pass=globalThis.__g2pass.pass;globalThis.__g2pass=null;}}},
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
    place(){
