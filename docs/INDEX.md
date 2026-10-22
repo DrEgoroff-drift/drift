@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 634 · top-level symbols: 8711
+Files: 635 · top-level symbols: 8715
 
 ## SYMBOLS
 
@@ -892,10 +892,10 @@ GPU_TONE_FILM                src/08b-gpu.js:521
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:136
 GRADE_U                      src/19c-light.js:263
 GRADE_WGSL                   src/19c-light.js:253
-GREEN_BEDS                   src/21g-greenhouse.js:27
-GREEN_FULL                   src/21g-greenhouse.js:28
-GREEN_SP                     src/21g-greenhouse.js:72
-GREEN_VEGA                   src/21g-greenhouse.js:29
+GREEN_BEDS                   src/21g-greenhouse.js:23
+GREEN_FULL                   src/21g-greenhouse.js:24
+GREEN_SP                     src/21g-greenhouse.js:68
+GREEN_VEGA                   src/21g-greenhouse.js:25
 GREY_K                       src/18a1-glaze.js:116
 GRIB_BOOM                    src/21ac1-base-banya.js:20
 GROK_DIRT                    src/12tb-grok.js:29
@@ -1831,6 +1831,7 @@ RADIO_PROGS                  src/10a-radio.js:102
 RADIO_PROG_SETS              src/10a-radio.js:93-101
 RADIO_RH                     src/10a-radio.js:377-383
 RADIO_TRACKS                 src/10a-radio.js:41-87
+RAIDUI_HOOKS                 src/28u-raid-ui.js:6-10
 RAID_FOE_BK                  src/24ab-raid-foe.js:137
 RAID_GPU_WGSL                src/24aa1-raid-gpu.js:126
 RAID_LAMPS                   src/24aa1-raid-gpu.js:20
@@ -1839,6 +1840,7 @@ RAID_QF                      src/24aa1-raid-gpu.js:28
 RAID_ROOMS                   src/24a-mode-raid.js:7-13
 RAID_SPR_WGSL                src/24aa1-raid-gpu.js:194
 RAID_UF                      src/24aa1-raid-gpu.js:29
+RAID_UI                      src/28u-raid-ui.js:5
 RAID_WGSL_COMMON             src/24aa1-raid-gpu.js:86
 RAIL_ARM_RU                  src/18e-rail-net.js:25
 RAIL_BUFFET                  src/18f-rail-station.js:20
@@ -3974,8 +3976,8 @@ drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
 drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
-drawHomeIn                   src/29rb-home-r3.js:455-460
-drawHomeOut                  src/21f-home-out.js:75-263
+drawHomeIn                   src/29rb-home-r3.js:453-458
+drawHomeOut                  src/21f-home-out.js:75-265
 drawHotel                    src/17l-hotel.js:147-174
 drawHullMarks                src/03b-hull-paint.js:174-481
 drawKitFigure                src/12x-suit.js:286-306
@@ -4004,7 +4006,7 @@ drawPlant                    src/20-life.js:423-431
 drawPlantAlien               src/20-life.js:227-394
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-613
-drawRaid                     src/24aa-raid-draw.js:14-626
+drawRaid                     src/24aa-raid-draw.js:14-608
 drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-271
@@ -4124,7 +4126,7 @@ enterBelt                    src/24-mode-belt.js:71-120
 enterCave                    src/22-mode-cave.js:227-242
 enterDig                     src/23-mode-dig.js:51-73
 enterHomeIn                  src/29c-home-in.js:60-68
-enterRaid                    src/24a-mode-raid.js:194-249
+enterRaid                    src/24a-mode-raid.js:194-250
 enterSpa                     src/29h-spa.js:51-66
 enterSurface                 src/21-mode-surface.js:173-209
 enterWinter                  src/29f-winter.js:112-119
@@ -4741,15 +4743,17 @@ gpuWeatherFar                src/19cc-gpu-air.js:265-293
 gpuWorld                     src/08b-gpu.js:651-672
 gradeGpu                     src/19c-light.js:264-275
 gradePass                    src/19c-light.js:276-314
-greenAll                     src/21g-greenhouse.js:30-34
-greenCanSow                  src/21g-greenhouse.js:54-56
-greenGrow                    src/21g-greenhouse.js:40-44
-greenNext                    src/21g-greenhouse.js:47-53
-greenPrompt                  src/21g-greenhouse.js:106-112
-greenSow                     src/21g-greenhouse.js:57-69
-greenSpecies                 src/21g-greenhouse.js:73-87
-greenSpeciesFields           src/21g-greenhouse.js:90-104
-greenWatered                 src/21g-greenhouse.js:36-38
+greenAll                     src/21g-greenhouse.js:26-30
+greenCanSow                  src/21g-greenhouse.js:50-52
+greenDraw                    src/21g-greenhouse.js:201-206
+greenDrawBed                 src/21g-greenhouse.js:105-199
+greenGrow                    src/21g-greenhouse.js:36-40
+greenNext                    src/21g-greenhouse.js:43-49
+greenPrompt                  src/21g-greenhouse.js:208-214
+greenSow                     src/21g-greenhouse.js:53-65
+greenSpecies                 src/21g-greenhouse.js:69-83
+greenSpeciesFields           src/21g-greenhouse.js:86-100
+greenWatered                 src/21g-greenhouse.js:32-34
 greyA                        src/18a1-glaze.js:106-109
 greyOf                       src/18a1-glaze.js:102-105
 greyStretch                  src/18a1-glaze.js:120
@@ -5234,29 +5238,29 @@ holdTechMul                  src/12ag-holdfx.js:119
 holdUklad                    src/12ah-holdnews.js:19-24
 holdWorth                    src/27j-ui-opis.js:596-604
 home3Arc                     src/29rba-home-shell.js:11
-home3Cam                     src/29rb-home-r3.js:405-416
-home3Canvas                  src/29rb-home-r3.js:388-395
-home3Cost                    src/29rb-home-r3.js:452
+home3Cam                     src/29rb-home-r3.js:403-414
+home3Canvas                  src/29rb-home-r3.js:386-393
+home3Cost                    src/29rb-home-r3.js:450
 home3FolkM                   src/29rb-home-r3.js:39
-home3Frame                   src/29rb-home-r3.js:418-436
-home3Hide                    src/29rb-home-r3.js:445-450
-home3LookAt                  src/29rb-home-r3.js:382
+home3Frame                   src/29rb-home-r3.js:416-434
+home3Hide                    src/29rb-home-r3.js:443-448
+home3LookAt                  src/29rb-home-r3.js:380
 home3Man                     src/29rb-home-r3.js:322-333
 home3Mesh                    src/29rb-home-r3.js:43-139
-home3Night                   src/29rb-home-r3.js:380
-home3Ok                      src/29rb-home-r3.js:417
+home3Night                   src/29rb-home-r3.js:378
+home3Ok                      src/29rb-home-r3.js:415
 home3PilotM                  src/29rb-home-r3.js:33
 home3Pose                    src/29rb-home-r3.js:320
-home3Scene                   src/29rb-home-r3.js:335-378
-home3Size                    src/29rb-home-r3.js:396-402
+home3Scene                   src/29rb-home-r3.js:335-376
+home3Size                    src/29rb-home-r3.js:394-400
 home3Skin                    src/29rba-home-shell.js:37-45
 home3StoolMesh               src/29rb-home-r3.js:314
 home3Str                     src/29rb-home-r3.js:38
 home3Stuff                   src/29rb-home-r3.js:141-312
-home3Tags                    src/29rb-home-r3.js:439
+home3Tags                    src/29rb-home-r3.js:437
 home3Under                   src/29rba-home-shell.js:47-64
 home3Up                      src/29rb-home-r3.js:30
-home3UpRooms                 src/29rb-home-r3.js:379
+home3UpRooms                 src/29rb-home-r3.js:377
 home3Vault                   src/29rba-home-shell.js:14-35
 home3X                       src/29rb-home-r3.js:27
 home3Yard                    src/29rba-home-shell.js:66-104
@@ -5265,8 +5269,8 @@ homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:153
 homeCool                     src/16c-rescue.js:55
-homeDock                     src/21f-home-out.js:270-297
-homeDoorX                    src/21f-home-out.js:325-329
+homeDock                     src/21f-home-out.js:272-299
+homeDoorX                    src/21f-home-out.js:327-331
 homeHas                      src/12j-home.js:24-28
 homeHereP                    src/21f-home-out.js:26-32
 homeInit                     src/12j-home.js:20-23
@@ -5279,24 +5283,24 @@ homeNext                     src/12j-home.js:29-32
 homeOrderBonus               src/12j-home.js:210
 homeOutGpu                   src/21fa-home-out-gpu.js:9-54
 homeOutPal                   src/21f-home-out.js:59-70
-homePlan                     src/21f-home-out.js:338-345
+homePlan                     src/21f-home-out.js:340-347
 homePlanet                   src/21f-home-out.js:18-24
 homeProgress                 src/12j-home.js:139-147
 homeRebuild                  src/12j-home.js:227-241
 homeRevive                   src/12j-home.js:154-174
 homeShow                     src/12j-home.js:196-203
 homeShowBonus                src/12j-home.js:217-222
-homeSigns                    src/21f-home-out.js:346-379
-homeSmoke                    src/21f-home-out.js:267-269
+homeSigns                    src/21f-home-out.js:348-381
+homeSmoke                    src/21f-home-out.js:269-271
 homeSpotX                    src/21f-home-out.js:34-54
 homeStill                    src/29rf-home-still.js:13-22
 homeStillAsp                 src/29rf-home-still.js:23
-homeStillCam                 src/29rf-home-still.js:34-40
-homeStillFlush               src/29rf-home-still.js:24-31
-homeStillPaint               src/29rf-home-still.js:41-67
+homeStillCam                 src/29rf-home-still.js:31-37
+homeStillFlush               src/29rf-home-still.js:24-28
+homeStillPaint               src/29rf-home-still.js:38-64
 homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
-homeWash                     src/21f-home-out.js:298-323
+homeWash                     src/21f-home-out.js:300-325
 homingStep                   src/13a-guns.js:470-477
 hotelAngD                    src/17l-hotel.js:85
 hotelArc                     src/17l-hotel.js:179
@@ -7244,8 +7248,8 @@ raidFoeSprite                src/24ab-raid-foe.js:138-144
 raidGpuDesc                  src/24aa1-raid-gpu.js:21-27
 raidGpuDraw                  src/24aa1-raid-gpu.js:32-75
 raidIdx                      src/24a-mode-raid.js:14
-raidLeave                    src/24a-mode-raid.js:250-273
-raidLineOfSight              src/24a-mode-raid.js:407-414
+raidLeave                    src/24a-mode-raid.js:251-274
+raidLineOfSight              src/24a-mode-raid.js:409-416
 raidSolid                    src/24a-mode-raid.js:78-81
 raidSolidAt                  src/24a-mode-raid.js:82
 raidSprDesc                  src/24aa1-raid-gpu.js:76-82
@@ -8401,7 +8405,7 @@ updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:73-145
 updateMap                    src/18-mode-map.js:694-708
-updateRaid                   src/24a-mode-raid.js:275-405
+updateRaid                   src/24a-mode-raid.js:276-407
 updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
@@ -9871,13 +9875,13 @@ zoomTo                       src/15-input.js:358
 ## src/21e3-surface-stand-gpu.js · 5 KB
   · стоящее на поверхности — двойники видеокарты (G15):1
 
-## src/21f-home-out.js · 22 KB
+## src/21f-home-out.js · 23 KB
   · дом снаружи:1
 
 ## src/21fa-home-out-gpu.js · 4 KB
   · дом снаружи на видеокарте (G15):1
 
-## src/21g-greenhouse.js · 7 KB
+## src/21g-greenhouse.js · 11 KB
   · грядка у дома:1
 
 ## src/21h-pennant.js · 5 KB
@@ -10105,9 +10109,9 @@ zoomTo                       src/15-input.js:358
   · рейд на пиратскую базу: полигональный интерьер:1
   · генерация: комнаты и коридоры со связностью:29
   · вход, выход, наполнение:84
-  · обновление:274
+  · обновление:275
 
-## src/24aa-raid-draw.js · 51 KB
+## src/24aa-raid-draw.js · 49 KB
   · рейд: отрисовка:1
   · рисование: пол → стены → объекты → эффекты:13
 
@@ -10421,6 +10425,9 @@ zoomTo                       src/15-input.js:358
 ## src/28t-hallgone.js · 5 KB
   · лицо ушло из зала (M910c, docs/DESIGN-game.md §7.3):1
 
+## src/28u-raid-ui.js · 1 KB
+  · абордаж: строка у пульта — плашкой (22.10):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10443,7 +10450,7 @@ zoomTo                       src/15-input.js:358
 ## src/29r-rooms-r3.js · 28 KB
   · комнаты игрока на движке (M850, docs/DESIGN-rooms.md):1
 
-## src/29rb-home-r3.js · 39 KB
+## src/29rb-home-r3.js · 38 KB
   · дом на движке (M850b, docs/DESIGN-rooms.md §4):1
 
 ## src/29rba-home-shell.js · 10 KB
