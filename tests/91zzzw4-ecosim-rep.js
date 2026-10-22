@@ -62,7 +62,7 @@ function ecoPrint(rows,X){
   for(const r of rows)if(r.fails)console.log("  "+r.tier+" сбои: "+r.fails);
   for(const r of rows)console.log("  "+r.tier+" диспетчер: "+r.disp);
   for(const r of rows)if(r.est){const E=r.est;
-    console.log("  "+r.tier+" хозяйство: цеха "+(E.shops||"—")+" · рейсов в цех "+E.hauls+", в бункеры "+E.fed+" ед · промтовар сдан в цеха "+Math.round(E.indSold/r.hrs)+" кр/ч"+
+    console.log("  "+r.tier+" хозяйство: цеха "+(E.shops||"—")+" · рейсов в цех "+E.hauls+", в бункеры "+E.fed+" ед · промтовар сдан в цеха "+Math.round(E.indSold/r.hrs)+" кр/ч"+(E.lev?" (из них рычагом "+(ENV.ECO_LEVER||"")+" ×"+(+ENV.ECO_LEVER_MUL||1)+" — "+Math.round(E.lev/r.hrs)+")":"")+
       " · не нашёл едока "+E.indLeft+" кр "+E.indLeftQ+" · база "+E.base+": рейсов за рудой "+E.baseTrips+", забрано "+E.baseUnits+" ед, продано на "+Math.round(E.baseWorth/r.hrs)+" кр/ч");
     if(E.survey)console.log("  "+r.tier+" едоки в 3 прыжках: "+E.survey);
     if(ENV.ECO_TRACE)console.log("    "+E.dbg+" · "+E.hop);}

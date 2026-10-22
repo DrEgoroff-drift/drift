@@ -4104,7 +4104,7 @@ e2eLate                      tests/91zzzzz-e2e-life.js:384
 e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
-ecoEstate                    tests/91zzzw4-ecosim-est.js:5-203
+ecoEstate                    tests/91zzzw4-ecosim-est.js:5-210
 ecoLadder                    tests/91zzzw4-ecosim-rep.js:7-29
 ecoNormFold                  tests/91zzzw4-ecosim-rep.js:41-45
 ecoNormNow                   tests/91zzzw4-ecosim-rep.js:30-39
@@ -10616,11 +10616,11 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim-est.js · 16 KB
+## tests/91zzzw4-ecosim-est.js · 17 KB
 
 ## tests/91zzzw4-ecosim-rep.js · 11 KB
 
-## tests/91zzzw4-ecosim.js · 39 KB
+## tests/91zzzw4-ecosim.js · 40 KB
   · проба · экономика (M903, M912):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB

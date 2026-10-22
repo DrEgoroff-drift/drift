@@ -1122,6 +1122,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M912 | economy after the dispatcher **measured 22.10, §4.1b**: the first hour counts play (`28v-playhour`); the probe plays the dispatcher and a fresh save | at a human's pace T0, T1 within ±20 %, T2 at its edge; T3 in band only with the estate at the bot's pace |
 | M913 | the logist in the probe **measured 22.10, §4.1b**: T3 at a human's pace, without and with the logist, minutes by phase | base + logist +10 % (6 h); with workshops −7…−28 %: the workshops are the remaining gap |
 | M914 | an eater for ferro/plate **measured 22.10, §4.1b**: where one may stand within 3 jumps, at what shadow price, whether the haul pays | an eater may stand at home; the haul to the makers does not pay (~395 cr for 440–540 fuel); the eater's own good has no eater; no site rung within 3 jumps at the tier's start (M916: one at home after play) |
+| M915 | workshops: three levers in numbers **measured 22.10, §11**: (а) a buyer for the next link, (б) a market for the last link, (в) the maker at home — cr/h at T3 and the code each costs | (а)+(в) is the pair (five workshops −3.8k → −0.2k cr/h at 6 h); no lever makes workshops a T3 income; 10 of 49 industrial goods have no consumer in the code; (в) is 1–3 lines, (а) ~40 |
 | M916 | «no sites» checked **measured 22.10, §4.1b**: the probe's ladder or the game's | the probe's timing, not a bug: home climbs to ★11–13 in three hours at T3 (one site) and keeps it through a save; T0 stops at 10 on the drone gate; eaters need ★20–22 |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
@@ -1148,6 +1149,107 @@ real-time simulation while away (lazy with cap, as `DECISIONS.md:53`).
   buyback, but a rung never makes it dearer than without the rungs (cap at the price before the
   buyback lever); the rung's promise wins over the 3 %. Price: on narrow-spread goods the top
   rungs leave the counter at base with a 1 cr spread.
+
+## 11. Workshops: three levers, in numbers (M915, 22.10) — for the author
+
+Nothing here is built or changed; it is one page to choose from. The levers are switched on in the
+probe only (`ECO_LEVER=a|b|c`, letters together; `ECO_LEVER_MUL` multiplies the shadow price;
+`ECO_SHOPS=N` sets the number of workshops; code in `tests/91zzzw4-ecosim-est.js`, `leverSell`).
+T3 at a human's pace with the base and the logist, as M913.
+
+**What to read.** The workshops' own line — what they bring (raw sold into the bunkers, industrial
+goods sold) minus what the hauls cost (fuel and the minutes booked to the «цеха» phase) — is clean
+across variants: the runs are deterministic, so a lever changes it and nothing else. The tier's
+total net is not: the dispatcher's take wanders by chaos alone. One workshop that never runs
+(`ECO_SHOPS=1` without (в): it lands at a neighbour and is never fed, 3 cr/h) still moves the
+dispatcher from 11.6 to 5.0 minutes an hour and the net from 13 943 to 7 291. The totals are
+printed below for completeness; judge by the first columns.
+
+**Five workshops** (the probe's estate of §4.1b: three at 0,-1, two at 1,0 — positions the ladder
+would not allow, see M916):
+
+| lever | workshops' line, cr/h: 3 h · 6 h | vs no lever, 6 h | left without a buyer, 6 h | tier net 3 h · 6 h (noisy) |
+|---|---|---|---|---|
+| none | −2 501 · −3 754 | — | ferro 31, plate 17: 6 993 cr | 11 873 · 9 132 |
+| (а) buyer ×1 | −1 657 · −2 589 | +1 165 | 0 | 12 717 · 10 296 |
+| (а) buyer ×2 | −813 · −1 425 | +2 329 | 0 | 13 561 · 11 461 |
+| eater at home (M914) | −2 405 · −4 938 | −1 184 | thermoc 21, hullsec 1: 6 082 cr | 13 541 · 7 750 |
+| eater + (б) | −2 091 · −3 835 | −81 | 0 | 13 855 · 8 853 |
+| (в) maker at home | −944 · −2 224 | +1 530 | alloy 36, ferro 33, roll 54: 12 105 cr | 9 230 · 8 335 |
+| (а) + (в) | +570 · −235 | +3 519 | 0 | 10 743 · 10 324 |
+| (а) + (б) + (в) + eater | +1 169 · +942 | +4 696 | 0 | 15 524 · 12 561 |
+| no workshops | — | — | — | 15 684 · 13 943 |
+
+**One workshop at home** — what the ladder actually gives a T3 player after three hours (M916:
+one site, at home). Without (в) nothing that eats the player's own ore may stand there:
+
+| lever | workshops' line, cr/h: 3 h · 6 h | left without a buyer, 6 h | tier net 3 h · 6 h (noisy) |
+|---|---|---|---|
+| (в) — an alloy shop at home | +136 · −714 | alloy 34: 4 318 cr | 15 602 · 8 693 |
+| (а) + (в) | +882 · +3 | 0 | 16 349 · 9 409 |
+
+### (а) A buyer for the next link
+
+- **What it is.** A station that buys tier-1 industrial goods (ferro, plate, roll, resin…) where
+  they are not made. In the probe: any station but the maker's, at the shadow price × MUL.
+- **What it gives.** The stranded stock turns into money: +1.2k cr/h at ×1, +2.3k at ×2 (five
+  workshops, 6 h). Alone it does not make the haul pay. The haul's cost is not the 440–540 cr of
+  fuel alone: the line books ~2.2k cr per haul in all (fuel plus the wages and upkeep that run
+  during its minutes). The five-workshop line reaches zero at about ×3.2 the shadow price (6 h; ×3.0
+  at 3 h — linear in the multiplier). With (в) it needs only ×1.
+- **Where in the code.** `bldSellInd` (`src/12ad-site.js:271-279`) sells only into the player's own
+  eater. The trade screen already has the row «ПРОМЫШЛЕННОЕ · РЫНОК НЕ БЕРЁТ» (`src/26e-ui-station-trade.js:258-269`,
+  naming the nearest eater through `holdNearestEater`, `12ad-site.js:310-322`); the button goes
+  there. Who buys: a list per station type. `ST_TYPES` lives in `src/06-galaxy.js:50-68`, and the
+  station prices are rolled at `06-galaxy.js:164`, so a new list must use its own random stream or
+  a table in a new module keyed by `stype`. A cap per shift, or the buyer is a bottomless sink: the
+  ore appetite does this (`appetiteEat`/`sellQuote`, `src/12ab-hold.js:108-152`), but the pressure
+  decay in `marketFor` (`src/12-economy.js:16-17`) walks only `TRADE_KEYS` and `FAR_KEYS`, so
+  industrial keys need adding there. Money already goes through `earn`. About 40 lines in three
+  or four files, no new save field (pressure lives in `G.market`).
+
+### (б) A market for the last link
+
+- **What it is.** Tier 2–3 goods (thermoc, hullsec, reactorb…) sold anywhere. In the probe: any
+  station, at the shadow price.
+- **What it gives.** +1.1k cr/h on the M914 eater chain (6 h). It does not save the chain: the
+  eater adds hauls, and the line stays at −3.8k cr/h.
+- **The finding behind it.** 10 of the 49 industrial goods have no consumer anywhere in the code:
+  thermo (tier 1); selsyn, gyro, supercon, reactorb, accum (tier 2); hullsec, shell, launchf, panel
+  (tier 3). Thermoc is consumed once, as 4 units of the Метеостанция's price (`src/12ac-bld.js:144`);
+  techcomp goes into missile parts (`src/05-parts.js:446`).
+- **Where in the code.** Two ways. Extend the (а) buyer to tier ≥ 2: the same code, a longer list.
+  Or give each dead good a consumer: building prices (`12ac-bld.js:114-144`, upgrades in
+  `bldUpgradeCost`, `12ac-bld.js:153-160`, which already take mline and habblock); hullsec into the
+  hull itself (a repair or refit at a slipway — `03-ships`, `27-ui-ship`, the largest of the three).
+
+### (в) The maker at home
+
+- **What it is.** A workshop may eat what its own system makes, at least at home. In the probe:
+  `bldRuleWhy` is skipped for home.
+- **What it gives.** The haul disappears: the five-workshop line improves by 1.5k cr/h. But the
+  output still has no buyer: 12 105 cr of alloy, ferro and roll are left after six hours. Alone, one
+  workshop at home is roughly flat: +0.1k cr/h at 3 h, −0.7k cr/h at 6 h. Alloy is the soft case:
+  it has a use (building prices, the shipyard), so its 4 318 cr are not all lost.
+- **Where in the code.** `bldRuleWhy` (`src/12ad-site.js:141-146`) refuses a workshop that eats what
+  the system makes: the planets' `PROFILE` and the player's own buildings (`sysMakes`,
+  `12ad-site.js:134-140`). Its reason is in `12ac-bld.js:14-15`: «иначе не нужен маршрут». The change
+  is one condition — the home system, or a rung; ★29 «Полдень» already lifts the rule at line 142.
+  `tests/91zzzw9f-access.js:66` reads the rule. Size: 1–3 lines.
+
+### Read together
+
+- **(а) + (в) is the pair.** Each alone leaves money on the floor: (а) pays for hauls that still
+  lose, (в) makes goods nobody buys. Together, five workshops go from −3.8k to −0.2k cr/h (6 h), and
+  one at home from −0.7k to 0. With (б) and an eater on top, the line turns positive, +0.9k cr/h.
+- **No lever makes workshops a T3 income.** The best line, +0.9–1.2k cr/h, is a tenth of what the
+  base with the logist brings (§4.1b: 7.8k cr/h of ore). At T3 the workshops are a sink for the ore
+  a player carries anyway, not a reason to carry more.
+- **The ladder decides before the levers do** (M916). In three hours a T3 player has one site, at
+  home, and without (в) nothing they carry may be eaten there. The levers matter for the
+  neighbours only after landing, drilling and leaving a drone in each.
+- Cheapest first: (в) is 1–3 lines; (а) is about 40 lines and a list of who buys; (б) is (а) with a
+  longer list, or a consumer for each of ten dead goods.
 
 ---
 
