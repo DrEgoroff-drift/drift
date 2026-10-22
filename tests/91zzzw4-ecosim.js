@@ -41,8 +41,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
     {name:"T0 свежий",o:"T0",hull:"strizh",mods:{},hands:0,drones:0,mgrs:0,fresh:true},
     {name:"T0",hull:"strizh",mods:{},hands:0,drones:0,mgrs:0},
     {name:"T1",hull:"vyuk",mods:{hold:1,drill:1},hands:1,drones:1,mgrs:0},
-    {name:"T2",hull:"obod",mods:{hold:2,drill:2,engine:1},hands:3,drones:2,mgrs:2,ins:true},
-    {name:"T3",hull:"mamont",mods:{hold:3,drill:3,engine:2,tank:1},hands:5,drones:4,mgrs:4,ins:true},
+    {name:"T2",hull:"obod",mods:{hold:2,drill:2,engine:1},hands:3,drones:2,mgrs:2,ins:true,est:{shops:2,base:8,crew:2}},
+    {name:"T3",hull:"mamont",mods:{hold:3,drill:3,engine:2,tank:1},hands:5,drones:4,mgrs:4,ins:true,est:{shops:5,base:20,crew:4}},
     /* плохой час (M904d, §4.1): авария на середине часа — без страховки корпус уходит с модулями,
        со страховкой возвращается через смену; потеря корпуса и модулей — строкой расхода по цене */
     {name:"T2 авария",o:"T2",hull:"obod",mods:{hold:2,drill:2,engine:1},hands:3,drones:2,mgrs:2,crash:.5},
@@ -264,6 +264,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       sh.x=S.x-dx/d*80;sh.y=S.y-dy/d*80;sh.vx=S.vx||0;sh.vy=S.vy||0;G.ap=null;G.orbit=null;r=botH("dock");}
     if(!r.ok){note("дела: dock — "+r.why);return false;}
     refuelHere();CNT.docks.add(G.sys.key);
+    if(EST.on)estDock();
     if(HUMAN)idle(HUM.leg);
     return true;
   }
@@ -451,9 +452,11 @@ suite("проба · экономика",{tier:"probe"},()=>{
     }
     if(!r.ok){note("dock: "+r.why);return false;}
     if(HUMAN)idle(HUM.dock,"паузы");
+    if(EST.on)estHaul();
     PHASE="sell";
     for(const k of TRADE_KEYS.concat(FAR_KEYS)){const q=G.cargo[k];if(q>0){const v=sellCargo(G.sys,k,q);
       const b=BOOK.sold[k]||(BOOK.sold[k]=[0,0,{},0]);b[0]+=q;b[1]+=v||0;b[2][G.sys.key]=1;b[3]+=q*(G.sys.station.prices[k]||0);}}
+    if(EST.on)estDock();
     /* корпус яруса — после аварии; свежий игрок летает на том, что ему выделили (freshShop) */
     const HL=tier.fresh&&FRESH_BUY&&G.owned.vyuk?"vyuk":tier.hull;
     if(G.shipId!==HL&&G.owned[HL]){G.shipId=HL;invalidateParts();}
@@ -495,6 +498,161 @@ suite("проба · экономика",{tier:"probe"},()=>{
         break;                                      /* одна покупка за стыковку */
       }
     }finally{PHASE=PH;}
+  }
+  /* ── хозяйство T2–T3 (M912, Контроль 22.10): цеха и база, на которых стоит оракул §4.1 ──
+     Цеха — постройки семей B–D (12ac) на своей станции и соседней, по три на станцию, без лестницы
+     площадок (★11/15/20) и без цены: ярус ими уже владеет, как дронами. Кормятся сами — продажей
+     сырья на этой станции (bldFeed в sellCargo); пай (промтовар) бот забирает на стыковке и сдаёт
+     в цех, который его ест (bldSellInd), где бы такой ни нашёлся; рынок промтовар не берёт.
+     База — foundBase на планете домашней системы и N модулей (8 у T2, 20 у T3); без людей на ней
+     (руки яруса заняты рейсами). Руду с неё бот забирает на каждой домашней стыковке и продаёт —
+     без отдельного рейса к базе (в темпе человека — полминуты). Содержания у цехов и базы в коде нет
+     (§3.1: 12 кр/мин на цех и 1.4 кр/мин на человека не построены) — проба его и не пишет */
+  const EST={on:false,shops:[],base:null,ind:{},indSold:0,indLeft:0,baseUnits:0,baseWorth:0,shopFed:{}};
+  /* раскладка базы — как её строил бы игрок, который смотрит на выработку: сперва жилые под людей,
+     дальше по клетке за ход то, что больше всего поднимает бур с учётом энергии и тепла
+     (реактор +60, бур +30, радиатор −80; за ±10 бур встаёт — 21a1a); панели и радиаторы только
+     в верхнем ряду (surfaceOnly). Ничего не поднимает — склад */
+  const BASE_TRY=["drill","reactor","radiator","solar","refinery","storage"];
+  function baseScore(B){const P=basePower(B),n=baseShift(clockNow());
+    return (P.drillEff||0)*Math.min(1,P.eff||0)*baseHeatMul(B,n);}
+  function baseLay(B,total,hab){
+    let n=1;
+    const free=()=>B.cells.map((c,i)=>c?-1:i).filter(i=>i>=0);
+    const put=(i,k)=>{B.cells[i]={k,hp:1};n++;};
+    for(let h=0;h<hab&&n<total;h++){const f=free().reverse()[0];if(f==null)break;put(f,"habitat");}
+    while(n<total){
+      let best=null,bs=baseScore(B);
+      for(const i of free())for(const k of BASE_TRY){
+        if(BUILD[k].surfaceOnly&&i>=BASE_COLS)continue;
+        B.cells[i]={k,hp:1};const sc=baseScore(B);B.cells[i]=null;
+        if(sc>bs+1e-9){bs=sc;best=[i,k];}
+      }
+      if(!best){const f=free()[0];if(f==null)break;put(f,"storage");continue;}
+      put(best[0],best[1]);
+    }
+    /* донастройка: замены по одной клетке, пока бур растёт (жадный ход упирается в тепло) */
+    for(let pass=0;pass<6;pass++){let imp=false,bs=baseScore(B);
+      for(let i=0;i<B.cells.length;i++){const old=B.cells[i];if(!old||old.k==="habitat"||i===Math.floor(BASE_COLS/2))continue;
+        for(const k of BASE_TRY){if(k===old.k||(BUILD[k].surfaceOnly&&i>=BASE_COLS))continue;
+          B.cells[i]={k,hp:1};const sc=baseScore(B);
+          if(sc>bs+1e-9){bs=sc;imp=true;}else B.cells[i]=old;
+          if(B.cells[i]!==old)break;}}
+      if(!imp)break;}
+    return n;
+  }
+  function estSetup(E){
+    Object.assign(EST,{on:true,baseTrips:0,hauls:0,fed:0,dead:{},shops:[],base:null,ind:{},indSold:0,indLeft:0,baseUnits:0,baseWorth:0,shopFed:{}});
+    const home=G.sys,near=[home];
+    for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){if(!dx&&!dy)continue;
+      const s=getSystem(home.sx+dx,home.sy+dy);if(s&&s.station)near.push(s);}
+    near.sort((a,b)=>Math.hypot(a.sx-home.sx,a.sy-home.sy)-Math.hypot(b.sx-home.sx,b.sy-home.sy));
+    /* игрок ставит цех на то, что сам возит: руды планет своей системы; лучше — цех, всё сырьё которого есть */
+    const ORE={};for(const q of (home.planets||[]))for(const k of (q.res||[]))ORE[k]=1;
+    const fit=id=>{const e=Object.keys(BLD[id].eats);return e.filter(k=>ORE[k]).length/e.length;};
+    const ids=Object.keys(BLD).filter(id=>bldIsShop(BLD[id])&&fit(id)>0).sort((a,b)=>fit(b)-fit(a)||(BLD[a].fam<BLD[b].fam?-1:BLD[a].fam>BLD[b].fam?1:0));
+    for(const S of near){
+      if(EST.shops.length>=E.shops)break;
+      let here=0;
+      for(const id of ids){
+        if(EST.shops.length>=E.shops||here>=3)break;
+        const def=BLD[id];
+        if(bldRuleWhy(S,def))continue;
+        if(EST.shops.some(x=>x.id===id))continue;
+        const H=holdOf(S.key);H.bld=H.bld||{};
+        H.bld[id]={lvl:1,t0:clockNow(),ready:clockNow(),my:{},got:{}};
+        EST.shops.push({key:S.key,id,eats:Object.keys(def.eats).join("+"),makes:Object.keys(def.makes).join("+")});here++;
+      }
+    }
+    if(E.base>0){
+      const p=(home.planets||[]).find(q=>q.parentIdx==null&&q.type!=="gas"&&q.res&&q.res.length);
+      if(p){
+        const c0=G.credits,a0=G.cargo.alloy|0;G.credits+=2500;G.cargo.alloy=a0+10;
+        try{foundBase(p);}catch(e){note("база: "+(e&&e.message));}
+        G.credits=c0;G.cargo.alloy=a0;
+        const B=baseAt(home.sx,home.sy,p.idx);
+        if(B){const n=baseLay(B,E.base,Math.ceil((E.crew|0)/2));
+          /* люди на базе: без них и без запаса воздуха база за сутки — развалина (21b0, RUIN_AFTER) */
+          /* мест в экипаже не хватит на рейсы и базу: игрок третьего яруса купил лицензию на флот (+3) */
+          G.tech.add("license");G.techLvl.license=2;
+          let hired=0;
+          for(const c of stationMercs(G.sys)){if(hired>=(E.crew|0))break;
+            const c0=G.credits;G.credits+=1e6;let ok=false;
+            try{ok=hireMerc(c);}finally{G.credits=c0;}
+            if(!ok)break;
+            if(assignToBase(G.crew[G.crew.length-1],B,hired%2?"engineer":"driller"))hired++;}
+          const P=basePower(B);
+          EST.base={B,sys:home.key,name:p.name,mods:n,crew:hired,lay:B.cells.map(c=>c?c.k.slice(0,3):"·").join(" "),heat:baseHeat(B,baseShift(clockNow())),pw:Math.round(P.prod||0)+"/"+Math.round(P.cons||P.load||0),drills:P.drills};}
+      }
+    }
+  }
+  function estDock(){
+    if(G.mode!=="dock"||!G.sys||!G.sys.station)return;
+    const PH=PHASE;
+    try{
+      /* база: доразрешить смены и забрать руду, если стоим в её системе */
+      if(EST.base&&G.sys.key===EST.base.sys){
+        try{baseResolveAll();}catch(e){note("база: "+(e&&e.message));}
+        const B=EST.base.B,before={};for(const k in G.cargo)before[k]=G.cargo[k]|0;
+        PHASE="база";
+        try{baseCollect(B);}catch(e){}
+        for(const k in G.cargo){const got=(G.cargo[k]|0)-(before[k]|0);if(got<=0)continue;EST.baseUnits+=got;
+          if(TRADE_KEYS.concat(FAR_KEYS).indexOf(k)>=0&&G.sys.station.prices[k]){EST.baseWorth+=sellCargo(G.sys,k,got)||0;}}
+        if(HUMAN)idle(30,"паузы");
+      }
+      /* цеха этой станции: забрать пай */
+      PHASE="цеха";
+      for(const s of EST.shops)if(s.key===G.sys.key){try{bldCollect(G.sys,s.id);}catch(e){note("цех: "+(e&&e.message));}}
+      /* промтовар — в цех, который его ест; не взяли — на склад (не трюм: бот возит руду) */
+      for(const k in G.cargo){const q=G.cargo[k]|0;if(q<=0||!RES[k]||!RES[k].ind)continue;
+        const v=bldSellInd(G.sys,k,q);EST.indSold+=v||0;
+        const left=G.cargo[k]|0;if(left>0){EST.ind[k]=(EST.ind[k]|0)+left;G.cargo[k]=0;}}
+      /* со склада — тоже в цех, когда стоим там, где его едят */
+      for(const k in EST.ind){const q=EST.ind[k]|0;if(q<=0)continue;
+        G.cargo[k]=(G.cargo[k]|0)+q;EST.ind[k]=0;const v=bldSellInd(G.sys,k,q);EST.indSold+=v||0;
+        const left=G.cargo[k]|0;G.cargo[k]=0;EST.ind[k]=left;}
+    }finally{PHASE=PH;}
+  }
+  /* рейс в цех: свои руды цехи на соседней станции едят только оттуда (дома их «и так делают»,
+     bldRuleWhy). Игрок возит, когда бункеру есть что взять — не меньше 15 ед; сдаёт там по цене рынка
+     (бункер берёт по обычной, с паем), забирает пай и возвращается. Бак и минуты — фазой «цеха» */
+  const HAUL_MIN=15;
+  function estHaul(){
+    const home=G.sys.key,PH=PHASE;
+    try{
+      /* база в другой системе (бот ушёл с выработанных планет): забрать руду, когда склад наполовину полон */
+      if(EST.base&&EST.base.sys!==home){const B=EST.base.B;
+        try{baseResolveAll();}catch(e){}
+        if(basePoolHeld(B)>=basePower(B).store*.5){PHASE="база";EST.baseTrips++;
+          if(!dockAt(EST.base.sys))note("база: рейс не вышел");
+          if(!dockAt(home)){note("база: домой не вернулся");return;}}}
+      for(const key of [...new Set(EST.shops.map(s=>s.key))]){
+        if(key===home)continue;
+        const S=sysOf(key);let n=0;const take={};
+        for(const s of EST.shops)if(s.key===key)for(const k in BLD[s.id].eats){
+          const q=Math.min(bldWant(S,k)-(take[k]|0),G.cargo[k]|0);if(q>0){take[k]=(take[k]|0)+q;n+=q;}}
+        if(n<HAUL_MIN)continue;
+        PHASE="цеха";
+        if(EST.dead[key]>=2)continue;
+        if(!dockAt(key)){note("цех: рейс до "+key+" не вышел");EST.dead[key]=(EST.dead[key]|0)+1;
+          if(!dockAt(home))note("цех: домой не вернулся");break;}
+        EST.hauls++;
+        for(const k in take){const q=Math.min(take[k],G.cargo[k]|0);if(q<=0)continue;
+          const v=sellCargo(G.sys,k,q),f=(sellCargo.last&&sellCargo.last.nB)|0;EST.fed+=f;
+          const b=BOOK.sold[k]||(BOOK.sold[k]=[0,0,{},0]);b[0]+=q;b[1]+=v||0;b[2][G.sys.key]=1;b[3]+=q*(G.sys.station.prices[k]||0);}
+        if(!dockAt(home)){note("цех: домой не вернулся");break;}
+      }
+    }finally{PHASE=PH;}
+  }
+  function estReport(){
+    if(!EST.on)return null;
+    let left=0;for(const k in EST.ind)left+=(EST.ind[k]|0)*indPrice(k);
+    const fed={};for(const s of EST.shops){const B=bldEntry(s.key,s.id);if(B)fed[s.id]=Math.round(Object.values(B.got||{}).reduce((a,b)=>a+b,0));}
+    return {shops:EST.shops.map(s=>s.id+"@"+s.key+" ("+s.eats+"→"+s.makes+")").join(", "),indSold:Math.round(EST.indSold),
+      indLeft:Math.round(left),indLeftQ:JSON.stringify(EST.ind),base:EST.base?EST.base.name+" · модулей "+EST.base.mods+" · буров "+EST.base.drills+" · энергия "+EST.base.pw+" · людей "+EST.base.crew+" · тепло "+EST.base.heat+" · ["+EST.base.lay+"]"+(EST.base.B.ruin?" · РАЗВАЛИНА":""):"—",
+      baseUnits:EST.baseUnits,baseWorth:Math.round(EST.baseWorth),hauls:EST.hauls,fed:EST.fed,baseTrips:EST.baseTrips,
+      dbg:EST.base?(()=>{const B=EST.base.B,P=basePower(B);return "t0 "+B.t0+" смена "+baseShift(clockNow())+" parked "+baseParked(B)+" wake "+B.wake+" eff "+P.eff+" drillEff "+P.drillEff+" store "+P.store+" лог "+JSON.stringify((B.log||[]).slice(-4));})()+" пул "+JSON.stringify(EST.base.B.pool)+" · людей сейчас "+baseStaff(EST.base.B).length+" · жизнь "+JSON.stringify(EST.base.B.life||{}):"",
+      hop:EST.shops.map(s=>{const B=bldEntry(s.key,s.id);return s.id+" бункер "+JSON.stringify(B&&B.my)+" пай "+JSON.stringify(B&&B.got);}).join("; ")};
   }
   /* ── ярус: корпус, модули, руки, дроны, управляющие ── */
   function setup(tier){
@@ -547,6 +705,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       }
       if(n<tier.hands)note("hands: нанято "+n+" из "+tier.hands);
     }
+    EST.on=false;if(tier.est&&ENV.ECO_EST!=="0")estSetup(tier.est);
     if(ENV.ECO_TRACE)console.log("  "+tier.name+": касса "+G.credits+" · руки "+G.crew.map(c=>c.spec+"/"+(c.shipId||"—")+"/"+(c.order&&c.order.kind)).join(" ")+
       " · управляющие "+G.mgrs.map(m=>m.role).join(" ")+" · дронов в трюме "+G.droneInventory);
   }
@@ -595,13 +754,13 @@ suite("проба · экономика",{tier:"probe"},()=>{
       time:Object.entries(BOOK.time).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+" "+(laps?v/laps/FR/60:0).toFixed(2)).join(", "),
       hull:tier.fresh?G.shipId:tier.hull,credits:G.credits,
       disp:DSTAT.done+" дел · "+Math.round(DSTAT.pay/hrs)+" кр/ч · "+(DSTAT.frames/FR/60/hrs).toFixed(1)+" мин/ч · взято "+JSON.stringify(DSTAT.took)+(Object.keys(DSTAT.skip).length?" · сорвано "+JSON.stringify(DSTAT.skip):"")+" · ушло по сроку "+dispSt().lost+" · не взято (убыток, бак, касса) "+DSTAT.poor.size,
-      tl:TL?Object.assign({},TL):null,norm:NORM,inv,
+      tl:TL?Object.assign({},TL):null,norm:NORM,inv,est:estReport(),
       /* дроны (§3.1 строка запчастей — 6 кр/мин на машину): что каждая приносит в час */
       drn:G.drones.map(d=>({res:d.res,h:Math.max(1e-9,(clockNow()-(d.bornMs||d.t0||clockNow()))/3600000),
         earned:d.earned|0,trips:d.trips|0,down:d.down|0}))});
   }
   stepWorld=sw0;
-  console.log("экономика: "+HOURS+" ч игры на ярус · цеха и база T2–T3 не строятся · оракул DESIGN-game §4.1"+(HUMAN?" · темп человека (круг ≥ 6 мин, паузы)":" · темп бота"));
+  console.log("экономика: "+HOURS+" ч игры на ярус · "+(ENV.ECO_EST==="0"?"цеха и база T2–T3 не строятся":"T2–T3 с цехами и базой")+" · оракул DESIGN-game §4.1"+(HUMAN?" · темп человека (круг ≥ 6 мин, паузы)":" · темп бота"));
   console.log("| ярус | корпус | кругов | мин/круг | добыто | валовый/ч | расход/ч | чистый/ч | U/G | против §4.1 (в/р/ч) | откуда | куда |");
   console.log("|---|---|---|---|---|---|---|---|---|---|---|---|");
   for(const r of rows)console.log("| "+r.tier+" | "+r.hull+" | "+r.laps+" | "+r.minLap.toFixed(1)+" | "+r.mined+" | "+Math.round(r.gross)+" | "+Math.round(r.spend)+" | "+Math.round(r.net)+" | "+r.press.toFixed(2)+" | "+r.dG+"% / "+r.dU+"% / "+r.dN+"% | "+r.gsrc+" | "+r.ssrc+" |");
@@ -610,6 +769,10 @@ suite("проба · экономика",{tier:"probe"},()=>{
   for(const r of rows)console.log("  "+r.tier+" продано (шт×кр): "+r.sold);
   for(const r of rows)if(r.fails)console.log("  "+r.tier+" сбои: "+r.fails);
   for(const r of rows)console.log("  "+r.tier+" диспетчер: "+r.disp);
+  for(const r of rows)if(r.est){const E=r.est;
+    console.log("  "+r.tier+" хозяйство: цеха "+(E.shops||"—")+" · рейсов в цех "+E.hauls+", в бункеры "+E.fed+" ед · промтовар сдан в цеха "+Math.round(E.indSold/r.hrs)+" кр/ч"+
+      " · не нашёл едока "+E.indLeft+" кр "+E.indLeftQ+" · база "+E.base+": рейсов за рудой "+E.baseTrips+", забрано "+E.baseUnits+" ед, продано на "+Math.round(E.baseWorth/r.hrs)+" кр/ч");
+    if(ENV.ECO_TRACE)console.log("    "+E.dbg+" · "+E.hop);}
   for(const r of rows)if(r.drn&&r.drn.length){const PARTS=6*60,price=DRONES.miner.price;
     console.log("  "+r.tier+" дроны (кр/ч за прогон · после запчастей 6 кр/мин · окупаемость "+price+" кр, ч): "+
       r.drn.map(d=>{const g=Math.round(d.earned/r.hrs);return d.res+" "+g+" → "+(g-PARTS)+" · "+
