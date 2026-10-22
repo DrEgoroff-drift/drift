@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 637 · top-level symbols: 8731
+Files: 640 · top-level symbols: 8736
 
 ## SYMBOLS
 
@@ -1801,16 +1801,16 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:654
+R3                           src/27f2-room3d.js:656
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:633
+R3_DOWN_WGSL                 src/27f2-room3d.js:635
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:804
+R3_POST_WGSL                 src/27f2-room3d.js:806
 R3_SCR                       src/27f2-room3d.js:45
 R3_UN                        src/27f2-room3d.js:30
 R3_VPOOL                     src/27f2-room3d.js:76
-R3_WGSL                      src/27f2-room3d.js:215
+R3_WGSL                      src/27f2-room3d.js:217
 RACK                         src/25d-instr-rack.js:44
 RACK_CH                      src/25d-instr-rack.js:26-32
 RACK_DQ                      src/25d-instr-rack.js:189
@@ -1852,14 +1852,16 @@ RAID_UI                      src/28u-raid-ui.js:8
 RAID_WGSL_COMMON             src/24aa1-raid-gpu.js:86
 RAIL_ARM_RU                  src/18e-rail-net.js:25
 RAIL_BUFFET                  src/18f-rail-station.js:20
+RAIL_CAR_ROLL                src/18gb-rail-car.js:12
 RAIL_COL                     src/18e-rail-net.js:219
+RAIL_CREAM                   src/18gb-rail-car.js:13
 RAIL_DECL                    src/18h-rail-powers.js:14
 RAIL_DOCK                    src/18f-rail-station.js:22
 RAIL_EXPRESS_MUL             src/18h-rail-powers.js:13
-RAIL_FLAP_PREV               src/18f-rail-station.js:160
+RAIL_FLAP_PREV               src/18f-rail-station.js:125
 RAIL_FORK                    src/18e-rail-net.js:22
-RAIL_FX_U                    src/18ga-rail-gpu.js:56
-RAIL_FX_WGSL                 src/18ga-rail-gpu.js:19
+RAIL_FX_U                    src/18ga-rail-gpu.js:55
+RAIL_FX_WGSL                 src/18ga-rail-gpu.js:18
 RAIL_HAIL_R                  src/18f-rail-station.js:19
 RAIL_LIFE                    src/18i-rail-life.js:17
 RAIL_METRO_R                 src/18e-rail-net.js:26
@@ -1926,6 +1928,8 @@ RELAY_KINDS                  src/11ap-relay.js:38-69
 RELAY_NEAR                   src/11ap-relay.js:107
 RELAY_PAY_WIN                src/11ap-relay.js:75
 RELAY_REACH                  src/11ap-relay.js:73
+RELAY_ROCK                   src/11apa-relay-body.js:11
+RELAY_TILT                   src/11apa-relay-body.js:10
 RELIC_KEYS                   src/12h-relic.js:64
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07a-terrain.js:16-34
@@ -2113,7 +2117,7 @@ SETTLE_WAIT                  src/12t-settle.js:25
 SETTLE_WORD                  src/12t-settle.js:256
 SET_V                        src/21pii-pln-settle.js:23
 SFX                          src/09-audio.js:118-333
-SG_POOL                      src/27f2-room3d.js:79
+SG_FREE                      src/27f2-room3d.js:80
 SHARD_H                      tests/90-harness.js:32
 SHIELD_DELAY                 src/05c-arms.js:47
 SHIELD_KEYS                  src/05c-arms.js:46
@@ -4006,8 +4010,8 @@ drawPlantAlien               src/20-life.js:227-394
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-613
 drawRaid                     src/24aa-raid-draw.js:14-612
-drawRail                     src/18g-rail-ride.js:127-182
-drawRailArrive               src/18g-rail-ride.js:32-35
+drawRail                     src/18g-rail-ride.js:113-147
+drawRailArrive               src/18g-rail-ride.js:18-21
 drawRailMap                  src/18e-rail-net.js:223-271
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:79-512
@@ -4033,7 +4037,7 @@ drawSurvey                   src/12w-survey.js:63-83
 drawSysHud                   src/17-mode-system.js:748-1080
 drawSysLane                  src/17g-sys-lane.js:112-138
 drawSysLaneShips             src/17g-sys-lane.js:168-196
-drawSysRail                  src/18f-rail-station.js:79-115
+drawSysRail                  src/18f-rail-station.js:72-80
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawSystem                   src/17-mode-system.js:554-736
 drawTapes                    src/12s1-tape.js:51-66
@@ -4102,11 +4106,7 @@ e2eLate                      tests/91zzzzz-e2e-life.js:384
 e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
-ecoEstate                    tests/91zzzw4-ecosim-est.js:5-203
-ecoNormFold                  tests/91zzzw4-ecosim-rep.js:15-19
-ecoNormNow                   tests/91zzzw4-ecosim-rep.js:4-13
-ecoNormSum                   tests/91zzzw4-ecosim-rep.js:20-26
-ecoPrint                     tests/91zzzw4-ecosim-rep.js:27-78
+ecoEstate                    tests/91zzzw4-ecosim-est.js:5-163
 econCycleMul                 src/12ax-fx-econ.js:27-34
 econEmbargoOn                src/12ax-fx-econ.js:56-61
 econFairHere                 src/12ax-fx-econ.js:48-54
@@ -7171,33 +7171,33 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:655-661
-r3Dev                        src/27f2-room3d.js:678-696
-r3DownDesc                   src/27f2-room3d.js:670-674
-r3Drop                       src/27f2-room3d.js:703
-r3Frame                      src/27f2-room3d.js:747-801
-r3Free                       src/27f2-room3d.js:705
-r3Kit                        src/27f2-room3d.js:82-212
+r3Desc                       src/27f2-room3d.js:657-663
+r3Dev                        src/27f2-room3d.js:680-698
+r3DownDesc                   src/27f2-room3d.js:672-676
+r3Drop                       src/27f2-room3d.js:705
+r3Frame                      src/27f2-room3d.js:749-803
+r3Free                       src/27f2-room3d.js:707
+r3Kit                        src/27f2-room3d.js:84-214
 r3Lin                        src/27f2-room3d.js:35
-r3Look                       src/27f2-room3d.js:50-212
-r3MeshR                      src/27f2-room3d.js:746
+r3Look                       src/27f2-room3d.js:50-214
+r3MeshR                      src/27f2-room3d.js:748
 r3Mix                        src/27f2-room3d.js:36
 r3MixI                       src/27f2-room3d.js:39
 r3Mul                        src/27f2-room3d.js:47
 r3Persp                      src/27f2-room3d.js:49
 r3Pivot                      src/27f2-room3d.js:66
-r3Proj                       src/27f2-room3d.js:69-212
+r3Proj                       src/27f2-room3d.js:69-214
 r3Pt                         src/27f2-room3d.js:67
 r3Sc                         src/27f2-room3d.js:37
 r3ScI                        src/27f2-room3d.js:40
 r3Scr                        src/27f2-room3d.js:46
-r3ShDesc                     src/27f2-room3d.js:662-667
-r3ShadowVP                   src/27f2-room3d.js:707-712
+r3ShDesc                     src/27f2-room3d.js:664-669
+r3ShadowVP                   src/27f2-room3d.js:709-714
 r3Step                       src/27f2-room3d.js:41
-r3Targets                    src/27f2-room3d.js:719-744
-r3Up                         src/27f2-room3d.js:698-702
-r3VB                         src/27f2-room3d.js:668
-r3Xf                         src/27f2-room3d.js:56-212
+r3Targets                    src/27f2-room3d.js:721-746
+r3Up                         src/27f2-room3d.js:700-704
+r3VB                         src/27f2-room3d.js:670
+r3Xf                         src/27f2-room3d.js:56-214
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
 rackBottom                   src/25d-instr-rack.js:331-336
@@ -7287,34 +7287,35 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:274-281
+railBuffet                   src/18f-rail-station.js:239-246
 railBuildLines               src/18e-rail-net.js:55-101
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:259-273
+railBuy                      src/18f-rail-station.js:224-238
+railCarDraw                  src/18gb-rail-car.js:63-72
+railCarLights                src/18gb-rail-car.js:56-61
+railCarMesh                  src/18gb-rail-car.js:16-54
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:25-31
 railCut                      src/18h-rail-powers.js:22
 railDeclare                  src/18h-rail-powers.js:33-43
-railDestinations             src/18f-rail-station.js:175-192
+railDestinations             src/18f-rail-station.js:140-157
 railDestinationsVia          src/18k-rail-scheme.js:17-41
-railDocked                   src/18f-rail-station.js:149-156
-railExit                     src/18g-rail-ride.js:114-126
+railDocked                   src/18f-rail-station.js:114-121
+railExit                     src/18g-rail-ride.js:100-112
 railExpressDraw              src/18h-rail-powers.js:72-81
-railFare                     src/18f-rail-station.js:193-204
-railFlap                     src/18f-rail-station.js:161-166
-railFlash                    src/18g-rail-ride.js:18-31
-railFmt                      src/18f-rail-station.js:171
+railFare                     src/18f-rail-station.js:158-169
+railFlap                     src/18f-rail-station.js:126-131
+railFmt                      src/18f-rail-station.js:136
 railFrontShut                src/18h-rail-powers.js:18
 railFx                       src/18ga-rail-gpu.js:58-66
-railGpu                      src/18f-rail-station.js:52-78
-railHaltCtx                  src/18f-rail-station.js:42-48
+railGpu                      src/18f-rail-station.js:45-71
 railHaltShapes               src/18f-rail-station.js:34-41
-railHeadingIn                src/18f-rail-station.js:117-121
+railHeadingIn                src/18f-rail-station.js:82-86
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:45-48
-railInteract                 src/18f-rail-station.js:123-148
-railInterval                 src/18f-rail-station.js:168
+railInteract                 src/18f-rail-station.js:88-113
+railInterval                 src/18f-rail-station.js:133
 railKrai                     src/18k-rail-scheme.js:115-120
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:76-81
@@ -7340,7 +7341,7 @@ railPaxOffer                 src/18i-rail-life.js:53-57
 railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRect                     src/08-state.js:150-156
-railRideStart                src/18g-rail-ride.js:36-46
+railRideStart                src/18g-rail-ride.js:22-32
 railSchemeClose              src/18k-rail-scheme.js:105
 railSchemeDraw               src/18k-rail-scheme.js:140-260
 railSchemeOpen               src/18k-rail-scheme.js:51-71
@@ -7350,23 +7351,24 @@ railSchemeScope              src/18k-rail-scheme.js:76-82
 railSchemeZoom               src/18k-rail-scheme.js:83-86
 railSealDock                 src/18i-rail-life.js:114-118
 railSealPirates              src/18i-rail-life.js:122-127
-railSegDur                   src/18g-rail-ride.js:47-50
+railSegDur                   src/18g-rail-ride.js:33-36
 railSpurApply                src/18e-rail-net.js:170-185
 railSpurLine                 src/18e-rail-net.js:160-169
 railSpurSig                  src/18e-rail-net.js:153-159
 railStation                  src/18e-rail-net.js:197-202
 railStep                     src/18e-rail-net.js:43
-railStopName                 src/18f-rail-station.js:172
+railStopName                 src/18f-rail-station.js:137
+railStopShapes               src/18gb-rail-car.js:75-86
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:283-288
-railTrainPos                 src/18g-rail-ride.js:52-64
+railTick                     src/18f-rail-station.js:248-253
+railTrainPos                 src/18g-rail-ride.js:38-50
 railUAt                      src/18e-rail-net.js:105-110
 railVisited                  src/18k-rail-scheme.js:110-114
-railWaitNow                  src/18f-rail-station.js:170
-railWinClose                 src/18f-rail-station.js:206
-railWinOpen                  src/18f-rail-station.js:205
-railWinRender                src/18f-rail-station.js:212-258
-railWinShow                  src/18f-rail-station.js:207-211
+railWaitNow                  src/18f-rail-station.js:135
+railWinClose                 src/18f-rail-station.js:171
+railWinOpen                  src/18f-rail-station.js:170
+railWinRender                src/18f-rail-station.js:177-223
+railWinShow                  src/18f-rail-station.js:172-176
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -7441,12 +7443,14 @@ relayAll                     src/11ap-relay.js:149-152
 relayArrive                  src/11ap-relay.js:179-183
 relayAtFreq                  src/11ap-relay.js:134-145
 relayDial                    src/11ap-relay.js:207-252
-relayDrawSystem              src/11ap-relay.js:376-497
+relayDrawSystem              src/11apa-relay-body.js:102-113
 relayEar                     src/11ap-relay.js:126-130
 relayFreq                    src/11ap-relay.js:99-103
 relayInteract                src/11ap-relay.js:358-371
 relayKnown                   src/11ap-relay.js:153
+relayLights                  src/11apa-relay-body.js:89-100
 relayList                    src/11ap-relay.js:189-199
+relayMesh                    src/11apa-relay-body.js:14-86
 relayOf                      src/11ap-relay.js:81-97
 relayServe                   src/11ap-relay.js:334-357
 relaySpeak                   src/11ap-relay.js:167-174
@@ -7931,7 +7935,8 @@ settleWallX                  src/12t-settle.js:119
 settleWatch                  src/12t-settle.js:321-327
 settleWords                  src/12t-settle.js:258-262
 sfx                          src/09-audio.js:334-340
-sgArr                        src/27f2-room3d.js:80
+sgArr                        src/27f2-room3d.js:82
+sgTake                       src/27f2-room3d.js:81
 sharpWord                    src/21a9-base-laws.js:41-45
 shatter                      src/24-mode-belt.js:122-136
 shieldFace                   src/05c-arms.js:53-57
@@ -8422,7 +8427,7 @@ updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:73-145
 updateMap                    src/18-mode-map.js:695-709
 updateRaid                   src/24a-mode-raid.js:276-408
-updateRail                   src/18g-rail-ride.js:65-112
+updateRail                   src/18g-rail-ride.js:51-98
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
@@ -8981,9 +8986,11 @@ zoomTo                       src/15-input.js:358
 ## src/11ao-firsthour.js · 6 KB
   · первый час: сменщик в эфире:1
 
-## src/11ap-relay.js · 31 KB
+## src/11ap-relay.js · 25 KB
   · приёмники как места:1
   · у мачты есть тело:303
+
+## src/11apa-relay-body.js · 9 KB
 
 ## src/11aq-late.js · 9 KB
   · поздний час у стойки:1
@@ -9641,14 +9648,16 @@ zoomTo                       src/15-input.js:358
 ## src/18e-rail-net.js · 16 KB
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 22 KB
+## src/18f-rail-station.js · 20 KB
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
-## src/18g-rail-ride.js · 13 KB
+## src/18g-rail-ride.js · 12 KB
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/18ga-rail-gpu.js · 6 KB
   · поездка: свет видеокартой (G12):1
+
+## src/18gb-rail-car.js · 8 KB
 
 ## src/18h-rail-powers.js · 6 KB
   · шесть железных дорог (M474, DESIGN-metro §6):1
@@ -10263,7 +10272,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 74 KB
+## src/27f2-room3d.js · 75 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 29 KB
@@ -10544,6 +10553,12 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd1-hull-plane.js · 4 KB
   · плоскость краски объёмного корпуса (22.10, «двойной корпус»):1
 
+## tests/91qd2-relay.js · 3 KB
+  · мачта телом (M827 · 11apa):1
+
+## tests/91qd3-rail.js · 4 KB
+  · поездка на движке (M828 · 18gb):1
+
 ## tests/91qe-own.js · 13 KB
 
 ## tests/91qe-rack.js · 4 KB
@@ -10599,12 +10614,10 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim-est.js · 16 KB
+## tests/91zzzw4-ecosim-est.js · 12 KB
 
-## tests/91zzzw4-ecosim-rep.js · 8 KB
-
-## tests/91zzzw4-ecosim.js · 39 KB
-  · проба · экономика (M903, M912):1
+## tests/91zzzw4-ecosim.js · 48 KB
+  · проба · экономика (M903):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
   · причальная полоса не перебивает посадку (0.493.4):1
