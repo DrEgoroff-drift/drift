@@ -48,6 +48,11 @@ const HALL_SEAT_PILOT=1.72;   /* табурет пилота у правого �
 /* M814: столики разведены от луча камеры к герою: левый — передний план слева, правый — за кадром справа */
 const HALL_BAR_TABLES=[{x:-.9,z:2.7,seats:[[-1.45,2.4],[-.45,2.25]]},{x:2.3,z:2.85,seats:[[1.8,3.02],[2.75,2.6]]}];
 const HALL_BAR_SEATS=HALL_BAR_TABLES.flatMap(T2=>T2.seats.map(s=>({s,T2})));
+/* M853: сидящие у стойки лицом к ней — руки на столешнице (27f3 barc/barm), а не в воздухе перед ней: stool1 (локти
+   на стойку позади) и stool2 (руки висели в 11–21 см перед кромкой) у бара заменены; stool0 — кружка и колено */
+const HALL_BAR_POSE={stool1:"barc",stool2:"barm",stool3:"barc"};
+/* за столиком: прямо над столом или откинувшись (chair) — по сиду места */
+function hallTablePose(seed,i){return (hashi(seed,i,0x7AB2)>>>0)%3===0?"chair":"table";}
 /* вывеска бара (x относительно бара): над левым краем полки, в левой трети кадра ЛЮДИ — не посередине и не над героем;
    крупнее прежней (1.4 × .32 м), чтобы буквы читались с места камеры */
 const HALL_SGN=[-2.0,-.6,2.4,2.72];
@@ -166,13 +171,14 @@ function hallLayout(st,lazy){
     let ci=0,ti=0;
     for(const P of CL.people){if(P.kind==="kino"||P.z<HALL_B+.35)continue;
       const Q=Object.assign({},P,{x:P.x+HALL_XB,id:P.id&&("bar:"+P.id)});
-      if(P.kind==="cand"){Q.x=HALL_XB+L.seats[ci];Q.yaw=Math.PI+(ci%2?.5:-.5);if(Q.pose==="stool1")Q.pose="stool2";ci++;}
+      if(P.kind==="cand"){Q.x=HALL_XB+L.seats[ci];Q.pose=HALL_BAR_POSE[Q.pose]||Q.pose;
+        Q.yaw=Math.PI+(ci%2?1:-1)*(/^bar/.test(Q.pose)?.25:.5);ci++;}
       if(P.kind==="crowd"&&P.pose==="table"){const S2=HALL_BAR_SEATS[ti++];if(!S2)continue;const s=S2.s,T2=S2.T2;
         Q.x=HALL_XB+s[0];Q.z=s[1];Q.yaw=Math.atan2(T2.x-s[0],T2.z-s[1]);}
       L.people.push(Q);}
     /* за столиками всегда по двое: недостающих — из завсегдатаев */
     for(;ti<HALL_BAR_SEATS.length;ti++){const s=HALL_BAR_SEATS[ti].s,T2=HALL_BAR_SEATS[ti].T2;
-      L.people.push({id:null,m:{seed:hashi(seed,ti,0x7AB1)>>>0,loy:50,traits:[]},pose:"table",x:HALL_XB+s[0],z:s[1],yaw:Math.atan2(T2.x-s[0],T2.z-s[1]),lod:0,kind:"crowd"});}
+      L.people.push({id:null,m:{seed:hashi(seed,ti,0x7AB1)>>>0,loy:50,traits:[]},pose:hallTablePose(seed,ti),x:HALL_XB+s[0],z:s[1],yaw:Math.atan2(T2.x-s[0],T2.z-s[1]),lod:0,kind:"crowd"});}
     /* кинодень: бар смотрит на экран. Стоящие и на табуретах разворачиваются телом, за столиками — головой (P.watch) */
     /* СР · Визуал 22.10: кинозал — это силуэты против полотна. Сидевшие за столиками встают рядом перед экраном
        (кружка в руке, шаг вразнобой), табуреты разворачиваются телом; все смотрят на полотно */
@@ -180,9 +186,10 @@ function hallLayout(st,lazy){
     if(L.kino)for(const P of L.people){if(P.x<HALL_XB-.5||P.kind==="keep")continue;
       /* не шеренга — кучка: глубина и шаг разные, двое ближе к полотну, двое за ними со смещением (Контроль 22.10) */
       const KQ=[[-1.7,2.0,"mug"],[-.45,3.05,"stand"],[.85,2.3,"mug"],[1.75,3.35,"stand"]];
-      if(P.pose==="table"&&ri<4){const q=KQ[ri];P.pose=q[2];P.x=HALL_KINO[0]+q[0];P.z=HALL_B+q[1];P.mesh=null;ri++;}
+      if((P.pose==="table"||P.pose==="chair")&&ri<4){const q=KQ[ri];P.pose=q[2];P.x=HALL_KINO[0]+q[0];P.z=HALL_B+q[1];P.mesh=null;ri++;}
+      if(/^bar/.test(P.pose)){P.pose="stool0";P.mesh=null;}   /* к полотну телом — руки со стойки на колено и кружку */
       const a=Math.atan2(HALL_KINO[0]-P.x,HALL_B-P.z);
-      if(P.pose==="table")P.watch=a;else{P.yaw=a+(ri%2?.18:-.14);P.watch=a;}}
+      if(P.pose==="table"||P.pose==="chair")P.watch=a;else{P.yaw=a+(ri%2?.18:-.14);P.watch=a;}}
   }
   /* блошинец: у прилавков покупатели, дальняя толпа (LOD 0) */
   if(T.stalls){const n=3+((seed>>>3)%3);
@@ -264,22 +271,25 @@ const HALL_STALLS=[[-1.25,.55],[1.15,.55],[3.45,.55],[4.6,2.0],[6.5,2.0]];
 
 /* ── свет и матрицы кадра ── */
 const HALL_M=new Float32Array(R3_MAXI*R3_PART*16),HALL_OT=new Float32Array(R3_MAXI*R3_PART*4);
+/* матрицы кадра зала живут между кадрами (проход 3 по мусору): единица, человек (место, дыхание, голова, рука) */
+const HALL_I=r3Xf([0,0,0]),HALL_WA=new Float64Array(16),HALL_WB=new Float64Array(16),HALL_WM=new Float64Array(16),HALL_WR=new Float64Array(16),
+      HALL_WS=new Float64Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
 function hallLamps(L){   /* лампы над баром — x по стойке кантины, сдвинутые */
   const n=Math.min(3,L.T.bar),xs=[];for(let i=0;i<n;i++)xs.push(HALL_XB+C3_CL+.3+(C3_CR-C3_CL-.6)*(i+.5)/n);return xs;}
 function hallScene(L,cam,t){
-  const T=L.T,M=HALL_M,OT=HALL_OT,I=r3Xf([0,0,0]),acc=L.acc,hc=T.hc;
+  const T=L.T,M=HALL_M,OT=HALL_OT,I=HALL_I,acc=L.acc,hc=T.hc;
   for(let i=0;i<R3_MAXI*R3_PART;i++)M.set(I,i*16);OT.fill(0);
   /* зал: экземпляр 0; часть 1 — крюк крана или цепь стапеля, качается медленно */
   const hx=T.weld?3.6:2.4,hz=T.weld?-.6:.4;
-  M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29)),16);
+  M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29),r3Scr()),16);
   const draws=[[L.room,0,1]];let ii=1;
   const gm=hallGoodsUp(L);if(gm)draws.push([gm,0,1]);   /* товар ящиками на стойке (M811) — тот же экземпляр, что зал */
   draws.push([hallBoardUp(L),0,1]);   /* листы доски — объявления плиты (M814) */
   draws.push([hallHoldUp(L),0,1]);   /* карта под стеклом конторы — дом и базы фишками (M814) */
   if(ii<R3_MAXI){hallInstrPose(M,ii,t);draws.push([hallInstrUp(),ii,1]);ii++;}   /* пять приборов на верстаке (M813): стрелки — части 1–5 */
   for(const P of L.people){if(ii>=R3_MAXI)break;
-    const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw);
-    const B=r3Mul(A,[1,0,0,0, 0,br,0,0, 0,0,1,0, 0,0,0,1]),at=P.mesh.at;
+    const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw,0,0,1,HALL_WA);
+    HALL_WS[5]=br;const B=r3Mul(A,HALL_WS,HALL_WB),at=P.mesh.at;
     let hy,hp;
     if(P.kind==="keep"&&P.id==="hallkeep"){   /* хозяин поворачивает голову к камере, не дальше ±20° */
       const a=Math.atan2(cam.eye[0]-P.x,cam.eye[2]-P.z)-P.yaw,w=Math.atan2(Math.sin(a),Math.cos(a));
@@ -289,9 +299,9 @@ function hallScene(L,cam,t){
       hy=clamp(w,-.6,.6)+.05*Math.sin(t*.13+ph)-.4*Math.max(0,Math.sin(t*.05+ph*5)-.85)/.15;hp=-.08+.02*Math.sin(t*.11+ph);}
     else{hy=.28*Math.sin(t*.21+ph*3)*Math.max(0,Math.sin(t*.09+ph));hp=.05*Math.sin(t*.17+ph);}
     M.set(B,(ii*R3_PART)*16);
-    const Mh=r3Pivot(B,at.neck,hy,hp,0);M.set(Mh,(ii*R3_PART+1)*16);
+    const Mh=r3Pivot(B,at.neck,hy,hp,0,HALL_WM);M.set(Mh,(ii*R3_PART+1)*16);
     cpRig(M,ii*R3_PART,Mh,P.mesh,cpFace(P.m,null));
-    for(let k=0;k<2;k++){let rA=B;if(P.kind==="keep"&&k===1)rA=r3Pivot(B,at.sh[1],.05*Math.sin(t*.7+ph),0,.02*Math.sin(t*1.3));
+    for(let k=0;k<2;k++){let rA=B;if(P.kind==="keep"&&k===1)rA=r3Pivot(B,at.sh[1],.05*Math.sin(t*.7+ph),0,.02*Math.sin(t*1.3),HALL_WR);
       M.set(rA,(ii*R3_PART+2+k)*16);}
     const dm=HALL.place==="folk"&&P.kind==="crowd"?.32:(P.dim||0);   /* у бара один герой: завсегдатаи за столиками тише */
     for(let p=0;p<R3_PART;p++)OT[(ii*R3_PART+p)*4+1]=dm;

@@ -98,7 +98,7 @@ TEST_SUITES.push(()=>suite("база и дом телами: вход у вор�
     const pr4=owAt(w.S,dx,false);
     eq(pr4,"ДЕЙСТВИЕ — ВОЙТИ ДОМОЙ","у двери дома — вход домой");
     const pads=plnOwnPads(w.tr,w.p);
-    eq(pads.length,2,"трава расступается под настилом и во дворе");
+    eq(pads.length,2+(plnSetPad(w.tr,w.p)?1:0),"трава расступается под настилом, во дворе и на полке посёлка");
     ok(pads.every(q=>q.length===5&&q.every(isFinite)),"площадки — [x, z, rx, rz, рост]");
     /* куртина игры под настилом выходит из-под него вперёд (брак M628: грибы сквозь настил) */
     {const d=pads[0],q={x:d[0]*PLN_M,z:1,h:60},z=plnHerbZAt(q,pads),r=clamp(60/PLN_M*.45,.6,3.5);

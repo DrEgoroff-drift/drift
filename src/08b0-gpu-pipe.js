@@ -95,11 +95,14 @@ const GPU_LATE_KEYS=[
   /* интерьерный рендер первым: портрет (27f5) и зал (27f4a) зовут r3Dev уже в полёте — пока эти три
      не собраны, r3Dev строил их синхронно (3× createRenderPipeline в кадре; набор «конвейеры» краснел) */
   "r3.main","r3.shadow","r3.down",
+  /* семьи шаров (17gab1), которых нет в первой системе и потому нет в таблице полёта: кристалл, руины, лёд,
+     токсик. Их зовёт ряд миров у выбора на карте (M822b) и чужая система; без прогрева мир первые 0,3–2,4 с
+     стоял плоским диском запасного пера (замер охотника 22.10). В старт не кладутся — ворота «Начать» их
+     не ждут, а до карты игрок доходит позже, чем они собираются */
+  "pipe:gor1|over","pipe:gor5|over","pipe:gor6|over","pipe:gor2|over",
   "pipe:fld.gsky2|over","pipe:fld.warm.glow|add",
-  "pipe:fld.hin.light|mul","pipe:fld.hin.haze|add","pipe:fld.hin.air|add","pipe:fld.hin.flit|over",
   "pipe:fld.scoop.air|over","pipe:fld.scoop.flow|over","pipe:fld.scoop.obs|over",
   "pipe:fld.map.gal|over","pipe:fld.map.gal|bake",
-  "pipe:fld.wansky|over","pipe:fld.wanlit|mul","pipe:fld.wanair|add",
   "pipe:fld.r3post|over","raid3d","raid3d.spr"];
 const GPU_LATE_GROUPS=[];
 /* по одному ключу за шаг, 30 мс между шагами: компилятор не занят ничем другим, кадр не ждёт.

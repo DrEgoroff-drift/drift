@@ -31,7 +31,7 @@ function mapSelHang(sel,dsel,cost,st){
   /* телефон: имя и глагол с ценой — две строки встают сбоку от выбора; подробности — в подвале нет,
      во второй тап (карточка) */
   if(W<=760&&L.length>2){L=[L[0],L[verb==null?1:verb]];verb=verb==null?undefined:1;}
-  ovHang("map.sel",L,sel.x,sel.y,{r:rr+21,verb});
+  ovHang("map.sel",L,sel.x,sel.y,{r:rr+21,verb,spare:1});   /* spare: у кромки — запасной бок, съезд вдоль звезды и перенос строк (08bj) */
 }
 /* табличка у выбора висела в прошлом кадре — подсказке внизу молчать (27z) */
 function mapHintHung(){return G.mode==="map"&&HANG.last.some(e=>e.id==="map.sel");}
@@ -80,28 +80,30 @@ function mapSelBlock(n0,hung){
 const MAP_ORB={rMin:6,rMax:10,gap:4,lz:.8};
 function mapOrbInk(p){const P=p.type==="gas"?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0]:(p.T&&p.T.pal)||[[150,160,170]],c=P[Math.min(3,P.length-1)];
   return "rgba("+c[0]+","+c[1]+","+c[2]+",.92)";}
-function mapOrbFan(sel,cell,avoid){
+/* avoid — рамка таблички выбора прошлого кадра; you — то, что держит место «вы»: плашка «ВЫ» этого кадра и
+   кольцо вашей звезды. Всё это ряду преграда, табличка главнее: не обойти всё — ряд уступает табличке, потом
+   «вы». Восемь ходов: вниз, вверх, вбок к середине, от середины, затем четыре косых — у пола телефона прямые
+   либо не влезают, либо идут сквозь «ВЫ» (Контроль 22.10, 390 у пола). Каждый шар мерится своей рамкой.
+   Не нашлось чистого хода — второй заход плотным рядом: все миры по rMin и без колец (flat), он короче
+   вдвое и встаёт вбок там, где полный упирался в борт; лучше ровный ряд, чем шары под табличкой */
+function mapOrbFan(sel,cell,avoid,you){
   const s=sel.s,P=(s.planets||[]);if(!P.length)return [];
   const rr=1.8+s.cls.t*2.2,U=mapU(),big=clamp(cell*.2,MAP_ORB.rMin+2,MAP_ORB.rMax)*Math.min(U,1.4);
   const mR=Math.max(...P.map(p=>p.radius||1));
   const L=P.map(p=>{const r=MAP_ORB.rMin+(big-MAP_ORB.rMin)*Math.sqrt((p.radius||1)/mR),ring=planetRing(p);
-    return {p,r,ext:ring&&r>5?r*ring.o:r};});
-  const r0=rr+24*U;let len=0;for(const o of L)len+=o.ext*2+MAP_ORB.gap*U;
-  const x0=8*U,y0=8*U,x1=mapRail(),y1=mapDeck();
-  const fits=(dx,dy)=>{const ex=sel.x+dx*(r0+len),ey=sel.y+dy*(r0+len),w=Math.max(...L.map(o=>o.ext));
-    return Math.min(ex,sel.x)-(dy?w:0)>=x0&&Math.max(ex,sel.x)+(dy?w:0)<=x1&&Math.min(ey,sel.y)-(dx?w:0)>=y0&&Math.max(ey,sel.y)+(dx?w:0)<=y1;};
-  const side=sel.x<(x0+x1)/2?1:-1,w=Math.max(...L.map(o=>o.ext));
-  /* рамка ряда по ходу d — против рамки таблички */
-  const clear=d=>{if(!avoid)return true;const ex=sel.x+d[0]*(r0+len),ey=sel.y+d[1]*(r0+len);
-    const bx0=Math.min(sel.x+d[0]*r0,ex)-(d[1]?w:0),bx1=Math.max(sel.x+d[0]*r0,ex)+(d[1]?w:0),by0=Math.min(sel.y+d[1]*r0,ey)-(d[0]?w:0),by1=Math.max(sel.y+d[1]*r0,ey)+(d[0]?w:0);
-    return !(bx1>avoid.x0&&bx0<avoid.x1&&by1>avoid.y0&&by0<avoid.y1);};
-  const C=[[0,1],[0,-1],[side,0],[-side,0]].filter(d=>fits(d[0],d[1]));
-  const D=C.find(clear)||C[0]||[0,sel.y<(y0+y1)/2?1:-1];
-  let d=r0;
-  return L.map(o=>{d+=o.ext;const f={p:o.p,r:o.r,ext:o.ext,x:sel.x+D[0]*d,y:sel.y+D[1]*d,dx:D[0],dy:D[1]};d+=o.ext+MAP_ORB.gap*U;return f;});
+    return {p,r,ext:ring&&r>5?r*ring.o:r};}),Lc=P.map(p=>({p,r:MAP_ORB.rMin,ext:MAP_ORB.rMin,flat:1}));
+  const r0=rr+24*U,g=MAP_ORB.gap*U,x0=8*U,y0=8*U,x1=mapRail(),y1=mapDeck();
+  const lay=(D,M)=>{let d=r0;return (M||L).map(o=>{d+=o.ext;const f={p:o.p,r:o.r,ext:o.ext,flat:o.flat,x:sel.x+D[0]*d,y:sel.y+D[1]*d,dx:D[0],dy:D[1]};d+=o.ext+g;return f;});};
+  const fits=F=>F.every(f=>f.x-f.ext>=x0&&f.x+f.ext<=x1&&f.y-f.ext>=y0&&f.y+f.ext<=y1);
+  const clear=(F,R)=>!R||F.every(f=>f.x+f.ext+g<=R.x0||f.x-f.ext-g>=R.x1||f.y+f.ext+g<=R.y0||f.y-f.ext-g>=R.y1);
+  const A=[].concat(you||[]).filter(Boolean),free=F=>A.every(R=>clear(F,R));
+  const side=sel.x<(x0+x1)/2?1:-1,q=Math.SQRT1_2;
+  const DIR=[[0,1],[0,-1],[side,0],[-side,0],[side*q,q],[side*q,-q],[-side*q,q],[-side*q,-q]];
+  const C=DIR.map(D=>lay(D)).filter(fits),Cc=DIR.map(D=>lay(D,Lc)).filter(fits),pl=F=>clear(F,avoid),both=F=>pl(F)&&free(F);
+  return C.find(both)||Cc.find(both)||C.find(pl)||Cc.find(pl)||C.find(free)||Cc.find(free)||C[0]||Cc[0]||lay([0,sel.y<(y0+y1)/2?1:-1]);
 }
-function mapOrbsDraw(sel,cell){
-  const HL=HANG.last.find(e=>e.id==="map.sel"),F=mapOrbFan(sel,cell,HL&&HL.r);if(!F.length)return F;
+function mapOrbsDraw(sel,cell,you){
+  const HL=HANG.last.find(e=>e.id==="map.sel"),F=mapOrbFan(sel,cell,HL&&HL.r,you);if(!F.length)return F;
   const c=hex2rgb(sel.s.cls.col||"#ffe08a"),m=Math.max(1,c[0],c[1],c[2]),sun=[c[0]/m,c[1]/m,c[2]/m];
   const a=F[0],b=F[F.length-1],U=mapU();
   /* ось ряда — волосок от кольца прицела до последнего мира: ряд читается схемой системы */
@@ -111,7 +113,7 @@ function mapOrbsDraw(sel,cell){
   for(const f of F){
     const lx=sel.x-f.x,ly=sel.y-f.y,l=Math.hypot(lx,ly)||1;
     /* запасной диск — пока конвейер своего рода собирается (первые кадры) или ?orb=0: цветом мира, не серым */
-    if(!(GOR.on&&gpuOrb(f.p,f.x,f.y,f.r,0,{sun,lit:[lx/l,ly/l],lz:MAP_ORB.lz,key:"m"})))mpDisc(f.x,f.y,f.r,mapOrbInk(f.p));
+    if(!(GOR.on&&gpuOrb(f.p,f.x,f.y,f.r,0,{sun,lit:[lx/l,ly/l],lz:MAP_ORB.lz,key:"m",noRing:f.flat})))mpDisc(f.x,f.y,f.r,mapOrbInk(f.p));
     mapInkBox(f.x-f.ext-2,f.y-f.ext-2,f.ext*2+4,f.ext*2+4);MAP_INK[MAP_INK.length-1].orb=1;
   }
   return F;

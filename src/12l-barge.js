@@ -387,7 +387,8 @@ function drawWrecksSystem(zx,zy,Z){
     if(!w.seen){
       const bl=Math.pow(Math.max(0,Math.sin(G.t*.05+w.seed)),8);
       if(bl>.02)SH.push([1,x,y-10,2.2,0,0,0,255,110,90,.9*bl]);
-      domLabel("wk"+(w.seed>>>0),x,y+22,"ОСТОВ БАРЖИ","8px ui-monospace,monospace","rgba(255,150,120,.7)","center");
+      /* не мельче 10 px и на телефоне: 8 px на 390 не читались (Контроль, 22.10) */
+      domLabel("wk"+(w.seed>>>0),x,y+Math.max(22,20*Z),"ОСТОВ БАРЖИ",uiFont(10),"rgba(255,150,120,.7)","center");
     }
   }
   if(SH.length)gpuShapes(pass,SH);
@@ -581,12 +582,15 @@ function drawBarges(zx,zy,Z){
         /* с видеокарты (ступень 1): огни — фигурами, полоса — прямоугольниками, имя — подписью */
         if(!bd)bargeLiveGpu(pass,b,x,y,s,b.a);
         const hp=clamp(b.hp/b.hullMax,0,1);
-        if(hp<.999)SH.push([0,x-24,y-30,x+24,y-27,0,0,255,255,255,.14],[0,x-24,y-30,x-24+48*hp,y-27,0,0,143,208,138,1]);
+        /* полоса и имя — за телом, а тело растёт с масштабом: на ×4 оба лежали на корпусе (1600, 22.10). До
+           масштаба ~2 отступы прежние; тело растёт с самим масштабом, не с s (s на ×4 — 1,05) */
+        const off=Math.max(30,16*Z);
+        if(hp<.999)SH.push([0,x-24,y-off,x+24,y-off+3,0,0,255,255,255,.14],[0,x-24,y-off,x-24+48*hp,y-off+3,0,0,143,208,138,1]);
         /* тревога висит табличкой у баржи (M826, 08bj), позывной молчит: он — её первая строка; корпус
            и полоса прочности — не подставка для неё */
         const sos=typeof CUE_AT!=="undefined"&&CUE_AT&&CUE_AT.obj===b;
         if(sos){const n=ovNd();hangBlock((x-32*s)*n,(y-33)*n,(x+32*s)*n,(y+20*s)*n);}
-        if(!(sos&&hangCueHung()))domLabel("bg"+domLabelId(b),x,y+30,"БАРЖА «"+b.capName.toUpperCase()+"»","8px ui-monospace,monospace","rgba(143,208,138,.8)","center");
+        if(!(sos&&hangCueHung()))domLabel("bg"+domLabelId(b),x,y+off,"БАРЖА «"+b.capName.toUpperCase()+"»",uiFont(10),"rgba(143,208,138,.8)","center");
       }
     }else if(pass&&G.tech.has("radar")){
       const ang=Math.atan2(b.y-G.ship.y,b.x-G.ship.x);

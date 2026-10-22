@@ -8,6 +8,15 @@
    его один кадр (stapelHullTick); 2D-холста и 2D-корпуса у листа нет (26.09).
    st.draft — черновик протяжки (stapelDraft): те же рамка и масштаб, без выпечки;
    st.cv — прежний холст листа: того же размера он и остаётся, вёрстка не дёргается */
+/* перо эмблемы на холсте движка (08ca GcCtx): договор пера карты 17z4 (line/circle/path/disc),
+   без подмены ctx и без mp2d — 2D-цель пера остаётся только сайту */
+function stapelPen(c){
+  const st=(w,col)=>{c.strokeStyle=col;c.lineWidth=w;};
+  return {line:(x0,y0,x1,y1,w,col)=>{st(w,col);c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();},
+    circle:(x,y,r,w,col)=>{st(w,col);c.beginPath();c.arc(x,y,r,0,TAU);c.stroke();},
+    path:(pts,w,col,closed)=>{st(w,col);c.beginPath();c.moveTo(pts[0],pts[1]);for(let i=2;i<pts.length;i+=2)c.lineTo(pts[i],pts[i+1]);if(closed)c.closePath();c.stroke();},
+    disc:(x,y,r,col)=>{c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();}};
+}
 function stapelSheet(o,cw,ch,st){
   st=st||{};
   const prog=clamp(st.prog==null?1:st.prog,0,1),by=o.by;
@@ -92,7 +101,7 @@ function stapelSheet(o,cw,ch,st){
   };
   const marks=c=>{
     /* эмблема хозяйки и номер стапеля */
-    const oldc=ctx;ctx=c;try{mp2d(()=>powerEmblem(by,cw-22,19,10));}finally{ctx=oldc;}
+    powerEmblem(by,cw-22,19,10,stapelPen(c));
     c.textAlign="right";c.textBaseline="middle";c.fillStyle=P.col||ink;c.font="10px ui-monospace,monospace";
     c.fillText(makerRu(by).toUpperCase(),cw-38,15);
     c.fillStyle="rgba(226,234,244,.5)";c.fillText("стапель № "+(1+((hashi(G.sx|0,G.sy|0,0x57A9)>>>0)%9)),cw-38,27);
