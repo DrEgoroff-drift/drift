@@ -4,9 +4,14 @@
    порода: человек сидит на его шлеме), карта тени дня над устьем (порода, разрез, человек),
    сцена, свет в воздухе в долю кадра, свечение, свёртка в сцену движка.
    Кадр F собирает 22dc: vp, eye, t, lamp {p,d}, reach, near, sun, dayK, mouth, lean, surfY,
-   lights [{p,r,c}], glows [{p,c,k,s}], skyLo, skyHi, draw [{geo,inst?,first,n,lamp,sun}]. */
+   lights [{p,r,c}], glows [{p,c,k,s}], skyLo, skyHi, draw [{geo,inst?,first,n,ifirst?,icount?,lamp,sun}]. */
 const CAVE3_GPU={dev:null,gen:-1,tier:-1,w:0,h:0,shn:0,ms:1,L:null,P:{},U:null,S:null,D:null,T:null,V:null,B:null,pp:null,
-  ga:[0,1,2,3].map(()=>new Float32Array(288)),stat:{tris:0,calls:0}};
+  ga:null,stat:{tris:0,calls:0}};
+/* числа кадра — один буфер, блоки по 1280 байт (шаг привязки 256): сцена, тень фонаря, тень дня,
+   зеркало озера. Кадр пишет одним вызовом и только изменившийся отрезок (как PLN_UB, 21pe) */
+const CAVE3_UB={main:0,shL:320,shS:640,refl:960,n:1280};
+CAVE3_GPU.stage=new Float32Array(CAVE3_UB.n);CAVE3_GPU.prev=new Float32Array(CAVE3_UB.n).fill(NaN);
+CAVE3_GPU.ga=["main","shL","shS","refl"].map(k=>CAVE3_GPU.stage.subarray(CAVE3_UB[k],CAVE3_UB[k]+288));
 /* числа стенда (docs/look/cv-render.js): тьма, воздух, фонарь, день */
 const CAVE3_K={amb:[.036,.054,.083],fogC:[.06,.1,.155],fog:.03,
   lampCol:[4,3.1,1.95],inner:32*PLN_DEG,outer:58*PLN_DEG,fall:3.2,fov:128*PLN_DEG,day:[1.3,1.42,1.4],
@@ -82,8 +87,11 @@ function cave3GpuDev(){
   Q.L=cave3Layouts(d);Q.L.post=null;
   Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
     cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
-  const ub=()=>d.createBuffer({size:1152,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
-  Q.U={main:ub(),shL:ub(),shS:ub(),refl:ub()};
+  /* Q.U.main — сам буфер: сцена лежит с нуля, и чужие привязки берут его целиком */
+  const all=d.createBuffer({size:CAVE3_UB.n*4,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  const at=k=>({buffer:all,offset:CAVE3_UB[k]*4,size:1152});
+  Q.U={main:all,mainR:at("main"),shL:at("shL"),shS:at("shS"),refl:at("refl")};
+  Q.prev.fill(NaN);
 }
 /* ── то, что живёт с ярусом: карты теней, привязка свёртки, конвейеры ── */
 function cave3GpuTier(){
@@ -98,7 +106,7 @@ function cave3GpuTier(){
   const L=Q.L;
   /* привязки сцены зависят от зеркала (размер кадра) — их собирает cave3GpuSize */
   Q.B0={main:null,refl:null,
-    sh:[Q.U.shL,Q.U.shS].map(u=>d.createBindGroup({layout:L.shadow,entries:[{binding:0,resource:{buffer:u}}]}))};
+    sh:[Q.U.shL,Q.U.shS].map(u=>d.createBindGroup({layout:L.shadow,entries:[{binding:0,resource:u}]}))};
   /* глубина сцены при сглаживании многовыборочная: воздух читает её первую выборку (cave3PipeDescs) */
   const mS=gpuShader(CAVE3_WGSL_SCENE+PLN_WGSL_WATER_CAVE),mP=gpuShader(cave3PostWgsl(Q.ms));
   for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
@@ -128,16 +136,16 @@ function cave3GpuSize(){
   const V={};for(const k in T)if(k!=="all"&&T[k])V[k]=Array.isArray(T[k])?T[k].map(t=>t.createView()):T[k].createView();
   Q.T=T;Q.V=V;Q.pp=[];
   const S=Q.S,D=Q.D,L=Q.L;
-  const scene=(u,rt)=>d.createBindGroup({layout:L.scene,entries:[{binding:0,resource:{buffer:u}},{binding:1,resource:D.lampV},
+  const scene=(u,rt)=>d.createBindGroup({layout:L.scene,entries:[{binding:0,resource:u},{binding:1,resource:D.lampV},
     {binding:2,resource:D.sunV},{binding:3,resource:S.cmp},{binding:4,resource:rt},{binding:5,resource:S.lin}]});
-  Q.B0.main=scene(Q.U.main,V.refl);Q.B0.refl=scene(Q.U.refl,V.dummy);
+  Q.B0.main=scene(Q.U.mainR,V.refl);Q.B0.refl=scene(Q.U.refl,V.dummy);
   const post=(a,texs,b)=>{
     const u=d.createBuffer({size:32,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
     b=b||[];
     d.queue.writeBuffer(u,0,new Float32Array([a[0],a[1],a[2]||0,a[3]||0,b[0]||0,b[1]||0,b[2]||0,b[3]||0]));
     Q.pp.push(u);
     const t=k=>texs[k]||V.dummy;
-    return d.createBindGroup({layout:L.post,entries:[{binding:0,resource:{buffer:Q.U.main}},{binding:1,resource:{buffer:u}},
+    return d.createBindGroup({layout:L.post,entries:[{binding:0,resource:Q.U.mainR},{binding:1,resource:{buffer:u}},
       {binding:2,resource:t(0)},{binding:3,resource:t(1)},{binding:4,resource:t(2)},{binding:5,resource:S.lin},
       {binding:6,resource:V.depth},{binding:7,resource:D.lampV},{binding:8,resource:D.sunV},{binding:9,resource:S.cmp}]});
   };
@@ -150,7 +158,7 @@ function cave3GpuSize(){
 }
 function cave3GpuReady(){
   if(!plnGpuReady())return false;
-  /* конвейер, что не собрался, не рисует молча пустоту: пещера уходит к старой рисовалке и называет причину */
+  /* конвейер, что не собрался, не рисует молча пустоту: пещера снимает свой вид (остаются приборы) и называет причину */
   const d=GPU.dev,re=(CAVE3_GPU.tier!==PLN_GPU.tier||!CAVE3_GPU.P.comp)&&typeof d.pushErrorScope==="function";
   if(re)d.pushErrorScope("validation");
   cave3GpuDev();cave3GpuTier();
@@ -190,9 +198,18 @@ function cave3Globals(a,F,vp,lamp,w,h){
 /* ── кадр ── */
 function cave3GpuFrame(F){
   const Q=CAVE3_GPU,e=GPU.enc,P=Q.P,B=Q.B,V=Q.V,D=Q.D,d=GPU.dev,ms=Q.ms,ga=Q.ga;
-  d.queue.writeBuffer(Q.U.main,0,cave3Globals(ga[0],F,F.vp,null,Q.w,Q.h));
-  d.queue.writeBuffer(Q.U.shL,0,cave3Globals(ga[1],F,F.vp,F.lampVP,Q.shn,Q.shn));
-  d.queue.writeBuffer(Q.U.shS,0,cave3Globals(ga[2],F,F.vp,F.sunVP,Q.shn,Q.shn));
+  const lake=F.lake&&F.water&&F.water.length;
+  cave3Globals(ga[0],F,F.vp,null,Q.w,Q.h);
+  cave3Globals(ga[1],F,F.vp,F.lampVP,Q.shn,Q.shn);
+  cave3Globals(ga[2],F,F.vp,F.sunVP,Q.shn,Q.shn);
+  if(lake){const y=F.lake.y;cave3Globals(ga[3],Object.assign({},F,{eye:plnWaterEye(F.eye,y),clipY:y+.02,clip:1}),plnWaterVP(F.vp,y),null,Q.T.refl.width,Q.T.refl.height);}
+  /* одна запись: от первого изменившегося числа до последнего (все записи очереди ложатся до сдачи кадра) */
+  {
+    const s=Q.stage,o=Q.prev;let a=0,b=s.length;
+    while(a<b&&s[a]===o[a])a++;
+    while(b>a&&s[b-1]===o[b-1])b--;
+    if(b>a){d.queue.writeBuffer(Q.U.main,a*4,s,a,b-a);o.set(s.subarray(a,b),a);}
+  }
   let tris=0,calls=0;
   const run=(p,pick,list)=>{
     for(const g of list||[]){
@@ -206,7 +223,9 @@ function cave3GpuFrame(F){
       const I=b.inst;if(I&&(I.n<=0||I.gen!==PLN_GPU.gen))continue;
       const n=b.n==null?g.n:b.n;if(n<=0)continue;
       p.setVertexBuffer(0,g.vb);p.setVertexBuffer(1,I?I.buf:PLN_GPU.one,I&&I.off||0);p.setIndexBuffer(g.ib,"uint32");
-      p.drawIndexed(n,I?I.n:1,b.first||0,0,0);calls++;tris+=n/3*(I?I.n:1);
+      /* first/n — отрезок индексов; ifirst/icount — отрезок записей, когда записи разных тел лежат в одном буфере */
+      const ni=I?(b.icount==null?I.n:b.icount):1;if(ni<=0)continue;
+      p.drawIndexed(n,ni,b.first||0,0,I?(b.ifirst||0):0);calls++;tris+=n/3*ni;
     }
   };
   /* человека нет в карте его фонаря: фонарь сидит на шлеме */
@@ -216,11 +235,9 @@ function cave3GpuFrame(F){
       depthStencilAttachment:{view:v,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
     p.setPipeline(P.shadow);p.setBindGroup(0,Q.B0.sh[l]);run(p,pick);p.end();
   });
-  const bg={r:CAVE3_K.fogC[0],g:CAVE3_K.fogC[1],b:CAVE3_K.fogC[2],a:1},lake=F.lake&&F.water&&F.water.length;
-  /* зеркало озера: сцена, отражённая в уровне воды, в полкадра; что под водой — отрезано */
+  const bg={r:CAVE3_K.fogC[0],g:CAVE3_K.fogC[1],b:CAVE3_K.fogC[2],a:1};
+  /* зеркало озера: сцена, отражённая в уровне воды, в полкадра; что под водой — отрезано (числа — ga[3] выше) */
   if(lake){
-    const y=F.lake.y,Fm=Object.assign({},F,{eye:plnWaterEye(F.eye,y),clipY:y+.02,clip:1});
-    d.queue.writeBuffer(Q.U.refl,0,cave3Globals(ga[3],Fm,plnWaterVP(F.vp,y),null,Q.T.refl.width,Q.T.refl.height));
     plnWaterMirror(e,{view:V.refl,depth:V.reflD,bg,ts:"cave3.refl",bind:Q.B0.refl,sky:null,body:P.bodyR,draw:p=>run(p,b=>b.refl)});
   }
   {

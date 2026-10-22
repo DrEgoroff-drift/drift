@@ -151,6 +151,8 @@ function hallWalkEngage(id){
   W.goal=null;W.go=null;W.v=0;W.x=p.x;W.at=id;W.eng=id;
   if(id!=="lock"){const has=stTabsHere(),t=p.tabs.filter(x=>has.indexOf(x)>=0);if(t.length&&t.indexOf(tab)<0){tab=t[0];syncTabs();}}
   hallGo(id==="lock"?"lock":hallPlaceOf(tab)==="site"&&id==="ship"?"site":id,false);HALL.gd=450;
+  /* подошёл к бару в кинодень — сеанс засчитан (27da: строка в журнале и в трудовой, раз на сеанс) */
+  if(id==="folk"&&typeof kinoWatch==="function")kinoWatch();
   hallWalkCls();renderTab();
 }
 function hallWalkBack(quiet){

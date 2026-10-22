@@ -181,3 +181,83 @@ centres the man's room; the man's share ≥ .05 far and ≥ .12 near at 1920×10
 390×844; the rig has `sit`; `?sect=0` leaves the old path; a base with no power lights
 rooms only by spill. The scene detectors (`90b/90c`) judge both frames after every gesture
 as they do today.
+
+## 9. The rest of M632: the build menu on the layer, the 2D brushes go (22.10)
+
+M632a–c are in (`21ae`, `21aea`, the per-frame overlay on `#ovl`); 0.499.15 took the 2D frame out
+of `21ae`'s switch and planet's `2b449867` (0.499.16) removed the old `drawBase` body and
+everything reachable only from it in `21ac`. What is left is one live 2D painter — the build menu
+— and a set of brushes nothing reaches any more. This step moves the one and removes the set.
+The §6 switch `?sect=0` is gone with them: the section is the base's only frame.
+
+**What goes, by name** (reachability over `src/` with comments stripped, on planet-main
+22.10; everything listed is reached only from inside this list):
+
+| Where | KB | Names |
+|---|---|---|
+| `21aa-base-rooms` (whole file) | 21.4 | `BM_WARM`, `BASE_PASS`, `bS`, `bL`, `bBox`, `ROOM_FIN`, `FIN_DEF`, `bPipe`, `bScreen`, `bCrate`, `bLamp`, `bHazard`, `bGlow`, `bWorker`; `drawBuildMenu` moves to the layer |
+| `21ab-base-interiors` (whole file) | 38.7 | `BASE_ROOM` and its rooms |
+| `21ab-base-interiors2` (whole file) | 24.6 | `Object.assign(BASE_ROOM,{…})` — the second half of the rooms |
+| `21ac-base-draw` (whole file) | 2.8 | comments only after `2b449867` |
+| `21ad-base-gpu` (whole file) | 14.3 | `BASE_BK`, `BASE_LAMP_KEYS`, `BASE_WGSL_HEAD`, `baseWgslHead`, `baseLightWgsl`, `baseAirWgsl`; `baseBakeFree` stays as a name (below) |
+| `21ac1-base-banya` | ≈ 8 | `BASE_ROOM.banya` (the steam room brush) |
+| `21ac2-base-farm` | ≈ 4 | `BASE_ROOM.farm` |
+| `21ac3-base-van` | 4.0 | `drawVan`, `drawVanSmall` |
+| `21ac4-base-fridge` | ≈ 2 | `BASE_ROOM.fridge`, `BASE_ROOM.fridgesub` |
+
+About 120 KB in all; the exact count goes with the commit.
+
+**What stays, byte for byte:** the logic of `21ac1`–`21ac4` in its files under its names —
+`banyaLive`, `banyaWarm`, `banyaSpirit`, `banyaStep`, `banyaRested`, `gribOn`, `gribStart`,
+`gribMul`, `gribEat`, `gribAvral`, `gribCut`, the `BANYA_*`/`GRIB_*` constants; `farmCell`,
+`farmWanted`, `beastTake`, `farmOf`, `farmBeast`, `farmName`, `farmGood`, `farmTalk`, `farmEnter`,
+`farmStep`, `FARM_*`; `vanHasPad`, `vanOf`, `vanName`, `vanQuirk`, `vanLine`, `vanRename`,
+`vanStart`, `vanStep`, `VAN_*`; `fridgeFirmAt`, `fridgeFee`, `fridgeLocked`, `fridgeStep`,
+`subFightOffer`, `FRIDGE_*`; the `BLOG` entries. Proof: the remaining declarations diff empty
+against main, and `91zzzzzbb-samehash` and the save fuzz stay green.
+
+**The build menu on the layer** (`sectOvMenu` in `21ae`, beside `sectOvBoard`). Today it is a
+420 px strip of all 20 kinds — 21 px a cell, names cut to nine letters in 8 px type: it cannot be
+read at 1920 and at 390 it is 17 px a cell. It is also the only thing that puts the 2D canvas back
+while it is open, and with it the full-frame copy (front2: 1.2 ms on the PC, 3.4 on the phone).
+The new strip:
+
+- a row of cells centred on the picked one, sliding as `S.pick` moves (eased 150 ms, never a
+  jump); arrows at the ends while cells are hidden on that side;
+- a cell is 84 × 60 CSS px on the PC (9 shown, 776 px) and 64 × 56 on the phone (5 shown at 390,
+  with the 16 px gutters) — every cell is a tap target ≥ 44 px; in the `uiK` measure;
+- in a cell: the kind's name in two lines of 10 px (no cutting), the price from `baseCost` (this
+  base's estimate) — «1800 кр · 6 спл»; a kind that cannot be built here is dimmed with its
+  reason in one short word under the price (наука / фирма / сверху), read from the same fields
+  `21a` reads (`needTech`, `firm`, `surfaceOnly`);
+- the picked cell in the amber frame of the board, the others on the board's dark plate;
+- the strip's bottom sits 12 px over the top of the bottom controls (`PADS_RECT`,
+  `CONSOLE_RECT` — the layout the canvas publishes), never over the man: the near lens puts
+  him in the middle third;
+- a tap on a cell picks it (`S.pick=i` — the same field the arrows set); building stays on the
+  ДЕЙСТВИЕ button, which already says the verb. The tap is taken in `21ae` on the layer's own
+  pointer listener only while `G.mode==="base"&&S.menu` and only inside a cell; `15-input` is not
+  touched. The long text — what the kind does, the lock — stays on the room's plate (`G.prompt`
+  of `21a`, as now).
+
+**No WebGPU.** The base has no frame without the GPU: the plate of `08b2` (`gpuNone`) closes the
+screen, as for the rooms and the home — one mechanism for the game.
+
+**Seams.** `21a-mode-base` is read-only and calls `baseBakeFree()` on leaving, so `21ae` keeps the
+name as an empty function — the section makes no bakes. `drawBase` is already `21ae`'s own
+declaration (`2b449867`).
+
+**Control's part.** `08b0`: drop `fld.baselight` and `fld.baseair` from the late warm-up (the
+table at line 39 and the pipe keys at line 97) — their WGSL leaves with `21ad`; both must go in
+the same release as this commit, or the warm-up throws on a missing function. `28-loop`: nothing —
+it calls `drawBase` by name. `21phc`: `rigCardWorker` has no caller once `bWorker` is gone; it is
+planet's to remove or keep.
+
+**Tests.** `91qf-sect` loses the `?sect=0` path and gains: with the menu open the 2D canvas stays
+empty and the layer holds one cell per shown kind; the picked cell is whole inside 390 px; every
+cell ≥ 44 × 44 CSS px; a tap on a cell sets `S.pick`. `90c-detect-laws` changes in a comment only.
+
+**Gate.** The section at both lenses, PC 1920 and phone 390, day and night, before and after the
+removal — pixel diff ≈ 0; the menu frame new at both sizes; `test.ps1`, `-Full`,
+`node test-node.js --full` and `-Browser` green; the section's frame by `cost.py` with the menu
+open no dearer than closed.
