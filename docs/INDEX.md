@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 636 · top-level symbols: 8727
+Files: 637 · top-level symbols: 8731
 
 ## SYMBOLS
 
@@ -4103,6 +4103,10 @@ e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
 ecoEstate                    tests/91zzzw4-ecosim-est.js:5-163
+ecoNormFold                  tests/91zzzw4-ecosim-rep.js:15-19
+ecoNormNow                   tests/91zzzw4-ecosim-rep.js:4-13
+ecoNormSum                   tests/91zzzw4-ecosim-rep.js:20-26
+ecoPrint                     tests/91zzzw4-ecosim-rep.js:27-77
 econCycleMul                 src/12ax-fx-econ.js:27-34
 econEmbargoOn                src/12ax-fx-econ.js:56-61
 econFairHere                 src/12ax-fx-econ.js:48-54
@@ -10597,8 +10601,10 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw4-ecosim-est.js · 12 KB
 
-## tests/91zzzw4-ecosim.js · 48 KB
-  · проба · экономика (M903):1
+## tests/91zzzw4-ecosim-rep.js · 8 KB
+
+## tests/91zzzw4-ecosim.js · 39 KB
+  · проба · экономика (M903, M912):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
   · причальная полоса не перебивает посадку (0.493.4):1
