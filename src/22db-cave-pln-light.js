@@ -205,7 +205,7 @@ function cave3GpuFrame(F){
       const g=b.geo;if(!g||g.gen!==PLN_GPU.gen||!pick(b))continue;
       const I=b.inst;if(I&&(I.n<=0||I.gen!==PLN_GPU.gen))continue;
       const n=b.n==null?g.n:b.n;if(n<=0)continue;
-      p.setVertexBuffer(0,g.vb);p.setVertexBuffer(1,I?I.buf:PLN_GPU.one);p.setIndexBuffer(g.ib,"uint32");
+      p.setVertexBuffer(0,g.vb);p.setVertexBuffer(1,I?I.buf:PLN_GPU.one,I&&I.off||0);p.setIndexBuffer(g.ib,"uint32");
       p.drawIndexed(n,I?I.n:1,b.first||0,0,0);calls++;tris+=n/3*(I?I.n:1);
     }
   };
