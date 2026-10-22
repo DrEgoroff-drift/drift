@@ -292,6 +292,8 @@ function plnOwnFlat(L){
   if(V)for(const f of V)o.push(f);
   const J=typeof plnTinFlat==="function"?plnTinFlat(L):null;   /* плита Жестянки (21piia) */
   if(J)for(const f of J)o.push(f);
+  const Q=typeof plnPlaceFlat==="function"?plnPlaceFlat(L):null;   /* чаша и яма лестницы (21piig) */
+  if(Q)for(const f of Q)o.push(f);
   return o.length?o:null;
 }
 /* ── теплица: грядки читают вид (M204) ──
@@ -473,6 +475,8 @@ function plnOwnStep(L,S,lim){
   if(typeof plnGlwStep==="function")plnGlwStep(L,S);   /* уезд света (21piic) */
   if(typeof plnPeepStep==="function")plnPeepStep(L,S);   /* мат свидетеля (21piid) */
   if(typeof plnSlowStep==="function")plnSlowStep(L,S);   /* выкладка медленной долины (21piie) */
+  if(typeof plnPassStep==="function")plnPassStep(L,S);   /* корабль перевала (21piif) */
+  if(typeof plnPlaceStep==="function")plnPlaceStep(L,S);   /* три места (21piig) */
   return typeof plnSetStep==="function"?plnSetStep(L,S):true;   /* посёлок (21pii) */
 }
 /* Ставит свои вещи в кадр: тела, свет записями, лампы ночью. ex — где объектив, V — {hw, D}, nk — ночь */
@@ -529,6 +533,8 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
   if(typeof plnGlwFrame==="function")plnGlwFrame(F,ex,V,nk,want);   /* уезд света (21piic): банки у площадки, пятна ядра */
   if(typeof plnPeepFrame==="function")plnPeepFrame(F,ex,V,typeof celDark==="function"?celDark():0);   /* мат свидетеля (21piid) */
   if(typeof plnSlowFrame==="function")plnSlowFrame(F,ex,V);   /* выкладка медленной долины (21piie) */
+  if(typeof plnPassFrame==="function")plnPassFrame(F,ex,V);   /* корабль перевала (21piif) */
+  if(typeof plnPlaceFrame==="function")plnPlaceFrame(F,ex,V);   /* три места (21piig) */
   want.sort((u,v)=>u.o-v.o);
   /* в кадр — две по старшинству из тех, чей свет до кадра достаёт: пирс за кромкой уступает лампе кромки у ворот */
   const seen=want.filter(w=>Math.abs(w.l.p[0]-ex)<V.hw*(1+Math.max(0,w.l.p[2])/V.D)+w.l.r);
@@ -565,6 +571,7 @@ function plnOwnPads(tr,p,L){
   if(bx!=null)o.push([bx/PLN_M,OWN.yardZ,11,8,9]);
   const v=typeof plnSetPad==="function"?plnSetPad(tr,p):null;if(v)o.push(v);   /* полка посёлка (21pii) */
   const j=typeof plnTinPad==="function"?plnTinPad(tr,p):null;if(j)o.push(j);   /* плита Жестянки (21piia) */
+  const q=L&&typeof plnPlacePad==="function"?plnPlacePad(tr,p,L):null;if(q)o.push(q);   /* три места (21piig) */
   const t=typeof traceHere==="function"&&G.surf&&G.surf.p===p?traceHere():null;   /* чужой след (21piib) */
   if(t&&t.x!=null)o.push([t.x/PLN_M+.9,1.9,2.4,1.4,3]);
   return o;

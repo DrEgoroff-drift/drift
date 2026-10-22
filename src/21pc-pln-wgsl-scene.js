@@ -280,6 +280,10 @@ fn lampShade(w: vec3f, lp: vec3f) -> f32 {
     }
   }
   if (mat == 4) {
+    /* постройка в своей тени держит цвет дерева: заливка от освещённой земли и неба, только там,
+       куда солнце не берёт — рассеянный свет не трогаем (днём теневые стены посёлка были силуэтами) */
+    let shd = 1.0 - lit * sh * cl;
+    c += alb * (g.bounce.rgb * (1.0 - N.y * 0.5) * 0.55 + g.ambSky.rgb * 0.22) * (cl * fg * shd);
     let hv = normalize(L + V);
     c += sun * pow(clamp(dot(N, hv), 0.0, 1.0), 60.0) * ex * lit * 1.5;
     let rv = reflect(-V, N);

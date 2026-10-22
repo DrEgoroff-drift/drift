@@ -430,18 +430,22 @@ function plnSetMark(K,m,W,H,C){
 
 /* дым труб записями: s = [x, y, z, сила, клубов] от места pos; зовёт и Жестянка (21piia).
    Тонкая струя, не столб облаков: клуб мал у трубы, растёт и редеет кверху — запись-вуаль (режим 3)
-   несёт долю непрозрачности, проход вуали (21pe) смешивает её с тем, что за дымом (у трубы ≈ .4, верхний клуб ≤ .2).
-   Клубы идут неровно: у каждого своя скорость, сдвиг и рост — ровная цепочка шаров читалась бусами.
-   Ночью у трубы дым подсвечен очагом (тёплый, светлее неба), выше почти невидим */
+   несёт долю непрозрачности, проход вуали (21pe) смешивает её с тем, что за дымом.
+   Без бус: клубы одной трубы идут ровным шагом по фазе, и шаг по высоте меньше поперечника клуба
+   даже у трубы — соседи перекрываются, струя сплошная. Сумма перекрытий у трубы ≈ .4, вверху ≤ .07
+   (доля клуба падает быстрее, чем растёт перекрытие). Неровность — сдвигом, ростом и ветром, не шагом.
+   Тон от горизонта неба: днём чуть темнее его, ночью чуть светлее; у трубы ночью подсвечен очагом */
 function plnSetSmoke(F,sa,inst,smoke,pos,t,nk){
-  const wd=WIND||0,cap=sa.length>>4;let n=0;
-  for(let j=0;j<smoke.length;j++){const s=smoke[j];
-    for(let i=0,ni=Math.round((s[4]||7)*2.6);i<ni&&n<cap;i++){const u=plnHash(i,j,71),v=plnHash(i,j,72),w2=plnHash(i,j,73);
-      const ph=(t*.055*(.8+.4*u)/(.6+s[3]*.4)+v)%1,hh=ph*5.6*s[3];
-      const sc=s[3]*(.24+ph*1.3)*(.8+.4*w2)*plnSmooth(0,.06,ph);
-      const al=(.42-.1*w2)*Math.pow(1-ph,1.5)*(1-.4*nk),lo=nk*(1-plnSmooth(0,.3,ph));
-      const g=.86*(1-.75*nk)+.1*w2,c=[g+lo*.5,g+lo*.26,g+lo*.08];
-      plnRec(sa,n++,[pos[0]+s[0]+wd*hh*.8+(u-.5)*.22*ph*s[3],pos[1]+s[1]+hh,pos[2]+s[2]+ph*.5+(w2-.5)*.25],Math.max(.002,sc),i*1.7+j,1,0,c,3,[al,0,0]);}}
+  const wd=WIND||0,cap=sa.length>>4,sk=(F.look&&F.look.skyHor)||[.6,.66,.72];let n=0;
+  /* 0.6 — сетка клуба (≈.7) на его свечение (.85): запись несёт тон, делённый на это */
+  const kd=lerp(.78,1.25,nk)/.6,ad=.03*nk/.6,tone=[sk[0]*kd+ad,sk[1]*kd+ad,sk[2]*kd+ad*1.3];
+  for(let j=0;j<smoke.length;j++){const s=smoke[j],ni=Math.round((s[4]||7)*4),rate=.055/(.6+s[3]*.4);
+    for(let i=0;i<ni&&n<cap;i++){const u=plnHash(i,j,71),w2=plnHash(i,j,73);
+      const ph=(t*rate+(i+.35*(u-.5))/ni)%1,hh=ph*5.6*s[3];
+      const sc=s[3]*(.36+ph*1.4)*(.88+.24*w2)*plnSmooth(0,.012,ph);
+      const al=(.3-.05*w2)*Math.pow(1-ph,2.4)*(1-.3*nk),lo=nk*(1-plnSmooth(0,.3,ph)),gv=.94+.12*w2;
+      const c=[tone[0]*gv+lo*.5,tone[1]*gv+lo*.26,tone[2]*gv+lo*.08];
+      plnRec(sa,n++,[pos[0]+s[0]+wd*hh*.8+(u-.5)*.16*ph*s[3],pos[1]+s[1]+hh,pos[2]+s[2]+ph*.5+(w2-.5)*.18*ph],Math.max(.002,sc),i*1.7+j,1,0,c,3,[al,0,0]);}}
   plnInstSet(inst,sa,n);
   if(n)F.batches.push({geo:plnSetPuff(),inst,first:0,count:n,kind:PLN_KIND.veil,to:PLN_TO.main});
 }
@@ -468,9 +472,9 @@ function plnSetStep(L,S){
   plnSetFree();
   const sd=hashi(A.S.seed|0,0x5E7,3),M=plnSetMesh(L,A,sd,st,S.p),g=x=>x&&x.nv?plnGeo(plnMeshDone(x)):null;
   const it={A,key,st,sd,geo:g(M.body),light:g(M.light),fire:g(M.fire),door:M.door?g(M.door.m):null,spill:g(M.spill),doorW:M.door?M.door.w:0,
-    smoke:M.smoke,fires:M.fires,blots:M.blots,hw:M.hw,lampAt:M.lampAt,a:new Float32Array(16*5),sa:new Float32Array(16*160),inst:null,sinst:null};
+    smoke:M.smoke,fires:M.fires,blots:M.blots,hw:M.hw,lampAt:M.lampAt,a:new Float32Array(16*5),sa:new Float32Array(16*240),inst:null,sinst:null};
   for(let i=0;i<5;i++)plnRec(it.a,i,[A.x,A.y,A.z],1,0,1,sd%97,i?[1,1,1]:null);
-  it.inst=plnInst(it.a,5,5);it.sinst=plnInst(null,0,160);
+  it.inst=plnInst(it.a,5,5);it.sinst=plnInst(null,0,240);
   SET.it=it;return true;
 }
 /* в кадр: тела, свет окон, дрожь огня, створка уезда по шуму, дым; лампа очага — в общий выбор своих ламп */
