@@ -64,14 +64,22 @@ function plnDescent(){
       /* ламп в кадре четыре (21pe): у плиты — тяга, два огня стоек, фара. Высоко (СР · Визуал, M830) огни
          стоек — один свет, и слот отдан пятну фары на земле под кораблём: ночью это единственный свет людей в
          кадре, по нему видно, куда садимся, и равнина перестаёт быть ровной */
-      const hi=plnSmooth(5,11,alt);
-      plnPadFrame(F,Ld,tr,touched?0:plnSmooth(2.5,3.5,alt),hi);
-      /* фара: у плиты — белая, над кораблём к объективу; высоко — тёплая и ниже носа, лепит брюхо и борт,
-         которые иначе чёрный силуэт на небе */
-      if(dusk>.05&&F.lamps.length<4)F.lamps.push({p:[sp[0]-2.2*hi,sp[1]+.8-4*hi,sp[2]-4.5],r:10+4*hi,
-        c:[lerp(.95,1,hi),lerp(.9,.76,hi),lerp(.8,.5,hi)],k:1.6*dusk*(1+.4*hi)});
+      const hi=plnSmooth(5,11,alt),sky=plnSmooth(26,34,alt);
+      /* выше ~30 м свет площадки отдаёт слот небу: её огни и так горят (тела), а корпусу нужен рим */
+      plnPadFrame(F,Ld,tr,touched?0:plnSmooth(2.5,3.5,alt),sky>.98?2:hi,1-sky);
+      /* свет корабля ночью (M830c, СР · Визуал): три правила корабля перевала — тёплые лужи под окнами (лампа
+         у фонаря носа светит на щёку и борт под ним), небесный рим по дуге спины (холодная лампа над кораблём,
+         на стекле — её блик), стекло в кольце — материал 21phb, здесь не делается. У плиты фара прежняя —
+         белая, к объективу; на высоте она и есть свет окон */
+      const Dq=plnShip().D,yw=.2,cy=Math.cos(yw),sy=Math.sin(yw),lm=Dq.lenM,ryN=Dq.ry(lm*.22),
+        at=(x,y,z)=>[sp[0]+x*cy+z*sy,sp[1]+y,sp[2]-x*sy+z*cy];
+      const pw=hi<.5?[sp[0],sp[1]+.8,sp[2]-4.5]:at(lm*.22,ryN*1.15,-ryN*2.4);
+      if(dusk>.05&&F.lamps.length<4)F.lamps.push({p:pw,r:hi<.5?10:lm*.9,
+        c:[lerp(.95,1,hi),lerp(.9,.78,hi),lerp(.8,.5,hi)],k:1.6*dusk*(1+1.4*hi)});
       const pk=dusk*hi;
       if(pk>.02&&F.lamps.length<4)F.lamps.push({p:[sp[0],sp[1]-alt+.6,sp[2]],r:5+.38*alt,c:[1,.80,.55],k:1.9*pk});   /* пятно — под кораблём, не на всю рощу */
+      const rk=dusk*sky;
+      if(rk>.02&&F.lamps.length<4)F.lamps.push({p:at(-lm*.05,Dq.ry(0)*2.2+2.5,1.2),r:lm*1.9,c:[.55,.68,.95],k:2.8*rk});
       /* выхлоп бьёт в землю: пятно света на грунте под соплами — трава и брюхо в его отсвете */
       const wk=thr*plnSmooth(24,2,alt);
       if(wk>.02&&F.lamps.length<4)F.lamps.push({p:[sp[0],sp[1]-alt+.6,sp[2]],r:3+.22*alt,c:[1,.58,.25],k:2.6*wk});}});
@@ -173,7 +181,7 @@ function plnPadLift(Ld,tr,wy,x){
   if(Math.abs(x-px)>PLN_LPAD.hx)return 0;
   return Math.max(0,plnPadTop(Ld,tr,wy)-plnLandRibAt(Ld,x,Ld.shipZ));
 }
-function plnPadFrame(F,Ld,tr,kw,hi){
+function plnPadFrame(F,Ld,tr,kw,hi,lk){
   if(!Ld)return;
   const Q=plnPadGeo(),px=tr.padX/PLN_M,pz=Ld.shipZ+Q.dz,yaw=Ld.shipYaw||0,cs=Math.cos(yaw),sn=Math.sin(yaw);
   const t=(G.t/60)%7200,c=Q.col,top=plnPadTop(Ld,tr,F.waterY),dusk=plnSmooth(.1,.6,(PLN.sun&&PLN.sun.night)||0);
@@ -201,7 +209,7 @@ function plnPadFrame(F,Ld,tr,kw,hi){
     /* светят на плиту в сумерках и ночью; днём их свет тонет в солнце, место лампы — другим */
     if(dusk>.05&&F.lamps.length<4){
       if(!(hi>.5))F.lamps.push({p,r:10,c:[1,.66,.34],k:2.2*dusk});
-      else if(i===0)F.lamps.push({p:at(0,Q.post+.1,Q.hz-.45),r:12,c:[1,.66,.34],k:3*dusk});   /* высоко — один свет на обе стойки */
+      else if(hi<1.5&&i===0)F.lamps.push({p:at(0,Q.post+.1,Q.hz-.45),r:12,c:[1,.66,.34],k:3*dusk*(lk==null?1:lk)});   /* высоко — один свет на обе стойки; выше ~30 м — ни одного */
     }
   }
   plnInstSet(Q.iu,Q.u,nu);
