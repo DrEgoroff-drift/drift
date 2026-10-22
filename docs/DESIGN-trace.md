@@ -45,6 +45,11 @@ with the goods beside it. Walking up to it offers **ПОДНЯТЬ**. Taking it 
 hold, writes one line in the notebook (НАХОДКИ), and tells the server, so it is gone for
 everyone: the first to arrive gets it.
 
+Since M631 (22.10.2026) the trace is a body in the planet frame (`21q-trace-body`), not a 2D sticker:
+a faceted standing slab in the stone language of the deposit boulders, set just behind the path,
+with the mark carved on its face (dark groove, light lower lip) and one to three tied sacks beside
+it, coloured by what is in them. The frame draws nothing on `#c`; the 2D gate guards it.
+
 Never a marker on the map, never an arrow, never a count of how many are out there. You find
 it because you walked past it.
 

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 634 · top-level symbols: 8710
+Files: 635 · top-level symbols: 8721
 
 ## SYMBOLS
 
@@ -718,7 +718,7 @@ GAL_STAR_RED                 src/17z3-map-gpu.js:164
 GAL_STAR_SCREEN              src/17z1-galaxy.js:82
 GAL_VER                      src/17z1-galaxy.js:18
 GAL_WGSL                     src/17z3-map-gpu.js:25
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-232
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-242
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GAUGE_MID                    src/28l-gauge.js:23
@@ -2296,9 +2296,13 @@ TIN_ON                       src/12ta-tin.js:35
 TIN_UNIT                     src/12ta-tin.js:38-44
 TOLD_LAG                     src/11aj-told.js:32
 TOPO_FMT                     src/12al1-toponym.js:6-13
+TRACE_BODY                   src/21q-trace-body.js:16
+TRACE_BODY_AT                src/21q-trace-body.js:144
+TRACE_BODY_SZ                src/21q-trace-body.js:18
+TRACE_BODY_THINGS            src/21q-trace-body.js:124
+TRACE_BODY_Z                 src/21q-trace-body.js:17
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32-45
-TRACE_SC                     src/11ag-trace.js:191
 TRACK_LIFE                   src/21-mode-surface.js:6
 TRADE_KEYS                   src/02-world.js:143
 TRAIL                        src/16-flight.js:233
@@ -8342,10 +8346,17 @@ towShare                     src/03f-hull-role.js:87-89
 traceAll                     src/11ag-trace.js:48
 traceAsk                     src/11ag-trace.js:88-103
 traceBigRes                  src/11ag-trace.js:141-148
+traceBodyBag                 src/21q-trace-body.js:89-95
+traceBodyCarve               src/21q-trace-body.js:72-87
+traceBodyDrop                src/21q-trace-body.js:118-122
+traceBodyFace                src/21q-trace-body.js:41-50
+traceBodyMesh                src/21q-trace-body.js:97-117
+traceBodySlab                src/21q-trace-body.js:52-70
+traceBodyStrokes             src/21q-trace-body.js:21-39
 traceBusy                    src/11ag-trace.js:80
 traceCall                    src/11ag-trace.js:81-86
 traceCanLeave                src/11ag-trace.js:149-153
-traceDraw                    src/11ag-trace.js:192-278
+traceDraw                    src/11ag-trace.js:184
 traceDrawMark                src/11ag-trace.js:175-181
 traceHand                    src/11ag-trace.js:69
 traceHashOf                  src/11ag-trace.js:63-67
@@ -8932,7 +8943,7 @@ zoomTo                       src/15-input.js:358
 ## src/11af-domino.js · 6 KB
   · домино за столом:1
 
-## src/11ag-trace.js · 17 KB
+## src/11ag-trace.js · 11 KB
   · чужой след: одна метка на всю жизнь:1
 
 ## src/11ah-offer.js · 24 KB
@@ -10001,6 +10012,9 @@ zoomTo                       src/15-input.js:358
 ## src/21pzd-surf-laws.js · 5 KB
   · законы поверхности: вещи не стоят друг на друге (22.10):1
 
+## src/21q-trace-body.js · 10 KB
+  · чужой след телом: плита со знаком и груз у неё (M631, замысел M171 — 11ag):1
+
 ## src/22-mode-cave.js · 27 KB
   · пещера: поле породы в двух измерениях:1
 
@@ -10657,7 +10671,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzw-travel.js · 8 KB
   · вечер не по времени, а по дороге (M359):1
 
-## tests/91zzzzzzy3-gate2d.js · 24 KB
+## tests/91zzzzzzy3-gate2d.js · 25 KB
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 12 KB

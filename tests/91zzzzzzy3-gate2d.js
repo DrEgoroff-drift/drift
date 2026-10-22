@@ -25,6 +25,16 @@ function gate2dChips(){
   return null;
 }
 const GATE2D=[
+  {name:"чужой след (21q, M631): плита и груз — тела в кадре планеты, на #c ни штриха",
+   painters:["traceDraw","plnThingsFrame","traceBodyMesh"],probe:["plnThingsFrame"],
+   place(first){
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";traceBodyDrop();}
+     const S=G.surf;if(!S)return null;
+     if(!S.trace||S.trace.key!=="gate2d")S.trace={key:"gate2d",m:5,h:"0a1b2c",i:"1",r:"ice",n:3,x:S.x+20};
+     return {S};},
+   done(){ok(TRACE_BODY.n>0&&!TRACE_BODY.err,"чужой след: тело собрано ("+TRACE_BODY.n+")"+(TRACE_BODY.err?" — "+TRACE_BODY.err:""));
+     if(G.surf)G.surf.trace=null;traceBodyDrop();}},
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
    place(){
