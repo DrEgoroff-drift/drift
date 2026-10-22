@@ -12,7 +12,7 @@
      ECO_HUMAN=1 темп человека · ECO_EST=0 без хозяйства · ECO_DRONE=dear дрон на дорогой руде ·
      ECO_LOGIST=1 логист на базе · ECO_SHOPS=N цехов (0 — база без них) · ECO_EATER=1 едок промтовара ·
      ECO_LEVER=abc рычаги цехов, ECO_LEVER_MUL цена × (-est) · ECO_SAVE=1 лестница после сейва ·
-     ECO_BUY=0 свежий без покупок · ECO_FRESH_H часы свежего · ECO_T1=1|2 путь T0→T1 · ECO_TRACE подробности */
+     ECO_BUY=0 свежий без покупок · ECO_FRESH_H часы свежего · ECO_T1=1|2 путь T0→T1 · ECO_SEED=N сид · ECO_PAD=dock пауза у причала · ECO_TRACE подробности */
 suite("проба · экономика",{tier:"probe"},()=>{
   const ENV=(globalThis.process&&globalThis.process.env)||{};
   const HOURS=Math.max(.1,+ENV.ECO_HOURS||1);
@@ -375,7 +375,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
       return {frames:G.t-t0,mined};
     }
     /* человек: круг не короче шести минут, с учётом сводки на стыковке */
-    if(HUMAN){const pad=HUM.lap-HUM.dock-(G.t-t0)/FR;if(pad>0)idle(pad,"паузы");}
+    /* ECO_PAD=dock (M920): тот же остаток — у причала, а не в открытом космосе */
+    let padL=0;if(HUMAN){const pad=HUM.lap-HUM.dock-(G.t-t0)/FR;if(pad>0){if(ENV.ECO_PAD==="dock")padL=pad;else idle(pad,"паузы");}}
     PHASE="к станции";
     /* станция: продать, заправить, починить */
     r=T.bot("station");if(!r.ok){note("station: "+r.why);return false;}
@@ -387,7 +388,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       r=botH("dock");
     }
     if(!r.ok){note("dock: "+r.why);return false;}
-    if(HUMAN)idle(HUM.dock,"паузы");
+    if(HUMAN)idle(HUM.dock+padL,"паузы");
     if(EST.on)estHaul();
     PHASE="sell";
     for(const k of TRADE_KEYS.concat(FAR_KEYS)){const q=G.cargo[k];if(q>0){const v=sellCargo(G.sys,k,q);
@@ -442,6 +443,9 @@ suite("проба · экономика",{tier:"probe"},()=>{
   /* ── ярус: корпус, модули, руки, дроны, управляющие ── */
   function setup(tier){
     resetWorld();
+    /* M920: сид — поток случайностей и час входа в игру (сид × 26.3 ч): события мира в T0 идут
+       от хэшей места и часов, один поток их не двигает (10 сидов без сдвига — один и тот же прогон) */
+    if(ENV.ECO_SEED){rndSeed(+ENV.ECO_SEED);clockSet(clockNow()+(+ENV.ECO_SEED)*94620000);}
     G.opts.autoDock=false;
     G.shipId=tier.hull;G.owned[tier.hull]=true;G.owned.strizh=true;
     for(const k in tier.mods){G.mods[k]=tier.mods[k];G.modsOwned[k]=tier.mods[k];}
@@ -544,7 +548,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       drn:G.drones.map(d=>({res:d.res,h:Math.max(1e-9,(clockNow()-(d.bornMs||d.t0||clockNow()))/3600000),
         earned:d.earned|0,trips:d.trips|0,down:d.down|0}))});
   }
-  stepWorld=sw0;
+  stepWorld=sw0;FRESH.off();
   ecoPrint(rows,{hours:HOURS,human:HUMAN,env:ENV,hireFee:HIRE_FEE});
   ok(rows.length>=1&&rows.every(r=>r.hrs>0),"экономика прогнана: "+rows.length+" ярусов");
 });
