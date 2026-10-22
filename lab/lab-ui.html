@@ -41,8 +41,6 @@ header{display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:
 /* ── раскладка ── */
 main{flex:1;display:grid;grid-template-columns:340px 1fr;gap:14px;padding:14px;min-height:0;position:relative;z-index:1}
 .col{display:flex;flex-direction:column;gap:14px;min-height:0}
-main>.col:first-child{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;padding-right:2px}
-main>.col:first-child>.card{flex:none}
 .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:6px;position:relative}
 .card>h3{margin:0;padding:10px 14px;font:600 11px var(--mono);letter-spacing:.2em;color:var(--dim);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
 .card>h3 .sp{flex:1}
@@ -60,15 +58,6 @@ input[type=range]{width:100%;accent-color:var(--cy);height:20px}
 .seg button:last-child{border-right:0}
 .seg button.on{background:var(--cy2);color:#fff}
 .seg button:hover:not(.on){background:#ffffff08}
-.grp{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
-.grp button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:none;border:1px solid var(--line2);border-radius:4px;padding:7px 9px;min-height:44px;cursor:pointer;color:var(--dim)}
-.grp button b{font-size:12px;font-weight:600;color:inherit;display:flex;gap:6px;align-items:center;width:100%}
-.grp button b i{width:8px;height:8px;border-radius:2px;border:1px solid var(--line2);flex:none}
-.grp button em{font-style:normal;font-size:10px;color:var(--cy);opacity:.8;padding-left:14px}
-.grp button small{font-size:10.5px;line-height:1.3;opacity:.75;padding-left:14px}
-.grp button.on{border-color:var(--cy2);color:#e8f6ff;background:#1fa3d414}
-.grp button.on b i{background:var(--cy2);border-color:var(--cy2)}
-.grp button:hover:not(.on){background:#ffffff08}
 select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;min-height:36px;font-family:var(--mono);font-size:13px}
 .locked .f{opacity:.45;pointer-events:none}
 /* ── кнопки ── */
@@ -124,27 +113,6 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
 .err:last-child{border-bottom:0}
 .err b{display:block;font:600 11px var(--mono);color:var(--am);letter-spacing:.04em;margin-bottom:2px}
 .err span{color:var(--ink)}
-.meta span{white-space:nowrap}.meta{flex-wrap:wrap;row-gap:2px}.vers b.ok{color:var(--gr)}.vers b.old{color:var(--am)}
-.laws{flex:1;overflow:auto;min-height:0}
-.law{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:start;padding:7px 14px;border-bottom:1px solid var(--line);font-size:12px}
-.law i{width:8px;height:8px;border-radius:50%;margin-top:4px;background:var(--faint)}
-.law.green i{background:var(--gr)}.law.red i{background:var(--rd);box-shadow:0 0 6px var(--rd)}
-.law b{font-weight:600;color:var(--ink)}.law small{display:block;color:var(--dim);margin-top:1px}
-.law.red small.m{color:var(--rd)}.law em{font:10px var(--mono);color:var(--faint);font-style:normal}
-.area{padding:8px 14px 3px;font:600 10px var(--mono);letter-spacing:.2em;color:var(--cy)}
-.oerr{flex:1;overflow:auto;min-height:0}
-.tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--line)}
-.tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--dim);font:600 11px var(--mono);letter-spacing:.18em;padding:11px 14px 9px;cursor:pointer}
-.tabs button.on{color:var(--cy);border-bottom-color:var(--cy)}.tabs button em{font-style:normal;margin-left:6px;color:var(--faint)}
-.tabs button em.r{color:var(--rd)}
-.pane{flex:1;display:flex;flex-direction:column;min-height:0}.pane[hidden]{display:none}
-.pane>h3{margin:0;padding:8px 14px;font:600 11px var(--mono);letter-spacing:.1em;color:var(--dim);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
-.pane>h3 .sp{flex:1}
-*{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
-::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--cy2)}
-::-webkit-scrollbar-button{display:none;height:0;width:0}
-.err.now b{color:var(--rd)}.err.past{opacity:.55}.err em{display:block;font:10.5px var(--mono);color:var(--faint);font-style:normal;margin-top:2px}
 .links{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--cy);color:var(--ink);padding:10px 18px;border-radius:5px;font:13px var(--mono);opacity:0;transition:.25s;z-index:5;pointer-events:none}
 .toast.on{opacity:1}
@@ -155,7 +123,7 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
 <header>
   <div class="brand"><i></i>DRIFT <b>LAB</b> CONTROL</div>
   <div id="pill" class="pill">ГОТОВ</div>
-  <div class="meta vers"><span>в ветке <b id="vBr">—</b></span><span>на сайте <b id="vProd">—</b></span><span>прогон был на <b id="ver">—</b></span><span>сессия <b id="sid">—</b></span><span>ветка <b id="mref">—</b></span></div>
+  <div class="meta"><span>версия <b id="ver">—</b></span><span>сессия <b id="sid">—</b></span><span>ветка <b id="mref">—</b></span></div>
   <div class="sp"></div>
   <div class="gauge">ЦП <div class="bar"><i id="cpuB"></i></div><b id="cpu">0%</b></div>
   <div class="gauge">ОЗУ <div class="bar"><i id="ramB"></i></div><b id="ram">0%</b></div>
@@ -181,11 +149,10 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
           <small>после круга охота ботом добирает время до конца</small>
         </div>
         <div class="f">
-          <label>Что гонять <b id="grpV"></b></label>
-          <div class="seg" id="preSeg">
-            <button data-v="all">Всё</button><button data-v="quick">Быстро</button><button data-v="smooth">Плавность</button><button data-v="hunt">Охота</button>
+          <label>Режим</label>
+          <div class="seg" id="modeSeg">
+            <button data-v="full">Полный</button><button data-v="quick">Быстрый</button><button data-v="hunt">Охота</button>
           </div>
-          <div class="grp" id="grp"></div>
           <small id="modeHint"></small>
         </div>
         <div class="f">
@@ -213,7 +180,6 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
         <button class="btn sm" data-open="logs">ЛОГИ</button>
       </div>
     </section>
-
   </div>
 
   <div class="col">
@@ -228,7 +194,7 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
           <div class="tile n"><span>НОВЫХ ОШИБОК</span><b id="tNew">0</b></div>
         </div>
         <div class="prog">
-          <div class="row"><span>прошло <b id="pEl">0:00</b></span><span id="pMid"></span><span id="pLeftL">осталось <b id="pLeft">—</b></span></div>
+          <div class="row"><span>прошло <b id="pEl">0:00</b></span><span id="pMid"></span><span>осталось <b id="pLeft">—</b></span></div>
           <div class="track" id="track"><i id="pBar" style="width:0"></i></div>
         </div>
         <div class="now" id="now"><div class="empty">ничего не идёт</div></div>
@@ -241,17 +207,7 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
     </section>
 
     <section class="card logcard">
-      <div class="tabs" id="tabs"><button data-t="laws" class="on">ЗАКОНЫ<em id="tLaws"></em></button><button data-t="oerr">ОШИБКИ<em id="tErr"></em></button><button data-t="log">ЛОГ</button></div>
-      <div class="pane" id="p-laws">
-        <h3>что ловит лаборатория и как прошло в последнем прогоне<span class="sp"></span><span id="lawSum"></span></h3>
-        <div class="laws" id="laws"><div class="empty" style="padding:10px 14px">загрузка…</div></div>
-      </div>
-      <div class="pane" id="p-oerr" hidden>
-        <h3>открытые ошибки<span class="sp"></span><span id="oerrSum"></span></h3>
-        <div class="oerr" id="oerr"></div>
-      </div>
-      <div class="pane" id="p-log" hidden>
-      <h3><span id="logName" style="color:var(--faint);letter-spacing:.03em;font-weight:400"></span><span class="sp"></span>
+      <h3>ЛОГ <span id="logName" style="color:var(--faint);letter-spacing:.03em;font-weight:400"></span><span class="sp"></span>
         <span class="tools">
           <span class="seg" id="fltSeg"><button data-v="all" class="on">Всё</button><button data-v="bad">Провалы</button><button data-v="new">Новые</button></span>
           <input id="q" placeholder="поиск…">
@@ -259,7 +215,6 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
         </span>
       </h3>
       <pre id="log"></pre>
-      </div>
     </section>
   </div>
 </main>
@@ -270,17 +225,8 @@ const $=s=>document.querySelector(s);
 let S={run:{phase:"idle"},cfg:{}},cfg={},logPos=0,logName="",lines=[],flt="all",q="";
 const PH={idle:["ГОТОВ",""],build:["СБОРКА","build"],run:["ИДЁТ","run"],stopping:["ОСТАНОВКА","stop"],
   done:["ЗАВЕРШЕНО",""],stopped:["ОСТАНОВЛЕНО",""],failed:["СБОЙ","bad"],lost:["ПРОЦЕСС ПОТЕРЯН","bad"]};
-/* группы прогонов: ключ = --groups в lab-local.py; units — виды из laws.json, чтобы считать законы группы */
-const GRP=[["core","Ядро","законы мира под Node: сиды, опоры, свет, кванты, сохранение","~1 м",["node"]],
-  ["vision","Зрение","интерфейс числами: вылет, срез, наезд, цель, кегль","~1 м",["vision"]],
-  ["light","Наборы","наборы в Chrome 1280: сценарии, облако, вкладки","~3 м",["light"]],
-  ["windows","Окна","те же наборы на телефоне, высоком и широком окне","~7 м",["mobile","tall","wide"]],
-  ["heavy","Тяжёлые","сети и наборы, которым нужен свой Chrome","~10 м",["heavy","solo"]],
-  ["tour","Тур полёта","полёт: лишние отправки, перепечка, загрузка","~5 м",["tour"]],
-  ["frames","Плавность","настоящая видеокарта: рывки, заминки, FPS, память, регресс","~6 м",["frames"]],
-  ["hunt","Охота","бот по зёрнам добирает время до конца бюджета","до конца",["hunt"]]];
-const PRE={all:GRP.map(g=>g[0]),quick:["core","vision","light"],smooth:["frames","tour"],hunt:["hunt"]};
-let LAWN={};
+const MODE={full:"ядро, зрение, окна (телефон, высокое, широкое), тяжёлые наборы, тур полёта — потом охота",
+  quick:"ядро, зрение и лёгкие части; без окон, тяжёлых и охоты — минуты",hunt:"только бот по зёрнам: случайные тропы под детекторами"};
 const busy=()=>["build","run","stopping"].includes(S.run.phase);
 const fmt=s=>{s=Math.max(0,Math.round(s));const h=s/3600|0,m=(s%3600)/60|0,x=s%60;return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0")};
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.k);toast.k=setTimeout(()=>e.classList.remove("on"),2200)}
@@ -292,21 +238,15 @@ function paintCfg(){
   $("#steps").value=cfg.steps;$("#stepsV").textContent=cfg.steps;
   $("#minV").textContent=cfg.minutes>=60?(cfg.minutes/60)+" ч":cfg.minutes+" мин";
   for(const b of $("#minSeg").children)b.classList.toggle("on",+b.dataset.v===+cfg.minutes);
-  const gs=cfg.groups||[],same=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
-  for(const b of $("#preSeg").children)b.classList.toggle("on",same(gs,PRE[b.dataset.v]));
-  $("#grp").innerHTML=GRP.map(([k,n,d,t,u])=>{const c=u.reduce((s,x)=>s+(LAWN[x]||0),0);
-    return `<button data-g="${k}" class="${gs.includes(k)?"on":""}" title="${d}"><b><i></i>${n}</b><em>${c?c+" законов · ":""}${t}</em><small>${d}</small></button>`}).join("");
-  $("#grpV").textContent=gs.length+" из "+GRP.length;
-  $("#modeHint").textContent=!gs.length?"ничего не выбрано — пустой круг":gs.includes("hunt")?(gs.length>1?"сначала круг выбранного, потом охота до конца бюджета":"только бот по зёрнам до конца бюджета"):"круг выбранного и стоп — бюджет не добирается охотой";
+  for(const b of $("#modeSeg").children)b.classList.toggle("on",b.dataset.v===cfg.mode);
+  $("#modeHint").textContent=MODE[cfg.mode]||"";
   if($("#ref").value!==cfg.ref){if(![...$("#ref").options].some(o=>o.value===cfg.ref))$("#ref").add(new Option(cfg.ref,cfg.ref));$("#ref").value=cfg.ref}
 }
 let saveK;function save(){paintCfg();clearTimeout(saveK);saveK=setTimeout(()=>api("/api/cfg",cfg),300)}
 $("#jobs").oninput=e=>{cfg.jobs=+e.target.value;save()};
 $("#steps").oninput=e=>{cfg.steps=+e.target.value;save()};
 $("#minSeg").onclick=e=>{if(e.target.dataset.v){cfg.minutes=+e.target.dataset.v;save()}};
-$("#preSeg").onclick=e=>{const v=e.target.dataset.v;if(v){cfg.groups=PRE[v].slice();save()}};
-$("#grp").onclick=e=>{const b=e.target.closest("button");if(!b)return;const k=b.dataset.g,g=(cfg.groups||[]).filter(x=>x!==k);
-  if(g.length===(cfg.groups||[]).length)g.push(k);cfg.groups=GRP.map(x=>x[0]).filter(x=>g.includes(x));save()};
+$("#modeSeg").onclick=e=>{if(e.target.dataset.v){cfg.mode=e.target.dataset.v;save()}};
 $("#ref").onchange=e=>{cfg.ref=e.target.value;save()};
 
 /* ── кнопки ── */
@@ -319,7 +259,7 @@ document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>api("/api/open
 /* ── состояние ── */
 async function tick(){
   try{S=await api("/api/state")}catch(e){$("#pill").textContent="ПУЛЬТ НЕ ОТВЕЧАЕТ";$("#pill").className="pill bad";return}
-  if(!cfg.groups){cfg=S.cfg;$("#jobs").max=S.sys.cores;paintCfg()}
+  if(!cfg.mode){cfg=S.cfg;$("#jobs").max=S.sys.cores;paintCfg()}
   const r=S.run,ph=PH[r.phase]||[r.phase,""];
   $("#pill").textContent=ph[0];$("#pill").className="pill "+ph[1];
   $("#ver").textContent=r.ver||"—";$("#sid").textContent=r.sid||"—";$("#mref").textContent=r.ref||cfg.ref||"—";
@@ -334,12 +274,9 @@ async function tick(){
   $("#tRed").textContent=r.red||0;$("#tNew").textContent=(r.fresh||[]).length;
   if(r.t0){
     const end=r.t1||S.now,el=end-r.t0,tot=(r.deadline||end)-r.t0;
-    $("#pEl").textContent=fmt(el);
-    /* кончилась раньше бюджета (охоте нужно 5 мин остатка, круг кончился) — полоса полная, а не застывшая */
-    if(b)$("#pLeftL").innerHTML="осталось <b>"+fmt((r.deadline||end)-S.now)+"</b>";
-    else $("#pLeftL").innerHTML=r.phase==="failed"?"<b>упал</b>":r.stopped||r.phase==="stopped"?"<b>остановлен</b>":"<b>закончен</b>";
-    $("#pBar").style.width=(b?Math.min(100,100*el/Math.max(1,tot)):100)+"%";
-    $("#pMid").textContent=(r.jobs||"?")+" копий · "+(r.mode?r.mode.split(",").map(k=>(GRP.find(g=>g[0]===k)||[,k])[1]).join(", "):"")+" · "+(r.budget||"?")+" мин";
+    $("#pEl").textContent=fmt(el);$("#pLeft").textContent=b?fmt((r.deadline||end)-S.now):"—";
+    $("#pBar").style.width=Math.min(100,100*el/Math.max(1,tot))+"%";
+    $("#pMid").textContent=(r.jobs||"?")+" копий · "+({full:"полный",quick:"быстрый",hunt:"охота"}[r.mode]||"")+" · "+(r.budget||"?")+" мин";
     $("#phaseTxt").textContent=r.phase==="build"?"собираю игру из ветки…":r.phase==="stopping"?"гашу свои прогоны…":r.why||"";
   }
   $("#track").classList.toggle("stop",r.phase==="stopping");
@@ -387,27 +324,7 @@ $("#q").oninput=e=>{q=e.target.value.trim();redraw()};
 $("#log").onscroll=()=>{const L=$("#log");if(L.scrollHeight-L.scrollTop-L.clientHeight>40)$("#follow").checked=false};
 
 api("/api/branches").then(r=>{const s=$("#ref");for(const b of r.branches)s.add(new Option(b,b));if(cfg.ref)paintCfg()});
-/* ── версии, законы, открытые ошибки: раз в 10 с (законы меняются по итогам прогонов, не по секундам) ── */
-async function slow(){
-  try{const v=await api("/api/vers?ref="+encodeURIComponent(cfg.ref||""));
-    const e=$("#vBr");e.textContent=v.branch+" ("+v.head+")";e.className=v.branch===v.prod?"ok":"";
-    $("#vProd").textContent=v.prod;const r=$("#ver");r.className=S.run.ver&&S.run.ver!==v.branch?"old":"ok";
-    r.title=S.run.ver&&S.run.ver!==v.branch?"последний прогон шёл на старой версии — запусти заново":"";}catch(e){}
-  try{const L=await api("/api/laws");LAWN={};for(const l of L.laws)for(const u of (l.unit||"").split(","))LAWN[u]=(LAWN[u]||0)+1;paintCfg&&cfg.groups&&paintCfg();let html="",area="",g=0,rd=0,id=0;
-    for(const l of L.laws){if(l.area!==area){area=l.area;html+=`<div class="area">${esc(area)}</div>`}
-      if(l.status==="green")g++;else if(l.status==="red")rd++;else id++;const why={idle:"не гонялся",absent:"нет в ветке"}[l.status]||"";
-      html+=`<div class="law ${l.status}" title="${esc(l.catches)}"><i></i><div><b>${esc(l.name)}</b><small>${esc(l.catches)}</small>${l.msg?`<small class="m">${esc(l.msg)}</small>`:""}</div><em>${why||l.unit}</em></div>`}
-    $("#laws").innerHTML=html;$("#tLaws").textContent=g+"/"+(g+rd+id);$("#tLaws").className=rd?"r":"";$("#lawSum").innerHTML=`<span style="color:var(--gr)">${g}</span> · <span style="color:var(--rd)">${rd}</span> · <span style="color:var(--faint)">${id} не гонялись или нет в ветке</span>`;}catch(e){}
-  try{const E=await api("/api/errors"),n=E.errors.filter(e=>e.now).length;
-    $("#tErr").textContent=n||"";$("#tErr").className=n?"r":"";$("#oerrSum").textContent=n+" в последнем прогоне · "+(E.errors.length-n)+" старых";
-    $("#oerr").innerHTML=E.errors.slice(0,60).map(e=>`<div class="err ${e.now?"now":"past"}"><b>${esc(e.suite)}</b><span>${esc(e.msg)}</span><em>${e.count}× · версии ${esc(e.versions.join(", "))} · прогонов ${e.sessions} · последний раз ${esc(e.last)}</em></div>`).join("")||'<div class="empty" style="padding:10px 14px">открытых нет</div>';}catch(e){}
-}
-let tab="laws";try{tab=localStorage.getItem("labTab")||"laws"}catch(e){}
-function setTab(t){tab=t;for(const b of $("#tabs").children)b.classList.toggle("on",b.dataset.t===t);
-  for(const n of ["laws","oerr","log"])$("#p-"+n).hidden=n!==t;try{localStorage.setItem("labTab",t)}catch(e){}
-  if(t==="log"&&$("#follow").checked)$("#log").scrollTop=1e9}
-$("#tabs").onclick=e=>{const b=e.target.closest("button");if(b)setTab(b.dataset.t)};setTab(tab);
-tick();pull();setInterval(tick,1000);setInterval(pull,700);setTimeout(slow,300);setInterval(slow,10000);
+tick();pull();setInterval(tick,1000);setInterval(pull,700);
 </script>
 </body>
 </html>

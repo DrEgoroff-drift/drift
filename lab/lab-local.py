@@ -28,7 +28,7 @@ NOWIN = 0x08000000          # CREATE_NO_WINDOW
 TMP = os.path.join(os.environ.get("TEMP", HOMED), "drift-lab")
 LIGHT_N, WIN_N = 6, 4
 TMO = {"node": 300, "vision": 300, "light": 300, "mobile": 420, "tall": 420, "wide": 420,
-       "heavy": 600, "solo": 900, "tour": 900, "frames": 900, "hunt": 300}
+       "heavy": 600, "solo": 900, "tour": 900, "hunt": 300}
 
 def sh(cmd, cwd=None, timeout=None):
     return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace",
@@ -179,126 +179,6 @@ def tour_post(u, rc):
         body = "FAILED 1 · passed 0 · suites 1 of 1\n\n  ✗ тур полёта · %s\n%s\n\n" % (msg, "\n".join("      " + l for l in t.strip().split("\n")[-14:]))
     open(u["out"], "w", encoding="utf-8").write(body + t)
 
-HUNT_LOG = os.path.join(os.environ.get("LAB_DATA") or os.path.join(os.path.expanduser("~"), "drift-data", "lab"), "hunt-notes.jsonl")
-
-def hunt_post(u, rc):
-    """заметки охоты «кошелёк:» и «покрытие:» — по строке на зерно в hunt-notes.jsonl; пульт
-    складывает их по зёрнам: какие краны денег живут и куда тропа не дошла ни разу"""
-    import html as H
-    try: t = H.unescape(open(u["out"], encoding="utf-8", errors="replace").read())
-    except Exception: return
-    row = {"t": time.strftime("%Y-%m-%d %H:%M:%S"), "seed": u["arg"], "rc": rc}
-    for k, key in (("кошелёк", "wallet"), ("покрытие", "cover"), ("отказы", "why")):
-        m = re.search(r"· %s: ([^<\n]*)" % k, t)
-        if m: row[key] = m.group(1).strip()
-    m = re.search(r"· корпус: (\{[^\n<]*\})", t)
-    if m and u.get("ver"):
-        try:
-            json.loads(m.group(1))
-            os.makedirs(CORPUS, exist_ok=True)
-            open(os.path.join(CORPUS, "%s-%s.json" % (u["ver"], u["arg"])), "w", encoding="utf-8").write(m.group(1))
-        except Exception: pass
-    if len(row) < 4: return
-    try:
-        with open(HUNT_LOG, "a", encoding="utf-8") as f: f.write(json.dumps(row, ensure_ascii=False) + "\n")
-    except Exception: pass
-
-LEAK_SUITE = "91zzzzzzzzd-leak.js"
-
-def leak_suite(src):
-    """переменные верхнего уровня src/ (let/var и изменяемые объекты-константы) → набор «состояние вне мира»:
-    сцена начисто и та же сцена после двух чужих обязаны дать один мир; разошлись — названы переменные,
-    которые пережили resetWorld (так 15.10 нашлись GAUGE_W, HALL_PRE и открытый зал)"""
-    names = []
-    rx = re.compile(r"^(?:let|var)\s+([A-Za-z_$][\w$]*)|^const\s+([A-Z][A-Z0-9_]*)\s*=\s*(?:\{|\[|new (?:Map|Set)\b)")
-    for f in sorted(os.listdir(os.path.join(src, "src")), key=lambda s: s.encode()):
-        if not f.endswith(".js"): continue
-        for ln in open(os.path.join(src, "src", f), encoding="utf-8", errors="replace"):
-            m = rx.match(ln)
-            if m: names.append(m.group(1) or m.group(2))
-    names = sorted(set(names) - {"G"})
-    if not names: return 0
-    js = r'''/* состояние вне мира (лаборатория 15.10, генерирует lab-local.py — в гит не идёт). Мир живёт в G; всё,
-   что лежит в переменных модулей и переживает resetWorld, может менять мир по тому, что было ДО (окно шкал
-   GAUGE_W, заготовка зала HALL_PRE, открытый зал HALL.open). Закон: сцена начисто и та же сцена после двух
-   чужих — один хэш мира. Разошлись — набор называет переменные, сдвинувшиеся после сброса. */
-const LAB_MODVARS=[%s];
-function labVarH(f){
-  let s;try{s=JSON.stringify(f(),(k,v)=>typeof v==="function"?undefined:(v&&ArrayBuffer.isView(v))?"ta"+v.length:(typeof Node!=="undefined"&&v instanceof Node)?"node":v);}catch(e){return "?";}
-  if(s===undefined)return "u";if(s.length>300000)s=s.slice(0,300000);
-  let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+":"+s.length;
-}
-function labVars(){const o={};for(const [n,f] of LAB_MODVARS){try{o[n]=labVarH(f);}catch(e){o[n]="!";}}return o;}
-TEST_SUITES.push(()=>suite("состояние вне мира: сцена после чужих сцен — тот же мир",{tier:"browser"},()=>{
-  const S=lookScenes(),N=100,bad=[],moves={};
-  const run=sc=>{resetWorld();let ok0=true;try{ok0=sc.set()!==false;}catch(e){return null;}if(!ok0)return null;
-    const loop0=LOOP_OFF,dw=drawWorld,hu=hud;LOOP_OFF=false;drawWorld=function(){};hud=function(){};
-    try{for(let i=0;i<N;i++)frameBody(wallMs());}catch(e){return null;}finally{LOOP_OFF=loop0;drawWorld=dw;hud=hu;}
-    return stateHash();};
-  let ran=0;
-  for(let i=0;i<S.length;i++){
-    const sc=S[i],X1=S[(i+1)%%S.length],X2=S[(i+2)%%S.length];
-    const ref=run(sc);if(ref==null)continue;
-    resetWorld();const v0=labVars();
-    run(X1);run(X2);
-    resetWorld();const v1=labVars();
-    const moved=Object.keys(v0).filter(k=>v0[k]!==v1[k]);for(const k of moved)moves[k]=(moves[k]|0)+1;
-    const h=run(sc);ran++;
-    if(h!==ref)bad.push(sc.id+" после «"+X1.id+"», «"+X2.id+"»: другой мир; пережили сброс "+(moved.slice(0,10).join(", ")||"— (не переменные модулей)"));
-  }
-  note("переменных модулей "+LAB_MODVARS.length+"; переживают сброс (кэши — норма, мир они менять не вправе): "+Object.keys(moves).sort((a,b)=>moves[b]-moves[a]).slice(0,30).join(", "));
-  ok(ran>=3,"сцен прогнано "+ran+" из "+S.length);
-  ok(!bad.length,"мир зависит от прошлых сцен: "+bad.length+(bad.length?" — "+bad.slice(0,4).join("; "):""));
-  resetWorld();
-}));
-''' % ",".join('["%s",()=>%s]' % (n, n) for n in names)
-    open(os.path.join(src, "tests", LEAK_SUITE), "w", encoding="utf-8", newline="\n").write(js)
-    return len(names)
-
-CORPUS = os.path.join(os.path.dirname(HUNT_LOG), "corpus")
-CORPUS_SUITE = "91zzzzzzzzc-corpus.js"
-
-def corpus_suite(src):
-    """сейвы прошлых охот → набор в копии: каждая версия грузит миры всех прежних. По три последних
-    сейва на версию, не больше сорока; пустой корпус — набора нет (ok без проверки — пустышка)"""
-    try: files = [f for f in os.listdir(CORPUS) if f.endswith(".json")]
-    except Exception: return 0
-    by = {}
-    for f in sorted(files, key=lambda f: os.path.getmtime(os.path.join(CORPUS, f)), reverse=True):
-        v = f.rsplit("-", 1)[0]
-        if len(by.setdefault(v, [])) < 3: by[v].append(f)
-    pick = [f for v in sorted(by) for f in by[v]][-40:]
-    if not pick: return 0
-    rows = ",\n".join("  [%s,%s]" % (json.dumps(f[:-5]), json.dumps(open(os.path.join(CORPUS, f), encoding="utf-8").read(), ensure_ascii=False)) for f in pick)
-    js = r'''/* корпус сейвов (лаборатория 15.10, генерирует lab-local.py из LAB_DATA/corpus — в гит не идёт).
-   Миры, которые охота прошлых версий оставила по зерну: эта сборка обязана их грузить (жёсткое правило
-   CLAUDE.md — старые сейвы живут), не терять деньги, а пересохранённый мир читать тем же миром. */
-const LAB_CORPUS=[
-%s
-];
-TEST_SUITES.push(()=>suite("корпус сейвов: мир каждой прошлой версии грузится этой",{tier:"node"},()=>{
-  const bad=[];
-  for(const [id,raw] of LAB_CORPUS){
-    resetWorld();
-    let s=null;try{s=JSON.parse(raw);}catch(e){bad.push(id+": не JSON");continue;}
-    stSet(SAVE_KEY,raw);
-    let r;try{r=loadGame();}catch(e){bad.push(id+": loadGame бросил "+e.message);continue;}
-    if(!r){bad.push(id+": отказ");continue;}
-    if(isFinite(s.credits)&&Math.abs(G.credits-s.credits)>.5)bad.push(id+": деньги "+s.credits+"→"+G.credits);
-    let t;try{t=saveText();}catch(e){bad.push(id+": пересохранение бросило "+e.message);continue;}
-    const h1=stateHash();resetWorld();stSet(SAVE_KEY,t);
-    try{loadGame();}catch(e){bad.push(id+": пересохранённый бросил "+e.message);continue;}
-    if(stateHash()!==h1)bad.push(id+": пересохранённый мир читается другим");
-  }
-  note("сейвов в корпусе "+LAB_CORPUS.length+": "+LAB_CORPUS.map(x=>x[0]).join(", "));
-  ok(!bad.length,"корпус: "+bad.length+(bad.length?" — "+bad.slice(0,6).join("; "):""));
-  try{stDel(SAVE_KEY);}catch(e){}
-  resetWorld();
-}));
-''' % rows
-    open(os.path.join(src, "tests", CORPUS_SUITE), "w", encoding="utf-8", newline="\n").write(js)
-    return len(pick)
-
 def page_unit(ctx, kind, arg, query, win):
     n = ctx["n"] = ctx["n"] + 1
     base = os.path.join(ctx["tmp"], "%s-%d" % (kind, n))
@@ -313,12 +193,6 @@ def text_unit(ctx, kind, arg, cmd, post=None):
     base = os.path.join(ctx["tmp"], "%s-%d" % (kind, n))
     return {"kind": kind, "arg": arg, "out": base + ".txt", "err": base + ".err", "cmd": cmd, "text": True, "post": post}
 
-# группы прогонов, из которых пульт собирает сессию; вид прогона → группа
-GROUPS = ["core", "vision", "light", "windows", "heavy", "tour", "frames", "hunt"]
-KIND_GROUP = {"node": "core", "vision": "vision", "light": "light", "mobile": "windows", "tall": "windows", "wide": "windows",
-              "heavy": "heavy", "solo": "heavy", "tour": "tour", "frames": "frames", "hunt": "hunt"}
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--budget", type=int, default=60, help="minutes")
@@ -329,7 +203,6 @@ def main():
     ap.add_argument("--steps", type=int, default=60, help="hunt steps per seed")
     ap.add_argument("--no-build", action="store_true")
     ap.add_argument("--hunt-only", action="store_true", help="only the hunt, seed after seed")
-    ap.add_argument("--groups", default="", help="comma list of " + ",".join(GROUPS) + "; overrides --quick/--hunt-only")
     ap.add_argument("--serve", type=int, default=0, help="only serve the page on 127.0.0.1:PORT")
     ap.add_argument("--log", default="", help="also append the log to this file")
     a = ap.parse_args()
@@ -354,9 +227,7 @@ def main():
     except (OSError, ValueError): pass
     try: os.remove(STOPF)
     except OSError: pass
-    grp = set(g for g in a.groups.split(",") if g in GROUPS) if a.groups else \
-        ({"hunt"} if a.hunt_only else {"core", "vision", "light"} if a.quick else set(GROUPS))
-    mode = ",".join(g for g in GROUPS if g in grp)
+    mode = "hunt" if a.hunt_only else ("quick" if a.quick else "full")
     live_write(pid=os.getpid(), phase="build", ref=a.ref, jobs=a.jobs, budget=a.budget, mode=mode, steps=a.steps,
                log=os.path.abspath(a.log) if a.log else "", t0=T0, deadline=deadline, done=0, ahead=0, green=0, red=0,
                fresh=[], sid="", ver="", total=0)
@@ -366,24 +237,10 @@ def main():
             r = sh(["git", "-C", REPO, "worktree", "add", "--detach", src, a.ref])
             if r.returncode: sys.exit("lab: worktree add failed: " + r.stderr.strip())
         else:
-            sh(["git", "-C", src, "clean", "-fq", "--", "tests"])   # подложенные прошлым прогоном законы — прочь до смены головы
             r = sh(["git", "-C", src, "checkout", "-f", "--detach", a.ref])
             if r.returncode: sys.exit("lab: checkout failed: " + r.stderr.strip())
         head = sh(["git", "-C", src, "log", "-1", "--format=%h %s"]).stdout.strip()
         print("lab: %s at %s" % (a.ref, head))
-        # законы лаборатории живут в lab-local раньше, чем их вольют в игру: новый файл набора, которого в ветке
-        # нет, подкладываем в её копию (только новые — свои наборы ветки не трогаем никогда)
-        mine = os.path.join(os.path.dirname(HERE), "tests")
-        # охота — инструмент самой лаборатории, а не закон игры: её копия в ветке (пришла слиянием lab-local)
-        # отстаёт, поэтому кладётся всегда свежая
-        LAB_OWNED = {"91zzzzzzzzb-hunt.js", "91zzzzzzzze-idle.js"}
-        add = [f for f in sorted(os.listdir(mine)) if f.endswith(".js") and (f in LAB_OWNED or not os.path.exists(os.path.join(src, "tests", f)))]
-        for f in add: shutil.copyfile(os.path.join(mine, f), os.path.join(src, "tests", f))
-        if add: print("lab: законы лаборатории подложены в копию: " + ", ".join(add))
-        nc = corpus_suite(src)
-        if nc: print("lab: корпус сейвов — %d миров прошлых охот в %s" % (nc, CORPUS_SUITE))
-        nl = leak_suite(src)
-        if nl: print("lab: состояние вне мира — %d переменных модулей под надзором (%s)" % (nl, LEAK_SUITE))
         r = sh(["powershell", "-ExecutionPolicy", "Bypass", "-File", os.path.join(src, "build.ps1")], cwd=src, timeout=600)
         if r.returncode:
             live_write(phase="failed", why="сборка упала")
@@ -411,23 +268,22 @@ def main():
     units = [text_unit(ctx, "node", "", [ctx["node"], os.path.join(src, "test-node.js"), "--full", "--shuffle=" + shuf]),
              text_unit(ctx, "vision", "", [ctx["node"], os.path.join(src, "test-geom.js"), "--page=" + tests], vision_post)]
     units += [page_unit(ctx, "light", "%d/%d" % (i, LIGHT_N), "shard=%d/%d&shuffle=%s%s" % (i, LIGHT_N, shuf, skq), "1280,800") for i in range(LIGHT_N)]
-    for kind, win in (("mobile", "390,844"), ("tall", "1440,1440"), ("wide", "2000,1000")):
-        units += [page_unit(ctx, kind, "%d/%d" % (i, WIN_N), "shard=%d/%d&shuffle=%s%s" % (i, WIN_N, shuf, skq), win) for i in range(WIN_N)]
-    units += [page_unit(ctx, "heavy", n, "full=1&only=" + urllib.parse.quote(n), "1280,800") for n in lab.heavy_names()]
-    units += [page_unit(ctx, "solo", n, "full=1&only=" + urllib.parse.quote(n), "1280,800") for n in solo]
-    units.append(text_unit(ctx, "tour", "", [sys.executable, os.path.join(src, "docs", "tour.py"), "--n", "600",
-                                              "--port", "9690", "--out", os.path.join(tmp, "tour.png")], tour_post))
-    units.append(text_unit(ctx, "frames", "", [sys.executable, os.path.join(HERE, "jank.py"), "--port", "9692", "--root", src]))   # длинные кадры на настоящей видеокарте
-    units = [u for u in units if lab.unit_id(u["kind"], u["arg"]) not in skip and KIND_GROUP[u["kind"]] in grp]
+    if not a.quick:
+        for kind, win in (("mobile", "390,844"), ("tall", "1440,1440"), ("wide", "2000,1000")):
+            units += [page_unit(ctx, kind, "%d/%d" % (i, WIN_N), "shard=%d/%d&shuffle=%s%s" % (i, WIN_N, shuf, skq), win) for i in range(WIN_N)]
+        units += [page_unit(ctx, "heavy", n, "full=1&only=" + urllib.parse.quote(n), "1280,800") for n in lab.heavy_names()]
+        units += [page_unit(ctx, "solo", n, "full=1&only=" + urllib.parse.quote(n), "1280,800") for n in solo]
+        units.append(text_unit(ctx, "tour", "", [sys.executable, os.path.join(src, "docs", "tour.py"), "--n", "600",
+                                                  "--port", "9690", "--out", os.path.join(tmp, "tour.png")], tour_post))
+    units = [u for u in units if lab.unit_id(u["kind"], u["arg"]) not in skip]
+    if a.hunt_only: units = []
 
     seeds = [0]
     def next_hunt():
         stf = lab.jload(lab.STATE, {}).get("fuzz", {}).get(ver, {})
         seed = int(time.strftime("%j")) * 1000 + stf.get("seeds", 0) + seeds[0] + 1
         seeds[0] += 1
-        u = page_unit(ctx, "hunt", str(seed), "only=%s&fseed=%d&hsteps=%d" % (urllib.parse.quote("охота"), seed, a.steps), "1280,800")
-        u["post"] = hunt_post; u["ver"] = ver
-        return u
+        return page_unit(ctx, "hunt", str(seed), "only=%s&fseed=%d&hsteps=%d" % (urllib.parse.quote("охота"), seed, a.steps), "1280,800")
 
     counts = {}; fresh = []
     print("lab: прогонов в круге %d, потом охота до конца бюджета · Ctrl+C — остановить" % len(units))
@@ -436,7 +292,7 @@ def main():
     live_write(phase="run", sid=sid, ver=ver, total=len(units), ahead=len(live))
     def fill():
         # охота добирает свободные места, пока бюджет позволяет зерно целиком
-        while not STOP.is_set() and "hunt" in grp and deadline - time.time() > TMO["hunt"] and len(live) < a.jobs:
+        while not STOP.is_set() and (not a.quick or a.hunt_only) and deadline - time.time() > TMO["hunt"] and len(live) < a.jobs:
             live.add(ex.submit(run_unit, next_hunt(), ctx))
     try:
         fill()

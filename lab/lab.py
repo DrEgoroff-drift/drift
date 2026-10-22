@@ -166,9 +166,7 @@ def report(kind, arg, path, secs, mem, rc, ver, session, errfile="", oom=0):
             known.append(key)
             if e.get("status") in ("fixed", "quiet"):
                 e["status"] = "open"; e["reopened"] = t   # вернулась: починенная или затихшая
-        e["session"] = session                                # последний заход, где видели
-        ss = e.setdefault("sessions", [])                     # и все заходы — «session» один, и прошлые казались стёртыми
-        if session and session not in ss: ss.append(session); del ss[:-20]
+        e["session"] = session
         e["count"] += 1; e["last"] = t
         e["versions"][ver] = e["versions"].get(ver, 0) + 1
         if kind in ("fuzz", "hunt") and len(e["seeds"]) < 8 and arg not in e["seeds"]: e["seeds"].append(arg)
