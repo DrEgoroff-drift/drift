@@ -510,11 +510,14 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
       /* гигант (СР · Визуал 22.10): воздух и есть тело — слой не замывает полосы ровной заливкой по всей дневной
          стороне, а светит по той же кривой dif, что и шар; путь короче, чтобы остался лимб */
       let gk = select(1., .35, k == 3);
-      let path = min(thick*3./max(nz, .04), 3.)*gk;
+      /* у гиганта путь не растёт как 1/nz к лимбу — иначе слой у края светил белой губой ярче тела; мягкий рост (СР · Визуал) */
+      let path = select(min(thick*3./max(nz, .04), 3.)*gk, thick*3.*(1. + 1.5*(1. - nz)), k == 3);
       let litA = smoothstep(-.06, .3, m0g)*select(1., dif, k == 3);   /* воздух светит от терминатора к свету (M825c) */
       let warm = (1.-smoothstep(-.05,.4, m0g))*litA;
       let tint = mix(air, air*vec3f(1.6, .75, .45), warm);
-      sc = sc*exp(-path*.3) + tint*(1. - exp(-path))*litA*sun*.6;
+      /* у гиганта слой воздуха на лимбе (nz→0, path у потолка) светил белее и ярче тела — белая кромка 226 при теле 150;
+         амплитуда ниже и тает к лимбу (СР · Визуал 22.10) */
+      sc = sc*exp(-path*.3) + tint*(1. - exp(-path))*litA*sun*select(.6, .45, k == 3);
     }
     if (k == 6) { sc *= .55 + .45*pow(nz, .35); }
     if (k == 3) { sc *= .38 + .62*pow(nz, .5); }   /* гигант: лимб темнее — шар, не монета (СР · Визуал) */
@@ -542,7 +545,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     let litA = smoothstep(-.12, .4, dot(n2, L));
     let warm = (1.-smoothstep(-.1,.35, dot(n2, L)))*litA;
     let tint = mix(air, air*vec3f(1.6, .75, .45), warm);
-    lin += tint*exp(-h*2.2)*smoothstep(1. - 2.*px, 1., len)*litA*sun*select(.9, .35, k == 3);   /* у гиганта сливочный воздух давал белый обод по лимбу (СР · Визуал) */
+    lin += tint*exp(-h*2.2)*smoothstep(1. - 2.*px, 1., len)*litA*sun*select(.9, .07, k == 3);   /* у гиганта сливочный воздух давал белый обод по лимбу (СР · Визуал) */
   }
   var acc = vec4f(tmap(lin), cov);
   if (v4.w > 0.) {
