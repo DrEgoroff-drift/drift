@@ -335,17 +335,111 @@ the dispatcher; it is listed under Disputed in the M912 report.
   which is the mining lap's. The pays of §4.3 stand: net ≈ 220 cr/min, urgent ≈ ×2 — a premium,
   not a second economy.
 
+**At a human's pace** (`ECO_HUMAN=1`, 22.10). The bot flies a lap in 3.8–4.1 minutes; a person
+does not. The probe now pauses where a person would: 13 s on each landing approach, 4 s to pick
+each deposit, 20 s at each dock for the сводка and the board, 7 s at the map before each jump,
+10 s on each leg of paper; the lap is padded to at least six minutes. The world lives through the
+pauses (wages, drones, deadlines). Three hours per tier, with the dispatcher / mining only:
+
+| tier | bot net | human net | oracle | bot vs oracle | human vs oracle | human U/G | lap, min | dispatcher cr/h (deeds) |
+|---|---|---|---|---|---|---|---|---|
+| T0 Стриж | 6 898 / 6 118 | 3 838 / 4 791 | 4 400 | +57 % / +39 % | **−13 % / +9 %** | .47 / .28 | 6.7 / 6.4 | 2 398 (11) |
+| T1 Вьюк | 20 704 / 17 000 | 15 635 / 13 606 | 13 900 | +49 % / +22 % | **+12 % / −2 %** | .24 / .16 | 8.8 / 7.6 | 6 240 (25) |
+| T2 Обод | 12 199 / 14 739 | 11 336 / 9 918 | 14 200 | −14 % / +4 % | −20 % / −30 % | .58 / .55 | 8.0 | 8 595 (25) |
+| T3 Мамонт | 7 294 / 7 890 | 9 234 / 1 764 | 12 700 | −43 % / −38 % | −27 % / −86 % | .75 / .92 | 9.5 | 16 393 (40) |
+| T0, fresh save | 18 428 / 15 429 | 14 915 / 12 285 | — | — | — | .26 | 7.8 | 5 874 gross |
+| T2, uninsured wreck | −694 | −615 / −2 326 | negative | ✓ | ✓ | 1.03 | 7.6 | — |
+| T2, insured wreck | 11 516 | 12 143 / 8 157 | — | — | — | .56 | 7.9 | — |
+
+Read it: **the T0 and T1 excess was the bot's pace.** At six minutes a lap and more, both rows sit
+inside ±20 % with and without paper; no lever is needed. T2 slides to the band's edge and T3 stays
+under: a slower lap pays the same wages per minute for less ore, and mining only at T3 nets almost
+nothing (the bill is 18 400 cr/h). The T3 gap's owner is below. The rows above (bot pace) stay as
+the probe's default — they find exploits; the human rows are the ones to hold against §4.1.
+
+Disputed: the «Вьюк» allotment comes at 8.3 minutes of play (7.7 in the first count) instead of
+§4.1's 25 — the bot's pace; the owner is the same as T0's excess above, and it is not changed.
+
+**The drone's parts line, measured, not built** (§3.1: 6 cr/min = 360 cr/h per drone; 22.10).
+What one drone earns over three hours at a human's pace, where the probe puts it: on the first
+deposit of its world (as before), and with `ECO_DRONE=dear` on the dearest ore that drone may take
+(`droneMayMine`: the far bands are refused). Payback is against the first drone's 9 000 cr; the
+second costs ×1.6, the fourth 36 864.
+
+| drone, ore | cr/h | after parts | payback, h (now / with parts) | trips in 3 h |
+|---|---|---|---|---|
+| T1, first deposit: iron | 480 | 120 | 19 / 75 | 120 |
+| T1, dearest: silicon | 756 | 396 | 12 / 23 | 102 |
+| T2–T3, first deposit: iron, silicon | 419–646 | 59–286 | 14–21 / 31–153 | 60–129 |
+| T3, ice | 280 | −80 | 32 / never | 59 |
+| T2–T3, dearest: titan | 1 241–1 275 | 881–915 | 7 / 10 | 69–75 |
+| T3, dearest: isotopes | 1 466–1 519 | 1 106–1 159 | 6 / 8 | 55–57 |
+
+Whole rows with every drone on its dearest ore: T1 15 925 (+15 %), T2 13 172 (−7 %), T3 11 086
+(−13 %, from −23 %). Read it: at 6 cr/min the line is 2–3 % of a T1 row's net, so as pressure it
+does nothing T1 needs (T1 is in band at a human's pace). What it does is choose for the player: a
+drone on iron or ice stops paying, a drone on titan or isotopes hardly notices. That is a decision
+the line would create, which is the honest reason to build it — not the band. Not built; the
+placement is the player's lever already (where the drone sits moves T3 by ten points).
+
+**The estate at T2–T3** (22.10; on by default, `ECO_EST=0` drops it). The oracle's T3 gross
+assumes five workshops and a base of 20; the probe now owns them, as a T3 player would:
+
+- *Workshops* (families B–D) that eat the ores of the home system, three to a station, nearest
+  first. None may stand at home — the home system «already makes» what it mines (`bldRuleWhy`) —
+  so they stand one jump away, and the bot hauls to them when their hoppers would take at least
+  15 units, sells there at the market price (the hopper takes its share at that price), collects
+  the output and comes back. Output with no market (ferro, plate) goes to any workshop that eats
+  it, wherever the bot docks.
+- *A base* on a home-system world, laid out the way a player watching the drill would: habitats
+  for its people first, then one cell at a time whatever raises drill output under power and
+  heat, then single-cell swaps until nothing improves. Two people on it (T3 asked for four; the
+  station's list ran out), the «Лицензия на флот» bought for the places. Its ore is collected at
+  every home dock (30 s at a human's pace) and, once the bot has moved on, by a trip back when its
+  store is half full.
+
+Three hours, each tier alone in its world:
+
+| tier, pace | without estate | with estate | vs oracle | base, gross cr/h | workshops, gross / spend cr/h |
+|---|---|---|---|---|---|
+| T2, bot | 12 243 | 22 643 | −14 % → +59 % | 5 732 (8 modules, 3 drills) | 0 / 125 |
+| T2, human | 10 760 | 12 440 | −24 % → −12 % | 5 577 | 3 / 70 |
+| T3, bot | 7 168 | 14 000 | −44 % → +10 % | 7 527 (20 modules, 4 drills) | 1 433 / 3 800 |
+| T3, human | 9 732 | 5 208 | −23 % → −59 % | 5 432 | 753 / 1 312 |
+
+What it says:
+
+- **The base is the estate.** 5.4–7.5 k cr/h gross at T3, 5.6–5.7 k at T2. At the bot's pace,
+  where servicing it costs nothing, T3 comes into band (+10 %) — the −43 % was the missing estate,
+  not the wages of the commander and the keeper.
+- **Heat caps the base at four drills.** The first layout (three reactors, five drills) sat at
+  heat 330 and its drills stood for the whole run (`baseHeatMul` = 0); the best layout the search
+  finds is four drills, two reactors, two radiators and storage, heat 88 (×0.6). A base of 20 is
+  a base of four drills.
+- **Workshops lose money.** Their hoppers are one jump away by rule, the hauls cost more than the
+  ore they place, and their output has no buyer within reach: 4 300 cr of ferro and plate in
+  three hours with nobody to eat it. No market takes industrial goods, and the chain's next
+  workshop is not where the first one stands.
+- **At a human's pace the estate takes the hull's time.** With the estate a T3 lap mines 30 % less
+  ore (152 units against 215 in three hours), the dispatcher earns 27 % less, and hull repair
+  triples on the extra jumps; the base's 5.4 k does not cover it. The logist role («забирать
+  добычу со станции, не прилетая») is the game's own answer to this and the probe does not
+  play it.
+
 **Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
 
-- **T0 +25 % (fresh) / +57 %.** The lap is 3.8–4.1 minutes; §4.1a's owner stands (the lap a
-  human will not fly). The fresh save's *first hour* is in band; the excess is hours 2–3.
-- **T1 +49 %, U/G .24.** Nothing to pay at T1 but fuel and one hand; the dispatcher adds
-  8 900 cr/h on top of mining. A T1 line on the paper (the drone's parts, §3.1) is the lever
-  §4.1a already named; it waits for a drone that earns.
-- **T3 −43 %.** Gross is −38 %: the probe builds no workshops and no base, which the oracle's T3
-  gross assumes (five workshops, a base of 20). The commander and the keeper are multipliers on
-  hands and drones and add nothing countable at level 1 — 3 500–4 200 cr/h of wages each. Owner:
-  the estate (workshops and base in the probe) before any change to wages.
+- **T0 +57 % at the bot's pace, −13 % / +9 % at a human's.** Closed by the pace table above:
+  the lap of 3.8–4.1 minutes was the excess, as §4.1a guessed.
+- **T1 +49 % at the bot's pace, +12 % / −2 % at a human's.** In band; U/G .24 stays under the
+  .50 of §4.1 — nothing to pay at T1 but fuel and one hand. The drone's parts line (§3.1) is
+  measured below, not built.
+- **T3 −43 % at the bot's pace → +10 % with the estate; −23 % at a human's, worse with it.** The
+  base closes the gap where servicing is free. Where it is not, the owners are three, none of them
+  wages: workshops whose output has no buyer (no market for industrial goods, no eater one jump
+  away), heat that makes a base of 20 a base of four drills, and the minutes the hull spends
+  fetching the base's ore (the logist, not played). The commander and the keeper still add
+  nothing countable at level 1 (3 500–4 200 cr/h of wages each); the keeper's «build» rule has no
+  code. Numbers only; nothing changed.
 - Bot findings in files this series may not edit: the Жестянка's «НАРЯД НЕ ЗАКРЫТ · НУЖЕН …»
   prompt takes ДЕЙСТВИЕ from any deposit within 56 of it (and reads «НУЖЕН ЛЕТУЧИЕ ГАЗЫ»);
   swimming takes it on water worlds; «ВОЙТИ В ПОЯС ВОРОН» takes the landing prompt near a belt.
@@ -930,7 +1024,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M909 | the first watch (§10.7) **done 22.10 (`28o-firstwatch`)** | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
 | M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) **done 22.10 (`28p-doors`)** | chapter N+1's door is a deed; the sixth is met on the watch |
 | M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) **done 22.10 (`28q-fork`)** | every order has both sides; a found notch gives one access line |
-| M912 | economy after the dispatcher **measured 22.10, §4.1b**: the first hour counts play (`28v-playhour`); the probe plays the dispatcher and a fresh save | T2 within ±20 %; T0/T1 over and T3 under, each with an owner |
+| M912 | economy after the dispatcher **measured 22.10, §4.1b**: the first hour counts play (`28v-playhour`); the probe plays the dispatcher and a fresh save | at a human's pace T0, T1 within ±20 %, T2 at its edge; T3 in band only with the estate at the bot's pace |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),
