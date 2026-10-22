@@ -35,7 +35,7 @@ TEST_SUITES.push(()=>suite("стойка: плашка не поверх тел�
       RACK.hitF=null;
       const T=(G.pirates&&G.pirates[0])||{x:0,y:0};
       T.x=G.viewCX+(tx-W/2);T.y=G.viewCY+(ty-H/2);G.marks=[T];
-      const g=rackGeo(),bm=BODY.on?bodyMarkBox(T,1):null;
+      const g=rackGeo(),bm=bodyMarkBox(T,1);
       const rx=bm?bm[0]:24,ry=bm?bm[1]:24,b={x0:tx-rx,y0:ty-ry,x1:tx+rx,y1:ty+ry};
       ok(g.hide||!cross(g,b),"цель у ("+(tx|0)+","+(ty|0)+"): плашка "+(g.hide?"погасла":"не поверх рамки цели"));
     }

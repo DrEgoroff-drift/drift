@@ -430,8 +430,8 @@ function gpuPirateBody(p,x,y,s){
      поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */
   if(!art.cn)return false;
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+PIR_LOD);
-  if(BODY.on&&bodyPower(p,x,y,s,lx,ly))return true;   /* борт державы — чистый корпус завода (M820, 17c2h) */
-  if(H3D.on&&h3dPirate(art,p,x,y,s,lx,ly)){if(BODY.on)bodyPirate(art,p,x,y,s,lx,ly);return true;}   /* объём (17c2a, M710); накладка M820 */
+  if(bodyPower(p,x,y,s,lx,ly))return true;   /* борт державы — чистый корпус завода (M820, 17c2h) */
+  if(h3dPirate(art,p,x,y,s,lx,ly)){bodyPirate(art,p,x,y,s,lx,ly);return true;}   /* объём (17c2a, M710); накладка M820 */
   return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,-1,0,lod,null,"dark");   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой пирата на видеокарте (бой, ступень 1): то, что меняется каждый кадр поверх
@@ -444,7 +444,7 @@ function gpuPirateLive(pass,list,over){
   const D=[],E=[];PGX.n=0;
   for(const q of list){
     const p=q.p,s=q.s,ca=Math.cos(p.a),sa=Math.sin(p.a);
-    if(BODY.on&&bodyPowerOn(p))continue;   /* у борта державы свой факел — hullGpuDraw (M820) */
+    if(bodyPowerOn(p))continue;   /* у борта державы свой факел — hullGpuDraw (M820) */
     const FX=bodyPirFlame(p),XL=FX?PGX_L*FX.X:PGX_L,XC=FX?FX.C:PGX_C;
     const T=(lx,ly)=>[q.x+(lx*ca-ly*sa)*s,q.y+(lx*sa+ly*ca)*s];
     const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
