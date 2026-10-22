@@ -11,7 +11,7 @@
    4. 2D-рубки нет (22.10, автор: «2D не должно быть»): drawHqRoom удалён вместе с ?room=0; без видеокарты
       рубки нет — плашка «нет WebGPU» (08b2), как во всей игре. */
 const ROOM3={open:null,host:null,cn:null,raf:0,last:0,from:null,to:null,g0:0,gd:600,place:"all",
-  L:null,mesh:null,rkey:"",err:0,frames:0,stat:null,vp:null,sz:null,night:null};
+  L:null,mesh:null,rkey:"",err:0,frames:0,S:null,vp:null,sz:null,night:null};
 const ROOM3_M=new Float32Array(R3_MAXI*R3_PART*16),ROOM3_OT=new Float32Array(R3_MAXI*R3_PART*4);
 
 /* ── ШТАБ: рубка за конторой (DESIGN-rooms §4) ── */
@@ -216,7 +216,7 @@ function room3Frame(){
   U[43]=t;U[44]=1;U[47]=1;
   const oq=r3Proj(cam.vp,c0.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL_SHARP,1],52);
-  ROOM3.frames++;ROOM3.stat=hallLimits(S);ROOM3.vp=cam.vp;ROOM3.sz=sz;
+  ROOM3.frames++;ROOM3.S=S;ROOM3.vp=cam.vp;ROOM3.sz=sz;
   room3TagsDraw(hq3Tags(L,c0.tgt[0]),cam,sz);
   return r3Frame(cn,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
 }

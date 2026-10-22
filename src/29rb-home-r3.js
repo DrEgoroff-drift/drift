@@ -13,7 +13,7 @@
       кабинета, терракота, сталь причала), дерево общее; оранжевое — только вещи людей.
    5. Слова — на вещах: «рассмотреть» — табличка у вещи, выход — тусклая надпись на двери. 2D-дома нет
       (22.10, автор: «2D не должно быть»): художник 29d удалён вместе с ?room=0; без видеокарты — плашка 08b2. */
-const HOME3={cn:null,tags:null,mesh:null,rkey:"",cx:null,cy:0,tx:null,t0:0,err:0,frames:0,stat:null,vp:null,sz:null,meas:null,stool:null,anch:{},night:null};
+const HOME3={cn:null,tags:null,mesh:null,rkey:"",cx:null,cy:0,tx:null,t0:0,err:0,frames:0,S:null,vp:null,sz:null,meas:null,stool:null,anch:{},night:null};
 const HOME3_RW=5,HOME3_B=-2.4,HOME3_F=1.7,HOME3_H=2.8,HOME3_UP=3.05,HOME3_MZ=.25;
 const HOME3_M=new Float32Array(R3_MAXI*R3_PART*16),HOME3_OT=new Float32Array(R3_MAXI*R3_PART*4);
 /* тон стен по комнате (правило 4) и лампа — доля ширины, над чем она висит */
@@ -427,7 +427,7 @@ function home3Frame(){
   U[43]=t;U[44]=1;U[47]=1;
   const oq=r3Proj(cam.vp,cam.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   U.set([1,sz.ch/sz.cw,HALL_SHARP,1],52);
-  HOME3.frames++;HOME3.stat=hallLimits(S);HOME3.vp=cam.vp;HOME3.sz=sz;
+  HOME3.frames++;HOME3.S=S;HOME3.vp=cam.vp;HOME3.sz=sz;
   const m=HOME3.man;HOME3.meas={man:m?+hallManK(cam,m[0],m[2],sz.ch).toFixed(3):0,night:+home3Night().toFixed(2),up:up?1:0};
   room3TagsDraw(home3Tags(),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.cw-12,yr:sz.ch-(sz.wide?150:230)},HOME3.tags,false);
   return r3Frame(cn,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
