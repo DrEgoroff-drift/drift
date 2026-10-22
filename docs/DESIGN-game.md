@@ -592,6 +592,57 @@ Read it:
   dead goods). The second hour's walls are the drone's price, the buying order and walking — none
   of them a code bug; they are listed for the author, nothing changed.
 
+Two caveats on these rows (accepted with M919):
+
+- *The hold is «not a wall» partly by the probe's own cap.* A landing digs at most 12 deposits
+  (`lap`, the ground loop), and the lap ends there with room in the hold. A person who walks further
+  for a 13th deposit could meet the hold — and would walk even more than the 48–63 % above.
+- *The drone goes where a beginner puts it.* It takes the first deposit of the next landing
+  (iron here), hence 87–215 cr/h. On the dearest ore it may take (`ECO_DRONE=dear`, M912) it pays
+  back far sooner, but a fresh player does not know the prices yet; the rows keep the beginner.
+
+**The second hour across ten seeds — M920, measured 22.10** (`ECO_SEED=1…10`, the two T1 orders of
+M919, three hours at a human's pace). A seed alone (`rndSeed`) changes nothing before the third
+hour: ten seeds gave one run, the «Вьюк» lost at 82.2′ in all ten. A T0 world draws its events
+from hashes of place and clock, so the seed also shifts the hour the player starts (seed × 26.3 h);
+the map is the same. Each wreck is logged with its minute, hull, insurance, first-hour protection,
+phase and system (`wreck` wrapped in `91zzzw4-ecosim-t1.js`).
+
+| ten seeds, median (min–max) | modules, then T1 | T1 first |
+|---|---|---|
+| cooperative / drone / hand, minute | 64.3 (55.1–64.9) / 140.7 (132–146) / 148.9 (140–155); 2 runs never buy the drone | 55.1 / 65.5 (63.8–65.6) / 75.6 (71.7–76.7) |
+| net, hour 1 | 15 448 (14 012–16 330) | 15 457 (14 024–16 330) |
+| net, hour 2 | 14 214 (9 021–17 728) | 14 390 (1 973–17 695) |
+| net, hour 3 | 11 152 (1 557–15 668) | 10 157 (2 067–14 775) |
+| uninsured hull lost, by hour 1 · 2 · 3 | 0 · 2 · 2 of 10 (at 93′, 93′, 154′, 162′) | 0 · 3 · 1 of 10 (at 82′ ×3, 140′) |
+| hour-2 net, a run that lost the hull / did not | 9 383 / 14 751 | 7 903 / 16 014 |
+| docked at a yard before the loss (the only place insurance is sold) | 0 of 4 | 0 of 4 |
+
+All sixteen wrecks of the twenty runs (the uninsured «Вьюк» eight times, the always-insured Стриж
+eight) fell in the same phase: the probe's lap padding. The human pace pads a lap to six minutes, and
+the probe does it by waiting in open space after launch, without fighting back, at the neighbour
+systems where it digs (1,0 twelve times, 1,-1 three, -1,1 once). With the same wait spent at the
+pier instead (`ECO_PAD=dock`), the twenty runs have no wreck at all. Those runs have a slower first
+hour (9.8 k against 15.4 k cr/h, median; not analysed). Their T1 minutes are cooperative 71 / 81,
+drone 155 / 108, hand 164 / 115.
+
+Read it: **the uninsured hull is a rule of the world, not a rare case — for a ship that lingers in
+space next door.** Four runs in ten lose the «Вьюк» and its modules within three hours, two or
+three of them in the second hour. That halves the hour: 7.9–9.4 k against 14.8–16.0 k. Which order
+the player buys in changes the minute, not the odds. How often a real player lingers is the open
+number. The probe's wait is the worst case (still, silent, no guns), and the pier is the best. The
+truth sits between them, and the probe cannot place it.
+
+**What the player sees of the Страхкасса (M904c) before minute 82: nothing that offers it.** The
+offer is a plate with a button on the ДОСКА tab of a *yard* (`insSection`, `28i-insure.js:89`).
+None of the forty runs docked at a yard with a hull of their own; the drone trip goes to the nearest
+yard or factory, and a factory has no plate. The first watch (`28o-firstwatch`, M909) has no line
+about insurance. The only words on it are «страхует только «Стриж»» in the hand-over row on the
+home station's board (`28j-watch.js:265-266`). That row speaks of handing the watch over, and the
+first watch hides it for the first hour (`:261`). The first hour's protection (`firstHour()` in
+`wreck`, `28i:67`) is silent too: it ends at minute 60 with no word. Nothing changed; it goes to
+the author as it is.
+
 **Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
 
 - **T0 +57 % at the bot's pace, −13 % / +9 % at a human's.** Closed by the pace table above:
@@ -1198,6 +1249,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M917 | the ten dead industrial goods **measured 22.10, §11**: who eats each by meaning, and what an eater gives a chain with (а)+(в) | nine of ten are base modules by name, hullsec the hull; a chain with an eater pays 0.4–13k cr/h, mostly through its internal links (shadow price at every link); none fits three sites and the ★20–25 tiers at T3 |
 | M918 | the probe M912–M917 summed up for the author **written 22.10, §12**: proposals ranked by return per line, and what the measurements say to leave alone | (в) maker at home (1–3 lines) and (а) buyer of tier-1 goods (~40 lines) first: workshops −3.8k → −0.2k cr/h; prompt collisions; dead goods as base prices (~10 lines + a key each), late game; drone parts, internal-link pay and the allotment threshold disputed |
 | M919 | the second hour, T0 → T1 at a human's pace **measured 22.10, §4.1b**: ten-minute slices of the fresh save; three buying orders (modules only / modules then T1 / T1 first); where the first wall stands | cash is the wall (the drone waits 71 min behind hold 3 and drill 3; T1 assembled at 161.7′ or, T1 first, 82.6′), walking takes 48–63 % of play, the hold and the ladder are not walls; T1's kit loses money in its first hour; an uninsured «Вьюк» lost in a fight at 82′ halves hours two and three; no §12 item moves these walls |
+| M920 | the second hour across ten seeds **measured 22.10, §4.1b**: seed = random stream + start hour; both T1 orders; wrecks logged by minute, hull, insurance, phase | the uninsured «Вьюк» is lost in 4 of 10 runs within 3 h (2–3 in hour 2, never in hour 1), halving that hour; all wrecks fall in the probe's lap padding (idle in space next door), none with the wait at the pier; no run docked at a yard, so the Страхкасса was never offered; the first watch says nothing of insurance |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),
@@ -1384,6 +1436,18 @@ per line of code to the most disputable, then what it says to leave alone. Every
 those sections (T3 at a human's pace with the base and the logist unless named; cr/h; 3 h · 6 h).
 Nothing here is built; prices and balance are the author's.
 
+**First: the uninsured hull, lost unwarned (M920).** In four fresh saves out of ten the «Вьюк» is
+lost between minutes 82 and 162, uninsured, with every module on it. It goes in open space at a
+neighbour system where the player digs (1,0 most often), not at the pier: the probe waits there
+idle, padding a lap to a human's six minutes, and with the same wait at the pier none of twenty runs
+lost anything. The game could have said so, and does not. The first hour's protection ends at
+minute 60 without a word (`firstHour()` in `wreck`, `28i-insure.js:67`). The first watch has no
+line about insurance (`28o-firstwatch`). The offer itself is a plate on the ДОСКА of a *yard* only
+(`insSection`, `28i-insure.js:89`), and no run docked at a yard with a hull of its own. The M904c
+screen nearest that minute is the shift bill on the ДОСКА (`billSection`, `27ib-bill.js:225`). It
+shows wherever a bill is open or was issued, which is every few laps. It has a «Страхкасса» row
+(`27ib-bill.js:31`, `:134-136`), but the row appears only once a hull is insured. Lever and its price are M921 (§4.1b).
+
 ### Proposals, ranked
 
 **1. Let a workshop eat what its own system makes, at home — lever (в).** Today `bldRuleWhy`
@@ -1458,6 +1522,11 @@ in three of the ten dead-good chains (accum, hullsec, panel) because the probe's
 carbon (its worlds are fauna) and the bot does not haul it; carbon fibre runs only at a share on
 organics. Whatever the author picks from items 1–5, the home's carbon decides how deep a chain at
 home can go; the haul that would bring it costs what M915 measured (≈ 2.2k cr all-in).
+
+**The home rung in a fresh save stays at 5.** Three hours of play bring 19 points, but the
+landing gate (`rungOf`, `12ad-site.js:69-83`) holds the rung at 5: the fresh-save probe never lands
+in its home system (0,0) — it digs at the neighbours. Nothing on the T0 → T1 path asks for a rung
+(M919); a rung of 10 by the third hour needs a landing at home.
 
 ### Don't touch — the measurement said no
 

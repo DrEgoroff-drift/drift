@@ -28,46 +28,35 @@ function railHere(){
   const x=P.st.x-P.ux*RAIL_RING_OFF,y=P.st.y-P.uy*RAIL_RING_OFF;
   return {S,x,y,ux:P.ux,uy:P.uy,name:G.sys.station.name,by:P.by};
 }
-/* ── полустанок (M471, DESIGN-metro §2): за кромкой вместо вестибюля — голая
-   платформа: доска, скамья и один фонарь на столбе. Свет у фонаря свой,
-   тёплый, и больше на много секторов вокруг ничего не горит ── */
-function railHaltShapes(SH,vx,vy,s,col){
-  SH.push([0,vx-22*s,vy+2*s,vx+22*s,vy+5*s,0,0,58,52,46,1],        /* доска платформы */
-    [0,vx-6*s,vy-1*s,vx+4*s,vy+1*s,0,0,70,60,48,1],                 /* скамья */
-    [0,vx-5*s,vy+1*s,vx-4*s,vy+2*s,0,0,70,60,48,1],[0,vx+2*s,vy+1*s,vx+3*s,vy+2*s,0,0,70,60,48,1],
-    [0,vx+13*s,vy-14*s,vx+14.2*s,vy+2*s,0,0,40,40,44,1],            /* столб */
-    [1,vx+13.6*s,vy-15*s,11*s,0,0,0,col[0],col[1],col[2],.16],      /* круг света */
-    [1,vx+13.6*s,vy-15*s,2.2*s,0,0,0,255,236,200,.95]);             /* лампа */
-}
-/* ── рисунок: кольцо, глиссада, вестибюль ── */
-/* с видеокарты (ступень 1): лампы, кольцо и вестибюль — фигуры кита, спираль — лента
-   четырёхугольников с жёсткими стыками (без бусин на изломах), табличка — слой подписей */
+/* ── рисунок: кольцо, глиссада, вестибюль (M806) ──
+   Кольцо, вестибюль и полустанок (M471, DESIGN-metro §2: доска, скамья, фонарь на столбе) — тело под звездой
+   (18fa). Здесь — то, что ниже порога тела: плёнка и вихрь под ободом (спираль — лента четырёхугольников
+   с жёсткими стыками, без бусин на изломах), глиссада — огни, бегущие внутрь, табличка — слой подписей */
 function railGpu(pass,R,x,y,s,col,ts,fast,zx,zy){
-  const SH=[];
-  const nL=R.S.halt?3:9;   /* полустанок (M471): глиссада в три лампы */
-  for(let i=0;i<nL;i++){
-    const d=70+i*28,w=10+i*4.5,ph=((ts*2.2*fast+i*.37)%1),k=Math.max(0,1-Math.abs(ph-.5)*3);
-    for(const sd of [-1,1]){const px=R.x+R.ux*d-R.uy*w*sd,py=R.y+R.uy*d+R.ux*w*sd;
-      SH.push([1,zx(px),zy(py),(1.2+1.2*k)*s,0,0,0,col[0],col[1],col[2],.25+.6*k]);}
-  }
-  SH.push([1,x,y,40*s,0,0,0,40,52,66,.55],[3,x,y,44*s,0,2.5*s,0,170,190,210,.7],[3,x,y,46.5*s,0,.6*s,0,20,24,30,.9]);
+  const SH=[],AD=[];
+  SH.push([1,x,y,(RRING_R-4)*s,0,0,6*s,24,34,48,.38]);   /* плёнка проёма: тень, а не крышка */
   const sp=[];
   for(let a=0;a<TAU*2.2;a+=.12){const r=4*s+a*5.5*s,t=a+ts*.4*fast;sp.push([x+Math.cos(t)*r,y+Math.sin(t)*r]);}
   const n=sp.length,sc=[127,230,216,.10+.08*fast],nr=i=>{const a=sp[Math.max(0,i-1)],b=sp[Math.min(n-1,i+1)];
     const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return [-dy/l*.5,dx/l*.5];};
   for(let i=0;i+1<n;i++){const p=sp[i],q=sp[i+1],u=nr(i),v=nr(i+1);
     gpuQuad(SH,[p[0]-u[0],p[1]-u[1]],[p[0]+u[0],p[1]+u[1]],[q[0]+v[0],q[1]+v[1]],[q[0]-v[0],q[1]-v[1]],sc,(i>0?1:0)|(i+2<n?4:0));}
-  for(let i=0;i<12;i++){const a=i/12*TAU,cx=x+Math.cos(a)*44*s,cy=y+Math.sin(a)*44*s;SH.push([0,cx-1,cy-1,cx+1,cy+1,0,0,col[0],col[1],col[2],.55]);}
-  const vx=zx(R.x-R.uy*70),vy=zy(R.y+R.ux*70),x0=vx-16*s,x1=vx+16*s,y0=vy-9*s,y1=vy+9*s;
-  if(R.S.halt){railHaltShapes(SH,vx,vy,s,col);gpuShapes(pass,SH);
-    domLabel("rail",x,y+58*s+10,"ПОЛУСТАНОК · "+R.S.lines[0].ru.toUpperCase(),uiFont(9),"rgba(242,178,92,.6)","center");return;}
-  SH.push([0,x0,y0,x1,y1,0,0,30,37,48,1],
-    [0,x0-.5,y0-.5,x1+.5,y0+.5,0,0,0,0,0,.6],[0,x0-.5,y1-.5,x1+.5,y1+.5,0,0,0,0,0,.6],
-    [0,x0-.5,y0+.5,x0+.5,y1-.5,0,0,0,0,0,.6],[0,x1-.5,y0+.5,x1+.5,y1-.5,0,0,0,0,0,.6]);
-  for(let i=0;i<4;i++)SH.push([0,vx-12*s+i*7*s,vy-3*s,vx-8*s+i*7*s,vy,0,0,255,226,170,.8]);
-  gpuShapes(pass,SH);
-  domLabel("rail",x,y+58*s+10,(R.S.metro?"МЕТРО · ":"")+R.S.lines[0].ru.toUpperCase()+(R.S.lines.length>1?" +"+(R.S.lines.length-1):""),
-    uiFont(9),"rgba(242,178,92,.75)","center");
+  gpuShapes(pass,SH);SH.length=0;
+  railRingBody(pass,R,x,y,s,col,ts,fast);
+  /* глиссада: огонь бежит к кольцу; у полустанка — три лампы */
+  const nL=R.S.halt?3:9;
+  for(let i=0;i<nL;i++){
+    const d=70+i*28,w=10+i*4.5,ph=((ts*2.2*fast+i*.37)%1),k=Math.max(0,1-Math.abs(ph-.5)*3);
+    for(const sd of [-1,1]){const px=zx(R.x+R.ux*d-R.uy*w*sd),py=zy(R.y+R.uy*d+R.ux*w*sd);
+      SH.push([1,px,py,(.9+.6*k)*s,0,0,.4*s,col[0],col[1],col[2],.35+.6*k]);
+      AD.push([1,px,py,.6*s,0,0,(3+5*k)*s,col[0],col[1],col[2],.08+.3*k]);}
+  }
+  gpuShapes(pass,SH);gpuShapes(pass,AD,{blend:"add"});
+  /* табличка — над кольцом или под ним, с той стороны, где нет вестибюля (на экране он ниже — табличка сверху) */
+  const ly=R.ux>.35?y-(RRING_R+12)*s:y+(RRING_R+14)*s+10;
+  domLabel("rail",x,ly,R.S.halt?"ПОЛУСТАНОК · "+R.S.lines[0].ru.toUpperCase():
+    (R.S.metro?"МЕТРО · ":"")+R.S.lines[0].ru.toUpperCase()+(R.S.lines.length>1?" +"+(R.S.lines.length-1):""),
+    uiFont(9),R.S.halt?"rgba(242,178,92,.6)":"rgba(242,178,92,.75)","center");
 }
 function drawSysRail(zx,zy,Z){
   const R=railHere();if(!R)return;

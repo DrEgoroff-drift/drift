@@ -851,6 +851,10 @@ function drawSysHud(zx,zy,sh,sys,U){
   }
   /* и сам блок шкал — занятое место, если кромка до него всё же дотянется */
   if(hr&&hr.height>0)placed.push({x:hr.left/U-4,y:hr.top/U-4,w:hr.width/U+8,h:hr.height/U+8});
+  /* узлы интерфейса как они есть (без зоны пальца и без носа корабля): плашка в пути
+     к слоту на них не ложится (ниже, busyAt). Слот их и так обходит с запасом */
+  const busy=[pr,padsRect(),railRect(),hr].filter(r=>r&&r.height>0).map(r=>({x:r.left/U,y:r.top/U,w:r.width/U,h:r.height/U}));
+  const busyAt=(x,y,cw,ch)=>busy.some(p=>!(x+cw<=p.x||p.x+p.w<=x||y+ch<=p.y||p.y+p.h<=y));
   const chF="8px ui-monospace,monospace";
   /* под окном оклика и окном бака фишки гаснут, как борт (R0, дев 12.09): на
      них не жмут, пока окно ждёт ответа, и они не спорят с ним глазами */
@@ -1005,6 +1009,10 @@ function drawSysHud(zx,zy,sh,sys,U){
         st.fading=true;st.fadeT=0;st.fx=st.x;st.fy=st.y;
         dcx=st.fx;dcy=st.fy;dcA=1;
       }else{glide();dcx=st.x;dcy=st.y;dcA=1;}
+      /* слот уехал из-под строки подсказки (она появилась), а плашка ещё в пути и лежит на строке:
+         такой путь не везут — плашка сразу встаёт на слот (rooms-a, кадр 1600: «Звезда» на «СТАНЦИЯ…») */
+      if(busyAt(dcx,dcy,cw,ch)&&!busyAt(rx,ry,cw,ch)){
+        st.x=rx;st.y=ry;st.fading=false;st.lit=false;st.edge=targetEdge;dcx=rx;dcy=ry;dcA=1;}
     }
     CL.push({m,A,st:CHIP_POS.get(m.k),rx:dcx,ry:dcy,dcA,cw,ch,label,ang});
   }
@@ -1054,11 +1062,16 @@ function drawSysHud(zx,zy,sh,sys,U){
         else{if(!st.jf.lit){st.jf.lit=1;st.px=rx;st.py=ry;}dcA*=(st.jf.t-half)/half;}
       }
       /* и загораясь после уступки, фишка может уступить снова — тогда прячется заново */
-      if((!st.jf||st.jf.t>=half)&&st.px!=null&&dcA>=.5&&Math.hypot(rx-st.px,ry-st.py)>lim){
+      /* старое место на узле интерфейса — не тухнуть на нём, а встать на новое */
+      if(st.jf&&st.jf.t<half&&busyAt(st.jf.x,st.jf.y,cw,ch))st.jf=null;
+      if((!st.jf||st.jf.t>=half)&&st.px!=null&&dcA>=.5&&Math.hypot(rx-st.px,ry-st.py)>lim&&!busyAt(st.px,st.py,cw,ch)){
         st.jf={x:st.px,y:st.py,t:0};rx=st.px;ry=st.py;dcA=a0;
       }
       st.px=rx;st.py=ry;
     }
+    /* последняя страховка: отодвинутая от соседки плашка легла на строку подсказки или
+       панель — этот кадр её не рисуют (и не трогают): поверх интерфейса метки не бывает */
+    if(busyAt(rx,ry,cw,ch))dcA=0;
     const AA=A*dcA;
     /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а
        фишка ростом 16. Растим её вокруг центра, не трогая рисунок. Зона идёт
