@@ -24,6 +24,9 @@ function homeStillAsp(n){return clamp((n*HOME3_RW+2)/4.6,1.5,3.2);}
 function homeStillFlush(){
   HST.t=0;const L=HST.q.splice(0);
   if(GPU.enc){HST.q.push(...L);HST.t=setTimeout(homeStillFlush,0);return;}   /* кадр ещё открыт — следующим таймером */
+  /* только у станции: панель могли закрыть до таймера, а снимок в полёте — компиляция конвейеров комнат посреди
+     полёта (сеть «конвейеры: после прогрева полёт не компилирует» ловила это изредка) */
+  if(G.mode!=="dock")return;
   for(const it of L)if(it[0].isConnected)homeStillPaint(it[0],it[1]);
 }
 /* камера общего плана: на три четверти справа, на высоте чуть выше роста — дом уходит вглубь кадра, ближняя
@@ -52,7 +55,7 @@ function homeStillPaint(cv,nd){
   G.hin={x:mid.x+mid.w*.5,vx:0,face:-1,walk:0,phase:0,cam:0,up:0,look:null,lookT:0,folk:hinFolkMake(),t0:G.t};
   HOME3.mesh=HST.mesh;
   try{
-    const asp=w/h,cam=homeStillCam(R.length,asp),t=wallMs()/1000,S=home3Scene(cam,t);
+    const asp=w/h,cam=homeStillCam(R.length,asp),t=wallMs()/1000,S=home3Scene(cam,t,true);
     S.fog[3]*=.35;   /* дымка сцены рассчитана на 6 м до хозяина; общий план втрое дальше — иначе дом белеет */
     const U=new Float32Array(60);
     S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,w/nd,h/nd),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],w/nd,h/nd);

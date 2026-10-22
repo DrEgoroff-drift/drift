@@ -332,7 +332,7 @@ function home3Man(M,OT,ii,m,mesh,x,y0,z,yaw,t,look,dim,mark){
   if(mark)OT.set([x,z,.3,mark],(ii*R3_PART+R3_PART-1)*4);
 }
 /* сцена: хозяин, жильцы его этажа, свет по комнатам */
-function home3Scene(cam,t){
+function home3Scene(cam,t,all){
   const S0=G.hin,M=HOME3_M,OT=HOME3_OT,I=r3Xf([0,0,0]),up=home3Up(),y0=up?HOME3_UP:0,B=HOME3_B,H=HOME3_H,RW=HOME3_RW;
   for(let i=0;i<R3_MAXI*R3_PART;i++)M.set(I,i*16);OT.fill(0);
   const draws=[[HOME3.mesh,0,1]];let ii=1;
@@ -353,15 +353,17 @@ function home3Scene(cam,t){
   const nk=home3Night(),day=1-nk,warm=r3Lin([255,200,140]),lights=[],bulbs=[];
   const rooms=up?home3UpRooms():hinGroundRooms().map(r=>({key:r.key,x0:r.i*RW}));
   const cur=Math.max(0,rooms.findIndex(r=>mx>=r.x0&&mx<r.x0+RW));
-  rooms.forEach((r,j)=>{const d=Math.abs(j-cur);if(d>2)return;const lx=r.x0+(HOME3_LAMP[r.key]||.5)*RW,key=d===0;
+  /* all — общий план (снимок 29rf): лампа в каждой комнате в полную силу, иначе крайние комнаты стояли чёрными
+     (Контроль, 0.499.14); тень и окно — только у хозяина: огней не больше 12 (8 ламп + окно + солнце, фонарь, заливка) */
+  rooms.forEach((r,j)=>{const d=all?Math.min(1,Math.abs(j-cur)):Math.abs(j-cur);if(d>2)return;const lx=r.x0+(HOME3_LAMP[r.key]||.5)*RW,key=d===0;
     const ly=r.key==="bed"?y0+.75:y0+H-.72,lz=r.key==="bed"?B+.3:-.9;
-    lights.push({p:[lx,ly,lz],range:(key?6.5:4.5)*(1+.3*nk),c:r3Sc(warm,(key?6.2:d===1?1.2:.6)*(1+.8*nk)),spot:r.key==="bed"?0:1,d:[0,-1,-.15],
+    lights.push({p:[lx,ly,lz],range:(key||all?6.5:4.5)*(1+.3*nk),c:r3Sc(warm,(key?6.2:all?4.2:d===1?1.2:.6)*(1+.8*nk)),spot:r.key==="bed"?0:1,d:[0,-1,-.15],
       cosO:Math.cos(1.02+.1*nk),cosI:Math.cos(.22),shadow:key?1:0,vol:key?.08:.03,key:key?1:0});
     if(d<=1)bulbs.push([lx,ly-.05,lz,key?.9:.4]);
     const W=HOME3_WIN[r.key]||[.5,1.2],wx=r.x0+W[0]*RW,wy=y0+(up?1.6:2.0);
     if(d===0)lights.push({p:[wx,wy,B+.15],range:9,c:r3Sc(r3Lin(mixc([255,226,180],[96,124,180],nk)),2.6*day+.5*nk),spot:1,
       d:day>.5?[-.3,-.85,.42]:[0,-.5,.86],cosO:Math.cos(.85),cosI:Math.cos(.15),shadow:day>.5?1:0,vol:0});
-    else if(d===1)lights.push({p:[wx,wy-.2,B+.3],range:3.0,c:r3Sc(r3Lin(mixc([255,230,190],[90,116,170],nk)),.8*day+.12*nk),vol:0});});
+    else if(d===1&&!all)lights.push({p:[wx,wy-.2,B+.3],range:3.0,c:r3Sc(r3Lin(mixc([255,230,190],[90,116,170],nk)),.8*day+.12*nk),vol:0});});
   /* солнце двора днём, луна ночью: сверху-спереди-слева, без тени — двор и кулиса в свете мира (стенд: ключ — звезда) */
   if(!up)lights.splice(Math.min(lights.length,3),0,{p:[mx-7,14,HOME3_F+9],range:40,c:r3Sc(r3Lin(mixc([255,236,200],[120,132,190],nk)),300*day+120*nk),spot:1,
     d:K3n([5,-12.5,-9]),cosO:Math.cos(.7),cosI:Math.cos(.45),vol:0});
