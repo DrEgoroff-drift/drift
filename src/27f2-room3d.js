@@ -35,6 +35,9 @@ const R3P={none:0,wall:1,floor:2,wood:3,brushed:4,window:5,sign:6,cloth:7,skin:8
 function r3Lin(c){return [Math.pow(c[0]/255,2.2),Math.pow(c[1]/255,2.2),Math.pow(c[2]/255,2.2)];}
 function r3Mix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
 function r3Sc(a,k){return [a[0]*k,a[1]*k,a[2]*k];}
+/* то же на месте (лепка кожи: 25 тыс. точек × 15 смесей — без массива на каждую): a += (b·k − a)·t; a *= k */
+function r3MixI(a,b,t,k){k=k==null?1:k;a[0]+=(b[0]*k-a[0])*t;a[1]+=(b[1]*k-a[1])*t;a[2]+=(b[2]*k-a[2])*t;return a;}
+function r3ScI(a,k){a[0]*=k;a[1]*=k;a[2]*=k;return a;}
 function r3Step(a,b,x){const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);}
 /* ── матрицы (по столбцам, как WGSL) ── */
 function r3Mul(a,b){const o=new Array(16);
@@ -64,8 +67,10 @@ function r3Proj(vp,p,w,h){
 
 /* ── инструменты сетки ── всё в метрах; T — текущая матрица (стек push/pop) */
 function r3Kit(){
-  const V=[];let T=r3Xf([0,0,0]);const ST=[];
-  const K={V,part:0,flags:0,q:1};   /* q — множитель граней: портрет крупным планом гуще; flags: 1 — не бросает тени, 2 — тело под резкостью */
+  /* вершины — в растущем Float32Array (удвоение), не в JS-массиве через push: заготовка зала сорила ~74 МБ на тело
+     (охотник, отчёт 15); VN — занято чисел, 12 на вершину. Снаружи массив никто не читает — только K.pack */
+  let V=new Float32Array(12*2048),VN=0;let T=r3Xf([0,0,0]);const ST=[];
+  const K={part:0,flags:0,q:1};   /* q — множитель граней: портрет крупным планом гуще; flags: 1 — не бросает тени, 2 — тело под резкостью */
   const P=p=>[T[0]*p[0]+T[4]*p[1]+T[8]*p[2]+T[12],T[1]*p[0]+T[5]*p[1]+T[9]*p[2]+T[13],T[2]*p[0]+T[6]*p[1]+T[10]*p[2]+T[14]];
   const N=n=>{const x=T[0]*n[0]+T[4]*n[1]+T[8]*n[2],y=T[1]*n[0]+T[5]*n[1]+T[9]*n[2],z=T[2]*n[0]+T[6]*n[1]+T[10]*n[2],l=Math.hypot(x,y,z)||1;return [x/l,y/l,z/l];};
   const nz=v=>{const l=Math.hypot(v[0],v[1],v[2]);return l>1e-12?[v[0]/l,v[1]/l,v[2]/l]:[0,1,0];};
@@ -78,9 +83,17 @@ function r3Kit(){
   K.pushM=M=>{ST.push(T);T=r3Mul(T,M);};
   K.pop=()=>{T=ST.pop();};
   /* вершина: p, n — местные (через T); col — своя краска вершины (иначе материал) */
-  K.vx=(p,n,M,col,sk)=>{const q=P(p),m=N(n),c=col||M.c,wq=sk?Math.round(clamp(sk[1],0,1)*255):0;
-    V.push(q[0],q[1],q[2],m[0],m[1],m[2],c[0],c[1],c[2],Math.round(M.g)+Math.min(M.s,.99),M.e,
-      K.part+16*M.p+1024*((M.ns||K.flags&1)?1:0)+(wq?2048*sk[0]+32768*wq:0)+(K.flags&2?8388608:0));};
+  /* вершина по составляющим нормали — без массивов на точку (P/N считаются на месте); K.vx — обёртка */
+  const vx3=(p,nx,ny,nzz,M,col,sk)=>{
+    if(VN+12>V.length){const W=new Float32Array(V.length*2);W.set(V);V=W;}
+    const c=col||M.c,wq=sk?Math.round(clamp(sk[1],0,1)*255):0,o=VN,px=p[0],py=p[1],pz=p[2];
+    const x=T[0]*nx+T[4]*ny+T[8]*nzz,y=T[1]*nx+T[5]*ny+T[9]*nzz,z=T[2]*nx+T[6]*ny+T[10]*nzz,l=Math.hypot(x,y,z)||1;
+    V[o]=T[0]*px+T[4]*py+T[8]*pz+T[12];V[o+1]=T[1]*px+T[5]*py+T[9]*pz+T[13];V[o+2]=T[2]*px+T[6]*py+T[10]*pz+T[14];
+    V[o+3]=x/l;V[o+4]=y/l;V[o+5]=z/l;V[o+6]=c[0];V[o+7]=c[1];V[o+8]=c[2];
+    V[o+9]=Math.round(M.g)+Math.min(M.s,.99);V[o+10]=M.e;
+    V[o+11]=K.part+16*M.p+1024*((M.ns||K.flags&1)?1:0)+(wq?2048*sk[0]+32768*wq:0)+(K.flags&2?8388608:0);
+    VN+=12;};
+  K.vx=(p,n,M,col,sk)=>vx3(p,n[0],n[1],n[2],M,col,sk);
   K.tri=(a,b,c,M,n)=>{n=n||nz(cr(sub(b,a),sub(c,a)));K.vx(a,n,M);K.vx(b,n,M);K.vx(c,n,M);};
   K.quad=(a,b,c,d,M,n)=>{n=n||nz(cr(sub(b,a),sub(d,a)));K.vx(a,n,M);K.vx(b,n,M);K.vx(c,n,M);K.vx(a,n,M);K.vx(c,n,M);K.vx(d,n,M);};
   /* ящик со скошенными рёбрами: c — середина, h — полуразмеры, b — фаска (ловит блик, как у настоящей вещи) */
@@ -122,16 +135,22 @@ function r3Kit(){
     const brk=()=>ms&&wallMs()-t0>ms;
     for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const r=f(i/nu,j/nv);G.push(r[0]);C.push(r[1]||null);W.push(r[2]||null);}
     const at=(i,j)=>{if(o.wrap)i=(i+nu)%nu;else i=Math.max(0,Math.min(nu,i));j=Math.max(0,Math.min(nv,j));return G[j*(nu+1)+i];};
-    const NN=[];for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){
-      const du=sub(at(i+1,j),at(i-1,j)),dv=sub(at(i,j+1),at(i,j-1));let n=cr(du,dv);
-      if(Math.hypot(...n)<1e-14){const dv2=sub(at(i,j+(j<nv?2:-2)),at(i,j));n=cr(du,j<nv?dv2:[-dv2[0],-dv2[1],-dv2[2]]);}
-      n=nz(n);if(o.flip)n=[-n[0],-n[1],-n[2]];NN.push(n);
+    /* нормали — плоским Float32Array, без массивов на точку (та же математика: центральные разности, cross, flip) */
+    const NN=new Float32Array(3*(nu+1)*(nv+1)),sg=o.flip?-1:1;let k3=0;
+    for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){
+      const a=at(i+1,j),b=at(i-1,j),c=at(i,j+1),d=at(i,j-1);
+      const ux=a[0]-b[0],uy=a[1]-b[1],uz=a[2]-b[2];let vx=c[0]-d[0],vy=c[1]-d[1],vz=c[2]-d[2];
+      let x=uy*vz-uz*vy,y=uz*vx-ux*vz,z=ux*vy-uy*vx;
+      if(Math.hypot(x,y,z)<1e-14){const e=at(i,j+(j<nv?2:-2)),f=at(i,j),s=j<nv?1:-1;vx=(e[0]-f[0])*s;vy=(e[1]-f[1])*s;vz=(e[2]-f[2])*s;
+        x=uy*vz-uz*vy;y=uz*vx-ux*vz;z=ux*vy-uy*vx;}
+      const l=Math.hypot(x,y,z);if(l>1e-12){NN[k3]=x/l*sg;NN[k3+1]=y/l*sg;NN[k3+2]=z/l*sg;}else{NN[k3]=0;NN[k3+1]=sg;NN[k3+2]=0;}
+      k3+=3;
       if(i===nu&&brk()){yield;t0=wallMs();}}
-    const id=(i,j)=>j*(nu+1)+i;
+    const id=(i,j)=>j*(nu+1)+i,put=k=>vx3(G[k],NN[3*k],NN[3*k+1],NN[3*k+2],M,C[k]||null,W[k]);
     for(let j=0;j<nv;j++){for(let i=0;i<nu;i++){
       if(o.keep&&!o.keep((i+.5)/nu,(j+.5)/nv))continue;
-      const q=[id(i,j),id(i+1,j),id(i+1,j+1),id(i,j+1)];
-      for(const k of [q[0],q[1],q[2],q[0],q[2],q[3]])K.vx(G[k],NN[k],M,C[k]||null,W[k]);}
+      const q0=id(i,j),q1=id(i+1,j),q2=id(i+1,j+1),q3=id(i,j+1);
+      put(q0);put(q1);put(q2);put(q0);put(q2);put(q3);}
       if(brk()){yield;t0=wallMs();}}};
   K.surf=(nu,nv,f,M,o)=>{const it=K.surfG(nu,nv,f,M,o,0);while(!it.next().done);};
   /* труба по ломаной P с радиусом r (число или массив); N — граней; кольца — параллельным переносом */
@@ -153,7 +172,7 @@ function r3Kit(){
       K.tri([Pp[a][0],Pp[a][1],z0],[Pp[b][0],Pp[b][1],z0],[Pp[d][0],Pp[d][1],z0],M,[0,0,-1]);}
     for(let i=0;i<Pp.length;i++){const q=Pp[i],r=Pp[(i+1)%Pp.length];
       K.quad([q[0],q[1],z0],[r[0],r[1],z0],[r[0],r[1],z1],[q[0],q[1],z1],M);}};
-  K.pack=()=>({v:new Float32Array(V),n:V.length/12,buf:null,dev:null});
+  K.pack=()=>({v:V.slice(0,VN),n:VN/12,buf:null,dev:null});
   return K;
 }
 
@@ -488,7 +507,7 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
     let sc=vn3(vec3f(floor(t*6.),11.,0.));f+=.35*step(.7,sc)*smoothstep(.0025,0.,abs(p.x-fract(sc*7.3)));
     f*=(.9+.1*sin(t*47.)*sin(t*29.))*(1.-.42*dot(c2/vec2f(1.3,.62),c2/vec2f(1.3,.62)));
     f*=smoothstep(0.,.05,ph)*smoothstep(1.,.95,ph);
-    let v=clamp(f,0.,1.);a=mix(vec3f(.003,.003,.004),vec3f(1.,.88,.7),pow(v,2.4));em=2.2*step(.5,u.flm2.y);sp=0.;}
+    let v=clamp(f,0.,1.);a=mix(vec3f(.003,.003,.004),vec3f(1.,.9,.74),pow(v,1.7));em=2.7*step(.5,u.flm2.y);sp=0.;}
   else if(pat==13u){a*=.9+.2*vn3(i.l*vec3f(160.));}   /* кожа сиденья */
   else if(pat==14u){   /* опасность: косые полосы */
     let q=pl2(W,n);let s=step(.5,fract((q.x+q.y)*4.));a=mix(vec3f(.05,.045,.04),vec3f(.75,.55,.08),s);}

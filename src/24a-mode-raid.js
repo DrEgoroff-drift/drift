@@ -188,33 +188,8 @@ function drawPirateBase(zx,zy,Z){
   const PB=sysPirateBase();if(!PB)return;
   const x=zx(PB.x),y=zy(PB.y),s=clamp(Z,.3,1.4);
   if(x<-60||x>W+60||y<-60||y>H+60)return;
-  const pass=gpuScene();if(pass){pirateBaseGpu(pass,PB,x,y,s);return;}
-  ctx.save();ctx.translate(x,y);ctx.scale(s,s);
-  /* угловатая, тёмная, с красными огнями — читается как чужая с первого взгляда */
-  /* у базы с хозяином (12o) свой обвод и своё имя: логово наконец отличается
-     снаружи, а не только изнутри */
-  const HL=typeof huntLairAt==="function"?huntLairAt(G.sx,G.sy):null;
-  ctx.fillStyle=HL?"#1b0f16":"#171013";
-  ctx.strokeStyle=HL?"rgba(197,138,224,.9)":"rgba(220,90,70,.85)";ctx.lineWidth=2;
-  ctx.beginPath();
-  for(let i=0;i<5;i++){
-    const a=i*TAU/5+G.t*.002;
-    const px=Math.cos(a)*22,py=Math.sin(a)*16;
-    i?ctx.lineTo(px,py):ctx.moveTo(px,py);
-  }
-  ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.strokeStyle="rgba(220,90,70,.5)";ctx.lineWidth=1.4;
-  for(let i=0;i<4;i++){
-    const a=i*TAU/4-G.t*.004;
-    ctx.beginPath();ctx.moveTo(Math.cos(a)*20,Math.sin(a)*14);
-    ctx.lineTo(Math.cos(a)*33,Math.sin(a)*24);ctx.stroke();
-  }
-  ctx.fillStyle=(Math.sin(G.t*.18)>0)?"rgba(255,60,50,.95)":"rgba(255,60,50,.15)";
-  ctx.beginPath();ctx.arc(0,0,4,0,TAU);ctx.fill();
-  ctx.restore();
-  ctx.fillStyle=HL?"rgba(197,138,224,.8)":"rgba(220,90,70,.65)";
-  ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),x,y+34);
+  /* угловатая, тёмная, с красными огнями — читается как чужая; только на движке (22.10) */
+  const pass=gpuScene();if(pass)pirateBaseGpu(pass,PB,x,y,s);
 }
 function enterRaid(PB){
   if(typeof vegaOffend==="function"&&vegaAboard())vegaOffend("рейд, а она просила не лезть");   /* M153 */

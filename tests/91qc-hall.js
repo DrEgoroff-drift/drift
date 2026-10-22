@@ -240,12 +240,11 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     ok(a&&b&&Math.abs(b[0]-a[0])<=3,"переплёт окна "+(a&&b?Math.abs(b[0]-a[0]).toFixed(1):"—")+" px ≤ 3");}
 
   /* M812: в месте карточки (≥120 px) корпус — объём ангара, длинная сторона не меньше 160 px; в малом — прежний вид сверху */
-  {const wo=H3D.on;H3D.on=true;
+  {
     for(const id of SHIP_KEYS){const S={},f=hallYardFit(S,id,400,HALL_YARD_H),m=h3dMesh(hullOf(id),S.v3&&S.v3.gear),U=hgUnits(m,S.v3.tilt,S.v3.persp,[S.v3.yaw]);
       const lw=f[2]*Math.max(U.hu1-U.hu0,U.hv1-U.hv0);
       ok(!!S.v3&&lw>=160&&f[2]*(U.hv1-U.hv0)<=HALL_YARD_H,"корпус «"+id+"» в карточке — объём, "+lw.toFixed(0)+" px по длинной стороне, в высоту места");}
-    const S0={};hallYardFit(S0,SHIP_KEYS[0],120,64);ok(S0.v3===null,"в малом месте — вид сверху, как раньше");
-    H3D.on=wo;}
+    const S0={};hallYardFit(S0,SHIP_KEYS[0],120,64);ok(S0.v3===null,"в малом месте — вид сверху, как раньше");}
 
   /* наезд: от двери к месту, к концу — ровно цель */
   hallGo("board",true);
@@ -351,4 +350,14 @@ TEST_SUITES.push(()=>suite("зал станции: сообщение на те�
   ok(hallMsgEther(false)&&line.textContent==="Отметка: система · отмечена на карте","на телефоне — в полосу эфира одной строкой");
   eq(hallMsgEther(false),false,"то же сообщение второй раз не идёт");
   G.msgT=0;hallMsgEther(false);HALL.open=wo;line.textContent=txt;
+}));
+/* ореол колбы (дымка кантины 22.10): лампа у плоскости объектива уходила в x 2·10⁵ px с ореолом 3·10⁵ —
+   и ровный жёлтый слой ложился на весь зал на переходе к бару */
+TEST_SUITES.push(()=>suite("зал: ореол колбы — только в кадре и своего размера",()=>{
+  const cam=hallCamFr({eye:[-.1,1.62,6.14],tgt:[-6,1.5,6.2],fy:.9},1024,900,.5,.5),U=new Float32Array(60);
+  hallBulbU(U,cam.vp,[[-5.2,2.36,6,1],[-.102,2.45,9.14,1],[8.1,2.45,.12,1]],1024,900);
+  ok(U[3]>0&&U[2]>=2&&U[2]<HALL_BULB_R,"лампа впереди — ореол "+U[2].toFixed(1)+" px");
+  eq(U[7],0,"лампа сбоку у плоскости объектива — без ореола");
+  eq(U[11],0,"лампа за спиной — без ореола");
+  ok(Array.from(U).every(v=>Math.abs(v)<5000),"в поле нет чисел за кадром");
 }));

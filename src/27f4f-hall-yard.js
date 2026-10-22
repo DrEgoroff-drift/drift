@@ -23,7 +23,7 @@ function hallShipList(pairs){
    Возвращает [x,y,sc] центра и масштаба в рамке w×h и ставит S.v3 */
 function hallYardFit(S,id,w,h){
   const hl=hullOf(id);
-  if(h>=120&&H3D.on&&typeof hgUnits==="function"){
+  if(h>=120&&typeof hgUnits==="function"){
     const v3=HALL_YARD_V3;v3.gear=h3dStockGear(id);
     const m=h3dMesh(hl,v3.gear),U=hgUnits(m,v3.tilt,v3.persp,[v3.yaw]);
     const sc=Math.min(w*.88/Math.max(1e-3,U.hu1-U.hu0),h*.8/Math.max(1e-3,U.hv1-U.hv0));

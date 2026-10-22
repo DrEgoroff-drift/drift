@@ -192,35 +192,35 @@ function* cpHeadGen(K,g,lod,cl,seed){
   const red=r3Lin([196,90,80]),ink=r3Lin([40,90,110]),brd=r3Lin([150,48,36]),cool=r3Lin([90,80,110]);
   const lipC=r3Lin(mixc(g.skin,F.fem?[176,60,72]:[170,74,72],F.fem?.42:.32)),browC=r3Lin(mixc(g.hair,[24,18,14],.3)),mouthC=r3Lin([52,20,20]);
   const wetC=r3Lin([206,128,118]),lashC=r3Lin([20,15,13]),carC=r3Lin([200,120,118]),nosC=r3Lin([40,18,15]);
-  const stub=!F.fem&&!g.beard&&(seed>>>3)%3===0?r3Mix(skin,r3Lin([70,76,90]),.3):null;
+  const stub=!F.fem&&!g.beard&&(seed>>>3)%3===0?r3Mix(skin,r3Lin([70,76,90]),.3):null,scarC=r3Mix(skin,red,.6);
   const dseg=(px,py,ax,ay,bx,by)=>{const vx=bx-ax,vy=by-ay,t=clamp(((px-ax)*vx+(py-ay)*vy)/(vx*vx+vy*vy||1),0,1);return Math.hypot(px-ax-vx*t,py-ay-vy*t);};
   /* кожа: окклюзия глазниц и под челюстью, зоны тона, губы, брови, кромки век, ноздри, складки, метки */
   const skf=(u,v)=>{
     const o=cpSkin(H,F,TH(u),PH(v)),p=o.p,dy=o.dy,dz=o.dz;
-    let col=skin.slice();
+    const col=skin.slice();   /* единственный массив на точку: дальше смесь на месте (r3MixI/r3ScI, 27f2) */
     const ao=1-.42*clamp(o.sock,0,1)-.3*r3Step(-.55,-.95,dy)*r3Step(-.3,.5,dz);
     const blush=Math.exp(-Math.pow((Math.abs(p[0])-.6*H.a)/.018,2)-Math.pow((p[1]+.026)/.018,2))*r3Step(0,.6,dz);
-    col=r3Mix(col,r3Mix(col,red,.5),blush*(.35+.2*F.fem));
+    r3MixI(col,red,.5*blush*(.35+.2*F.fem));
     const fz=r3Step(0,.5,dz),nose=Math.exp(-Math.pow(p[0]/.016,2)-Math.pow((p[1]+.018)/.028,2))*fz;
     let und=0;for(const s of [-1,1])und+=Math.exp(-Math.pow((p[0]-s*H.ex)/.018,2)-Math.pow((p[1]+.013)/.008,2));und*=fz;
-    col=r3Mix(col,r3Mix(col,red,.55),nose*.3);
-    col=r3Sc(r3Mix(col,cool,und*(.14+.1*F.age)),1-und*.1);
-    col=r3Mix(col,r3Sc(col,1.08),r3Step(.2,.55,dy)*fz*.6);
+    r3MixI(col,red,.55*nose*.3);
+    r3ScI(r3MixI(col,cool,und*(.14+.1*F.age)),1-und*.1);
+    r3ScI(col,1+.08*r3Step(.2,.55,dy)*fz*.6);
     if(stub){const md=p[1]-F.my,sz=(r3Step(-.25,-.55,dy)+r3Step(.004,.007,md)*r3Step(.017,.013,md)*r3Step(.026,.018,Math.abs(p[0])))*fz*(1-o.lip);
-      col=r3Mix(col,stub,Math.min(1,sz)*.75);}   /* щетина: челюсть, подбородок, над губой */
-    col=r3Sc(r3Mix(col,cool,o.lid*.1),1-o.lid*.06);
-    col=r3Mix(col,lipC,o.lip*.92);
-    col=r3Mix(col,mouthC,o.slit*.9);
-    if(o.brow>.01){const n=(hashi((u*NU*2.3)|0,(v*NV*.7)|0,0xB40)%1000)/1000;col=r3Mix(col,r3Sc(browC,.72+.56*n),o.brow*.9);}
-    col=r3Sc(col,1-.2*o.crease-.14*o.alar-.07*o.fold);
-    col=r3Mix(col,lashC,o.lash*.92);col=r3Mix(col,wetC,o.wet*.75);col=r3Mix(col,carC,o.car*.7);
-    col=r3Mix(col,mouthC,o.ap*(1-o.lash)*(1-o.wet)*.7);
-    col=r3Mix(col,nosC,o.nos*.85);
+      r3MixI(col,stub,Math.min(1,sz)*.75);}   /* щетина: челюсть, подбородок, над губой */
+    r3ScI(r3MixI(col,cool,o.lid*.1),1-o.lid*.06);
+    r3MixI(col,lipC,o.lip*.92);
+    r3MixI(col,mouthC,o.slit*.9);
+    if(o.brow>.01){const n=(hashi((u*NU*2.3)|0,(v*NV*.7)|0,0xB40)%1000)/1000;r3MixI(col,browC,o.brow*.9,.72+.56*n);}
+    r3ScI(col,1-.2*o.crease-.14*o.alar-.07*o.fold);
+    r3MixI(col,lashC,o.lash*.92);r3MixI(col,wetC,o.wet*.75);r3MixI(col,carC,o.car*.7);
+    r3MixI(col,mouthC,o.ap*(1-o.lash)*(1-o.wet)*.7);
+    r3MixI(col,nosC,o.nos*.85);
     for(const q of scars){const sx=q.x*H.a*1.2,sy=-q.y*H.b,d=dseg(p[0],p[1],sx,sy,sx+q.dx*H.a*.5,sy-H.b*.25);
-      if(dz>.2)col=r3Mix(col,r3Mix(skin,red,.6),Math.exp(-d*d/(.0018*.0018))*.85);}
-    if(tat&&dz>.1){const d=Math.hypot(p[0]+.6*H.a,p[1]-.012);col=r3Mix(col,ink,(1-r3Step(.008,.014,d))*.5*(.6+.4*Math.sin(Math.atan2(p[1]-.012,p[0]+.6*H.a)*6)));}
-    if(brand&&dz>.2){const bx=Math.abs(p[0]-.38*H.a),by=Math.abs(p[1]-.4*H.b);col=r3Mix(col,brd,(bx<.009&&by<.008)?.55:0);}
-    return [p,r3Sc(col,ao),o.sk];
+      if(dz>.2)r3MixI(col,scarC,Math.exp(-d*d/(.0018*.0018))*.85);}
+    if(tat&&dz>.1){const d=Math.hypot(p[0]+.6*H.a,p[1]-.012);r3MixI(col,ink,(1-r3Step(.008,.014,d))*.5*(.6+.4*Math.sin(Math.atan2(p[1]-.012,p[0]+.6*H.a)*6)));}
+    if(brand&&dz>.2){const bx=Math.abs(p[0]-.38*H.a),by=Math.abs(p[1]-.4*H.b);r3MixI(col,brd,(bx<.009&&by<.008)?.55:0);}
+    return [p,r3ScI(col,ao),o.sk];
   };
   /* вершины кожи — рядами, кусками по 2 мс: на портрете (lod 2) это 25 тыс. точек cpSkin, одним шагом 60–90 мс (M816c).
      Порядок обхода тот же, что у K.surf (j, потом i), — сетка та же */

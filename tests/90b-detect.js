@@ -68,12 +68,6 @@ addEventListener("unhandledrejection",e=>{
       return ft.apply(this,arguments);
     };
   }
-  /* надписи на корпусе — краска, а не текст для чтения: бортовой номер «ЧВ-94»
-     в полтора пикселя на дальнем корабле — фактура обшивки (03d-hull-marks) */
-  {
-    const dh=drawHull;
-    window.drawHull=function(){DET.hull++;try{return dh.apply(this,arguments);}finally{DET.hull--;}};
-  }
   /* рост человека: масштаб, в котором рисуется астронавт (20-life) */
   {
     const da=drawAstronaut;
