@@ -286,6 +286,39 @@ the watch line at 0.2, the first hour and the first watch end at 60.2, the ст�
 5 276 at 60 (dispatcher) / 7 043 (mining only); the first hour nets 4 700–6 400 against the
 oracle's 4 400.
 
+**What a player gets done in the first hour** (22.10, after main 0.499.19). The fresh-save row now
+buys like a player: it boards the allotted «Вьюк» at the next dock, then one module per dock in the
+order hold, drill, hold, drill, engine, keeping 900 cr for fuel and repairs; purchases are their own
+line, neither upkeep nor gross (`ECO_BUY=0` gives the old Стриж-only row). Minutes of play, with the
+dispatcher (`ECO_TIERS="T0 " ECO_FRESH_H=3`); mining only in brackets where it differs:
+
+| first | minute |
+|---|---|
+| undock, landing, sale | 0.2, 0.3, 1.7 |
+| deed 1 / 3 / 5 | 2.3 / 8.5 / 20.5 (none) |
+| cash for the first hold (900) and drill (1 250) | 1.7 |
+| turnover 3 000 = the «Вьюк» allotment, boarded | 8.3 (12.5) |
+| modules bought: hold 1, drill 1, hold 2, drill 2, engine 1 | 5.8, 20.3, 45.7, 56.2, 61.9 |
+| cash for the first drone (9 000), with modules bought first | 112 (113) |
+| two addressed / urgent | 0.2 / 6.0 |
+| the hour ends / the стажёр paper and the three-station order | 60.2 / 62.0 |
+| coop exam, clearance II, first kill | not in three hours (the bot does not fight) |
+
+At minute 60: 1 202 cr in hand after 9 031 invested, turnover 16 958, 11 laps, 70 deposits, 6 deeds
+for 3 750 cr (pod 2, probe, convoy, SOS, double), 6 lost by deadline, 12 jumps, 4 systems. Hours
+two and three net 14–16 k/h on a «Вьюк» with two holds and two drills; the three-hour row is 18 428
+(mining only 15 429), U/G .26.
+
+Read it: **T0 lasts eight to twelve minutes, not two hours.** The allotment at turnover 3 000 is
+§4.1's own milestone («Вьюк» по разнарядке, 25 min at the oracle's 7 200 gross; the bot's
+4-minute lap gets there in 8), and the «Вьюк» doubles a hand lap's gross at once. So the oracle's
+T0 row (Стриж, 0–2 h, 4 400) describes a quarter of an hour; from there to the first drone (≈ 2 h)
+the player is on a T1 hull without T1's hand and drone, and nets about T1's oracle. Not changed,
+on purpose: the allotment is the author's cut of the dullest stretch of the start (M152e), and
+the deeds of the first hour pay their fuel (≈ 60 % of their gross goes on jumps) but stay worth a
+few minutes each. The lever if the start should be slower is the allotment threshold (12j), not
+the dispatcher; it is listed under Disputed in the M912 report.
+
 **What the probe found and what was fixed** (one commit each):
 
 - **The first hour counted flight, not play.** `firstHour()` read `G.flownMs`, which advances only

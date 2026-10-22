@@ -72,10 +72,10 @@ suite("проба · экономика",{tier:"probe"},()=>{
     let v=+G[key]||0;
     Object.defineProperty(G,key,{configurable:true,enumerable:true,
       get(){return v;},
-      set(n){n=+n||0;const d=n-v;v=n;if(d<0)book[PHASE]=(book[PHASE]||0)-d;}});
+      set(n){n=+n||0;const d=n-v;v=n;if(d<0)book[PHASE]=(book[PHASE]||0)-d;else if(d>0&&key==="fuel")BOOK.fin[PHASE]=(BOOK.fin[PHASE]||0)+d;}});
   }
   function bookOn(){
-    let v=+G.credits||0;BOOK={gross:{},spend:{},v0:v,fuel:{},hull:{},time:{},sold:{}};
+    let v=+G.credits||0;BOOK={gross:{},spend:{},v0:v,fuel:{},fin:{},hull:{},time:{},sold:{}};
     meter("fuel",BOOK.fuel);meter("hull",BOOK.hull);
     Object.defineProperty(G,"credits",{configurable:true,enumerable:true,
       get(){return v;},
@@ -178,7 +178,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     mark("paper",P&&P.first);
     mark("hour1",!firstHour());
     TL.debt=Math.max(TL.debt,billDebt());
-    for(const t of [2,6,10,30,60,90,120,180])if(TL["cr"+t]==null&&m>=t)TL["cr"+t]=Math.round(G.credits);
+    for(const t of [2,6,10,30,60,90,120,180])if(TL["cr"+t]==null&&m>=t){TL["cr"+t]=Math.round(G.credits);TL["fp"+t]=fuelPriceHere()+"/"+repFuelMul().toFixed(2)+"/"+actCoupons();}
     TL.flown=G.flownMs/60000;TL.play=(G.playMs||0)/60000;
     /* что игрок успевает за первый час (Контроль 22.10): первый раз — минута, к 60′ — срез */
     if(G.mode==="dock"&&G.sys)CNT.docks.add(G.sys.key);
@@ -190,7 +190,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     mark("deed1",DSTAT.done>=1);mark("deed3",DSTAT.done>=3);mark("deed5",DSTAT.done>=5);
     mark("c900",cr>=modCost("hold",0));mark("c1250",cr>=modCost("drill",0));mark("c2k",cr>=2*modCost("drill",0));
     mark("hire",cr>=HIRE_FEE);mark("drone",cr>=dronePrice());
-    mark("turn3k",(H.turn|0)>=3000);mark("alloc",!!H.alloc);
+    mark("turn3k",(H.turn|0)>=3000);mark("alloc",!!H.alloc);mark("board",G.shipId==="vyuk");
     mark("coop",!!coopHas());
     mark("clr2",(G.clearance|0)>=2);mark("kill",(G.kills|0)>=1);
     if(TL.h1==null&&m>=60)TL.h1={gross:Object.assign({},BOOK.gross),spend:Object.assign({},BOOK.spend),
@@ -438,7 +438,9 @@ suite("проба · экономика",{tier:"probe"},()=>{
     PHASE="sell";
     for(const k of TRADE_KEYS.concat(FAR_KEYS)){const q=G.cargo[k];if(q>0){const v=sellCargo(G.sys,k,q);
       const b=BOOK.sold[k]||(BOOK.sold[k]=[0,0,{},0]);b[0]+=q;b[1]+=v||0;b[2][G.sys.key]=1;b[3]+=q*(G.sys.station.prices[k]||0);}}
-    if(G.shipId!==tier.hull&&G.owned[tier.hull]){G.shipId=tier.hull;invalidateParts();}
+    /* корпус яруса — после аварии; свежий игрок летает на том, что ему выделили (freshShop) */
+    const HL=tier.fresh&&FRESH_BUY&&G.owned.vyuk?"vyuk":tier.hull;
+    if(G.shipId!==HL&&G.owned[HL]){G.shipId=HL;invalidateParts();}
     PHASE="refuel";
     {const need=Math.ceil(stat().fuelMax-G.fuel);const per=fuelPriceHere();
      const can=Math.min(need,Math.floor(G.credits/per));if(can>0){G.credits-=can*per;G.fuel+=can;}}
@@ -450,8 +452,33 @@ suite("проба · экономика",{tier:"probe"},()=>{
     PHASE="счёт";
     billPay();
     PHASE="tick";
+    if(tier.fresh&&FRESH_BUY)freshShop();
     dispPlay();
     return {frames:G.t-t0,mined};
+  }
+  /* свежий игрок покупает как человек (M912): пересаживается на выделенный «Вьюк», потом по очереди
+     трюм и бур, держа запас на бак и ремонт. Вложение — своей строкой: не расход и не валовый */
+  const FRESH_BUY=ENV.ECO_BUY!=="0",BUY_ORDER=["hold","drill","hold","drill","engine","hold","drill"],BUY_KEEP=900;
+  function freshShop(){
+    if(G.mode!=="dock")return;
+    const PH=PHASE;PHASE="вложение";
+    try{
+      if(G.owned.vyuk&&G.shipId!=="vyuk"){
+        G.shipId="vyuk";afterFitChange();
+        refuelHere();
+      }
+      const lv={};
+      for(const k of BUY_ORDER){lv[k]=(lv[k]|0)+1;
+        if((G.modsOwned[k]|0)>=lv[k])continue;
+        const cost=modCost(k,G.modsOwned[k]|0);
+        if(G.credits<cost+BUY_KEEP)break;          /* по очереди: следующую не покупают в обход */
+        G.credits-=cost;G.modsOwned[k]=(G.modsOwned[k]|0)+1;
+        if(capUsed()+1<=capOf(G.shipId))G.mods[k]=(G.mods[k]|0)+1;
+        afterFitChange();
+        if(TL)TL.bought=(TL.bought?TL.bought+", ":"")+k+(G.modsOwned[k])+" "+fwMin().toFixed(1)+"′";
+        break;                                      /* одна покупка за стыковку */
+      }
+    }finally{PHASE=PH;}
   }
   /* ── ярус: корпус, модули, руки, дроны, управляющие ── */
   function setup(tier){
@@ -528,6 +555,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     }catch(e){note("стенд: "+(e&&e.message));}
     /* закупка под привоз уходит из расхода в вычет из валового: U/G — давление содержания, а не оборот товара */
     const buy=BOOK.spend["закупка"]||0;delete BOOK.spend["закупка"];
+    const inv=Math.round(BOOK.spend["вложение"]||0);delete BOOK.spend["вложение"];
     const hrs=(G.t-t0)/HOUR,gross=sum(BOOK.gross)-buy,spend=sum(BOOK.spend);
     try{normFold(NACC,normNow());}catch(e){note("норма: "+(e&&e.message));}
     const NORM=normSum(NACC);
@@ -544,13 +572,14 @@ suite("проба · экономика",{tier:"probe"},()=>{
       ssrc:Object.entries(BOOK.spend).map(([k,v])=>k+" "+Math.round(v/hrs)).join(", "),
       dG:pct(gross/hrs,O.gross),dU:pct(spend/hrs,O.upkeep),dN:pct((gross-spend)/hrs,O.net),
       fails:Object.entries(fail).map(([k,v])=>k+(v>1?" ×"+v:"")).join("; "),
-      fuel:Object.entries(BOOK.fuel).map(([k,v])=>k+" "+(v/hrs).toFixed(0)).join(", "),
+      fuel:Object.entries(BOOK.fuel).map(([k,v])=>k+" "+(v/hrs).toFixed(0)).join(", ")+
+        " · пришло "+Object.entries(BOOK.fin).map(([k,v])=>k+" "+(v/hrs).toFixed(0)).join(", "),
       hullLoss:Object.entries(BOOK.hull).map(([k,v])=>k+" "+(v/hrs).toFixed(0)).join(", "),
       sold:Object.entries(BOOK.sold).sort((a,b)=>b[1][1]-a[1][1]).map(([k,v])=>k+" "+v[0]+"×"+(v[0]?Math.round(v[1]/v[0]):0)+" ("+Object.keys(v[2]).length+" ст., прейскурант "+(v[0]?Math.round(v[3]/v[0]):0)+")").join(", "),
       time:Object.entries(BOOK.time).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+" "+(laps?v/laps/FR/60:0).toFixed(2)).join(", "),
-      hull:tier.hull,credits:G.credits,
+      hull:tier.fresh?G.shipId:tier.hull,credits:G.credits,
       disp:DSTAT.done+" дел · "+Math.round(DSTAT.pay/hrs)+" кр/ч · "+(DSTAT.frames/FR/60/hrs).toFixed(1)+" мин/ч · взято "+JSON.stringify(DSTAT.took)+(Object.keys(DSTAT.skip).length?" · сорвано "+JSON.stringify(DSTAT.skip):"")+" · ушло по сроку "+dispSt().lost+" · не взято (убыток, бак, касса) "+DSTAT.poor.size,
-      tl:TL?Object.assign({},TL):null,norm:NORM});
+      tl:TL?Object.assign({},TL):null,norm:NORM,inv});
   }
   stepWorld=sw0;
   console.log("экономика: "+HOURS+" ч игры на ярус · цеха и база T2–T3 не строятся · оракул DESIGN-game §4.1");
@@ -569,14 +598,15 @@ suite("проба · экономика",{tier:"probe"},()=>{
     console.log("  "+r.tier+" первый час (минуты игры): два адресных "+f(L.addr2)+" · срочное "+f(L.urg)+" · строка участка "+f(L.line)+
       " · наряд "+f(L.long)+" · первый час прошёл "+f(L.hour1)+" · вахта кончилась "+f(L.fwEnd)+" · бумага стажёра "+f(L.paper)+
       " · налёт к концу "+L.flown.toFixed(0)+" мин, игры "+L.play.toFixed(0)+" мин · касса взаимопомощи макс "+L.debt+
-      " · кредиты "+[2,6,10,30,60,90,120,180].filter(t=>L["cr"+t]!=null).map(t=>t+"′ "+L["cr"+t]).join(", "));}
+      " · кредиты "+[2,6,10,30,60,90,120,180].filter(t=>L["cr"+t]!=null).map(t=>t+"′ "+L["cr"+t]).join(", ")+
+      " · бак кр/ед (цена/репутация/талоны) "+[2,10,60,120,180].filter(t=>L["fp"+t]!=null).map(t=>t+"′ "+L["fp"+t]).join(", "));}
   /* что игрок успевает за первый час игры — таблица без утверждений (Контроль 22.10, M912) */
   for(const r of rows)if(r.tl){const L=r.tl,f=v=>v==null?"не успел":v.toFixed(1)+"′";
     const ev=[["первый выход из дока","undock"],["первая посадка","land"],["первая продажа","sell"],
       ["первое дело закрыто","deed1"],["третье дело","deed3"],["пятое дело","deed5"],
       ["касса ≥ первый трюм ("+modCost("hold",0)+")","c900"],["касса ≥ первый бур ("+modCost("drill",0)+")","c1250"],
       ["касса ≥ два бура ("+2*modCost("drill",0)+")","c2k"],["касса ≥ наём руки ("+(HIRE_FEE<1e9?HIRE_FEE:"—")+")","hire"],
-      ["касса ≥ первый дрон ("+DRONES.miner.price+")","drone"],["оборот 3 000","turn3k"],["разнарядка на «Вьюк»","alloc"],
+      ["касса ≥ первый дрон ("+DRONES.miner.price+")","drone"],["оборот 3 000","turn3k"],["разнарядка на «Вьюк»","alloc"],["пересел на «Вьюк»","board"],
       ["экзамен кооператива","coop"],["допуск II","clr2"],["первая победа в бою","kill"],
       ["два адресных на стойке","addr2"],["первое срочное","urg"],["наряд на три станции","long"],
       ["первый час прошёл","hour1"],["бумага стажёра","paper"]];
@@ -589,6 +619,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
       " · дел "+H.deeds+" на "+Math.round(H.pay)+" кр "+JSON.stringify(H.took)+" · ушло по сроку "+H.lost+" · не взято "+H.poor+
       " · прыжков "+H.jumps+" · станций "+H.docks+" · систем "+H.sys+" · допуск "+H.clr+" · побед "+H.kills+
       " · норма "+(H.norm&&H.norm.with!=null?H.norm.with+" % (без вас "+H.norm.without+" %)":"—"));
-    console.log("  к 60′ валовый: "+s(H.gross)+" · расход: "+s(H.spend));}
+    console.log("  к 60′ валовый: "+s(H.gross)+" · расход: "+s(H.spend));
+    console.log("  покупки: "+(L.bought||"—")+" · на «Вьюке» с "+(L.board==null?"—":L.board.toFixed(1)+"′")+
+      " · вложено за прогон "+r.inv+" кр (не расход: U/G без него)");}
   ok(rows.length>=1&&rows.every(r=>r.hrs>0),"экономика прогнана: "+rows.length+" ярусов");
 });
