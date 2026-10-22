@@ -178,9 +178,11 @@ function hallLayout(st,lazy){
        (кружка в руке, шаг вразнобой), табуреты разворачиваются телом; все смотрят на полотно */
     let ri=0;
     if(L.kino)for(const P of L.people){if(P.x<HALL_XB-.5||P.kind==="keep")continue;
-      if(P.pose==="table"&&ri<4){P.pose=ri%2?"mug":"stand";P.x=HALL_KINO[0]-1.45+ri*.95+(ri===1?-.12:0);P.z=HALL_B+2.35+(ri%2?.4:0);P.mesh=null;ri++;}
+      /* не шеренга — кучка: глубина и шаг разные, двое ближе к полотну, двое за ними со смещением (Контроль 22.10) */
+      const KQ=[[-1.7,2.0,"mug"],[-.45,3.05,"stand"],[.85,2.3,"mug"],[1.75,3.35,"stand"]];
+      if(P.pose==="table"&&ri<4){const q=KQ[ri];P.pose=q[2];P.x=HALL_KINO[0]+q[0];P.z=HALL_B+q[1];P.mesh=null;ri++;}
       const a=Math.atan2(HALL_KINO[0]-P.x,HALL_B-P.z);
-      if(P.pose==="table")P.watch=a;else{P.yaw=a;P.watch=a;}}
+      if(P.pose==="table")P.watch=a;else{P.yaw=a+(ri%2?.18:-.14);P.watch=a;}}
   }
   /* блошинец: у прилавков покупатели, дальняя толпа (LOD 0) */
   if(T.stalls){const n=3+((seed>>>3)%3);
