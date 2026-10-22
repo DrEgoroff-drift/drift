@@ -16,3 +16,5 @@ unless the snippet counts `frameBody`.
 | `res.js` | GPU resources and queue traffic for one action in `window.__ACT` (3 s window) |
 | `pipes-dig.js` | sync and async pipelines built by `enterDig()` with their formats and callers |
 | `front.js` | who dirties `#c`: the first 2D call per frame that makes `gpuFrontCopy` upload the whole canvas, with its stack, and the copies of `#c` (walks right 8 s; in a raid stands 2.5 s) |
+| `memwalk.js` | JS heap minimum per 20 s over 120 s of turning right/left, GPU objects created, large arrays on globals (pair with `probe.py --heap`: `performance.memory` counts uncollected garbage) |
+| `prep.js` | the hall's background prep in the system (`hallPrepTick`): bodies generated, steps, cache size and evictions per 10 s, whether it finishes |

@@ -25,6 +25,8 @@ def main():
     ap.add_argument("--wait", type=float, default=3, help="seconds of steady mode before the snippet")
     ap.add_argument("--port", type=int, default=0, help="0 = a free port (sessions share this script)")
     ap.add_argument("--profile", type=float, default=0, help="seconds of JS profile after the snippet: who eats frames over 33 ms")
+    ap.add_argument("--heap", action="store_true", help="sampling heap profile over the snippet: who holds the heap that grew, by function")
+    ap.add_argument("--alloc", action="store_true", help="with --heap: count everything allocated, garbage too (who churns the GC)")
     ap.add_argument("--all", action="store_true", help="--profile counts every sample, not only frames over 33 ms")
     ap.add_argument("--ws", type=float, default=300, help="CDP socket timeout, seconds: a long snippet needs more")
     a = ap.parse_args()
@@ -68,7 +70,27 @@ def main():
             shot.ev(ws, "window.__PF=[];window.__PT0=performance.now();(function f(t){if(window.__PL)__PF.push([__PL-__PT0,t-__PL,(typeof FRAME_JS!=='undefined'?FRAME_JS:-1)]);window.__PL=t;requestAnimationFrame(f);})()")
             ws.call("Profiler.start"); off = shot.ev(ws, "performance.now()-__PT0") or 0
         time.sleep(a.wait)
+        if a.heap:
+            ws.call("HeapProfiler.enable"); ws.call("HeapProfiler.collectGarbage")
+            hu0 = ws.call("Runtime.getHeapUsage")
+            ws.call("HeapProfiler.startSampling", samplingInterval=32768, includeObjectsCollectedByMajorGC=a.alloc, includeObjectsCollectedByMinorGC=a.alloc)
         r = shot.ev(ws, a.js)
+        if a.heap:
+            # что из выделенного за сниппет ещё живо к его концу: своё и с детьми, по функциям
+            ws.call("HeapProfiler.collectGarbage")
+            H = ws.call("HeapProfiler.stopSampling")["profile"]["head"]
+            own, inc = {}, {}
+            def walk(n, path):
+                cf = n["callFrame"]; k = (cf.get("functionName") or "(анон)") + (" %s:%d" % (cf.get("url", "").split("/")[-1].split("?")[0][:20], cf.get("lineNumber", 0) + 1) if cf.get("url") else "")
+                own[k] = own.get(k, 0) + n["selfSize"]
+                tot = n["selfSize"] + sum(walk(c, path | {k}) for c in n.get("children", []))
+                if k not in path: inc[k] = inc.get(k, 0) + tot
+                return tot
+            total = walk(H, set())
+            print("куча за сниппет, живое к концу: %.1f МБ · куча после сборки %.1f МБ" % (total / 1e6, ws.call("Runtime.getHeapUsage")["usedSize"] / 1e6) + " (до сниппета %.1f)" % (hu0["usedSize"] / 1e6))
+            print("своё: " + " · ".join("%s %.1f" % (k, v / 1e6) for k, v in sorted(own.items(), key=lambda kv: -kv[1])[:12]))
+            skip = {"(root)", "(анон)", "frame", "frameBody", "(program)"}
+            print("с детьми: " + " · ".join("%s %.1f" % (k, v / 1e6) for k, v in [kv for kv in sorted(inc.items(), key=lambda kv: -kv[1]) if kv[0].split(" ")[0] not in skip][:16]))
         if a.profile:
             time.sleep(a.profile)
             P = ws.call("Profiler.stop")["profile"]
