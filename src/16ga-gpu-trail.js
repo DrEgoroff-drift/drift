@@ -76,10 +76,11 @@ function gpuTrail(zx,zy,Z){
     const a=Math.min(TRAIL_AMAX,Math.pow(u,TRAIL_LIFE.fall)*.30+u*u*u*u*.5)*fo;
     let c0,c1,m;if(u>.78){c0=Tm;c1=Tc;m=(u-.78)/.22;}else{c0=Te;c1=Tm;m=u/.78;}   /* mixc по составляющим */
     /* газ расходится: к хвосту лента шире (яркость и так гаснет с возрастом) */
-    const hw=(Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1)*(1+(1-u)*1.6);
+    /* СР · Визуал 22.10: тело газа шире, ореол сильнее — три струи сливались в три проволоки без среды */
+    const hw=(Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1)*(1+(1-u)*1.6)*1.5;
     const p=arr[i>0?i-1:0],q=arr[i+1<arr.length?i+1:arr.length-1];
     let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.sqrt(dx*dx+dy*dy)||1;dx/=l;dy/=l;
-    gtrNode(o,zx(t.x),zy(t.y),-dy*hw,dx*hw,a,(c0[0]+(c1[0]-c0[0])*m)/255,(c0[1]+(c1[1]-c0[1])*m)/255,(c0[2]+(c1[2]-c0[2])*m)/255,K,a*.3,0,0,0);
+    gtrNode(o,zx(t.x),zy(t.y),-dy*hw,dx*hw,a*.6,(c0[0]+(c1[0]-c0[0])*m)/255,(c0[1]+(c1[1]-c0[1])*m)/255,(c0[2]+(c1[2]-c0[2])*m)/255,K*.8,a*.42,0,0,0);
   };
   for(const arr of lanes.values()){
     const n=arr.length;if(n<2)continue;
