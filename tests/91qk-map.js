@@ -3,7 +3,7 @@
    видит плашку 08b2, а не 2D-карту). Фон 17z (туманность, полоса, румбы, звезда) живёт только на сайте
    (site/war-backdrop.js). У выбранной системы — ряд её миров шарами 17gab по порядку орбит: в кадре,
    над полом карты, за кольцом прицела, миры не налезают друг на друга и лежат в чернилах карты (их обходят
-   табличка выбора и подписи мира).
+   подписи мира); табличка выбора главнее ряда — ряд уходит от её рамки.
    Настоящий G, без видеокарты. */
 TEST_SUITES.push(()=>suite("карта: без 2D, миры выбора шарами",()=>{
   resetWorld();
@@ -38,8 +38,8 @@ TEST_SUITES.push(()=>suite("карта: без 2D, миры выбора шар�
       ok(F.every((f,i)=>i===0||Math.hypot(f.x-F[i-1].x,f.y-F[i-1].y)>=f.ext+F[i-1].ext),W+": миры не налезают друг на друга");
       ok(F.every((f,i)=>i===0||Math.hypot(f.x-cx,f.y-cy)>Math.hypot(F[i-1].x-cx,F[i-1].y-cy)),W+": по порядку орбит — от звезды наружу");
       ok(F.every(f=>f.r>=MAP_ORB.rMin&&f.r<=MAP_ORB.rMax*1.4),W+": шар "+MAP_ORB.rMin+"–"+MAP_ORB.rMax+" px");
-      /* табличка у выбора и подписи мира обходят чернила карты (mapSelBlock, mapLateFlush): каждый мир — в них */
-      ok(F.every(f=>{const b=box(f);return MAP_INK.some(q=>q.x0<=b.x0&&q.y0<=b.y0&&q.x1>=b.x1&&q.y1>=b.y1&&!q.fb);}),W+": каждый мир — в чернилах карты, табличка и подписи его обходят");
+      /* подписи мира обходят чернила карты (mapLateFlush): каждый мир — в них */
+      ok(F.every(f=>{const b=box(f);return MAP_INK.some(q=>q.x0<=b.x0&&q.y0<=b.y0&&q.x1>=b.x1&&q.y1>=b.y1&&!q.fb);}),W+": каждый мир — в чернилах карты, подписи мира его обходят");
     }
     /* ── у кромки ряд ложится внутрь кадра ── */
     W=390;H=844;HUD_FLOOR=HUD_RAIL=0;
@@ -48,5 +48,11 @@ TEST_SUITES.push(()=>suite("карта: без 2D, миры выбора шар�
       const L=mapOrbFan({s:pick.s,x:at[0],y:at[1]},cell);
       ok(L.every(f=>f.x-f.ext>=0&&f.x+f.ext<=W&&f.y-f.ext>=0&&f.y+f.ext<=mapDeck()),
         "390: звезда у ("+at.map(v=>v|0).join(",")+") — ряд внутри кадра (ход "+L[0].dx+","+L[0].dy+")");}
+    /* табличка главнее ряда: ряд ложится туда, где не задевает её рамку прошлого кадра */
+    {const s0={s:pick.s,x:W/2,y:H*.45},dn=mapOrbFan(s0,cell);
+      eq(dn[0].dx+","+dn[0].dy,"0,1","390: без таблички ряд — вниз от звезды");
+      const av={x0:W/2-60,y0:H*.45+12,x1:W/2+60,y1:H*.45+260},up=mapOrbFan(s0,cell,av);
+      ok(!up.some(f=>f.x+f.ext>av.x0&&f.x-f.ext<av.x1&&f.y+f.ext>av.y0&&f.y-f.ext<av.y1),
+        "390: табличка под звездой — ряд уходит от неё (ход "+up[0].dx+","+up[0].dy+")");}
   }finally{W=sv.W;H=sv.H;ctx=sv.ctx;G.mode=sv.mode;G.sel=sv.sel;G.mapView=sv.view;G.mapMore=sv.more;mapOrbsDraw=sv.od;HUD_FLOOR=hud0[0];HUD_RAIL=hud0[1];}
 }));

@@ -1362,7 +1362,7 @@ MAP_DRY_INK                  src/18-mode-map.js:3
 MAP_INK                      src/18-mode-map.js:51
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
-MAP_ORB                      src/18l-map-plate.js:75
+MAP_ORB                      src/18l-map-plate.js:80
 MAP_OVER                     src/18-mode-map.js:146
 MAP_SPIKE_N                  src/17z3-map-gpu.js:201
 MAP_TOP                      src/18a-map-addr.js:253
@@ -5851,9 +5851,9 @@ mapMarkAt                    src/18a-map-addr.js:31
 mapMarkToggle                src/18a-map-addr.js:33-41
 mapMarks                     src/18a-map-addr.js:30
 mapMarksDraw                 src/18a-map-addr.js:98-113
-mapOrbFan                    src/18l-map-plate.js:78-92
-mapOrbInk                    src/18l-map-plate.js:76
-mapOrbsDraw                  src/18l-map-plate.js:93-108
+mapOrbFan                    src/18l-map-plate.js:83-102
+mapOrbInk                    src/18l-map-plate.js:81
+mapOrbsDraw                  src/18l-map-plate.js:103-118
 mapOverOn                    src/18-mode-map.js:148
 mapOverTap                   src/18-mode-map.js:213-217
 mapOverview                  src/18-mode-map.js:191-212
@@ -5871,7 +5871,7 @@ mapRoseDraw                  src/18a-map-addr.js:191-214
 mapRulerTop                  src/18a-map-addr.js:53
 mapRulersDraw                src/18a-map-addr.js:115-189
 mapRumoursDraw               src/18a-map-addr.js:82-96
-mapSelBlock                  src/18l-map-plate.js:61-66
+mapSelBlock                  src/18l-map-plate.js:61-68
 mapSelHang                   src/18l-map-plate.js:18-35
 mapSelInk                    src/18l-map-plate.js:54-58
 mapStarsGpu                  src/17z3-map-gpu.js:202-230
@@ -9646,7 +9646,7 @@ zoomTo                       src/15-input.js:358
 ## src/18k-rail-scheme.js · 19 KB
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
-## src/18l-map-plate.js · 10 KB
+## src/18l-map-plate.js · 12 KB
   · карта: веса и таблички (M822):1
 
 ## src/19-mode-landing-ground.js · 27 KB

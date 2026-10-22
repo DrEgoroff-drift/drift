@@ -501,8 +501,9 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   the map as a text register and ruler (font, align, baseline, `measureText`): no pixel goes
   through it.
   What changes: the selected system shows its planets as `17gab` orbs — a fan beside its star in
-  the map's scene, in orbit order, 4–9 px at the cell, lit from the star; the fan is ink
-  (`mapInkBox`) so world labels and the selection plate avoid it; on the phone the fan turns
+  the map's scene, in orbit order, 6–10 px (below 6 px light and night do not read — a flat dot), lit from the star; the fan is ink
+  (`mapInkBox`) so world labels avoid it, while the selection plate outranks it (the fan is no
+  obstacle to the plate and takes a side clear of the plate's last frame); on the phone the fan turns
   inward when the star is near the edge. Only the selection carries orbs (a whole sky of orbs
   would be noise and cost). Suite `91qk-map`: the map frame without a device paints nothing on
   `ctx`, the backdrop names are absent from the game and present in `war.js`, the fan is inside
