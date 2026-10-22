@@ -23,8 +23,6 @@ BUILD.fridgesub={ru:"«Иней» по подписке",cost:{credits:Math.roun
   firm:fridgeFirmAt,
   note:"то же, но "+Math.round(SUB_UP*100)+" % сразу и "+fridgeFee()+" кр за смену · без взноса дверь заперта · к "+
     Math.ceil((1-SUB_UP)/SUB_RATE)+"-й смене вы заплатите полную цену"};
-ROOM_FIN.fridge=ROOM_FIN.fridgesub={wall:"tile",tint:"52,62,70",lamp:"222,240,250",ln:2,floor:"clean",warn:0,work:.40,
-  dress:["board","stencil"],junk:["canister","bag"]};
 JOB_ROLE.fridge=JOB_ROLE.fridgesub="gardener";
 /* журнал — только о переменах: взнос каждую смену строкой не пишется, как и зарплата */
 Object.assign(BLOG,{
@@ -54,37 +52,6 @@ function fridgeStep(B,n){
   if(q>0){L.food=Math.min(LIFE_CAP,(L.food|0)+q);L.q="good";}
   return said;
 }
-/* отсек: два шкафа под потолок, ручки, табло на двери. Подписной и запертый —
-   табло красное и замок на ручке: в разрезе видно, почему люди голодны */
-BASE_ROOM.fridge=BASE_ROOM.fridgesub=function(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r){
-  const cell=B?baseCell(B,c,r):null,lock=!!(cell&&cell.k==="fridgesub"&&fridgeLocked());
-  const fw=Math.min(34,w*.24),fh=Math.min(h-20,64);
-  if(bS())for(let i=0;i<2;i++){
-    const fx=x0+w*.20+i*(fw+6),fyT=fy-fh;
-    ctx.fillStyle="rgba(0,0,0,.30)";ctx.beginPath();ctx.ellipse(fx+fw/2,fy-1,fw*.6,2.6,0,0,TAU);ctx.fill();
-    bBox(fx,fyT,fw,fh,"rgba(138,146,148,.97)",lit,"rgba(0,0,0,.45)");   /* белый на ступень ниже, к тону стен */
-    /* спад от лампы: верх в свете, у пола на ~28 % темнее — шкаф стоит в комнате, а не наклеен */
-    const fg=ctx.createLinearGradient(0,fyT,0,fy);
-    fg.addColorStop(0,"rgba(255,246,228,"+(.08*lit).toFixed(3)+")");fg.addColorStop(.35,"rgba(0,0,0,0)");fg.addColorStop(1,"rgba(0,0,0,.28)");
-    ctx.fillStyle=fg;ctx.fillRect(fx,fyT,fw,fh);
-    /* шов морозилки и ручки */
-    ctx.fillStyle="rgba(60,70,78,.9)";ctx.fillRect(fx+1,fyT+fh*.32,fw-2,1.2);
-    ctx.fillStyle="rgba(90,100,108,.95)";ctx.fillRect(fx+fw-6,fyT+6,2,fh*.18);ctx.fillRect(fx+fw-6,fyT+fh*.40,2,fh*.30);
-  }
-  /* табло и замок — живое (G11): зависят от счёта, а не от времени, и в выпечку тела не идут */
-  if(bL())for(let i=0;i<2;i++){
-    const fx=x0+w*.20+i*(fw+6),fyT=fy-fh;
-    /* табло: зелёное — кормит, красное — заперт */
-    const on=lock?[230,70,60]:[120,220,150],a=(.5+lit*.5).toFixed(2);
-    ctx.fillStyle="rgba(20,26,30,.95)";ctx.fillRect(fx+4,fyT+fh*.44,fw*.42,6);
-    ctx.fillStyle="rgba("+on.join(",")+","+a+")";ctx.fillRect(fx+5,fyT+fh*.44+1.5,fw*.42-2,3);
-    if(lock){   /* навесной замок на ручке */
-      const lx=fx+fw-5,ly=fyT+fh*.58;
-      ctx.strokeStyle="rgba(150,140,110,.95)";ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(lx,ly-2,2.6,Math.PI,0);ctx.stroke();
-      ctx.fillStyle="rgba(170,150,90,.98)";ctx.fillRect(lx-3.5,ly-2,7,6);
-    }
-  }
-};
 BUILD_KEYS.push("fridge","fridgesub");   /* список меню собран в 21a раньше этого файла */
 /* ── ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 в бою (M487) ──
    Прибор по подписке заблокирован, а вокруг бой: подсказка предлагает продлить

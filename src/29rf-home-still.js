@@ -63,7 +63,7 @@ function homeStillPaint(cv,nd){
     for(const l of S.lights)if(l.range===40){l.shadow=1;break;}
     const U=new Float32Array(60);
     hallBulbU(U,cam.vp,S.bulbs,w/nd,h/nd);   /* ореол — только у колбы в кадре и своего размера (27f4a, 22.10) */
-    U.set([...r3Lin([255,200,140]),1.0],24);U[43]=t;U[44]=1;U[47]=1;
+    U.set([...r3Lin([255,200,140]),1.0],24);U[43]=t;U[44]=0;U[47]=1;   /* зерно (v[11].x) в статичном снимке — шум по полю; гасим (СР · Визуал) */
     U.set([.5,.5,HALL_CA,1],48);U.set([1,h/w,HALL_SHARP,1],52);
     r3Frame(hc,S,(pl,Sv,Vv,Bv)=>rpgField(Rg,pl,"r3post",R3_POST_WGSL,U,[Sv,{view:R3.blank},Vv,Bv]),{cx,w,h});
   }finally{G.hin=hin0;HOME3.mesh=mesh0;}

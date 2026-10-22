@@ -11,12 +11,11 @@
    входа), ближний — 2.3 клетки, комната человека посередине. Между ними — скольжение 0.6 с.
    Вход без среза: первый кадр — объектив хода по грунту (его высота окна), потом дальний, потом
    ближний. Игра не меняется: updateBase, клетки, меню — те же; кадр только смотрит на них.
-   Старая рисовалка (21ac/21ad) не тронута: ?sect=0, сбой кадра — идёт она, после трёх подряд
-   новый вид снимает себя сам. */
+   Другого кадра у базы нет (M632, DESIGN-base-scene §9): сбой — в кадре одни приборы, после трёх
+   подряд вид снимает себя сам; без WebGPU экран закрывает плашка 08b2. */
 const SECT={on:true,bad:0,err:"",live:false,b:null,t:0,t0:0,far:1,ent:0,cx:0,face:1,idle:0,
   lens:null,lens0:null,geo:null,key:"",gen:-1,cage:null,cageY:null,farPin:null,sitPin:null,
   stat:{cpu:0,tris:0,lights:0,share:0,key:""}};
-try{if(typeof location!=="undefined"&&/[?&]sect=0\b/.test(location.search))SECT.on=false;}catch(e){}
 /* мерка (м): клетка, комната, глубина, линия ходьбы, ход, ствол, поверхность; объективы */
 const SECT_M={cw:9,ch:5.2,room:4,deep:3.6,z:1.6,door:2.4,sh0:-6,sh1:-3,surf:.8,
   farX:[-15,46.5],sky:.18,near:2.3,nearMin:9,nearMax:16,phone:10,phoneMax:22,glide:.6,hold:1.4,eye:.12};
@@ -567,6 +566,8 @@ function sectAvr(S,pj){
   if(A.hold>0)ovRect(a[0]+12,b[1]-16,a[0]+12+(b[0]-a[0]-24)*clamp(A.hold/AVR_HOLD,0,1),b[1]-12,"rgb(127,230,216)",.85);
 }
 
+/* 21a зовёт на выходе с базы; разрез печей не держит — отпускать нечего */
+function baseBakeFree(){}
 /* ── переключатель ──
    2D-базы под разрезом больше нет: кадр не собрался — в нём одни приборы */
 function drawBase(){

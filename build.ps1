@@ -160,7 +160,6 @@ $BULK_OLD = @{     # известные крупные; замер обновл�
   "12c-mgr-core.js" = 48
   "27k-road.js" = 47
   "27c-ui-hq.js" = 47
-  "21ac-base-draw.js" = 47   # 0.410.0: небо, гора и порода уехали в 21ab1-base-ground
   "17-mode-system.js" = 47
   "25g-postcard.js" = 45
   "22-mode-cave.js" = 45

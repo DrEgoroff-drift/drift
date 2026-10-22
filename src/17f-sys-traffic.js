@@ -81,13 +81,14 @@ function drawShuttleArc(t,zx,zy,Z){
     /* след: двенадцать точек той же дуги назад по времени */
     GTR.n=0;const N=12,pts=[];
     for(let j=0;j<N;j++){const q=j?shuttleAt(t,G.t-j*9):P;pts.push([zx(q.wx)-Math.cos(q.a)*4*sk,zy(q.wy)-Math.sin(q.a)*4*sk]);}
-    const node=j=>{
+    const fcr=fc[0]/255,fcg=fc[1]/255,fcb=fc[2]/255;
+    const node=(j,o)=>{
       const v=j/(N-1),p=pts[Math.max(0,j-1)],q=pts[Math.min(N-1,j+1)];
-      let dx=q[0]-p[0],dy=q[1]-p[1];const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+      let dx=q[0]-p[0],dy=q[1]-p[1];const l=Math.sqrt(dx*dx+dy*dy)||1;dx/=l;dy/=l;
       const hw=(1.1*sk*(1-.5*v)+.8)*1.6,al=.22*(1-v)*(1-v);
-      return {x:pts[j][0],y:pts[j][1],nx:-dy*hw,ny:dx*hw,a:al,col:fc,k:.45,h:al*.4};
+      gtrNode(o,pts[j][0],pts[j][1],-dy*hw,dx*hw,al,fcr,fcg,fcb,.45,al*.4,0,0,0);
     };
-    let A=node(0);for(let j=1;j<N;j++){const B=node(j);gtrLane(A,B);A=B;}
+    let a0=0,b0=13;node(0,a0);for(let j=1;j<N;j++){node(j,b0);gtrLane(a0,b0);const s=a0;a0=b0;b0=s;}
     gtrDraw(pass,key+"t");
     /* огонь сопла и бортовой огонь */
     GEN.n=0;

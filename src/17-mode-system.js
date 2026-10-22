@@ -611,7 +611,6 @@ function drawSystem(){
      туманность не доспела, заливка нужна, и её делает эта же строка. */
   gpuSpaceSys(sys,cx0,cy0,Z);   /* туманность, звёзды, пыль — на видеокарте (16g) */
   const ox=zx(0),oy=zy(0);
-  ctx.lineWidth=1;
   const R=sys.radius*Z;
   /* орбиты, кольцо станции, пояс, светило и его зарево — на видеокарте (17g) */
   gpuSysUnder(sys,ox,oy,R,Z);   /* метки пробы (orbits/belt/star) ставит сам, 28z gpuSeg */
@@ -630,17 +629,14 @@ function drawSystem(){
     if(typeof doomGet==="function"&&doomGet()&&doomGet().sx===G.sx&&doomGet().sy===G.sy){
       const D=doomGet(), SS=(typeof settleAt==="function")?settleAt(D.sx,D.sy):null;
       if(SS&&SS.idx!==undefined&&(SS.idx|0)===(p.idx|0)){
-        if(!D.over){
-          const pu=.5+.5*Math.sin(G.t*.05);
-          const g=ctx.createRadialGradient(x,y,r,x,y,r*2.4+6);
-          g.addColorStop(0,"rgba(255,150,80,"+(.22+pu*.14).toFixed(3)+")");
-          g.addColorStop(1,"rgba(255,150,80,0)");
-          ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*2.4+6,0,TAU);ctx.fill();
-        }else{
-          ctx.fillStyle="rgba(120,116,110,.62)";ctx.beginPath();ctx.arc(x,y,r+1,0,TAU);ctx.fill();
-          ctx.strokeStyle="rgba(190,186,178,.35)";ctx.lineWidth=1;
-          for(let k=0;k<3;k++){ctx.beginPath();ctx.ellipse(x,y,r*(1.25+k*.28),r*(.32+k*.08),.4,0,TAU);ctx.stroke();}
-        }
+        /* фигурами в проходе сцены (M826): ореол — мягкий круг, пелена — диск и три наклонных эллипса */
+        const pass=gpuScene();
+        if(pass&&!D.over){const pu=.5+.5*Math.sin(G.t*.05);
+          gpuShapes(pass,[[1,x,y,r*1.7+3,0,0,r*1.4+6,255,150,80,.22+pu*.14]]);}
+        else if(pass){const SH=[[1,x,y,r+1,0,0,0,120,116,110,.62]],N=36,ca=Math.cos(.4),sa=Math.sin(.4);
+          for(let k=0;k<3;k++){const rx=r*(1.25+k*.28),ry=r*(.32+k*.08),P=j=>{const u=j/N*TAU,ex=Math.cos(u)*rx,ey=Math.sin(u)*ry;return [x+ex*ca-ey*sa,y+ex*sa+ey*ca];};
+            for(let j=0;j<N;j++){const p=P(j),q=P(j+1);SH.push([2,p[0],p[1],q[0],q[1],.5,0,190,186,178,.35]);}}
+          gpuShapes(pass,SH);}
       }
     }
     for(let mi=0;mi<p.moons.length;mi++){
@@ -649,16 +645,16 @@ function drawSystem(){
       gpuMoon(m,(p.idx|0)+"_"+mi,mx,my,mr);sysOcPush(mx,my,mr,ox,oy);
       if(G.ap&&G.ap.kind==="planet"&&G.ap.p===m)reticle(mx,my,mr+10);
       if(G.found.has(m.key)&&mr>2.4){
-        ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";
+        const fnt=uiFont(8);
         /* имя уступает кораблю (R6): на дальней от него стороне диска */
-        const ly=(m.y>=sh.y)?my+mr+11*uiK():my-mr-5*uiK(),lw=gcMeasure(ctx.font,m.name).width;
-        domLabel("mo"+(p.idx|0)+"_"+mi,mx,ly,m.name.toUpperCase(),ctx.font,"rgba(154,168,178,.7)","center");BODY_LABELS.push({x0:mx-lw/2,x1:mx+lw/2,y0:ly-8,y1:ly+2});
+        const ly=(m.y>=sh.y)?my+mr+11*uiK():my-mr-5*uiK(),lw=gcMeasure(fnt,m.name).width;
+        domLabel("mo"+(p.idx|0)+"_"+mi,mx,ly,m.name.toUpperCase(),fnt,"rgba(154,168,178,.7)","center");BODY_LABELS.push({x0:mx-lw/2,x1:mx+lw/2,y0:ly-8,y1:ly+2});
       }
     }
     if(G.found.has(p.key)){
-      ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
-      const ly=(p.y>=sh.y)?y+r+15*uiK():y-r-7*uiK(),lw=gcMeasure(ctx.font,p.name).width;   /* имя уступает кораблю (R6); мерка атласа — без 2D на #c */
-      domLabel("pl"+(p.idx|0),x,ly,p.name.toUpperCase(),ctx.font,"rgba(127,230,216,.55)","center");BODY_LABELS.push({x0:x-lw/2,x1:x+lw/2,y0:ly-9,y1:ly+2});
+      const fnt=uiFont(9);
+      const ly=(p.y>=sh.y)?y+r+15*uiK():y-r-7*uiK(),lw=gcMeasure(fnt,p.name).width;   /* имя уступает кораблю (R6); мерка атласа — без 2D на #c */
+      domLabel("pl"+(p.idx|0),x,ly,p.name.toUpperCase(),fnt,"rgba(127,230,216,.55)","center");BODY_LABELS.push({x0:x-lw/2,x1:x+lw/2,y0:ly-9,y1:ly+2});
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
   }
@@ -855,7 +851,7 @@ function drawSysHud(zx,zy,sh,sys,U){
   }
   /* и сам блок шкал — занятое место, если кромка до него всё же дотянется */
   if(hr&&hr.height>0)placed.push({x:hr.left/U-4,y:hr.top/U-4,w:hr.width/U+8,h:hr.height/U+8});
-  ctx.font="8px ui-monospace,monospace";
+  const chF="8px ui-monospace,monospace";
   /* под окном оклика и окном бака фишки гаснут, как борт (R0, дев 12.09): на
      них не жмут, пока окно ждёт ответа, и они не спорят с ним глазами */
   const bc=document.body.classList,CA=(bc.contains("hailopen")||bc.contains("sosopen"))?.12:1;
@@ -890,7 +886,7 @@ function drawSysHud(zx,zy,sh,sys,U){
     if(dy>1e-6)t=Math.min(t,(inset.y1-H/2)/dy);if(dy<-1e-6)t=Math.min(t,(inset.y0-H/2)/dy);
     const cx=W/2+dx*t,cy=H/2+dy*t;
     const label=m.l+" · "+chipDist(Math.hypot(m.x-sh.x,m.y-sh.y));
-    const tw=gcMeasure(ctx.font,label).width,cw=tw+26,ch=16;   /* мерка атласа (08cb): на #c ни одного вызова */
+    const tw=gcMeasure(chF,label).width,cw=tw+26,ch=16;   /* мерка атласа (08cb): на #c ни одного вызова */
     const onSide=Math.abs(cx-inset.x0)<1||Math.abs(cx-inset.x1)<1;   // боковая кромка → двигаем по y
     cands.push({m,ang,dx,dy,cx,cy,label,cw,ch,onSide,dist:Math.hypot(m.x-sh.x,m.y-sh.y)});
   }
