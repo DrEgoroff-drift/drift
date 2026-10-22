@@ -1814,7 +1814,9 @@ body.table #loglist.opis{grid-template-columns:1fr 1fr .62fr;grid-template-areas
 @container (max-width:780px){
   .hg .hg-grid{display:flex;flex-direction:column;gap:12px}
   .hg .hg-main,.hg .hg-side,.hg .hg-low{display:contents}
-  .hg .hg-stage{order:1}.hg .op-hullcap{order:2}.hg .op-slots{order:3}.hg .hg-insp{order:4}
+  /* align-items:start от сетки переживает переход в ленту: сцена без растяжки брала ширину холста, а она — от DPR
+     (300 на DPR 1, 318 на DPR 3 — подвес съезжал на 11 px, зрение «DPR», 22.10). Сцена — во всю ленту */
+  .hg .hg-stage{order:1;align-self:stretch}.hg .op-hullcap{order:2}.hg .op-slots{order:3}.hg .hg-insp{order:4}
   .hg .op-panel{order:5}.hg .op-spare{order:6}.hg .hg-plan{order:7}
   .hg .hg-low>.op-spare,.hg .hg-plan{flex:none}
 }

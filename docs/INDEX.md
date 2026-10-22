@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 633 · top-level symbols: 8707
+Files: 634 · top-level symbols: 8711
 
 ## SYMBOLS
 
@@ -1515,10 +1515,11 @@ OVR                          src/08bi-gpu-ovl.js:323
 OV_CV                        src/08bi-gpu-ovl.js:304
 OV_EYE                       src/08bi-gpu-ovl.js:300
 OWN                          src/21pig-pln-own.js:26
-OWN_GREEN                    src/21pig-pln-own.js:293
-OWN_GREEN_SP                 src/21pig-pln-own.js:294
-OWN_GREEN_WIDE               src/21pig-pln-own.js:315
-OWN_WIN                      src/21pig-pln-own.js:31
+OWN_GREEN                    src/21pig-pln-own.js:297
+OWN_GREEN_SP                 src/21pig-pln-own.js:298
+OWN_GREEN_WIDE               src/21pig-pln-own.js:319
+OWN_WASH                     src/21pig-pln-own.js:31
+OWN_WIN                      src/21pig-pln-own.js:32
 P3                           src/17c2b-parts3d.js:18
 P3T                          src/17c2d-parts-thumb.js:21
 P3T_CAM                      src/17c2d-parts-thumb.js:22
@@ -1630,6 +1631,7 @@ PLAN_F                       src/27jb-kb.js:395
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
+PLAYHOUR_HOOKS               src/28v-playhour.js:18-29
 PLN                          src/21p-pln.js:15
 PLN_ACT                      src/21pif-pln-marks-act.js:18
 PLN_ACTS                     src/21pz-pln-frame.js:46
@@ -1696,13 +1698,13 @@ PLN_OLD_HUD2                 src/21pzb-pln-words.js:102
 PLN_OLD_LANDING              src/21pza-pln-descent.js:221
 PLN_OLD_ULAND                src/21pza-pln-descent.js:212
 PLN_OVER                     src/21pj-pln-over.js:16
-PLN_OWN_GATE_R               src/21pig-pln-own.js:527
-PLN_OWN_OLD_AT               src/21pig-pln-own.js:632
-PLN_OWN_OLD_DIG              src/21pig-pln-own.js:579
-PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:557
-PLN_OWN_OLD_HINT             src/21pig-pln-own.js:625
-PLN_OWN_OLD_UPD              src/21pig-pln-own.js:602
-PLN_OWN_UPD                  src/21pig-pln-own.js:556
+PLN_OWN_GATE_R               src/21pig-pln-own.js:536
+PLN_OWN_OLD_AT               src/21pig-pln-own.js:641
+PLN_OWN_OLD_DIG              src/21pig-pln-own.js:588
+PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:566
+PLN_OWN_OLD_HINT             src/21pig-pln-own.js:634
+PLN_OWN_OLD_UPD              src/21pig-pln-own.js:611
+PLN_OWN_UPD                  src/21pig-pln-own.js:565
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:41-65
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
@@ -1943,12 +1945,12 @@ RES_TXT                      src/02-world.js:93
 RES_WAIT0                    src/28-loop.js:250
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19-23
-RIG_ALIAS                    src/21phc-pln-rig-card.js:35
-RIG_BOX                      src/21phc-pln-rig-card.js:31
+RIG_ALIAS                    src/21phc-pln-rig-card.js:34
+RIG_BOX                      src/21phc-pln-rig-card.js:30
 RIG_CARD                     src/21phc-pln-rig-card.js:20
-RIG_CARD_WGSL                src/21phc-pln-rig-card.js:122
-RIG_H                        src/21phc-pln-rig-card.js:32
-RIG_POSES                    src/21phc-pln-rig-card.js:34
+RIG_CARD_WGSL                src/21phc-pln-rig-card.js:121
+RIG_H                        src/21phc-pln-rig-card.js:31
+RIG_POSES                    src/21phc-pln-rig-card.js:33
 RING_FIRST                   src/11x-ring.js:20
 RING_LEN                     src/11x-ring.js:21
 RING_SRC                     src/11x-ring.js:19
@@ -4022,7 +4024,7 @@ drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21pz-pln-frame.js:440-459
 drawSurfaceHud               src/21e-surface-draw.js:39-142
 drawSurvey                   src/12w-survey.js:63-83
-drawSysHud                   src/17-mode-system.js:753-1079
+drawSysHud                   src/17-mode-system.js:753-1085
 drawSysLane                  src/17g-sys-lane.js:112-138
 drawSysLaneShips             src/17g-sys-lane.js:168-196
 drawSysRail                  src/18f-rail-station.js:79-115
@@ -4473,11 +4475,13 @@ geoAnd                       tests/90b2-geom.js:37
 geoArea                      tests/90b2-geom.js:36
 geoAt                        src/18b-geology.js:73-77
 geoBoxy                      tests/90b2-geom.js:352-358
-geoBtns                      tests/90b2-geom.js:864
-geoCalm                      tests/90b2-geom.js:874-986
+geoBtns                      tests/90b2-geom.js:893
+geoCalm                      tests/90b2-geom.js:903-1026
+geoChipTouch                 tests/90b2-geom.js:444-456
+geoChipZones                 tests/90b2-geom.js:438-443
 geoClipPoly                  tests/90b2-geom.js:44
 geoCol                       tests/90b2-geom.js:73-84
-geoCompose                   tests/90b2-geom.js:679-704
+geoCompose                   tests/90b2-geom.js:703-728
 geoContrast                  tests/90b2-geom.js:87
 geoD                         tests/90b2-geom.js:35
 geoDom                       tests/90b2-geom.js:380-432
@@ -4486,7 +4490,7 @@ geoExtra                     tests/90b2-geom.js:223-245
 geoFaultAt                   src/18b-geology.js:92-97
 geoFaultX                    src/18b-geology.js:99-102
 geoFin                       tests/90b2-geom.js:58
-geoFontProbe                 tests/90b2-geom.js:988-997
+geoFontProbe                 tests/90b2-geom.js:1028-1037
 geoFrame                     tests/90b2-geom.js:309-312
 geoFrame1                    tests/90b2-geom.js:313-329
 geoHang                      tests/90b2-geom.js:252
@@ -4497,8 +4501,8 @@ geoHookBake                  tests/90b2-geom.js:168-176
 geoHookCtx                   tests/90b2-geom.js:94-126
 geoHookOvl                   tests/90b2-geom.js:258-303
 geoIn                        tests/90b2-geom.js:60
-geoLaws                      tests/90b2-geom.js:435-671
-geoLbl                       tests/90b2-geom.js:863
+geoLaws                      tests/90b2-geom.js:459-695
+geoLbl                       tests/90b2-geom.js:892
 geoLum                       tests/90b2-geom.js:85
 geoMin                       tests/90b2-geom.js:59
 geoOpaque                    tests/90b2-geom.js:359-366
@@ -4510,20 +4514,20 @@ geoPad                       tests/90b2-geom.js:367
 geoPoly                      tests/90b2-geom.js:41
 geoR                         tests/90b2-geom.js:34
 geoRec                       tests/90b2-geom.js:178-218
-geoRich                      tests/90b2-geom.js:824
+geoRich                      tests/90b2-geom.js:853
 geoRoadFrame                 tests/90b2-geom.js:333-348
 geoRs                        tests/90b2-geom.js:69
-geoRun                       tests/90b2-geom.js:906-986
+geoRun                       tests/90b2-geom.js:944-1026
 geoSat                       tests/90b2-geom.js:51
-geoScreens                   tests/90b2-geom.js:830-862
-geoSelf                      tests/90b2-geom.js:707-820
-geoSettle                    tests/90b2-geom.js:882
+geoScreens                   tests/90b2-geom.js:859-891
+geoSelf                      tests/90b2-geom.js:731-849
+geoSettle                    tests/90b2-geom.js:911
 geoShape                     tests/90b2-geom.js:128-132
-geoShut                      tests/90b2-geom.js:873
-geoSig                       tests/90b2-geom.js:866-869
-geoStation                   tests/90b2-geom.js:825
+geoShut                      tests/90b2-geom.js:902
+geoSig                       tests/90b2-geom.js:895-898
+geoStation                   tests/90b2-geom.js:854
 geoSty                       tests/90b2-geom.js:351
-geoTable                     tests/90b2-geom.js:829
+geoTable                     tests/90b2-geom.js:858
 geoText                      tests/90b2-geom.js:133-147
 geoWho                       tests/90b2-geom.js:369-378
 geoWob                       src/18b-geology.js:80-82
@@ -6587,6 +6591,7 @@ plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29-37
 plantUx                      src/20-life.js:433-437
 plate                        src/25-cockpit.js:160-164
+playTick                     src/28v-playhour.js:14-17
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
 plnActAge                    src/21pif-pln-marks-act.js:58
@@ -6832,35 +6837,35 @@ plnOver                      src/21pj-pln-over.js:50-128
 plnOverAt                    src/21pj-pln-over.js:19-22
 plnOverOld                   src/21pj-pln-over.js:30-47
 plnOverPlate                 src/21pj-pln-over.js:23-28
-plnOwnAtGate                 src/21pig-pln-own.js:528
-plnOwnBaseAt                 src/21pig-pln-own.js:95-110
-plnOwnBaseMesh               src/21pig-pln-own.js:121-257
-plnOwnBaseX                  src/21pig-pln-own.js:66-91
-plnOwnBattOf                 src/21pig-pln-own.js:112-117
-plnOwnFlat                   src/21pig-pln-own.js:282-287
-plnOwnFrame                  src/21pig-pln-own.js:450-498
-plnOwnFree                   src/21pig-pln-own.js:412-417
-plnOwnGateC                  src/21pig-pln-own.js:541
-plnOwnGateHide               src/21pig-pln-own.js:588-596
-plnOwnGateNote               src/21pig-pln-own.js:544-550
-plnOwnGateShow               src/21pig-pln-own.js:597-601
-plnOwnGateX                  src/21pig-pln-own.js:522-526
-plnOwnGreenBuild             src/21pig-pln-own.js:316-330
-plnOwnGreenSp                src/21pig-pln-own.js:295-311
-plnOwnHomeAt                 src/21pig-pln-own.js:260-278
-plnOwnHomeMesh               src/21pig-pln-own.js:331-409
-plnOwnInYard                 src/21pig-pln-own.js:564-567
-plnOwnItem                   src/21pig-pln-own.js:418-425
-plnOwnKit                    src/21pig-pln-own.js:41-60
-plnOwnMark                   src/21pig-pln-own.js:530
-plnOwnOcc                    src/21pig-pln-own.js:501-510
-plnOwnPads                   src/21pig-pln-own.js:512-519
-plnOwnPennHere               src/21pig-pln-own.js:118-120
-plnOwnSteel                  src/21pig-pln-own.js:34-39
-plnOwnStep                   src/21pig-pln-own.js:427-448
-plnOwnUnder                  src/21pig-pln-own.js:568-571
-plnOwnWordsAt                src/21pig-pln-own.js:532-537
-plnOwnYardPrompt             src/21pig-pln-own.js:572-578
+plnOwnAtGate                 src/21pig-pln-own.js:537
+plnOwnBaseAt                 src/21pig-pln-own.js:96-111
+plnOwnBaseMesh               src/21pig-pln-own.js:122-261
+plnOwnBaseX                  src/21pig-pln-own.js:67-92
+plnOwnBattOf                 src/21pig-pln-own.js:113-118
+plnOwnFlat                   src/21pig-pln-own.js:286-291
+plnOwnFrame                  src/21pig-pln-own.js:454-507
+plnOwnFree                   src/21pig-pln-own.js:416-421
+plnOwnGateC                  src/21pig-pln-own.js:550
+plnOwnGateHide               src/21pig-pln-own.js:597-605
+plnOwnGateNote               src/21pig-pln-own.js:553-559
+plnOwnGateShow               src/21pig-pln-own.js:606-610
+plnOwnGateX                  src/21pig-pln-own.js:531-535
+plnOwnGreenBuild             src/21pig-pln-own.js:320-334
+plnOwnGreenSp                src/21pig-pln-own.js:299-315
+plnOwnHomeAt                 src/21pig-pln-own.js:264-282
+plnOwnHomeMesh               src/21pig-pln-own.js:335-413
+plnOwnInYard                 src/21pig-pln-own.js:573-576
+plnOwnItem                   src/21pig-pln-own.js:422-429
+plnOwnKit                    src/21pig-pln-own.js:42-61
+plnOwnMark                   src/21pig-pln-own.js:539
+plnOwnOcc                    src/21pig-pln-own.js:510-519
+plnOwnPads                   src/21pig-pln-own.js:521-528
+plnOwnPennHere               src/21pig-pln-own.js:119-121
+plnOwnSteel                  src/21pig-pln-own.js:35-40
+plnOwnStep                   src/21pig-pln-own.js:431-452
+plnOwnUnder                  src/21pig-pln-own.js:577-580
+plnOwnWordsAt                src/21pig-pln-own.js:541-546
+plnOwnYardPrompt             src/21pig-pln-own.js:581-587
 plnPadBulb                   src/21pza-pln-descent.js:120
 plnPadFrame                  src/21pza-pln-descent.js:134-164
 plnPadGeo                    src/21pza-pln-descent.js:83-105
@@ -7520,25 +7525,24 @@ retGroundLine                src/11s-returners.js:44-46
 reticle                      src/17c-system-draw.js:5-14
 rgba                         src/01-core.js:225
 ridged                       src/18a-material.js:30
-rigCard                      src/21phc-pln-rig-card.js:201-249
-rigCardBounds                src/21phc-pln-rig-card.js:112-120
-rigCardDesc                  src/21phc-pln-rig-card.js:161-168
-rigCardDev                   src/21phc-pln-rig-card.js:173-179
-rigCardDraw                  src/21phc-pln-rig-card.js:252-258
-rigCardIssueTint             src/21phc-pln-rig-card.js:61-67
-rigCardMS                    src/21phc-pln-rig-card.js:180-189
-rigCardMesh                  src/21phc-pln-rig-card.js:47-57
-rigCardPal                   src/21phc-pln-rig-card.js:39-46
-rigCardPose                  src/21phc-pln-rig-card.js:82-103
-rigCardRaid                  src/21phc-pln-rig-card.js:292-300
-rigCardRot                   src/21phc-pln-rig-card.js:107-110
-rigCardState                 src/21phc-pln-rig-card.js:69-80
-rigCardWorker                src/21phc-pln-rig-card.js:282-288
-rigLightBase                 src/21phc-pln-rig-card.js:270-273
-rigLightKey                  src/21phc-pln-rig-card.js:191-194
-rigLightRaid                 src/21phc-pln-rig-card.js:275-277
-rigPoseOf                    src/21phc-pln-rig-card.js:260-266
-rigPpmQ                      src/21phc-pln-rig-card.js:196
+rigCard                      src/21phc-pln-rig-card.js:200-248
+rigCardBounds                src/21phc-pln-rig-card.js:111-119
+rigCardDesc                  src/21phc-pln-rig-card.js:160-167
+rigCardDev                   src/21phc-pln-rig-card.js:172-178
+rigCardDraw                  src/21phc-pln-rig-card.js:251-257
+rigCardIssueTint             src/21phc-pln-rig-card.js:60-66
+rigCardMS                    src/21phc-pln-rig-card.js:179-188
+rigCardMesh                  src/21phc-pln-rig-card.js:46-56
+rigCardPal                   src/21phc-pln-rig-card.js:38-45
+rigCardPose                  src/21phc-pln-rig-card.js:81-102
+rigCardRaid                  src/21phc-pln-rig-card.js:282-290
+rigCardRot                   src/21phc-pln-rig-card.js:106-109
+rigCardState                 src/21phc-pln-rig-card.js:68-79
+rigLightBase                 src/21phc-pln-rig-card.js:269-272
+rigLightKey                  src/21phc-pln-rig-card.js:190-193
+rigLightRaid                 src/21phc-pln-rig-card.js:274-276
+rigPoseOf                    src/21phc-pln-rig-card.js:259-265
+rigPpmQ                      src/21phc-pln-rig-card.js:195
 ringAll                      src/11x-ring.js:22-25
 ringBlock                    src/11x-ring.js:95-105
 ringDir                      src/11x-ring.js:26-29
@@ -9466,7 +9470,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/16gc-gpu-nebfade.js · 3 KB
 
-## src/17-mode-system.js · 84 KB
+## src/17-mode-system.js · 85 KB
   · режим: система:1
 
 ## src/17a-station-mod.js · 6 KB
@@ -9522,7 +9526,7 @@ zoomTo                       src/15-input.js:358
 ## src/17ga-gpu-planets.js · 30 KB
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
-## src/17gab-gpu-orb.js · 37 KB
+## src/17gab-gpu-orb.js · 38 KB
   · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
 
 ## src/17gab1-gpu-orb-draw.js · 8 KB
@@ -9912,7 +9916,7 @@ zoomTo                       src/15-input.js:358
 ## src/21phb-pln-ship.js · 22 KB
   · планета: корабль на опорах — по корпусу игры (M621):1
 
-## src/21phc-pln-rig-card.js · 20 KB
+## src/21phc-pln-rig-card.js · 19 KB
   · планета: человек в карточке — один астронавт везде (M801):1
 
 ## src/21pi-pln-things.js · 27 KB
@@ -9967,7 +9971,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pifc-pln-marks-act-lift.js · 13 KB
   · космический лифт (§4.3, M627b проход 5):1
 
-## src/21pig-pln-own.js · 47 KB
+## src/21pig-pln-own.js · 48 KB
   · планета: свои вещи телами — база, дом, двор (M628a):1
 
 ## src/21pigz-cave-room.js · 3 KB
@@ -10403,6 +10407,9 @@ zoomTo                       src/15-input.js:358
 ## src/28u-raid-ui.js · 2 KB
   · абордаж: строка у пульта — плашкой (22.10):1
 
+## src/28v-playhour.js · 3 KB
+  · первый час — час игры, а не час налёта (M912 · DESIGN-game §10.7, §4.1b):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10455,7 +10462,7 @@ zoomTo                       src/15-input.js:358
 ## tests/90b-detect.js · 26 KB
   · детекторы: законы, которые смотрят после каждого шага (M443):1
 
-## tests/90b2-geom.js · 89 KB
+## tests/90b2-geom.js · 93 KB
   · Зрение: экран в числах и неравенствах (27.09.2026):1
 
 ## tests/90b3-geom-world.js · 4 KB

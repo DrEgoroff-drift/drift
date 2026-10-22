@@ -28,6 +28,7 @@ const OWN={on:true,base:null,home:null,gate:null,porch:null,gen:-1,err:"",
 try{OWN.on=!/[?&]own=0(&|$)/.test(location.search||"");}catch(e){}
 /* стёкла ночью (M602): дом #ffc990, база бледнее #f6dcb6. Цвет вершин движок читает как sRGB —
    C.warm выходил на экран лососем, поэтому тёплое задано светлее */
+const OWN_WASH={r:10,k:2.6,y:1.5};   /* лампа кромки на борт отсека: радиус, м, и сила ночью */
 const OWN_WIN={home:[1,.92,.7],base:[.98,.94,.84],lamp:[1,.9,.74],grow:[.78,.9,1]};
 
 /* кожа людей: сталь в пятнах ржавчины и копоти; t — зерно места */
@@ -251,7 +252,10 @@ function plnOwnBaseMesh(L,A,sd,batt,penn){
     plnCard(pm,[mx+le*1.7,fy-.2,mz],[mx+le*1.7,fy+.3,mz],[mx,fy+.45,mz],[mx,fy-.45,mz],[0,0,1],col,PLN_MAT.leaf,[1,1,0,0],0,0);
   }
   void r;
-  return {mods,body:m,light:lm,batt:bm,penn:pm,lampAt:{pier:[px+.25,2.4,pz1-.4],gate:[g0,1.4,-5.2]},
+  /* свет кромки на борта (замечание Контроля к M628): огни кромки — точки; юбку отсека и низ купола над
+     настилом ночью кладёт одна лампа у кромки против отсека, ближайшего к объективу (plnOwnFrame) */
+  const wash=A.cells.map((cell,c)=>cell&&cell.k&&cell.k!=="solar"&&cell.k!=="battery"?sx(c):null).filter(v=>v!=null);
+  return {mods,body:m,light:lm,batt:bm,penn:pm,lampAt:{pier:[px+.25,2.4,pz1-.4],gate:[g0,1.4,-5.2],wash},
     /* тень настила — полосой пятен вдоль него, а не одним бледным кругом (брак M628: «стол без тени») */
     blots:[[dx,.5,3.6,.5]].concat([-3,-2,-1,0,1,2,3].map(i=>[i*hx/3.6,.3,hz*1.15,.42]))};
 }
@@ -478,13 +482,18 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
         want.push({o:0,it,l:{p:at(it.lampAt.porch),r:12,c:[1,.68,.38],k:2.6*nk}});
         if(it.lampAt.grow)want.push({o:2,l:{p:at(it.lampAt.grow),r:6.5,c:OWN_WIN.grow,k:1.3*nk}});
       }else{want.push({o:1,l:{p:at(it.lampAt.pier),r:7,c:[1,.68,.38],k:1.8*nk}});
-        if(it.lampAt.gate)want.push({o:1.5,l:{p:at(it.lampAt.gate),r:5,c:[1,.74,.45],k:1.2*nk}});}
+        if(it.lampAt.gate)want.push({o:1.5,l:{p:at(it.lampAt.gate),r:5,c:[1,.74,.45],k:1.2*nk}});
+        const ws=it.lampAt.wash||[];let wx=null;
+        for(const x of ws)if(wx==null||Math.abs(A.x+x-ex)<Math.abs(A.x+wx-ex))wx=x;
+        if(wx!=null)want.push({o:1.2,l:{p:at([wx,OWN_WASH.y,-OWN.deckHZ-1.1]),r:OWN_WASH.r,c:[1,.72,.44],k:OWN_WASH.k*nk}});}
     }
     for(const q of it.blots){if(n>=64)break;b.set([A.x+q[0],A.z+q[1],q[2],q[3]],4+n*4);n++;}
   }
   b[0]=n;
   want.sort((u,v)=>u.o-v.o);
-  for(const w of want.slice(0,2)){
+  /* в кадр — две по старшинству из тех, чей свет до кадра достаёт: пирс за кромкой уступает лампе кромки у ворот */
+  const seen=want.filter(w=>Math.abs(w.l.p[0]-ex)<V.hw*(1+Math.max(0,w.l.p[2])/V.D)+w.l.r);
+  for(const w of seen.concat(want.filter(w=>seen.indexOf(w)<0)).slice(0,2)){
     /* ламп у кадра четыре: занятое место уступает та, что светит за кромкой кадра (огни площадки
        далеко за спиной) */
     let ok=false;

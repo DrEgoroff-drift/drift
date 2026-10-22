@@ -302,7 +302,7 @@ applySave=function(s){
 function watchMenuSync(){
   const b=document.getElementById("watchbtn");if(!b)return;
   const W=G.uch,h=!!(W&&W.hand);
-  const on=h||(G.flownMs||0)>=FIRST_HOUR_MS;
+  const on=h||!firstHour();   /* час игры (28v), не налёта */
   b.style.display=on?"":"none";
   if(!on)return;
   const dock=G.mode==="dock";
