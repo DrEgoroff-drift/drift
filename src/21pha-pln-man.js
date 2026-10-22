@@ -48,6 +48,7 @@ const PLN_MAN_POSE={
   sit:[0,-.06,.05, 1.50,-1.50,0, 1.42,-1.42,0, .75,.55, .62,.62]};
 const PLN_MAN_SIT=.42;
 const PLN_MAN_FLAME={rings:7,sides:8};
+const PLN_HEADLAMP=[1,.92,.8];   /* налобник: тёплый белый (21pc PLN_LAMP_GREY — пятно не лимонное) */
 
 /* цвет комплекта: «#rrggbb» или «rgb(r,g,b)» (mixHex) → линейный */
 function plnManCss(s){
@@ -290,11 +291,12 @@ function plnManFrame(F,pos,face,swim,o){
     F.batches.push({geo:B.geo,inst:B.inst,kind:PLN_KIND.body,to:PLN_TO.all});
   });
   plnInstSet(Q.ib1,Q.ia,Q.bones.length);
-  /* налобник светит вперёд по взгляду на землю перед человеком (ночью и в тени затмения) */
+  /* налобник светит вперёд по взгляду на землю перед человеком (ночью и в тени затмения); тёплый белый —
+     пятно на песке бело-оранжевое, самый яркий цвет кадра остаётся у скафандра */
   /* в шахте (dig) — теплее и короче: забой в двух шагах, белый длинный луч выжигал породу (mine-a) */
   if(st.lamp>.02){
     const dig=G.mode==="dig";
-    F.lamps.push({p:[Q.lamp[0]+fx*(dig?.7:1.0),Q.lamp[1]-.35,Q.lamp[2]-.3],r:dig?5:8,c:dig?[1,.72,.44]:[1,.86,.62],k:(dig?2.0:2.4)*st.lamp});
+    F.lamps.push({p:[Q.lamp[0]+fx*(dig?.7:1.0),Q.lamp[1]-.35,Q.lamp[2]-.3],r:dig?5:8,c:dig?[1,.72,.44]:PLN_HEADLAMP,k:(dig?2.0:2.4)*st.lamp});
   }
   /* факел ранца освещает землю под ним */
   if(Q.k.jet>.03)F.lamps.push({p:[Q.jet[0],Q.jet[1]-.35,Q.jet[2]],r:5.5,c:[1,.58,.26],k:2.2*Q.k.jet});

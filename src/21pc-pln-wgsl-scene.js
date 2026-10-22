@@ -8,6 +8,14 @@
    «запасе» — затенение от соседей; у травы в «запасе» высота по стеблю; у
    человека — блеск; у воды — глубина в метрах; у свечения — доля пустоты
    (темнота проёма: не светится и воздуха не берёт). */
+/* пятно лампы: сухое зерно, камень, ткань в близком свете бликуют белым — свет ламп берёт альбедо, наполовину
+   сведённое к серому. Иначе пятно повторяло насыщенность песка: налобник на пустыне лёг лимоном (хрома .7),
+   ярче скафандра. Та же доля — в шейдере и в plnLampPool, по которой тест считает хрому пятна */
+const PLN_LAMP_GREY=.55;
+function plnLampPool(alb,lc){
+  const y=.2126*alb[0]+.7152*alb[1]+.0722*alb[2];
+  return [0,1,2].map(i=>lerp(alb[i],y,PLN_LAMP_GREY)*lc[i]);
+}
 const PLN_WGSL_SCENE=PLN_WGSL_AIR+/* wgsl */`
 struct Blobs { n: vec4f, b: array<vec4f, 64> };
 @group(0) @binding(1) var shadowTex: texture_depth_2d_array;
@@ -287,6 +295,7 @@ fn lampShade(w: vec3f, lp: vec3f) -> f32 {
     c += skyBase(normalize(vec3f(rv.x, abs(rv.y) + 0.02, rv.z))) * (wet * fr * 0.60 * flat * mix(0.55, 1.0, fg));
     c += sun * pow(clamp(dot(N, hv), 0.0, 1.0), 36.0) * (wet * 0.8 * flat);
   }
+  let lalb = mix(alb, vec3f(dot(alb, vec3f(0.2126, 0.7152, 0.0722))), ${PLN_LAMP_GREY});
   for (var i = 0; i < 4; i++) {
     let lp = g.lampPos[i]; let lc = g.lampCol[i];
     if (lc.w <= 0.0) { continue; }
@@ -297,7 +306,7 @@ fn lampShade(w: vec3f, lp: vec3f) -> f32 {
     let nl = clamp(dot(N, d / dl) * 0.7 + 0.3, 0.0, 1.0);
     var ls = 1.0;
     if (att > 0.0 && f32(i) == blobs.n.z - 1.0) { ls = lampShade(in.wpos, lp.xyz); }
-    c += alb * lc.rgb * (lc.w * att * nl * ls);
+    c += lalb * lc.rgb * (lc.w * att * nl * ls);
   }
   /* цветок, лист, руда светятся отражённым: днём это запас яркости, ночью его почти нет.
      Лист, что светится сам (вид игры, свечение от .45), светится и ночью */
