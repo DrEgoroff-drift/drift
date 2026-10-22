@@ -4,6 +4,8 @@
    (X.ph — чтение и запись), книгу (X.book) и темп (X.human) */
 function ecoEstate(X){
   const {note,idle,dockAt,sysOf}=X;
+  /* M917 (ECO_SINK=товар): дома — цепочка цехов до мёртвого промтовара, ему — едок по теневой цене */
+  const SINK=((globalThis.process&&globalThis.process.env)||{}).ECO_SINK||"";
   /* ── хозяйство T2–T3 (M912, Контроль 22.10): цеха и база, на которых стоит оракул §4.1 ──
      Цеха — постройки семей B–D (12ac) на своей станции и соседней, по три на станцию, без лестницы
      площадок (★11/15/20) и без цены: ярус ими уже владеет, как дронами. Кормятся сами — продажей
@@ -56,7 +58,7 @@ function ecoEstate(X){
     const ORE={};for(const q of (home.planets||[]))for(const k of (q.res||[]))ORE[k]=1;
     const fit=id=>{const e=Object.keys(BLD[id].eats);return e.filter(k=>ORE[k]).length/e.length;};
     const ids=Object.keys(BLD).filter(id=>bldIsShop(BLD[id])&&fit(id)>0).sort((a,b)=>fit(b)-fit(a)||(BLD[a].fam<BLD[b].fam?-1:BLD[a].fam>BLD[b].fam?1:0));
-    const NSH=X.shops==null?E.shops:+X.shops;   /* ECO_SHOPS=0 — база без цехов; =N — N цехов (M915: лестница даёт дому одну площадку) */
+    const NSH=SINK?0:X.shops==null?E.shops:+X.shops;   /* ECO_SHOPS=0 — база без цехов; =N — N цехов (M915: лестница даёт дому одну площадку) */
     for(const S of near){
       if(EST.shops.length>=NSH)break;
       let here=0;
@@ -71,6 +73,13 @@ function ecoEstate(X){
       }
     }
     estEaters(home);
+    if(SINK){const want=[];EST.sinkV=0;EST.sinkQ=0;EST.made={};
+      const add=k=>{const id=Object.keys(BLD).find(i=>bldIsShop(BLD[i])&&BLD[i].makes[k]);if(!id||want.indexOf(id)>=0)return;
+        want.push(id);for(const e in BLD[id].eats)if(RES[e]&&RES[e].ind)add(e);};
+      add(SINK);
+      for(const id of want){const H=holdOf(home.key);H.bld=H.bld||{};
+        if(!H.bld[id])H.bld[id]={lvl:1,t0:clockNow(),ready:clockNow(),my:{},got:{}};
+        EST.shops.push({key:home.key,id,eats:Object.keys(BLD[id].eats).join("+"),makes:Object.keys(BLD[id].makes).join("+")});}}
     if(E.base>0){
       const p=(home.planets||[]).find(q=>q.parentIdx==null&&q.type!=="gas"&&q.res&&q.res.length);
       if(p){
@@ -126,6 +135,7 @@ function ecoEstate(X){
      b — рынок последнего звена: ярус 2–3 берёт любая станция; c — цех-делатель можно поставить дома */
   const LV={};for(const c of (X.lever||""))LV[c]=1;
   function leverSell(k){const q=G.cargo[k]|0,t=RES[k].ind;if(q<=0)return;
+    if(SINK&&k===SINK){const v=Math.round(q*indPrice(k));G.cargo[k]=0;earn(v,"trade");EST.sinkV+=v;EST.sinkQ+=q;EST.indSold+=v;return;}
     if(!(LV.a&&t===1&&!EST.shops.some(s=>s.key===G.sys.key&&BLD[s.id].makes[k]))&&!(LV.b&&t>=2))return;
     const v=Math.round(q*indPrice(k)*X.mul);G.cargo[k]=0;earn(v,"trade");EST.lev=(EST.lev|0)+v;EST.indSold+=v;}
   function estDock(){
@@ -145,7 +155,7 @@ function ecoEstate(X){
       }
       /* цеха этой станции: забрать пай */
       X.ph="цеха";
-      for(const s of EST.shops)if(s.key===G.sys.key){try{bldCollect(G.sys,s.id);}catch(e){note("цех: "+(e&&e.message));}}
+      for(const s of EST.shops)if(s.key===G.sys.key){try{const n=bldCollect(G.sys,s.id);if(EST.made)EST.made[s.id]=(EST.made[s.id]|0)+n;}catch(e){note("цех: "+(e&&e.message));}}
       /* промтовар — в цех, который его ест; не взяли — на склад (не трюм: бот возит руду) */
       for(const k in G.cargo){const q=G.cargo[k]|0;if(q<=0||!RES[k]||!RES[k].ind)continue;
         const v=bldSellInd(G.sys,k,q);EST.indSold+=v||0;leverSell(k);
@@ -196,7 +206,8 @@ function ecoEstate(X){
     const fed={};for(const s of EST.shops){const B=bldEntry(s.key,s.id);if(B)fed[s.id]=Math.round(Object.values(B.got||{}).reduce((a,b)=>a+b,0));}
     return {shops:EST.shops.map(s=>s.id+"@"+s.key+" ("+s.eats+"→"+s.makes+")").join(", "),indSold:Math.round(EST.indSold),
       indLeft:Math.round(left),indLeftQ:JSON.stringify(EST.ind),base:EST.base?EST.base.name+" · модулей "+EST.base.mods+" · буров "+EST.base.drills+" · энергия "+EST.base.pw+" · людей "+EST.base.crew+" ("+baseStaff(EST.base.B).map(c=>c.role).join("+")+")"+" · тепло "+EST.base.heat+" · ["+EST.base.lay+"]"+(EST.base.B.ruin?" · РАЗВАЛИНА":""):"—",
-      baseUnits:EST.baseUnits,baseWorth:Math.round(EST.baseWorth),hauls:EST.hauls,lev:EST.lev|0,fed:EST.fed,baseTrips:EST.baseTrips,
+      baseUnits:EST.baseUnits,baseWorth:Math.round(EST.baseWorth),hauls:EST.hauls,lev:EST.lev|0,
+      sink:SINK?SINK+" (теневая "+indPrice(SINK)+" кр): едок взял "+EST.sinkQ+" ед на "+EST.sinkV+" кр · выпуск по цехам "+JSON.stringify(EST.made):"",fed:EST.fed,baseTrips:EST.baseTrips,
       survey:Object.entries(EST.survey||{}).map(([g,V])=>{
         const by=j=>{const A=V.L.filter(x=>x.j===j);return A.filter(x=>x.ok.length).length+"/"+A.length;};
         const near=V.L.filter(x=>x.ok.length).slice(0,3).map(x=>x.key+" ("+x.j+"п, "+x.ok.join("/")+", бак туда-обратно "+x.fuel+")");

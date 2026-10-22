@@ -1124,6 +1124,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M914 | an eater for ferro/plate **measured 22.10, §4.1b**: where one may stand within 3 jumps, at what shadow price, whether the haul pays | an eater may stand at home; the haul to the makers does not pay (~395 cr for 440–540 fuel); the eater's own good has no eater; no site rung within 3 jumps at the tier's start (M916: one at home after play) |
 | M915 | workshops: three levers in numbers **measured 22.10, §11**: (а) a buyer for the next link, (б) a market for the last link, (в) the maker at home — cr/h at T3 and the code each costs | (а)+(в) is the pair (five workshops −3.8k → −0.2k cr/h at 6 h); no lever makes workshops a T3 income; 10 of 49 industrial goods have no consumer in the code; (в) is 1–3 lines, (а) ~40 |
 | M916 | «no sites» checked **measured 22.10, §4.1b**: the probe's ladder or the game's | the probe's timing, not a bug: home climbs to ★11–13 in three hours at T3 (one site) and keeps it through a save; T0 stops at 10 on the drone gate; eaters need ★20–22 |
+| M917 | the ten dead industrial goods **measured 22.10, §11**: who eats each by meaning, and what an eater gives a chain with (а)+(в) | nine of ten are base modules by name, hullsec the hull; a chain with an eater pays 0.4–13k cr/h, mostly through its internal links (shadow price at every link); none fits three sites and the ★20–25 tiers at T3 |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),
@@ -1250,6 +1251,58 @@ one site, at home). Without (в) nothing that eats the player's own ore may stan
   neighbours only after landing, drilling and leaving a drone in each.
 - Cheapest first: (в) is 1–3 lines; (а) is about 40 lines and a list of who buys; (б) is (а) with a
   longer list, or a consumer for each of ten dead goods.
+
+### The ten dead goods — who would eat them (M917, 22.10)
+
+For each good: the consumer it means by name, and what such a consumer gives in the probe.
+`ECO_SINK=<good>` puts the whole chain down to that good at home (its maker and the makers of its
+industrial inputs, without the ladder and without the three-site limit) and lets the eater take the
+good at its shadow price, with (а)+(в) on. T3, a human's pace, the base and the logist.
+
+| good (tier) | shadow, cr | eats it by meaning | chain at home | eater took, cr/h: 3 h · 6 h | chain's line, cr/h: 3 h · 6 h | starves |
+|---|---|---|---|---|---|---|
+| thermo (1) | 130 | base radiator (`BUILD.radiator`, `21a-mode-base.js:47`) | 1 shop | 433 · 368 | +430 · +364 | — |
+| selsyn (2) | 496 | the gun's mount (`MODS.weapon`, `04-mods.js:12`); the base mast (`21a:56`) | 4 | 1 984 · 2 149 | +3 860 · +2 462 | — |
+| gyro (2) | 858 | the engine's turn (`MODS.engine`, `04-mods.js:3`) | 4 | 2 002 · 2 288 | +3 832 · +2 598 | — |
+| supercon (2) | 1 014 | the hyperdrive (`MODS.hyper`, `04-mods.js:11`); the base cryo shop (`21a:49`) | 4 | 1 352 · 1 352 | +2 653 · +2 640 | — |
+| reactorb (2) | 1 122 | the base reactor (`BUILD.reactor`, `21a:24`) — the name says it | 4 | 2 618 · 2 244 | +3 108 · +1 570 | — |
+| accum (2) | 470 | the base battery (`BUILD.battery`, `21a:35`) | 4 | 1 723 · 1 801 | +3 523 · +3 380 | graphite (no carbon at home) |
+| hullsec (3) | 2 092 | the hull: repair at the base workshop (`baseRepairShip`, `21b1-base-pay.js:117-131`, today 14 hull per alloy); armour plates (`MODS.armor`, `04-mods.js:9`) | 6 | 3 486 · 3 138 | +6 363 · +5 468 | graphite |
+| shell (3) | 3 275 | the base habitat (`BUILD.habitat`, `21a:29`) | 8 | 4 366 · 6 550 | +9 938 · +13 277 | — |
+| launchf (3) | 1 388 | the base pad, «причал для переброски» (`BUILD.pad`, `21a:31`) | 4 | 2 776 · 1 619 | +3 101 · +2 422 | — |
+| panel (3) | 2 677 | the base solar panel (`BUILD.solar`, `21a:25`) | 8 | 4 461 · 4 015 | +9 481 · +9 982 | graphite |
+
+For comparison: the M915 estate with (а)+(в), −0.2k cr/h at six hours; thermoc already has its
+eater (the Метеостанция's price), so it is not on the list.
+
+Read it:
+
+- **Every dead good has a consumer by name, and nine of ten are on the base** — the module that
+  already exists and costs credits and alloy. Hullsec belongs to the hull (repair or armour); selsyn,
+  gyro and supercon to the ship's modules.
+- **A chain with an eater at the end pays — but mostly not through the eater.** The chain's line is
+  two to three times what the eater pays: every internal link is paid too. Feeding a workshop its
+  industrial input pays the shadow price (`bldSellInd`, `12ad-site.js:271-279`), and the share comes
+  back on top. That is the bunker-and-share design (DESIGN-holding §6, «если ты возишь, то тебе
+  производят»), but a deep chain at one station multiplies it: shell's eight links bring 13.3k cr/h,
+  of which the eater pays 6.6k. A question for the author, not a fix.
+- **None of these chains can stand in the game at T3.** A station holds at most three sites
+  (`bldSitesAt`, `12ad-site.js:100-103`); the chains are 4–8 workshops; the C links need ★20 and the D
+  links ★22–25 (M916). Thermo — one family-B shop, one site — is the only chain that fits what a T3
+  player has, and it is the poorest: 0.4k cr/h. These are late-game pictures, or arguments for a
+  chain spread over the player's stations — with the hauls M915 measured.
+- **Carbon is the bottleneck at this home.** The probe sells no carbon at home (it is a fauna good and
+  the bot does not hunt), so graphite makes nothing in three chains. Links that eat graphite among
+  other inputs still run at a share (`bldTick` pays output by the share eaten), so the chains do not
+  stop.
+
+**What a consumer costs in the code.** The base modules pay through `canPay`/`payCost`
+(`21a-mode-base.js:99-100`), which know credits and alloy only, and the price is spelled at `:459`
+and `:471`. One generalisation — any key of `cost` from the hold — is about 10 lines; each consumer
+after that is one key in `BUILD` (`21a:23-82`). Ship modules cost credits only (`modCost`,
+`11-log.js:157-160`), so selsyn/gyro/supercon need the same generalisation on the ОСНАСТКА buy path.
+Hullsec as repair is a second rate in `baseRepairShip` next to `HULL_PER_ALLOY` (`21b1:116`). All of
+these files are outside this worker's list (21a, 11-log); the numbers above change no price.
 
 ---
 
