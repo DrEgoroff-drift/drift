@@ -72,10 +72,21 @@ function hangTW(font,s){
   HANG.w.set(key,w);return w;
 }
 function hangFont(i,P){return (i===0?"600 12px ":"11px ")+HANG.FACE;}
+/* клавиши чипами (o.keys): «[S] заложить ствол» — кусок в скобках рисуется колпачком, как на кнопках пэдов.
+   Куски строки: {k — колпачок, t — текст}; ширина в пикселях CSS при k=1 */
+const HANG_KEYF="600 10px ";
+function hangRuns(s){const out=[];String(s).replace(/\[([^\]]+)\]|[^[]+|\[/g,(m,k)=>{out.push(k!=null?{k:true,t:k}:{k:false,t:m});return m;});return out;}
+function hangLW(font,P,s){
+  if(!P.o.keys||s.indexOf("[")<0)return hangTW(font,s);
+  const R=hangRuns(s);let w=0;
+  for(let j=0;j<R.length;j++){const r=R[j];
+    w+=r.k?hangTW(HANG_KEYF+HANG.FACE,r.t)+8+(R[j+1]&&R[j+1].k?3:0):hangTW(font,r.t);}
+  return w;
+}
 /* размер таблички в пикселях CSS (k — линейка интерфейса) */
 function hangSize(P,k){
   let tw=0;
-  for(let i=0;i<P.lines.length;i++)tw=Math.max(tw,hangTW(hangFont(i,P),P.lines[i]));
+  for(let i=0;i<P.lines.length;i++)tw=Math.max(tw,hangLW(hangFont(i,P),P,P.lines[i]));
   const n=P.lines.length;
   return {w:Math.ceil(tw*k+20*k),h:Math.ceil((17+(n-1)*14+11)*k)};
 }
@@ -159,7 +170,7 @@ function hangPlace(P,k,C){
 function hangWrap(P,k,mw){
   const out=[];let verb=null,cut=false;
   for(let i=0;i<P.lines.length;i++){
-    const f=hangFont(out.length?1:0,P),fits=t=>hangTW(f,t)*k+20*k<=mw;
+    const f=hangFont(out.length?1:0,P),fits=t=>hangLW(f,P,t)*k+20*k<=mw;
     if(i===P.o.verb)verb=out.length;
     if(fits(P.lines[i])){out.push(P.lines[i]);continue;}
     const w=P.lines[i].split(" ");let cur="";
@@ -167,7 +178,7 @@ function hangWrap(P,k,mw){
     if(cur)out.push(cur);
   }
   if(!cut)return null;
-  for(let i=0;i<out.length;i++)if(hangTW(hangFont(i,P),out[i])*k+20*k>mw)return null;
+  for(let i=0;i<out.length;i++)if(hangLW(hangFont(i,P),P,out[i])*k+20*k>mw)return null;
   return {lines:out,verb};
 }
 /* подпись мира с именем name ближе 200 px к рамке R */
@@ -252,8 +263,16 @@ function hangDraw(P,k){
   hangHex(x0,y0,x1,y1,c,HANG.BODY,.86*al);
   const tx=x0+10*k;
   for(let i=0;i<P.lines.length;i++){
-    const col=ink||(i===P.o.verb?HANG.VERB:i===0?HANG.INK:HANG.INK2);
-    ovText(OVL.uq,tx,y0+(17+i*14)*k-(i?1*k:0),P.lines[i],hangFont(i,P),col,"left","alphabetic",al,k);
+    const col=ink||(i===P.o.verb?HANG.VERB:i===0?HANG.INK:HANG.INK2),y=y0+(17+i*14)*k-(i?1*k:0),f=hangFont(i,P);
+    if(!P.o.keys||P.lines[i].indexOf("[")<0){ovText(OVL.uq,tx,y,P.lines[i],f,col,"left","alphabetic",al,k);continue;}
+    /* колпачок: светлая плашка на высоту строчной с запасом, буква — чернилами таблички */
+    const R=hangRuns(P.lines[i]),kf=HANG_KEYF+HANG.FACE;let x=tx;
+    for(let j=0;j<R.length;j++){const r=R[j];
+      if(!r.k){ovText(OVL.uq,x,y,r.t,f,col,"left","alphabetic",al,k);x+=hangTW(f,r.t)*k;continue;}
+      const w=(hangTW(kf,r.t)+8)*k;
+      ovRect(sn(x),sn(y-10*k),sn(x+w),sn(y+3*k),HANG.EDGE,.2*al);
+      ovText(OVL.uq,x+4*k,y-.5*k,r.t,kf,HANG.INK,"left","alphabetic",al,k);
+      x+=w+(R[j+1]&&R[j+1].k?3*k:0);}
   }
   OVL.hangOn=0;OVL.hangSide=0;OVL.hangUrg=0;
 }

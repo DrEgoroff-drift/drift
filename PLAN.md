@@ -111,8 +111,7 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     sampleCount 1 when refused, with a test on that path; after it, MSAA kept, a tile ≤ 24 MB (1024×512 or
     768×768) living in the pool's slot, geometry culled per tile, resolved into one layer; bit-exact to the
     current bake (max |Δ| ≤ 1 on the seams), the bake's time A/B on the PC;
-  - the air (19b-sky, 19e-clouds, 19d-weather, 19c haze and grade, 18a1-glaze, 18d-postfx; G5) and the mine's sky
-    stars (16-flight `drawStars`, a `fillRect` per star) — GPU-2, after space.
+  - the air (19b-sky, 19e-clouds, 19d-weather, 19c haze and grade, 18a1-glaze, 18d-postfx; G5) — GPU-2, after space.
 
   3D, one object per spike, each closed by a pair of the WHOLE frame at 760 and 390 and the S23 cadence, cold,
   A/B/A; rolled out only when it reads better at first glance and is not slower:

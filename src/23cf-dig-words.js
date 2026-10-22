@@ -3,6 +3,8 @@
    его же): плашка слоя (08bj ovHang), к нему поводок. Что уже несут приборы,
    табличка не повторяет: глубину и породу — место (.locus), скафандр и трюм — шкалы (.vitals). На ней
    остаётся то, что сверх: горизонт, груз клети, ход (клавиши и что они делают), проходка, кусачие.
+   Клавиши — колпачками, как на кнопках пэдов («[S] заложить ствол», o.keys в 08bj), остальное — регистром
+   предложения (hangCase), как у табличек поверхности.
    Строка #msg (say) — общей табличкой hud.msg (08bj hangMsg) у той же точки: шахта отдаёт её как
    «man»; не встала (узкий экран) — остаётся DOM-строкой, слово не теряется.
    Без слоя (нет видеокарты) — прежние DOM-строки: класс ставит только живой кадр с объективом.
@@ -14,10 +16,22 @@ function dig3WordsLines(pr,msg){
   const L=String(pr||"").split("\n"),out=[];
   let i=0;
   /* горизонт — пока о нём не говорит сообщение («ГОРИЗОНТ 1 · 12 м» при прибытии клети) */
-  if(/^ГЛУБИНА /.test(L[0]||"")){const h=/ГОРИЗОНТ \d+/.exec(L[0]);if(h&&String(msg||"").indexOf(h[0])<0)out.push(h[0]);i=1;}
+  if(/^ГЛУБИНА /.test(L[0]||"")){const h=/ГОРИЗОНТ \d+/.exec(L[0]);if(h&&String(msg||"").toUpperCase().indexOf(h[0])<0)out.push(h[0]);i=1;}
   if(/^СКАФАНДР /.test(L[i]||"")){const c=/КЛЕТЬ (\d+)\/\d+/.exec(L[i]);if(c&&+c[1]>0)out.push(c[0]);i++;}
   for(const s of L.slice(i))for(const q of s.split(" · "))if(q)out.push(q);
-  return out;
+  return out.map(dig3KeyLine);
+}
+/* клавиша: код раскладки (латиница, цифры), стрелка, ПРОБЕЛ; на телефоне — имя пэда (ВВЕРХ, ВНИЗ) */
+function dig3IsKey(t){return /^[A-Za-z0-9]+$|^[←→↑↓◀▶]$|^(ПРОБЕЛ|ВВЕРХ|ВНИЗ)$/.test(t);}
+/* «S — ЗАЛОЖИТЬ СТВОЛ» → «[S] заложить ствол»; «ОГОНЬ (F) — …» → «[F] …»; не ход — регистр предложения */
+function dig3KeyLine(s){
+  const m=/^(.+?) — (.+)$/.exec(s);
+  if(m){
+    const p=/\(([^)]+)\)$/.exec(m[1]),K=p?[p[1]]:m[1].split(" ");
+    if(K.every(dig3IsKey))return K.map(t=>"["+(t.length>2&&/^[А-ЯЁ]+$/.test(t)?t[0]+t.slice(1).toLowerCase():t)+"]").join("")+" "+m[2].toLowerCase();
+  }
+  /* «12 м» — единица строчной: hangCase молчит над строкой, где строчная уже есть */
+  return hangCase(s.replace(/(\d) м(?![А-Яа-яЁё])/g,"$1 М"));
 }
 const DIG3_OLD_HSURF=hangSurface;
 hangSurface=function(){
@@ -34,7 +48,7 @@ hangSurface=function(){
     if(p&&q)hangBlock(Math.min(p[0],q[0])*n,Math.min(p[1],q[1])*n,Math.max(p[0],q[0])*n,Math.max(p[1],q[1])*n);}
   hangAt("man",a[0],a[1],r);   /* сюда же сообщение (hud.msg) */
   const ln=dig3WordsLines(G.prompt,G.msgT>0?G.msg:"");
-  if(ln.length)ovHang("mine.act",ln,a[0],a[1],{r});
+  if(ln.length)ovHang("mine.act",ln,a[0],a[1],{r,keys:true});
 };
 const DIG3_OLD_HUD=hud;
 hud=function(){
