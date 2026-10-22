@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 631 · top-level symbols: 8879
+Files: 633 · top-level symbols: 8892
 
 ## SYMBOLS
 
@@ -1983,7 +1983,11 @@ RING_SRC                     src/11x-ring.js:19
 RITES                        src/12au-rites.js:13-34
 RITE_KEYS                    src/12au-rites.js:35
 RITE_WINDOW                  src/12au-rites.js:36
+RIVMK                        src/28s-rivmarks.js:10-17
+RIVMK_AGE                    src/28s-rivmarks.js:9
+RIVMK_HOOKS                  src/28s-rivmarks.js:67-75
 RL_DL                        src/17c-system-draw.js:323
+RM_Q                         tests/91zzzw9k-rivmarks.js:4
 RND_SEED                     src/01-core.js:73
 ROAD_BACK_FAR                src/27k-road.js:104
 ROAD_BAND                    src/27k-road.js:586
@@ -7699,6 +7703,14 @@ riteMap                      src/12au-rites.js:44-47
 ritePct                      src/12au-rites.js:75-79
 ritePirateMul                src/12au-rites.js:126-132
 riteQuarantine               src/12au-rites.js:133-137
+rivMkAt                      src/28s-rivmarks.js:19
+rivMkMet                     src/28s-rivmarks.js:21-28
+rivMkMine                    src/28s-rivmarks.js:30
+rivMkPick                    src/28s-rivmarks.js:32-35
+rivMkPlace                   src/28s-rivmarks.js:36-41
+rivMkRestore                 src/28s-rivmarks.js:58-66
+rivMkShow                    src/28s-rivmarks.js:44-57
+rivMkSt                      src/28s-rivmarks.js:18
 rivalDefeated                src/12p-news.js:84-88
 rivalEat                     src/12ah-holdnews.js:76-84
 rivalHere                    src/12p-news.js:66-73
@@ -7707,6 +7719,7 @@ rivalOf                      src/12p-news.js:44
 rivalSpawn                   src/12p-news.js:74-83
 rivalYield                   src/12p-news.js:47-60
 rivetLine                    src/25-cockpit.js:179-186
+rmActed                      tests/91zzzw9k-rivmarks.js:5-9
 rnd                          src/01-core.js:74
 rndFx                        src/01-core.js:76
 rndRestore                   src/01-core.js:80
@@ -10594,6 +10607,9 @@ zoomTo                       src/15-input.js:358
 ## src/28r-fight.js · 10 KB
   · бой: второй глагол и дуэль (M902c, DESIGN-game §8, §10.6):1
 
+## src/28s-rivmarks.js · 6 KB
+  · соперники у ваших ориентиров (M910b, docs/DESIGN-game.md §7.3):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10780,6 +10796,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9i-fork.js · 9 KB
 
 ## tests/91zzzw9j-fight.js · 7 KB
+
+## tests/91zzzw9k-rivmarks.js · 5 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
