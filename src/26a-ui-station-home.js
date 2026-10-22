@@ -29,9 +29,8 @@ function renderBasesTab(st){
       const hr=el("div","row");
       hr.appendChild(el("div","nm","<b>"+rooms+"</b><s>"+
         "здесь вас не найдут пираты, и сюда вы вернётесь, потеряв корабль</s>"));
-      const hb=document.createElement("button");
-      const hc=homeBeaconCost();
-      hb.textContent="МАЯК ДОМОЙ · "+hc.toLocaleString("ru")+" КР";
+      /* кнопки строк — класс панели act (системная серая плашка выпадала из стиля, 22.10) */
+      const hc=homeBeaconCost(),hb=el("button","act gold","МАЯК ДОМОЙ · "+hc.toLocaleString("ru")+" КР");
       hb.disabled=G.credits<hc||(G.sx===G.home.sx&&G.sy===G.home.sy);
       /* маяк работает из полёта, а кнопка стоит на станции: сперва отстыковка, потом
          маяк. Раньше было наоборот — маяк отказывал «только из полёта по системе»,
@@ -50,8 +49,7 @@ function renderBasesTab(st){
         const mr=el("div","row");
         mr.appendChild(el("div","nm","<b>"+homeMateName()+"</b><s>"+
           "живёт тут же и хочет что-то сказать · один раз на ступень</s>"));
-        const mb=document.createElement("button");
-        mb.textContent="ПОГОВОРИТЬ";
+        const mb=el("button","act","ПОГОВОРИТЬ");
         mb.addEventListener("click",()=>{homeMateTake();renderTab();});
         mr.appendChild(mb);
         $body.appendChild(mr);
@@ -86,14 +84,14 @@ function renderBasesTab(st){
         /* первое, зачем сюда заходят: снять налёт прожитых часов — дома до чистого и даром (12s-wear);
            раньше это делал только палец по гаражу на 2D-рисунке */
         if(typeof wearOf==="function"&&wearOf()>.02){
-          const wb=document.createElement("button");
+          const wb=document.createElement("button");wb.className="act gold";
           wb.textContent="ОТМЫТЬ «"+shipData(G.shipId).ru.toUpperCase()+"» · ДАРОМ";
           wb.addEventListener("click",()=>{const got=wearService(1);
             logAdd("tech","Гараж дома: с «"+shipData(G.shipId).ru+"» снят налёт ("+Math.round(got*100)+"%)");renderTab();});
           gr.appendChild(wb);
         }
         if(free.length){
-          const gb=document.createElement("button");
+          const gb=document.createElement("button");gb.className="act";
           gb.textContent="ПОСТАВИТЬ «"+shipData(free[0]).ru.toUpperCase()+"»";
           gb.addEventListener("click",()=>{homeStore(free[0]);renderTab();});
           gr.appendChild(gb);
@@ -110,7 +108,7 @@ function renderBasesTab(st){
           "<br>надбавка доменам +"+Math.round(homeShowBonus()*100)+
           "% · выставленное не продаётся</s>"));
         if(have.length){
-          const cb=document.createElement("button");
+          const cb=document.createElement("button");cb.className="act";
           const k=have[0],q=Math.min(3,G.cargo[k]|0);
           cb.textContent="ВЫСТАВИТЬ "+RES[k].ru.toUpperCase()+" ×"+q;
           cb.addEventListener("click",()=>{homeShow(k,q);renderTab();});
@@ -130,7 +128,7 @@ function renderBasesTab(st){
           pr2.appendChild(partThumb(p,120,80,"row"));
           pr2.appendChild(el("div","nm","<b>"+p.name+"</b> <span style='color:var(--dim)'>"+
             TIER_RU[p.tier]+"</span><s>"+p.aff.map(affLabel).join(" · ")+"</s>"));
-          const pb=document.createElement("button");
+          const pb=document.createElement("button");pb.className="act";
           pb.textContent=p.tier>1?"ПЕРЕБРАТЬ":"ПЕРЕБРАТЬ · УЖЕ НИЖЕ НЕКУДА";
           pb.addEventListener("click",()=>{homeRebuild(p.id);renderTab();});
           pr2.appendChild(pb);
