@@ -1,19 +1,17 @@
 /* ══════════════ система: кольца, пояс и станция в кадре ══════════════
    Отрезано от 17-mode-system на распиле 0.108.x: updateSystem и drawSystem
    остались там; формы пояса и станции — здесь. */
+/* кольцо цели автопилота: четыре дуги, медленно вращаются; капсулами в проходе сцены (M826) */
 function reticle(x,y,r){
-  ctx.strokeStyle="rgba(242,178,92,.9)";ctx.lineWidth=1.3;
-  const a=G.t*.03;
+  const pass=gpuScene();if(!pass)return;
+  const a=G.t*.03,SH=[],N=6;
   for(let i=0;i<4;i++){
-    const t=a+i*Math.PI/2;
-    ctx.beginPath();
-    ctx.arc(x,y,r,t+.15,t+Math.PI/2-.15);ctx.stroke();
+    const t0=a+i*Math.PI/2+.15,dt=(Math.PI/2-.3)/N;
+    for(let j=0;j<N;j++){const u=t0+j*dt,v=u+dt;
+      SH.push([2,x+Math.cos(u)*r,y+Math.sin(u)*r,x+Math.cos(v)*r,y+Math.sin(v)*r,.65,0,242,178,92,.9]);}
   }
+  gpuShapes(pass,SH);
 }
-/* грунт строителя доходит до ствола и панелей, а не только до плиты (D10, телефон
-   18.09: шесть станций отличались одной полоской — «наклейка») */
-let ST_BY="gt";
-function stGround(base,k){return (typeof makerGround==="function")?rgba(mixc(base,makerGround(ST_BY),k),1):rgba(base,1);}
 /* ── станция на видеокарте (G4) ──
    Спрайт (gpuLitSprite: корпуса в запасе 17c2, пираты), но свет на нём — от звезды по рельефу,
    как на корабле (gpuHullLight), а не плоский градиент с обводкой по освещённой

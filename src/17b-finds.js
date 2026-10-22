@@ -240,48 +240,27 @@ function findSprite(k){
 function drawFindsSystem(zx,zy,Z){
   const list=findsHere();
   if(!list.length)return;
-  const pass=gpuScene();
+  const pass=gpuScene();if(!pass)return;
   for(const f of list){
     const x=zx(f.x),y=zy(f.y);
     if(x<-70||x>W+70||y<-70||y>H+70)continue;
     const K=FIND_KINDS[f.k],taken=findSeen(f);
     const s=clamp(Z,.5,1.5);
     const spin=(f.seed%628)/100+G.t*.002*((f.seed&1)?1:-1);
-    if(pass){const w=FIND_R*2*s;
+    {const w=FIND_R*2*s;
       gpuImage(pass,findSprite(f.k),[{x,y,w,h:w,rot:spin}],{sharp:true});
       if(f.k==="echo"){const gl=((G.t*.01)%1)*52-26,c=Math.cos(spin)*s,q=Math.sin(spin)*s;
         const P=(u,v)=>[x+u*c-v*q,y+u*q+v*c],[x0,y0]=P(gl-6,-1.2),[x1,y1]=P(gl+6,-1.2);
         gpuShapes(pass,[[2,x0,y0,x1,y1,.4*s,0,159,183,255,.55]]);}
-    }else{
-    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
-    ctx.rotate(spin);
-    findShape(f.k);
-    if(f.k==="echo"){
-      ctx.strokeStyle="rgba(159,183,255,.55)";ctx.lineWidth=.8;
-      const gl=((G.t*.01)%1)*52-26;
-      ctx.beginPath();ctx.moveTo(gl-6,-1.2);ctx.lineTo(gl+6,-1.2);ctx.stroke();
     }
-    ctx.restore();}
     if(taken)continue;
     /* один свет на находку: маяк своего цвета. Спутник ещё и «говорит» —
        кольцо передачи расходится в пустоту, которую никто не слушает */
     const bl=Math.pow(Math.max(0,Math.sin(G.t*.045+f.seed)),8);
-    if(pass){const c=hex2rgb(K.col),L=[];
+    {const c=hex2rgb(K.col),L=[];
       if(bl>.02)L.push([1,x,y-11*s,2.2,0,0,0,c[0],c[1],c[2],.9*bl]);
       if(f.k==="sat"){const ph=(G.t*.012+f.seed%10)%1;L.push([3,x,y,14+ph*46,0,.5,0,242,178,92,.3*(1-ph)]);}
       if(L.length)gpuShapes(pass,L);
-    }else{
-    if(bl>.02){
-      ctx.fillStyle=K.col;
-      ctx.globalAlpha=.9*bl;
-      ctx.beginPath();ctx.arc(x,y-11*s,2.2,0,TAU);ctx.fill();
-      ctx.globalAlpha=1;
-    }
-    if(f.k==="sat"){
-      const ph=(G.t*.012+f.seed%10)%1;
-      ctx.strokeStyle="rgba(242,178,92,"+(.30*(1-ph)).toFixed(3)+")";ctx.lineWidth=1;
-      ctx.beginPath();ctx.arc(x,y,14+ph*46,0,TAU);ctx.stroke();
-    }
     }
     domLabel("fd"+f.seed,x,y+24*s,K.ru.toUpperCase(),"8px ui-monospace,monospace",K.col,"center",.75);
   }
