@@ -23,8 +23,6 @@ const FARM_HOME=12,FARM_FAR=25,FARM_LONELY=12,FARM_SAY=6;
 const FARM_SOFT={terran:1,ocean:1,jungle:1,toxic:1};
 BUILD.farm={ru:"Ферма",cost:{credits:1500,alloy:4},power:-4,
   note:"зверь с планеты живёт тут и даёт своё — пока с ним кто-то говорит"};
-ROOM_FIN.farm={wall:"rock",tint:"52,46,36",lamp:"250,214,160",ln:2,dim:.95,floor:"dirt",warn:0,work:.26,bare:1,calm:1,
-  dress:["stencil","hooks"],junk:["bag","drum"]};
 JOB_ROLE.farm="gardener";
 BUILD_KEYS.push("farm");
 Object.assign(BLOG,{
@@ -115,76 +113,3 @@ function farmStep(B,n){
   }
   return 0;
 }
-/* ── ФЕРМА: разрез отсека ──
-   Загон из жердей по пояс человеку, солома на грунте, кормушка и поилка,
-   тюк сена у стены. Зверь стоит в загоне в свой рост — тот же drawBeast, что
-   на поверхности: это он и есть, а не значок. На столбе — дощечка с именем и
-   белое клеймо ПАЛАТЫ. Кто говорит — сидит на табурете у жерди. */
-BASE_ROOM.farm=function(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r){
-  const F=farmOf(B),b=F?farmBeast(F):null;
-  const warm=.35+lit*.5,S=bS(),L=bL();
-  /* солома на грунте загона */
-  const px0=x0+w*.30,pw=w-(px0-x0)-10;
-  const posts=[px0,px0+pw*.5,px0+pw];
-  /* тело загона печётся; зверь, жерди перед ним, кормушка и садовод — кадром */
-  if(S){
-  const Rs=rng(seed+41);
-  ctx.fillStyle="rgba(196,164,88,"+(.10+lit*.12).toFixed(3)+")";ctx.fillRect(px0-6,fy-5,pw+12,5);
-  ctx.strokeStyle="rgba(222,190,110,"+(.25+lit*.25).toFixed(2)+")";ctx.lineWidth=1;
-  for(let i=0;i<26;i++){const sx=px0-4+Rs()*(pw+8),sy=fy-1-Rs()*4,a=(Rs()-.5)*1.2;
-    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+Math.cos(a)*5,sy-Math.abs(Math.sin(a))*2);ctx.stroke();}
-  /* тюк сена у левой стены и вилы */
-  bBox(x0+8,fy-18,26,18,"rgba(176,146,76,.96)",lit,"rgba(0,0,0,.4)");
-  ctx.strokeStyle="rgba(90,70,30,"+(.4+lit*.2).toFixed(2)+")";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(x0+8,fy-9);ctx.lineTo(x0+34,fy-9);ctx.moveTo(x0+16,fy-18);ctx.lineTo(x0+16,fy);ctx.moveTo(x0+26,fy-18);ctx.lineTo(x0+26,fy);ctx.stroke();
-  ctx.strokeStyle="rgba(150,130,90,"+(.5+lit*.3).toFixed(2)+")";ctx.lineWidth=1.4;
-  ctx.beginPath();ctx.moveTo(x0+38,fy);ctx.lineTo(x0+44,fy-34);ctx.stroke();
-  for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(x0+36+i*2.6,fy-2);ctx.lineTo(x0+37+i*2.6,fy-8);ctx.stroke();}
-  /* дощечка с именем и клеймо ПАЛАТЫ на левом столбе */
-  {
-    const nx=px0-16,ny=fy-42;
-    bBox(nx,ny,32,9,"rgba(160,124,72,.97)",lit,"rgba(0,0,0,.45)");
-    ctx.fillStyle="rgba(40,26,12,"+(.8+lit*.2).toFixed(2)+")";
-    ctx.font="6px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText(F?F.name.toUpperCase():"ЖДЁМ",nx+16,ny+4.8);
-    ctx.textBaseline="alphabetic";
-    if(F){                                        /* клеймо: белая табличка с чёрным узором */
-      const qx=nx+34,qy=ny-1,Rq=rng(F.no|0);
-      ctx.fillStyle="rgba(236,236,230,"+(.85+lit*.15).toFixed(2)+")";ctx.fillRect(qx,qy,11,11);
-      ctx.fillStyle="rgba(20,20,24,.95)";
-      for(let i=0;i<5;i++)for(let j=0;j<5;j++)if(Rq()<.5||(i<2&&j<2))ctx.fillRect(qx+1+i*1.9,qy+1+j*1.9,1.6,1.6);
-    }
-  }
-  bLamp(cx+6,y0+4,30,fy,"250,214,160",.28+lit*.38);
-  }
-  if(!L)return;
-  /* зверь: в загоне, за задними жердями и перед передними */
-  ctx.save();ctx.beginPath();ctx.rect(px0-4,y0,pw+8,fy-y0);ctx.clip();
-  if(b){
-    const bx=px0+pw*.55+Math.sin(G.t*.006+seed)*pw*.12;
-    ctx.fillStyle="rgba(0,0,0,.32)";ctx.beginPath();ctx.ellipse(bx,fy-1,b.r*1.1,2.6,0,0,TAU);ctx.fill();
-    drawBeast(b,bx,fy,false,0);
-  }
-  ctx.restore();
-  /* жерди загона: три ряда на столбах, по пояс человеку */
-  ctx.fillStyle="rgba(110,84,50,"+(.85+lit*.15).toFixed(2)+")";
-  for(const x of posts)ctx.fillRect(x-2,fy-26,4,26);
-  for(let i=0;i<3;i++){const y=fy-22+i*8;
-    ctx.fillStyle="rgba(140,108,64,"+(.8+lit*.2).toFixed(2)+")";ctx.fillRect(px0-2,y,pw+4,3);
-    ctx.fillStyle="rgba(255,230,180,"+(.10+lit*.10).toFixed(3)+")";ctx.fillRect(px0-2,y,pw+4,1);}
-  /* кормушка и поилка у правого столба */
-  bBox(px0+pw-30,fy-8,22,8,"rgba(120,96,58,.96)",lit,"rgba(0,0,0,.4)");
-  ctx.fillStyle="rgba(196,164,88,"+(.5+lit*.3).toFixed(2)+")";ctx.fillRect(px0+pw-28,fy-9,18,2);
-  bBox(px0+pw-52,fy-6,14,6,"rgba(80,90,100,.96)",lit,"rgba(0,0,0,.4)");
-  ctx.fillStyle="rgba(150,200,230,"+(.35+lit*.3).toFixed(2)+")";ctx.fillRect(px0+pw-50,fy-5,10,1.6);
-  /* кто говорит: садовод на табурете у жерди, и «…» над ним */
-  if(F&&farmTalk(B,farmCell(B))){
-    const tx=px0-12;
-    bBox(tx-5,fy-9,10,3,"rgba(120,96,58,.96)",lit,"rgba(0,0,0,.4)");
-    ctx.fillStyle="rgba(120,96,58,.96)";ctx.fillRect(tx-4,fy-6,2,6);ctx.fillRect(tx+2,fy-6,2,6);
-    bWorker(tx,fy-1,lit,true,G.t*.03+seed,1,1);
-    const dots=Math.floor((G.t*.02)%4);
-    ctx.fillStyle="rgba(240,236,220,"+(.5+lit*.3).toFixed(2)+")";ctx.font="7px ui-monospace,monospace";ctx.textAlign="left";
-    ctx.fillText("·".repeat(Math.max(1,dots)),tx+6,fy-30);
-  }
-};
