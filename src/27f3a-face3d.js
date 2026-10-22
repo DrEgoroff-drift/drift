@@ -37,11 +37,11 @@ function cpHeadFn(g){
     /* подбородок вперёд, челюсть — угол */
     z+=c*.07*ch*Math.exp(-Math.pow((dy+.84)/.14,2))*Math.max(dz,0)*Math.max(dz,0);
     /* глазницы, надбровье, скулы, рот */
-    let sock=0;for(const s of [-1,1])sock+=G(x-s*ex,y-.004,.021,.015);
+    let sock=0;for(let s=-1;s<=1;s+=2)sock+=G(x-s*ex,y-.004,.021,.015);
     z-=.011*sock*fr;
     z+=.0045*fh*G(x*.6,y-.024-fh*.004,.05,.008)*fr;
     /* скула — бугор под наружным углом глаза, под ней впадина щеки к углу челюсти; лоб — два мягких бугра */
-    for(const s of [-1,1]){const k=G(x-s*.6*a,y+.015,.019,.011),h=G(x-s*.56*a,y+.047,.016,.014);
+    for(let s=-1;s<=1;s+=2){const k=G(x-s*.6*a,y+.015,.019,.011),h=G(x-s*.56*a,y+.047,.016,.014);
       z+=(.0046*k-.0026*h+.0018*G(x-s*.32*a,y-.05,.022,.02))*fr;x+=s*(.0035*k-.0016*h);}
     z+=.006*G(x,y+.062,.03,.02)*fr;
     /* виски чуть впалые */
@@ -78,12 +78,17 @@ function cpFaceRig(H,g){
 /* кожа лица поверх основы (cpHeadFn): веки — оболочки над яблоками с разрезом, нос, губы со щелью внутрь, складки.
    На входе точка основы (x, y, z) и fr — насколько она спереди; на выходе z, маски краски и вторая часть с весом
    (кожа тянется за мимикой: веко — до складки, бровь — лоб, нижняя губа — подбородок) */
+/* один ответ на все точки (охотник: объект на точку + три замыкания ≈ 140 МБ на голову): читать до следующего
+   вызова cpSculpt/cpSkin. sk — вес второй части числом, как его пишет vx3 (2048·часть + 32768·вес); 0 — нет.
+   _w/_p — лучший вес и его часть по ходу лепки */
+const CP_SO={z:0,brow:0,lip:0,slit:0,lash:0,wet:0,ap:0,crease:0,lid:0,nos:0,alar:0,fold:0,car:0,sk:0,_w:0,_p:0,p:null,sock:0,dz:0,dy:0};
+const cpG=(a,b)=>Math.exp(-a*a-b*b),cpSm=(a,b,k)=>{const h=clamp(.5+.5*(a-b)/k,0,1);return b+(a-b)*h+k*h*(1-h);};
+const cpUn=(a,b)=>Math.cbrt(a*a*a+b*b*b),cpPut=(o,p,w)=>{if(w>o._w){o._w=w;o._p=p;}};
 function cpSculpt(F,x,y,z,fr){
-  const o={z,brow:0,lip:0,slit:0,lash:0,wet:0,ap:0,crease:0,lid:0,nos:0,alar:0,fold:0,car:0,sk:null};
+  const o=CP_SO;o.z=z;o.brow=0;o.lip=0;o.slit=0;o.lash=0;o.wet=0;o.ap=0;o.crease=0;o.lid=0;o.nos=0;o.alar=0;o.fold=0;o.car=0;o.sk=0;o._w=0;o._p=0;
   if(fr<=0)return o;
-  const G=(a,b)=>Math.exp(-a*a-b*b),sm=(a,b,k)=>{const h=clamp(.5+.5*(a-b)/k,0,1);return b+(a-b)*h+k*h*(1-h);};
-  let zz=z,wb=0,pb=0;
-  const put=(p,w)=>{if(w>wb){wb=w;pb=p;}};
+  const G=cpG,sm=cpSm;
+  let zz=z;
   /* ── глаз своей стороны: tn — по разрезу (внутренний угол −1, наружный +1) ── */
   const s=x>=0?1:-1,dx=x-s*F.ex,dy=y-F.ey,tn=s*dx/F.aw,r2=dx*dx+dy*dy,q=Math.max(0,1-tn*tn);
   const yC=-.0008+.0012*tn,yU=yC+F.hu*Math.pow(q,.65)*(1-.12*tn),yL=yC-F.hl*Math.pow(q,.85)*(1+.1*tn),yCr=yU+.0036+.0016*q;
@@ -99,27 +104,26 @@ function cpSculpt(F,x,y,z,fr){
       o.car=pl*r3Step(-.6,-.95,tn);}
     /* вес век: верхнее — от кромки до складки, нижнее — до щеки; бровь — выше складки (на шве у обоих ноль) */
     const la=r3Step(1.45,1.05,Math.abs(tn));
-    if(dy>=(yU+yL)/2){const w=la*r3Step(yCr+.003,yCr-.0004,dy);put(CPR.lidU,w);o.lid=w*r3Step(yU-.0004,yU+.001,dy);}
-    else put(CPR.lidL,la*r3Step(yL-.0078,yL-.0006,dy));
+    if(dy>=(yU+yL)/2){const w=la*r3Step(yCr+.003,yCr-.0004,dy);cpPut(o,CPR.lidU,w);o.lid=w*r3Step(yU-.0004,yU+.001,dy);}
+    else cpPut(o,CPR.lidL,la*r3Step(yL-.0078,yL-.0006,dy));
   }
   /* ── бровь: густая у переносья, хвост тоньше и выше дуги ── */
   {const t=(tn+1.15)/2.55,tc=clamp(t,0,1),yB=.0128+.0036*Math.sin(Math.PI*tc*.92)-.0012*tc-.0012*F.fem,hb=.0034*(1-.58*tc)*(1-.25*F.fem);
     const lat=r3Step(-1.32,-1.08,tn)*r3Step(1.52,1.3,tn);
     o.brow=lat*Math.exp(-Math.pow(Math.abs(dy-yB)/hb,3));
     zz+=.0007*o.brow;
-    put(CPR.brow+(s>0?0:1),r3Step(yCr+.003,yB-.0015,dy)*r3Step(yB+.034,yB+.007,dy)*r3Step(-1.9,-1.3,tn)*r3Step(2.2,1.6,tn));}
+    cpPut(o,CPR.brow+(s>0?0:1),r3Step(yCr+.003,yB-.0015,dy)*r3Step(yB+.034,yB+.007,dy)*r3Step(-1.9,-1.3,tn)*r3Step(2.2,1.6,tn));}
   /* ── нос: спинка от переносицы к кончику, кончик, крылья, ноздри снизу, бороздка вокруг крыла ── */
   {const tN=(F.yn-y)/(F.yn-F.yt);
     if(tN>-.5&&y>F.ysn-.016&&Math.abs(x)<.04){
       const tc=clamp(tN,0,1),Pn=.003+.0165*F.np*Math.pow(tc,1.3),w=.0056+.0052*Math.pow(tc,1.5),Pt=.0046+.0165*F.np;
       let n=Pn*Math.exp(-Math.pow(x/w,2))*r3Step(-.45,.05,tN)*(y>=F.yt?1:r3Step(F.yt-.0065,F.yt,y));
       /* слияние — по норме (a³+b³)^⅓: где обоих нет, нет и прибавки (гладкий максимум с k давал ступень на краю) */
-      const un=(a,b)=>Math.cbrt(a*a*a+b*b*b);
-      n=un(n,Pt*G(x/.0086,(y-F.yt+.0008)/.0074));
-      for(const ss of [-1,1])n=un(n,Pt*.52*G((x-ss*F.aX)/.0062,(y-F.yt-.0006)/.0058));
+      n=cpUn(n,Pt*G(x/.0086,(y-F.yt+.0008)/.0074));
+      for(let ss=-1;ss<=1;ss+=2)n=cpUn(n,Pt*.52*G((x-ss*F.aX)/.0062,(y-F.yt-.0006)/.0058));
       let ns=0,al=0;
-      for(const ss of [-1,1]){ns+=G((x-ss*.0054)/.0034,(y-F.yt+.0062)/.0019);
-        const d=Math.hypot((x-ss*F.aX)/.0068,(y-F.yt-.0006)/.0062);al+=Math.exp(-Math.pow((d-1)/.17,2))*r3Step(F.yt+.008,F.yt,y);}
+      for(let ss=-1;ss<=1;ss+=2){ns+=G((x-ss*.0054)/.0034,(y-F.yt+.0062)/.0019);
+        const da=(x-ss*F.aX)/.0068,db=(y-F.yt-.0006)/.0062,d=Math.sqrt(da*da+db*db);al+=Math.exp(-Math.pow((d-1)/.17,2))*r3Step(F.yt+.008,F.yt,y);}
       n-=.0024*ns+.0006*al;o.nos=Math.min(1,ns*1.3);o.alar=Math.min(1,al);
       zz+=n;}}
   /* ── рот: бугор мышцы, верхняя губа с луком Купидона, нижняя полнее, щель уходит внутрь (раскрываясь, она и есть
@@ -142,24 +146,25 @@ function cpSculpt(F,x,y,z,fr){
     const ph=r3Step(yS+hU*.9,yS+hU*1.3,md)*r3Step(F.ysn-F.my,F.ysn-F.my-.003,md);
     zz+=ph*(.0006*G((ax-.0052)/.0017,0)-.0003*G(x/.0024,0));
     /* носогубная: от крыла к уголку рта, щека снаружи полнее */
-    {const A=[F.aX+.006,F.yt+.001-F.my],B=[F.mw+.0075,-.004],vx=B[0]-A[0],vy=B[1]-A[1],t=clamp(((ax-A[0])*vx+(md-A[1])*vy)/(vx*vx+vy*vy),0,1);
-      const cx=ax-A[0]-vx*t,cy=md-A[1]-vy*t,d=Math.hypot(cx,cy),side=r3Step(.0012,-.0012,(cx*vy-cy*vx)/Math.hypot(vx,vy)),fe=Math.sin(Math.PI*t);
+    {const Ax=F.aX+.006,Ay=F.yt+.001-F.my,vx=F.mw+.0075-Ax,vy=-.004-Ay,t=clamp(((ax-Ax)*vx+(md-Ay)*vy)/(vx*vx+vy*vy),0,1);
+      const cx=ax-Ax-vx*t,cy=md-Ay-vy*t,d=Math.sqrt(cx*cx+cy*cy),side=r3Step(.0012,-.0012,(cx*vy-cy*vx)/Math.sqrt(vx*vx+vy*vy)),fe=Math.sin(Math.PI*t);
       zz+=(.0012+.0012*F.age)*side*Math.exp(-Math.pow(d/.005,2))*fe;o.fold=Math.exp(-Math.pow(d/.0024,2))*fe*(.3+.7*F.age);}
     zz+=.0016*G(x/.016,(md+.031)/.011);
     /* вес губ: верхняя тянет кожу до носа, нижняя — подбородок (челюсть); сбоку сходит к щеке */
     /* у щели вес уже — уголки держатся, рот раскрывается овалом; ниже — челюсть во всю ширину */
     const hw=r3Step(0,.012,Math.abs(md-yS));
-    if(md>=yS-.0002)put(CPR.lipU,r3Step(F.ysn-F.my+.001,yS+hU,md)*r3Step(F.mw*(1.05+.6*hw)+.004+.012*hw,F.mw*(.3+.55*hw),ax));
-    else put(CPR.lipL,r3Step(-.047,yS-hL,md)*r3Step(F.mw*(1.05+.6*hw)+.004+.016*hw,F.mw*(.35+.5*hw),ax));
+    if(md>=yS-.0002)cpPut(o,CPR.lipU,r3Step(F.ysn-F.my+.001,yS+hU,md)*r3Step(F.mw*(1.05+.6*hw)+.004+.012*hw,F.mw*(.3+.55*hw),ax));
+    else cpPut(o,CPR.lipL,r3Step(-.047,yS-hL,md)*r3Step(F.mw*(1.05+.6*hw)+.004+.016*hw,F.mw*(.35+.5*hw),ax));
   }
   o.z=z+(zz-z)*fr;
-  if(wb*fr>.004)o.sk=[pb,wb*fr];
+  const w=o._w*fr;if(w>.004)o.sk=2048*o._p+32768*Math.round(Math.min(w,1)*255);
   return o;
 }
-/* кожа головы в (θ, φ): основа + лепка лица; та же функция кладёт бороду на губы и подбородок */
+/* кожа головы в (θ, φ): основа + лепка лица; та же функция кладёт бороду на губы и подбородок.
+   o.p — массив основы (H.at) с z лепки: второго массива на точку нет */
 function cpSkin(H,F,th,ph){
   const p=H.at(th,ph),dz=Math.cos(ph)*Math.cos(th),o=cpSculpt(F,p[0],p[1],p[2],r3Step(.05,.4,dz));
-  o.p=[p[0],p[1],o.z];o.sock=p[3];o.dz=dz;o.dy=Math.sin(ph);return o;
+  p[2]=o.z;o.p=p;o.sock=p[3];o.dz=dz;o.dy=Math.sin(ph);return o;
 }
 /* высота кожи лица в точке (x, y) — где сидят ресницы, зубы, усы */
 function cpSkinZ(H,F,x,y){const p=cpFaceAt(H,x,y);return cpSculpt(F,x,y,p[2],1).z;}
@@ -195,14 +200,16 @@ function* cpHeadGen(K,g,lod,cl,seed){
   const stub=!F.fem&&!g.beard&&(seed>>>3)%3===0?r3Mix(skin,r3Lin([70,76,90]),.3):null,scarC=r3Mix(skin,red,.6);
   const dseg=(px,py,ax,ay,bx,by)=>{const vx=bx-ax,vy=by-ay,t=clamp(((px-ax)*vx+(py-ay)*vy)/(vx*vx+vy*vy||1),0,1);return Math.hypot(px-ax-vx*t,py-ay-vy*t);};
   /* кожа: окклюзия глазниц и под челюстью, зоны тона, губы, брови, кромки век, ноздри, складки, метки */
-  const skf=(u,v)=>{
-    const o=cpSkin(H,F,TH(u),PH(v)),p=o.p,dy=o.dy,dz=o.dz;
-    const col=skin.slice();   /* единственный массив на точку: дальше смесь на месте (r3MixI/r3ScI, 27f2) */
+  /* точки кожи — в плоские массивы (место, краска, вес), без массива на точку: surfG берёт их через o.src */
+  const NPT=(NU+1)*(NV+1),SKP=new Float32Array(3*NPT),SKC=new Float32Array(3*NPT),SKW=new Float32Array(NPT),colS=[0,0,0];
+  const skf=(u,v,k)=>{
+    const o=cpSkin(H,F,TH(u),PH(v)),p=o.p,dy=o.dy,dz=o.dz,col=colS;
+    col[0]=skin[0];col[1]=skin[1];col[2]=skin[2];   /* один массив краски на все точки: смесь на месте (r3MixI/r3ScI, 27f2) */
     const ao=1-.42*clamp(o.sock,0,1)-.3*r3Step(-.55,-.95,dy)*r3Step(-.3,.5,dz);
     const blush=Math.exp(-Math.pow((Math.abs(p[0])-.6*H.a)/.018,2)-Math.pow((p[1]+.026)/.018,2))*r3Step(0,.6,dz);
     r3MixI(col,red,.5*blush*(.35+.2*F.fem));
     const fz=r3Step(0,.5,dz),nose=Math.exp(-Math.pow(p[0]/.016,2)-Math.pow((p[1]+.018)/.028,2))*fz;
-    let und=0;for(const s of [-1,1])und+=Math.exp(-Math.pow((p[0]-s*H.ex)/.018,2)-Math.pow((p[1]+.013)/.008,2));und*=fz;
+    let und=0;for(let s=-1;s<=1;s+=2)und+=Math.exp(-Math.pow((p[0]-s*H.ex)/.018,2)-Math.pow((p[1]+.013)/.008,2));und*=fz;
     r3MixI(col,red,.55*nose*.3);
     r3ScI(r3MixI(col,cool,und*(.14+.1*F.age)),1-und*.1);
     r3ScI(col,1+.08*r3Step(.2,.55,dy)*fz*.6);
@@ -220,13 +227,12 @@ function* cpHeadGen(K,g,lod,cl,seed){
       if(dz>.2)r3MixI(col,scarC,Math.exp(-d*d/(.0018*.0018))*.85);}
     if(tat&&dz>.1){const d=Math.hypot(p[0]+.6*H.a,p[1]-.012);r3MixI(col,ink,(1-r3Step(.008,.014,d))*.5*(.6+.4*Math.sin(Math.atan2(p[1]-.012,p[0]+.6*H.a)*6)));}
     if(brand&&dz>.2){const bx=Math.abs(p[0]-.38*H.a),by=Math.abs(p[1]-.4*H.b);r3MixI(col,brd,(bx<.009&&by<.008)?.55:0);}
-    return [p,r3ScI(col,ao),o.sk];
+    SKP[3*k]=p[0];SKP[3*k+1]=p[1];SKP[3*k+2]=p[2];SKC[3*k]=col[0]*ao;SKC[3*k+1]=col[1]*ao;SKC[3*k+2]=col[2]*ao;SKW[k]=o.sk;
   };
   /* вершины кожи — рядами, кусками по 2 мс: на портрете (lod 2) это 25 тыс. точек cpSkin, одним шагом 60–90 мс (M816c).
      Порядок обхода тот же, что у K.surf (j, потом i), — сетка та же */
-  const SKV=new Array((NU+1)*(NV+1));
-  for(let j=0,t0=wallMs();j<=NV;j++){for(let i=0;i<=NU;i++)SKV[j*(NU+1)+i]=skf(i/NU,j/NV);if(j<NV&&wallMs()-t0>2){yield;t0=wallMs();}}
-  yield* K.surfG(NU,NV,(u,v)=>SKV[Math.round(v*NV)*(NU+1)+Math.round(u*NU)],Msk,{wrap:1},2);
+  for(let j=0,t0=wallMs();j<=NV;j++){for(let i=0;i<=NU;i++)skf(i/NU,j/NV,j*(NU+1)+i);if(j<NV&&wallMs()-t0>2){yield;t0=wallMs();}}
+  yield* K.surfG(NU,NV,null,Msk,{wrap:1,src:{P:SKP,C:SKC,W:SKW}},2);
   yield;
   /* уши: раковина, завиток по краю, тёмная чаша */
   const er=.85+.3*g.ear;

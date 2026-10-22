@@ -27,19 +27,27 @@ fn tn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
     halo=halo*mix(1.,.2+1.6*n*n,i.w.z);core=core*mix(1.,.7+.6*n,i.w.z*.5);}
   let I=i.a*core+i.h*halo;return vec4f(i.c*I,I);}`;
 /* вершина ленты: место, поперечная координата s∈[-1,1], альфа ядра, цвет, доля ядра
-   в ширине, альфа ореола */
-function gtrPush(x,y,s,a,c,k,h,wx,wy,wn){
-  let f=GTR.f;const o=GTR.n*12;
-  if(o+12>f.length){const g=new Float32Array(f.length*2);g.set(f);f=GTR.f=g;}
-  f[o]=x;f[o+1]=y;f[o+2]=s;f[o+3]=a;f[o+4]=c[0]/255;f[o+5]=c[1]/255;f[o+6]=c[2]/255;f[o+7]=k;f[o+8]=h;f[o+9]=wx||0;f[o+10]=wy||0;f[o+11]=wn||0;GTR.n++;
+   в ширине, альфа ореола. Узлы дорожки лежат в GTN — два слота по 13 чисел
+   (x, y, nx, ny, a, r, g, b, k, h, wx, wy, wn): ни объекта на узел, ни замыкания на отрезок
+   (охотник, 0.499.17: gtrLane + node ≈ 660 МБ мусора за прогон) */
+const GTN=new Float64Array(26);
+function gtrPush(o,s){
+  let f=GTR.f;const k=GTR.n*12,N=GTN;
+  if(k+12>f.length){const g=new Float32Array(f.length*2);g.set(f);f=GTR.f=g;}
+  f[k]=N[o]+N[o+2]*s;f[k+1]=N[o+1]+N[o+3]*s;f[k+2]=s;f[k+3]=N[o+4];f[k+4]=N[o+5];f[k+5]=N[o+6];f[k+6]=N[o+7];f[k+7]=N[o+8];f[k+8]=N[o+9];f[k+9]=N[o+10];f[k+10]=N[o+11];f[k+11]=N[o+12];GTR.n++;
 }
-/* узлы одной дорожки → полоса треугольников с общими нормалями в узлах */
-function gtrLane(A,B){
-  const off=(A.x<-60&&B.x<-60)||(A.x>W+60&&B.x>W+60)||(A.y<-60&&B.y<-60)||(A.y>H+60&&B.y>H+60);
-  if(off)return;
-  const a0=(N,s)=>gtrPush(N.x+N.nx*s,N.y+N.ny*s,s,N.a,N.col,N.k,N.h,N.wx,N.wy,N.wn);
-  a0(A,-1);a0(A,1);a0(B,1);a0(A,-1);a0(B,1);a0(B,-1);
+/* узел в слот o (0 или 13); цвет — доли 0..1 */
+function gtrNode(o,x,y,nx,ny,a,r,g,b,k,h,wx,wy,wn){
+  const N=GTN;N[o]=x;N[o+1]=y;N[o+2]=nx;N[o+3]=ny;N[o+4]=a;N[o+5]=r;N[o+6]=g;N[o+7]=b;N[o+8]=k;N[o+9]=h;N[o+10]=wx;N[o+11]=wy;N[o+12]=wn;
 }
+/* узлы одной дорожки (слоты a, b) → полоса треугольников с общими нормалями в узлах */
+function gtrLane(a,b){
+  const N=GTN,ax=N[a],ay=N[a+1],bx=N[b],by=N[b+1];
+  if((ax<-60&&bx<-60)||(ax>W+60&&bx>W+60)||(ay<-60&&by<-60)||(ay>H+60&&by>H+60))return;
+  gtrPush(a,-1);gtrPush(a,1);gtrPush(b,1);gtrPush(a,-1);gtrPush(b,1);gtrPush(b,-1);
+}
+/* дорожки шлейфа между кадрами (как wakeLanes) и один буфер расстояний вдоль дорожки */
+const trailLanes=new Map();let GTD=new Float32Array(256);
 function gtrDraw(pass,key){
   if(!GTR.n)return;
   const U=GPUBufferUsage,d=GPU.dev;
@@ -54,33 +62,34 @@ function gpuTrail(zx,zy,Z){
   const pass=gpuScene();if(!pass)return;
   const T0=trailTint(G.shipId,G.mods.engine|0),T=(typeof cosmTrail==="function")?cosmTrail(T0):T0;
   const SZ=shipZ(Z),CW=trailChar(G.shipId).w,K=TRAIL_HALO.core/TRAIL_HALO.w;
-  const lanes={};
-  for(const t of TRAIL){if(!t.hot)continue;const k=t.e+"/"+(t.b|0);(lanes[k]||(lanes[k]=[])).push(t);}
+  const lanes=trailLanes;
+  for(const a of lanes.values())a.length=0;
+  for(const t of TRAIL){if(!t.hot)continue;const k=t.kk||(t.kk=t.e+"/"+(t.b|0));let a=lanes.get(k);if(!a)lanes.set(k,a=[]);a.push(t);}
   GTR.n=0;const puffs=[];
   /* под факелом ленты нет: там горит шлейф (gpuExhaust) и перо корпуса, и белое ядро
      ленты, сложенное с ними, выбеливало весь факел (п.3, пара 760: S .21 → .38 без
      ленты). Лента проявляется за длиной шлейфа — там газ уже остыл и отстал */
-  let dist=null,Lf=1;
-  const node=(arr,i)=>{
+  let Lf=1;const Te=T.edge,Tm=T.mid,Tc=T.core;
+  const node=(arr,i,o)=>{
     const t=arr[i],u=clamp(t.life/t.max,0,1);
-    const g=clamp((dist[i]-Lf*.3)/(Lf*.55),0,1),fo=.2+.8*g*g*(3-2*g);
+    const g=clamp((GTD[i]-Lf*.3)/(Lf*.55),0,1),fo=.2+.8*g*g*(3-2*g);
     const a=Math.min(TRAIL_AMAX,Math.pow(u,TRAIL_LIFE.fall)*.30+u*u*u*u*.5)*fo;
-    const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
+    let c0,c1,m;if(u>.78){c0=Tm;c1=Tc;m=(u-.78)/.22;}else{c0=Te;c1=Tm;m=u/.78;}   /* mixc по составляющим */
     /* газ расходится: к хвосту лента шире (яркость и так гаснет с возрастом) */
-    const hw=(Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1)*(1+(1-u)*1.6);
-    const p=arr[Math.max(0,i-1)],q=arr[Math.min(arr.length-1,i+1)];
-    let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
-    return {x:zx(t.x),y:zy(t.y),nx:-dy*hw,ny:dx*hw,a,col,k:K,h:a*.3};
+    /* СР · Визуал 22.10: тело газа шире, ореол сильнее — три струи сливались в три проволоки без среды */
+    const hw=(Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1)*(1+(1-u)*1.6)*1.5;
+    const p=arr[i>0?i-1:0],q=arr[i+1<arr.length?i+1:arr.length-1];
+    let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.sqrt(dx*dx+dy*dy)||1;dx/=l;dy/=l;
+    gtrNode(o,zx(t.x),zy(t.y),-dy*hw,dx*hw,a*.6,(c0[0]+(c1[0]-c0[0])*m)/255,(c0[1]+(c1[1]-c0[1])*m)/255,(c0[2]+(c1[2]-c0[2])*m)/255,K*.8,a*.42,0,0,0);
   };
-  for(const k in lanes){
-    const arr=lanes[k];if(arr.length<2)continue;
-    dist=new Float32Array(arr.length);
-    for(let i=arr.length-2;i>=0;i--)dist[i]=dist[i+1]+Math.hypot(zx(arr[i].x)-zx(arr[i+1].x),zy(arr[i].y)-zy(arr[i+1].y));
-    Lf=Math.max(2.5,arr[arr.length-1].r*SZ*2.2)*9;   /* длина шлейфа при средней пульсации */
-    let A=node(arr,0);
-    for(let i=1;i<arr.length;i++){
-      const B=node(arr,i);gtrLane(A,B);A=B;
-    }
+  for(const arr of lanes.values()){
+    const n=arr.length;if(n<2)continue;
+    if(GTD.length<n)GTD=new Float32Array(Math.max(n,GTD.length*2));
+    GTD[n-1]=0;
+    for(let i=n-2;i>=0;i--){const dx=zx(arr[i].x)-zx(arr[i+1].x),dy=zy(arr[i].y)-zy(arr[i+1].y);GTD[i]=GTD[i+1]+Math.sqrt(dx*dx+dy*dy);}
+    Lf=Math.max(2.5,arr[n-1].r*SZ*2.2)*9;   /* длина шлейфа при средней пульсации */
+    let a=0,b=13;node(arr,0,a);
+    for(let i=1;i<n;i++){node(arr,i,b);gtrLane(a,b);const s=a;a=b;b=s;}
     /* добела раскалённый корешок у сопла */
     const f=arr[arr.length-1],x=zx(f.x),y=zy(f.y),r=Math.max(.8,f.r*SZ*1.3);
     if(x>-40&&x<W+40&&y>-40&&y<H+40)puffs.push([1,x,y,r,0,0,r*.8,T.core[0],T.core[1],T.core[2],.2]);   /* ядро сопла светит шлейф */
@@ -95,6 +104,7 @@ function gpuTrail(zx,zy,Z){
     puffs.push([1,x,y,rr,0,0,rr*.9,205,232,246,u*.22]);
   }
   if(puffs.length)gpuShapes(pass,puffs,{blend:"add"});
+  if(lanes.size>16)for(const [k,a] of lanes)if(!a.length)lanes.delete(k);   /* старые очереди — вон */
 }
 /* ── кильватер (G4) ──
    Те же дорожки WAKE (борт/всплеск/кромка), тот же цвет, возраст и спад, что у
@@ -107,13 +117,13 @@ function gpuTrail(zx,zy,Z){
 function gpuWake(zx,zy,Z){
   if(!WAKE.length)return;
   const pass=gpuScene();if(!pass)return;
-  const SZ=shipZ(Z),col=mixc([196,222,255],hex2rgb(shipData(G.shipId).col),.25);
+  const SZ=shipZ(Z),col=mixc([196,222,255],hex2rgb(shipData(G.shipId).col),.25),cr=col[0]/255,cg=col[1]/255,cb=col[2]/255;
   const lanes=wakeLanes;
   for(const a of lanes.values())a.length=0;
-  for(const t of WAKE){const k=t.s+"/"+t.b+"/"+t.t.x;let a=lanes.get(k);if(!a)lanes.set(k,a=[]);a.push(t);}
+  for(const t of WAKE){const k=t.kk||(t.kk=t.s+"/"+t.b+"/"+t.t.x);let a=lanes.get(k);if(!a)lanes.set(k,a=[]);a.push(t);}
   GTR.n=0;
   const sh=G.ship,ca=Math.cos(sh.a),sa=Math.sin(sh.a),eS=shipZ(G.zoom)/G.zoom;
-  const node=(arr,i)=>{
+  const node=(arr,i,o)=>{
     const t=arr[i],u=clamp(t.life/t.max,0,1),u4=u*u*u*u;
     /* те же пики, что у 2D: ореол f1, ядро f2 (ядро гаснет к половине жизни) */
     let f1=(u*u*.08+u4*.10)*t.k,f2=(u4*.22+u4*u4*.34)*t.k;
@@ -122,20 +132,21 @@ function gpuWake(zx,zy,Z){
        Меряем от сопла в единицах корпуса (по жизни нельзя: у кормы и в двух корпусах
        за ней — одни и те же 5 % жизни); дальше 26 единиц — как было */
     const tp=t.t,tx=sh.x+(tp.x*ca-tp.y*t.s*sa)*eS,ty=sh.y+(tp.x*sa+tp.y*t.s*ca)*eS;
-    const u3=u*u*u,pk=f2*1.25+f1*2.3,q2=f1+(u3*.26+u3*u3*.30)*t.k,g=1-clamp((Math.hypot(t.x-tx,t.y-ty)/eS-20)/6,0,1);
+    const ex=t.x-tx,ey=t.y-ty,u3=u*u*u,pk=f2*1.25+f1*2.3,q2=f1+(u3*.26+u3*u3*.30)*t.k,g=1-clamp((Math.sqrt(ex*ex+ey*ey)/eS-20)/6,0,1);
     if(pk>q2){const s=1-(1-q2/pk)*g*g*(3-2*g);f1*=s;f2*=s;}
     const w1=(2.2+(1-u)*4.5)*SZ,w2=Math.max(.8,(1+(1-u)*.6)*SZ);
     const hw=w1*1.25+1;
-    const p=arr[Math.max(0,i-1)],q=arr[Math.min(arr.length-1,i+1)];
-    let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
-    return {x:zx(t.x),y:zy(t.y),nx:-dy*hw,ny:dx*hw,a:f2*1.25,col,k:w2*.5/hw,h:f1*2.3,wx:t.x*.07,wy:t.y*.07,wn:.9};
+    const p=arr[i>0?i-1:0],q=arr[i+1<arr.length?i+1:arr.length-1];
+    let dx=zx(q.x)-zx(p.x),dy=zy(q.y)-zy(p.y);const l=Math.sqrt(dx*dx+dy*dy)||1;dx/=l;dy/=l;
+    gtrNode(o,zx(t.x),zy(t.y),-dy*hw,dx*hw,f2*1.25,cr,cg,cb,w2*.5/hw,f1*2.3,t.x*.07,t.y*.07,.9);
   };
   for(const arr of lanes.values()){
-    if(arr.length<2)continue;
-    let A=node(arr,0);
-    for(let i=1;i<arr.length;i++){const B=node(arr,i);gtrLane(A,B);A=B;}
+    const n=arr.length;if(n<2)continue;
+    let a=0,b=13;node(arr,0,a);
+    for(let i=1;i<n;i++){node(arr,i,b);gtrLane(a,b);const s=a;a=b;b=s;}
   }
   gtrDraw(pass,"gwk");
+  if(lanes.size>16)for(const [k,a] of lanes)if(!a.length)lanes.delete(k);
 }
 /* ── дроны (G4) ──
    Те же машины и то же положение по часам (dronePos), тот же цвет груза; лучше,
@@ -173,16 +184,16 @@ function gpuDrones(zx,zy,Z){
     /* хвост: шестнадцать точек за те же 2.6 с */
     const pts=[];
     for(let i=0;i<DRONE_SEG;i++){const q=dronePos(d,now-i*(DRONE_TAIL_MS/DRONE_SEG),G.sys);pts.push([zx(q.x),zy(q.y)]);}
-    const c255=P.loaded?hex2rgb(hex):grey;
-    const node=i=>{
+    const c255=P.loaded?hex2rgb(hex):grey,cr=c255[0]/255,cg=c255[1]/255,cb=c255[2]/255;
+    const node=(i,o)=>{
       const u=1-i/(DRONE_SEG-1),p=pts[Math.max(0,i-1)],q=pts[Math.min(DRONE_SEG-1,i+1)];
-      let dx=q[0]-p[0],dy=q[1]-p[1];const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+      let dx=q[0]-p[0],dy=q[1]-p[1];const l=Math.sqrt(dx*dx+dy*dy)||1;dx/=l;dy/=l;
       const hw=(P.loaded?1.9:1.3)*(.35+.65*u)*1.6+1;
       const a=(P.loaded?.5:.26)*u*u;
-      return {x:pts[i][0],y:pts[i][1],nx:-dy*hw,ny:dx*hw,a,col:c255,k:.45,h:a*.35};
+      gtrNode(o,pts[i][0],pts[i][1],-dy*hw,dx*hw,a,cr,cg,cb,.45,a*.35,0,0,0);
     };
-    let A=node(0);
-    for(let i=1;i<DRONE_SEG;i++){const B=node(i);gtrLane(A,B);A=B;}
+    let a=0,b=13;node(0,a);
+    for(let i=1;i<DRONE_SEG;i++){node(i,b);gtrLane(a,b);const s=a;a=b;b=s;}
     if(P.loaded)genPush(x,y,x,y,1.7*k,3.4*k,.95,1,c,.3);
     else genPush(x,y,x,y,1.2*k,1.8*k,.55,1,[.67,.73,.77],0);
   }

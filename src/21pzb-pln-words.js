@@ -80,13 +80,15 @@ hangSurface=function(){
   }
   /* ворота базы держат свою плашку, когда строку у них забрал скан (21pig, M628b) */
   const gn=plnOwnGateNote(S);
-  if(gn)plnWordsAt(pj,gn.c,gn.h,gn.id,gn.lines,{});
+  if(gn)plnWordsAt(pj,gn.c,gn.h,gn.id,gn.lines,{up:gn.up});
   /* строка действия — у корабля или у человека */
   const pr=String(G.prompt||"");
   if(hung||!pr||!PLN.shipW)return;
   const ln=pr.split("\n"),vi=ln.findIndex(s=>/^(УДЕРЖИВАЙТЕ |КНОПКА |НЕТ ТОПЛИВА|ДЕЙСТВИЕ|▲)/.test(s)),o={verb:vi<0?undefined:vi};
   const ow=plnOwnWordsAt(S);   /* у ворот базы и у крыльца дома (21pig, M628a) */
-  if(ow)plnWordsAt(pj,ow.c,ow.h,ow.id,ln,o);
+  /* на телефоне вещь своя (ворота, крыльцо) стоит в средней полосе: табличке место только сбоку, и
+     «ДЕЙСТВИЕ — » туда не влезает — глагол уже на кнопке, на табличке остаётся само действие */
+  if(ow)plnWordsAt(pj,ow.c,ow.h,ow.id,W<=760?ln.map(s=>s.replace(/^ДЕЙСТВИЕ — /,"")):ln,Object.assign({up:ow.up},o));
   else if(Math.abs(S.x-S.shipX)<shipZoneR()){const s=PLN.shipW;plnWordsAt(pj,[s[0],s[1]+2,s[2]],4,"pln.ship",ln,o);}
   else{
     /* у человека нет вещи: глагол говорит кнопка ДЕЙСТВИЯ, табличка его не дублирует (M826); остаётся

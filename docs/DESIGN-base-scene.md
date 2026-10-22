@@ -205,7 +205,7 @@ The §6 switch `?sect=0` is gone with them: the section is the base's only frame
 | `21ac3-base-van` | 4.0 | `drawVan`, `drawVanSmall` |
 | `21ac4-base-fridge` | ≈ 2 | `BASE_ROOM.fridge`, `BASE_ROOM.fridgesub` |
 
-About 120 KB in all; the exact count goes with the commit.
+123 KiB (126 339 bytes) in all, counted at the commit: the five files 101 KiB, the brushes inside `21ac1`–`21ac4` 21.5 KiB.
 
 **What stays, byte for byte:** the logic of `21ac1`–`21ac4` in its files under its names —
 `banyaLive`, `banyaWarm`, `banyaSpirit`, `banyaStep`, `banyaRested`, `gribOn`, `gribStart`,
