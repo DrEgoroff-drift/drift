@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 637 · top-level symbols: 8731
+Files: 639 · top-level symbols: 8737
 
 ## SYMBOLS
 
@@ -1801,16 +1801,16 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:654
+R3                           src/27f2-room3d.js:656
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:633
+R3_DOWN_WGSL                 src/27f2-room3d.js:635
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:804
+R3_POST_WGSL                 src/27f2-room3d.js:806
 R3_SCR                       src/27f2-room3d.js:45
 R3_UN                        src/27f2-room3d.js:30
 R3_VPOOL                     src/27f2-room3d.js:76
-R3_WGSL                      src/27f2-room3d.js:215
+R3_WGSL                      src/27f2-room3d.js:217
 RACK                         src/25d-instr-rack.js:44
 RACK_CH                      src/25d-instr-rack.js:26-32
 RACK_DQ                      src/25d-instr-rack.js:189
@@ -1926,6 +1926,8 @@ RELAY_KINDS                  src/11ap-relay.js:38-69
 RELAY_NEAR                   src/11ap-relay.js:107
 RELAY_PAY_WIN                src/11ap-relay.js:75
 RELAY_REACH                  src/11ap-relay.js:73
+RELAY_ROCK                   src/11apa-relay-body.js:11
+RELAY_TILT                   src/11apa-relay-body.js:10
 RELIC_KEYS                   src/12h-relic.js:64
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07a-terrain.js:16-34
@@ -2113,7 +2115,7 @@ SETTLE_WAIT                  src/12t-settle.js:25
 SETTLE_WORD                  src/12t-settle.js:256
 SET_V                        src/21pii-pln-settle.js:23
 SFX                          src/09-audio.js:118-333
-SG_POOL                      src/27f2-room3d.js:79
+SG_FREE                      src/27f2-room3d.js:80
 SHARD_H                      tests/90-harness.js:32
 SHIELD_DELAY                 src/05c-arms.js:47
 SHIELD_KEYS                  src/05c-arms.js:46
@@ -4103,10 +4105,11 @@ e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
 ecoEstate                    tests/91zzzw4-ecosim-est.js:5-203
-ecoNormFold                  tests/91zzzw4-ecosim-rep.js:15-19
-ecoNormNow                   tests/91zzzw4-ecosim-rep.js:4-13
-ecoNormSum                   tests/91zzzw4-ecosim-rep.js:20-26
-ecoPrint                     tests/91zzzw4-ecosim-rep.js:27-78
+ecoLadder                    tests/91zzzw4-ecosim-rep.js:7-29
+ecoNormFold                  tests/91zzzw4-ecosim-rep.js:41-45
+ecoNormNow                   tests/91zzzw4-ecosim-rep.js:30-39
+ecoNormSum                   tests/91zzzw4-ecosim-rep.js:46-52
+ecoPrint                     tests/91zzzw4-ecosim-rep.js:53-107
 econCycleMul                 src/12ax-fx-econ.js:27-34
 econEmbargoOn                src/12ax-fx-econ.js:56-61
 econFairHere                 src/12ax-fx-econ.js:48-54
@@ -7171,33 +7174,33 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:655-661
-r3Dev                        src/27f2-room3d.js:678-696
-r3DownDesc                   src/27f2-room3d.js:670-674
-r3Drop                       src/27f2-room3d.js:703
-r3Frame                      src/27f2-room3d.js:747-801
-r3Free                       src/27f2-room3d.js:705
-r3Kit                        src/27f2-room3d.js:82-212
+r3Desc                       src/27f2-room3d.js:657-663
+r3Dev                        src/27f2-room3d.js:680-698
+r3DownDesc                   src/27f2-room3d.js:672-676
+r3Drop                       src/27f2-room3d.js:705
+r3Frame                      src/27f2-room3d.js:749-803
+r3Free                       src/27f2-room3d.js:707
+r3Kit                        src/27f2-room3d.js:84-214
 r3Lin                        src/27f2-room3d.js:35
-r3Look                       src/27f2-room3d.js:50-212
-r3MeshR                      src/27f2-room3d.js:746
+r3Look                       src/27f2-room3d.js:50-214
+r3MeshR                      src/27f2-room3d.js:748
 r3Mix                        src/27f2-room3d.js:36
 r3MixI                       src/27f2-room3d.js:39
 r3Mul                        src/27f2-room3d.js:47
 r3Persp                      src/27f2-room3d.js:49
 r3Pivot                      src/27f2-room3d.js:66
-r3Proj                       src/27f2-room3d.js:69-212
+r3Proj                       src/27f2-room3d.js:69-214
 r3Pt                         src/27f2-room3d.js:67
 r3Sc                         src/27f2-room3d.js:37
 r3ScI                        src/27f2-room3d.js:40
 r3Scr                        src/27f2-room3d.js:46
-r3ShDesc                     src/27f2-room3d.js:662-667
-r3ShadowVP                   src/27f2-room3d.js:707-712
+r3ShDesc                     src/27f2-room3d.js:664-669
+r3ShadowVP                   src/27f2-room3d.js:709-714
 r3Step                       src/27f2-room3d.js:41
-r3Targets                    src/27f2-room3d.js:719-744
-r3Up                         src/27f2-room3d.js:698-702
-r3VB                         src/27f2-room3d.js:668
-r3Xf                         src/27f2-room3d.js:56-212
+r3Targets                    src/27f2-room3d.js:721-746
+r3Up                         src/27f2-room3d.js:700-704
+r3VB                         src/27f2-room3d.js:670
+r3Xf                         src/27f2-room3d.js:56-214
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
 rackBottom                   src/25d-instr-rack.js:331-336
@@ -7441,12 +7444,14 @@ relayAll                     src/11ap-relay.js:149-152
 relayArrive                  src/11ap-relay.js:179-183
 relayAtFreq                  src/11ap-relay.js:134-145
 relayDial                    src/11ap-relay.js:207-252
-relayDrawSystem              src/11ap-relay.js:376-497
+relayDrawSystem              src/11apa-relay-body.js:102-113
 relayEar                     src/11ap-relay.js:126-130
 relayFreq                    src/11ap-relay.js:99-103
 relayInteract                src/11ap-relay.js:358-371
 relayKnown                   src/11ap-relay.js:153
+relayLights                  src/11apa-relay-body.js:89-100
 relayList                    src/11ap-relay.js:189-199
+relayMesh                    src/11apa-relay-body.js:14-86
 relayOf                      src/11ap-relay.js:81-97
 relayServe                   src/11ap-relay.js:334-357
 relaySpeak                   src/11ap-relay.js:167-174
@@ -7931,7 +7936,8 @@ settleWallX                  src/12t-settle.js:119
 settleWatch                  src/12t-settle.js:321-327
 settleWords                  src/12t-settle.js:258-262
 sfx                          src/09-audio.js:334-340
-sgArr                        src/27f2-room3d.js:80
+sgArr                        src/27f2-room3d.js:82
+sgTake                       src/27f2-room3d.js:81
 sharpWord                    src/21a9-base-laws.js:41-45
 shatter                      src/24-mode-belt.js:122-136
 shieldFace                   src/05c-arms.js:53-57
@@ -8981,9 +8987,11 @@ zoomTo                       src/15-input.js:358
 ## src/11ao-firsthour.js · 6 KB
   · первый час: сменщик в эфире:1
 
-## src/11ap-relay.js · 31 KB
+## src/11ap-relay.js · 25 KB
   · приёмники как места:1
   · у мачты есть тело:303
+
+## src/11apa-relay-body.js · 9 KB
 
 ## src/11aq-late.js · 9 KB
   · поздний час у стойки:1
@@ -10263,7 +10271,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 74 KB
+## src/27f2-room3d.js · 75 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 29 KB
@@ -10544,6 +10552,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd1-hull-plane.js · 4 KB
   · плоскость краски объёмного корпуса (22.10, «двойной корпус»):1
 
+## tests/91qd2-relay.js · 3 KB
+  · мачта телом (M827 · 11apa):1
+
 ## tests/91qe-own.js · 13 KB
 
 ## tests/91qe-rack.js · 4 KB
@@ -10601,7 +10612,7 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw4-ecosim-est.js · 16 KB
 
-## tests/91zzzw4-ecosim-rep.js · 8 KB
+## tests/91zzzw4-ecosim-rep.js · 11 KB
 
 ## tests/91zzzw4-ecosim.js · 39 KB
   · проба · экономика (M903, M912):1

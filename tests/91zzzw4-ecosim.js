@@ -524,7 +524,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
   const rows=[];
   for(const tier of TIERS){
     if(PICK&&!PICK.test(tier.name))continue;
-    setup(tier);
+    setup(tier);const LAD0=ecoLadder(G.sys);
     for(const k in fail)delete fail[k];
     bookOn();
     const t0=G.t,hull0=G.hull;let laps=0,lapF=0,mined=0,bad=0;
@@ -566,7 +566,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       time:Object.entries(BOOK.time).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+" "+(laps?v/laps/FR/60:0).toFixed(2)).join(", "),
       hull:tier.fresh?G.shipId:tier.hull,credits:G.credits,
       disp:DSTAT.done+" дел · "+Math.round(DSTAT.pay/hrs)+" кр/ч · "+(DSTAT.frames/FR/60/hrs).toFixed(1)+" мин/ч · взято "+JSON.stringify(DSTAT.took)+(Object.keys(DSTAT.skip).length?" · сорвано "+JSON.stringify(DSTAT.skip):"")+" · ушло по сроку "+dispSt().lost+" · не взято (убыток, бак, касса) "+DSTAT.poor.size,
-      tl:TL?Object.assign({},TL):null,norm:NORM,inv,est:estReport(),
+      tl:TL?Object.assign({},TL):null,norm:NORM,inv,est:estReport(),lad:[LAD0,ecoLadder(LAD0.sys,ENV.ECO_SAVE==="1")],
       /* дроны (§3.1 строка запчастей — 6 кр/мин на машину): что каждая приносит в час */
       drn:G.drones.map(d=>({res:d.res,h:Math.max(1e-9,(clockNow()-(d.bornMs||d.t0||clockNow()))/3600000),
         earned:d.earned|0,trips:d.trips|0,down:d.down|0}))});
