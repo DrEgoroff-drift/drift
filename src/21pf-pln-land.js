@@ -275,7 +275,15 @@ function plnLandRibH(L,r,i){
     const u=plnHash(i,r,L.sd+91);
     h+=cr*plnSmooth(.2,.9,d)*plnSmooth(10,6,d)*(z<0?-.45*u:.6*(u-.5));
   }
-  return h+plnFbm(x*.35,z*.35,2,L.sd+13)*.09*plnSmooth(1.2,4,d)*calm;
+  h+=plnFbm(x*.35,z*.35,2,L.sd+13)*.09*plnSmooth(1.2,4,d)*calm;
+  /* срезанная земля под своими вещами (двор дома, 21pig plnOwnFlat): [x, z, rx, rz, y] — внутри эллипса
+     земля на y, к полутора радиусам — своя. Список собирается при первой высоте посадки */
+  if(L.flat===undefined){L.flat=null;L.flat=typeof plnOwnFlat==="function"?plnOwnFlat(L):null;}
+  if(L.flat)for(const f of L.flat){
+    const e=Math.hypot((x-f[0])/f[2],(z-f[1])/f[3]);
+    if(e<1.5)h=lerp(h,f[4],plnSmooth(1.5,1,e)*plnSmooth(.3,1.4,z));
+  }
+  return h;
 }
 /* лента в любой точке: между узлами */
 function plnLandRibAt(L,x,z){

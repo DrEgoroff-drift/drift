@@ -36,7 +36,6 @@ const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>G
   /* поля режимов (поздний прогрев, GPU_LATE_KEYS ниже): шахта, база, дом, черпак, карта, «Сорока», комната 3D */
   "fld.gsky2":()=>GSK_WGSL,
   "fld.warm.glow":()=>WARM_GLOW_WGSL,
-  "fld.baselight":()=>baseLightWgsl(),"fld.baseair":()=>baseAirWgsl(),
   "fld.scoop.air":()=>SCP_AIR,"fld.scoop.flow":()=>SCP_FLOW,"fld.scoop.obs":()=>SCP_OBS,
   "fld.map.gal":()=>GAL_WGSL,
   "fld.r3post":()=>R3_POST_WGSL};
@@ -97,7 +96,6 @@ const GPU_LATE_KEYS=[
      не собраны, r3Dev строил их синхронно (3× createRenderPipeline в кадре; набор «конвейеры» краснел) */
   "r3.main","r3.shadow","r3.down",
   "pipe:fld.gsky2|over","pipe:fld.warm.glow|add",
-  "pipe:fld.baselight|mul","pipe:fld.baseair|add",
   "pipe:fld.hin.light|mul","pipe:fld.hin.haze|add","pipe:fld.hin.air|add","pipe:fld.hin.flit|over",
   "pipe:fld.scoop.air|over","pipe:fld.scoop.flow|over","pipe:fld.scoop.obs|over",
   "pipe:fld.map.gal|over","pipe:fld.map.gal|bake",

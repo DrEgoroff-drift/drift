@@ -66,27 +66,29 @@ function shuttleAt(t,T){
    добавляет свою дугу станция↔парусник, пока стоит.
    Свет — на видеокарте (G4): огонь сопла тонкой струёй в цвет завода, короткий
    гаснущий след по той же дуге (видно, куда идёт, и на общем плане), бортовой огонь —
-   точкой света с ореолом, а не квадратом в пиксель. Корпус — 2D поверх. */
+   точкой света с ореолом, а не квадратом в пиксель. Корпус — тело (17c2e); 2D-кисти и выпечки
+   нет (M826, второй проход): без прохода сцены челнока не видно, как и всего полёта */
 let SHUT_N=0,SHUT_F=-1;
 function drawShuttleArc(t,zx,zy,Z){
   const s=clamp(Z,.5,1.5);
   const P=shuttleAt(t,G.t),x=zx(P.wx),y=zy(P.wy),a=P.a;
-  if(x<-30||x>W+30||y<-30||y>H+30)return;
-  const MF=(t.mk&&typeof makerFlame==="function")?makerFlame(t.mk):null,fc=MF?MF.col:[255,180,110];
   const pass=gpuScene();
-  if(pass){
+  if(!pass||x<-30||x>W+30||y<-30||y>H+30)return;
+  const MF=(t.mk&&typeof makerFlame==="function")?makerFlame(t.mk):null,fc=MF?MF.col:[255,180,110];
+  {
     if(SHUT_F!==GPU.frameNo){SHUT_F=GPU.frameNo;SHUT_N=0;}
     const key="gsh"+(SHUT_N++),sk=s*t.k,ca=Math.cos(a),sa=Math.sin(a);
     /* след: двенадцать точек той же дуги назад по времени */
     GTR.n=0;const N=12,pts=[];
     for(let j=0;j<N;j++){const q=j?shuttleAt(t,G.t-j*9):P;pts.push([zx(q.wx)-Math.cos(q.a)*4*sk,zy(q.wy)-Math.sin(q.a)*4*sk]);}
-    const node=j=>{
+    const fcr=fc[0]/255,fcg=fc[1]/255,fcb=fc[2]/255;
+    const node=(j,o)=>{
       const v=j/(N-1),p=pts[Math.max(0,j-1)],q=pts[Math.min(N-1,j+1)];
-      let dx=q[0]-p[0],dy=q[1]-p[1];const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+      let dx=q[0]-p[0],dy=q[1]-p[1];const l=Math.sqrt(dx*dx+dy*dy)||1;dx/=l;dy/=l;
       const hw=(1.1*sk*(1-.5*v)+.8)*1.6,al=.22*(1-v)*(1-v);
-      return {x:pts[j][0],y:pts[j][1],nx:-dy*hw,ny:dx*hw,a:al,col:fc,k:.45,h:al*.4};
+      gtrNode(o,pts[j][0],pts[j][1],-dy*hw,dx*hw,al,fcr,fcg,fcb,.45,al*.4,0,0,0);
     };
-    let A=node(0);for(let j=1;j<N;j++){const B=node(j);gtrLane(A,B);A=B;}
+    let a0=0,b0=13;node(0,a0);for(let j=1;j<N;j++){node(j,b0);gtrLane(a0,b0);const s=a0;a0=b0;b0=s;}
     gtrDraw(pass,key+"t");
     /* огонь сопла и бортовой огонь */
     GEN.n=0;
@@ -96,32 +98,7 @@ function drawShuttleArc(t,zx,zy,Z){
     if(bl>.6){const k=(bl-.6)/.4;genPush(x-ca*1.4*sk-sa*2*sk,y-sa*1.4*sk+ca*2*sk,x-ca*1.4*sk-sa*2*sk,y-sa*1.4*sk+ca*2*sk,.8*sk,2.4*sk,k,1,[1,120/255,90/255],.3*k);}
     genDraw(pass,key+"g");
   }
-  /* огонь сопла и грунт — завода машины (M454): белый капсульный челнок
-     Компании и охристый Рассвета различаются и в точку */
-  const gr=(t.mk&&typeof makerGround==="function")?rgba(mixc([35,43,54],makerGround(t.mk),.7),1):"#232b36";
-  if(pass){
-    /* корпус — выпечка на цвет завода, один раз; поворот и масштаб — в шейдере */
-    const sk=s*t.k;
-    /* тело (M820, 17c2e): корпус, гондолы, окно; мельче 14 px — огонёк */
-    if(bodyShuttle(x,y,a,sk,t.mk?mixc([35,43,54],makerGround(t.mk),.7):[35,43,54],P.wx,P.wy))return;
-    gpuImage(pass,shuttleSprite(gr),[{x,y,w:SHUT_SW*sk,h:SHUT_SH*sk,rot:a}],{sharp:true});
-    return;
-  }
-  ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.scale(s*t.k,s*t.k);
-  shuttleBody(gr);
-  ctx.restore();
-}
-function shuttleBody(gr){
-  ctx.fillStyle=gr;ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=.6;
-  ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(-3,-2);ctx.lineTo(-4,0);ctx.lineTo(-3,2);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.fillStyle="rgba(200,220,240,.5)";ctx.fillRect(-1,-2.2,2.5,.8);
-}
-/* выпечка корпуса челнока: 10×6 в мерке челнока, SHUT_PX пикселей на единицу — на экране
-   челнок ~1.5 px кадра на единицу, так что выборка сжимает вдвое-втрое, без мерцания */
-const SHUT_SW=10,SHUT_SH=6,SHUT_PX=4,SHUT_ART=new Map();
-function shuttleSprite(gr){
-  /* выпечка на GPU-холсте (25.09): shuttleBody рисует в ctx, ctx на время выпечки — GPU-холст */
-  if(!SHUT_ART.has(gr)&&SHUT_ART.size>=8){const k=SHUT_ART.keys().next().value;gpuBakeDrop(SHUT_ART.get(k));SHUT_ART.delete(k);}
-  const w=SHUT_SW*SHUT_PX,h=SHUT_SH*SHUT_PX;
-  return gpuBaked(SHUT_ART,gr,w,h,g=>{g.setTransform(SHUT_PX,0,0,SHUT_PX,w/2,h/2);shuttleBody(gr);});
+  /* грунт — завода машины (M454): белый капсульный челнок Компании и охристый Рассвета различаются и в точку.
+     Тело (M820, 17c2e): корпус, гондолы, окно; мельче 14 px — огонёк */
+  bodyShuttle(x,y,a,s*t.k,t.mk?mixc([35,43,54],makerGround(t.mk),.7):[35,43,54],P.wx,P.wy);
 }

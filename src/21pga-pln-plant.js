@@ -115,7 +115,7 @@ function plnPlantThings(L,p){
   if(!S)return T;
   const TH=PLN_THINGS;
   for(const d of S.deposits||[])add(d.x,plnThingDepZ(d),1.7,1.4,3);
-  for(const q of S.plants||[])add(q.x,plnHerbZ(q),.7,.7,1.5);
+  {const P=plnHerbPads(L,p);for(const q of S.plants||[])add(q.x,plnHerbZAt(q,P),.7,.7,1.5);}
   if(S.cave)add(S.cave.x,TH.caveZ+3*TH.caveQ,6*TH.caveQ,5*TH.caveQ,8*TH.caveQ);
   add(mineSpotX(p),TH.mineZ,3.3*TH.mineQ,2.6*TH.mineQ,8);
   add(homeSpotX(p,tr),3,12,6,14);

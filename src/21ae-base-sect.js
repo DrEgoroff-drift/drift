@@ -11,12 +11,11 @@
    входа), ближний — 2.3 клетки, комната человека посередине. Между ними — скольжение 0.6 с.
    Вход без среза: первый кадр — объектив хода по грунту (его высота окна), потом дальний, потом
    ближний. Игра не меняется: updateBase, клетки, меню — те же; кадр только смотрит на них.
-   Старая рисовалка (21ac/21ad) не тронута: ?sect=0, сбой кадра — идёт она, после трёх подряд
-   новый вид снимает себя сам. */
+   Другого кадра у базы нет (M632, DESIGN-base-scene §9): сбой — в кадре одни приборы, после трёх
+   подряд вид снимает себя сам; без WebGPU экран закрывает плашка 08b2. */
 const SECT={on:true,bad:0,err:"",live:false,b:null,t:0,t0:0,far:1,ent:0,cx:0,face:1,idle:0,
   lens:null,lens0:null,geo:null,key:"",gen:-1,cage:null,cageY:null,farPin:null,sitPin:null,
   stat:{cpu:0,tris:0,lights:0,share:0,key:""}};
-try{if(typeof location!=="undefined"&&/[?&]sect=0\b/.test(location.search))SECT.on=false;}catch(e){}
 /* мерка (м): клетка, комната, глубина, линия ходьбы, ход, ствол, поверхность; объективы */
 const SECT_M={cw:9,ch:5.2,room:4,deep:3.6,z:1.6,door:2.4,sh0:-6,sh1:-3,surf:.8,
   farX:[-15,46.5],sky:.18,near:2.3,nearMin:9,nearMax:16,phone:10,phoneMax:22,glide:.6,hold:1.4,eye:.12};
@@ -347,8 +346,10 @@ function sectOver(){
   }
   if(!SHOT_CLEAN&&(S.cur|0)>=0)sectCursor(S,B,pj);
   sectAvr(S,pj);
-  sectOvBoard(B,lit);sectOvNote(S);
-  if(S.menu)drawBuildMenu(S);
+  if(S.menu)sectOvMenu(S,B,pj);else{SECT_MENU.hit=null;SECT_MENU.top=false;}
+  /* лента под шапкой (телефон лёжа) стоит на месте доски */
+  if(!(S.menu&&SECT_MENU.top))sectOvBoard(B,lit);
+  sectOvNote(S);
 }
 /* патрубки соседства (21ac baseDrawAdj) — капсулами слоя. В 2D-базе клетка была мелкой, и труба от
    середины к середине читалась связью; в разрезе отсек — комната в 9 м, и та же труба шла через всю
@@ -374,6 +375,137 @@ function sectOvAdj(B,pj,lit){
     ovCap(mx,my,mx,my,8.8,"rgb(8,11,16)",.85*ga);ovCap(mx,my,mx,my,6,c,.95*ga);
   }
 }
+/* ── меню постройки — лентой на слое (DESIGN-base-scene §9) ──
+   Ячейка на вид: имя, цена по смете этой базы, причина запрета одним словом в той же плашке.
+   Выбранная — посередине, лента едет за S.pick (0.15 с); стрелки по краям листают страницу.
+   Всё — цели пальца ≥ 44 px. Низ ленты — на 12 px над пультами; если там она легла бы на
+   человека (телефон лёжа), лента встаёт под шапку и занимает место доски. Правый борт
+   (карта, меню) лента обходит. Тап по ячейке ставит S.pick (то же поле, что ◀ ▶), строит
+   по-прежнему кнопка ДЕЙСТВИЯ: 21a не правится */
+const SECT_MENU={x:null,t:0,hit:null,top:false,lay:null,hudB:null,hudK:"",
+  pc:{w:84,h:60},ph:{w:56,h:56},gap:4,arr:44,pad:12,side:16,maxN:9,minF:9};
+function sectMenuWhy(S,B,k){
+  const M=BUILD[k];
+  if(M.needTech&&typeof techLv==="function"&&techLv(M.needTech)<=0)return "НАУКА";
+  if(M.firm&&!M.firm(B))return "ФИРМА";
+  if(M.surfaceOnly&&(S.row|0)>0)return "СВЕРХУ";
+  return "";
+}
+/* прямоугольник вёрстки в единицах кадра (CSS px от верха холста) */
+function sectMenuRect(r){
+  if(!r||!(r.width>0)||!(r.height>0))return null;
+  const c=(typeof cvsRect==="function")?cvsRect():null,ox=c?c.left:0,oy=c?c.top:0;
+  return {l:r.left-ox,r:r.right-ox,t:r.top-oy,b:r.bottom-oy};
+}
+/* вёрстку читаем раз на окно и на перекладку */
+function sectMenuKey(){return W+"x"+H+(typeof LAYOUT_DIRTY!=="undefined"&&LAYOUT_DIRTY?"d":"");}
+function sectMenuDom(){
+  const Q=SECT_MENU,key=sectMenuKey();
+  if(Q.hudK===key&&Q.dom)return Q.dom;
+  const d={floor:H,top:8,rail:null};
+  try{
+    for(const r of [typeof padsRect==="function"?padsRect():null,typeof consoleRect==="function"?consoleRect():null]){
+      const q=sectMenuRect(r);if(q&&q.t>H*.4)d.floor=Math.min(d.floor,q.t);
+    }
+    const hud=typeof document!=="undefined"&&document.querySelector?document.querySelector(".hud"):null;
+    const h=sectMenuRect(hud&&hud.getBoundingClientRect?hud.getBoundingClientRect():null);if(h&&h.b<H*.5)d.top=Math.max(d.top,h.b);
+    d.rail=sectMenuRect(typeof railRect==="function"?railRect():null);
+  }catch(_){}
+  Q.hudK=key;Q.dom=d;
+  return d;
+}
+/* имена в ячейке: слова по строкам; слово, что не лезет и мелким кеглем, — переносом после гласной.
+   Кегль один на всю ленту — по самому длинному имени */
+function sectMenuLay(cw,sc){
+  const Q=SECT_MENU,key=cw+"/"+sc;
+  if(Q.lay&&Q.lay.key===key)return Q.lay;
+  const st=Object.assign({},GC_DEF),lim=cw/sc-8,fnt=f=>HANG_FONT.replace(/\d+px/,f+"px");
+  const wid=(s,f)=>{st.font=fnt(f);return GC_GLYPHS.measure(st,s).width;};
+  const V=/[АЕЁИОУЫЭЮЯ]/,lines={};
+  /* перенос у середины слова: гласная | согласная с гласной (ПЛО-ЩАДКА), гласная | согласная (ЛЕДО-ПЛАВКА), меж двух согласных */
+  const hyph=w=>{const m=Math.ceil(w.length/2),C=i=>i>1&&i<w.length-1;
+    const tries=[i=>V.test(w[i-1])&&!V.test(w[i])&&V.test(w[i+1]),i=>V.test(w[i-1])&&!V.test(w[i]),i=>!V.test(w[i-1])&&!V.test(w[i])];
+    for(const ok of tries)for(let d=0;d<=2;d++)for(const i of [m-d,m+d])if(C(i)&&ok(i))return [w.slice(0,i)+"-",w.slice(i)];
+    return [w.slice(0,m)+"-",w.slice(m)];};
+  /* куски (слова и половины переноса) — жадно по строкам; строк не больше трёх */
+  for(const k of BUILD_KEYS){const out=[];
+    for(const w of BUILD[k].ru.toUpperCase().split(" "))for(const q of wid(w,Q.minF)<=lim?[w]:hyph(w)){
+      const j=out.length-1,t=j>=0?out[j]+(/-$/.test(out[j])?"":" ")+q:q;
+      if(j>=0&&!/-$/.test(out[j])&&wid(t,Q.minF)<=lim)out[j]=t;else out.push(q);}
+    lines[k]=out.length>3?[out[0],out[1],out.slice(2).join(" ")]:out;}
+  /* одна высота ленты на все роды: три строки хоть у одного — ячейки выше на строку */
+  const rows=Math.max(...BUILD_KEYS.map(k=>lines[k].length));
+  let fN=Q.minF;
+  for(let f=rows>2?10:11;f>Q.minF;f--)if(BUILD_KEYS.every(k=>lines[k].every(s=>wid(s,f)<=lim))){fN=f;break;}
+  Q.lay={key,lines,rows,font:fnt(fN),fnt,wid,lim,y:rows>2?13:14,dy:rows>2?11:12};
+  return Q.lay;
+}
+function sectOvMenu(S,B,pj){
+  const Q=SECT_MENU,U=uiK(),phone=W<=760,C=phone?Q.ph:Q.pc,n=BUILD_KEYS.length,D=sectMenuDom();
+  const sc=phone?1:U,cw=C.w*sc,Ly=sectMenuLay(cw,sc),ch=(C.h+(Ly.rows>2?10:0))*sc,gp=Q.gap*sc,aw=Q.arr*sc,step=cw+gp,pd=6*sc;
+  /* человек на экране — лента его не закрывает */
+  const mx=sectX(S.x),my=sectY(S.y)-SECT_M.ch/2,h0=pj([mx-.5,my+2.1,SECT_M.z]),h1=pj([mx+.5,my-.1,SECT_M.z]);
+  const man=h0&&h1?[Math.min(h0[1],h1[1]),Math.max(h0[1],h1[1])]:null;
+  const band=y0=>{const y1=y0+ch;let L=Q.side,R=W-Q.side;
+    const r=D.rail;if(r&&r.t<y1+pd&&r.b>y0-pd&&r.l>W/2)R=Math.min(R,r.l-Q.pad);
+    const nv=clamp(Math.floor((R-L-2*(aw+gp)+gp)/step),1,Math.min(n,Q.maxN));
+    return {y0,y1,nv,L,R,hitMan:!!(man&&y0-pd<man[1]&&y1+pd>man[0])};};
+  let P=band(D.floor-Q.pad-ch);Q.top=false;
+  if(P.hitMan){const T=band(D.top+Q.pad);if(!T.hitMan||T.nv>=P.nv){P=T;Q.top=true;}}
+  const {y0,y1,nv}=P,sw=nv*step-gp,x0=Math.round(clamp(W/2-sw/2,P.L+aw+gp,P.R-aw-gp-sw));
+  /* лента едет к выбранной: она посередине, пока есть куда; в покое ячейки целые */
+  const want=clamp(Math.floor((S.pick|0)-(nv-1)/2),0,Math.max(0,n-nv)),t=wallMs(),dt=Q.t?Math.min(.1,(t-Q.t)/1000):1;
+  Q.t=t;Q.x=Q.x==null?want:Q.x+(want-Q.x)*(1-Math.exp(-dt/.05));
+  if(Math.abs(Q.x-want)<.002)Q.x=want;
+  const R=(a,b,w,h,c,al)=>ovRect(a,b,a+w,b+h,c,al);
+  const bx0=x0-aw-gp-pd,bx1=x0+sw+gp+aw+pd;
+  R(bx0,y0-pd,bx1-bx0,ch+2*pd,"rgb(11,13,16)",.86);
+  sectOvFrame(bx0,y0-pd,bx1,y1+pd,1,"rgb(150,178,198)",.22);
+  const cells=[];
+  for(let i=Math.max(0,Math.floor(Q.x));i<=Math.ceil(Q.x+nv-1)&&i<n;i++){
+    const cx=x0+(i-Q.x)*step,o=Math.min(cx+cw,x0+sw)-Math.max(cx,x0),al=clamp(o/cw,0,1);
+    if(al>.02)cells.push({i,cx,al});
+  }
+  /* цена — один кегль на всю ленту кадра: по самой длинной из видимых */
+  const price=c=>{const bc=baseCost(BUILD_KEYS[c.i],B);return bc.credits+" кр"+(bc.alloy?" · "+bc.alloy+" спл":"");};
+  for(const c of cells){c.p=price(c);c.why=sectMenuWhy(S,B,BUILD_KEYS[c.i]);}
+  let fP=Q.minF-1;
+  for(let f=10;f>=7;f--){fP=f;if(cells.every(c=>Ly.wid(c.p,f)<=cw/sc-6))break;}
+  const fp=Ly.fnt(fP),hit={cells:[],prev:null,next:null};
+  for(const c of cells){
+    const {i,cx,al}=c,on=i===(S.pick|0),a=al*(c.why?.45:1);
+    R(cx,y0,cw,ch,on?HANG_ACC:"#fff",(on?.16:.05)*al);
+    if(on)sectOvFrame(cx,y0,cx+cw,y1,2,HANG_ACC,.95*al);
+    const ln=Ly.lines[BUILD_KEYS[i]];
+    ln.forEach((q,j)=>ovText(OVL.uq,cx+cw/2,y0+(Ly.y+j*Ly.dy)*sc,q,Ly.font,on?"#fff3df":HANG_INK,"center","alphabetic",a,sc));
+    ovText(OVL.uq,cx+cw/2,y1-(c.why?17:8)*sc,c.p,fp,"rgba(190,210,224,.8)","center","alphabetic",a,sc);
+    if(c.why)ovText(OVL.uq,cx+cw/2,y1-6*sc,c.why,fp,HANG_ACC,"center","alphabetic",al,sc);
+    if(al>.5)hit.cells.push({i,x0:cx,x1:cx+cw});
+  }
+  /* стрелки: страница влево и вправо, пока там есть ячейки */
+  const arrow=(x,g,on)=>{R(x,y0,aw,ch,"#fff",on?.06:.02);ovText(OVL.uq,x+aw/2,(y0+y1)/2+5*sc,g,HANG_FONT,HANG_INK,"center","alphabetic",on?.9:.25,sc);};
+  const lo=Q.x>.01,hi=Q.x<n-nv-.01;
+  arrow(x0-aw-gp,"◀",lo);arrow(x0+sw+gp,"▶",hi);
+  hit.prev=lo?[x0-aw-gp,x0-gp]:null;hit.next=hi?[x0+sw+gp,x0+sw+gp+aw]:null;
+  Object.assign(hit,{y0,y1,nv,n,cw,ch,aw,x0,sw});
+  Q.hit=hit;
+  const k=ovNd()||1;
+  if(typeof hangBlock==="function")hangBlock(bx0*k,(y0-pd)*k,bx1*k,(y1+pd)*k);
+}
+/* тап по ленте: ячейка — выбор, стрелка — страница. Мимо ленты — прежний тап */
+const SECT_OLD_TAP=tap;
+tap=function(sxp,syp){
+  const S=G.base,h=SECT_MENU.hit;
+  if(G.mode==="base"&&S&&S.menu&&h&&SECT.live){
+    const c=(typeof cvsRect==="function")?cvsRect():null,x=c?(sxp-c.left)*W/c.width:sxp,y=c?(syp-c.top)*H/c.height:syp;
+    if(y>=h.y0&&y<=h.y1){
+      for(const q of h.cells)if(x>=q.x0&&x<=q.x1){S.pick=q.i;return;}
+      if(h.prev&&x>=h.prev[0]&&x<=h.prev[1]){S.pick=Math.max(0,(S.pick|0)-h.nv);return;}
+      if(h.next&&x>=h.next[0]&&x<=h.next[1]){S.pick=Math.min(h.n-1,(S.pick|0)+h.nv);return;}
+    }
+  }
+  return SECT_OLD_TAP.apply(this,arguments);
+};
 /* приборная доска в мерке uiK */
 function sectOvBoard(B,lit){
   if(typeof baseLife!=="function"||typeof baseSharp!=="function")return;
@@ -434,6 +566,8 @@ function sectAvr(S,pj){
   if(A.hold>0)ovRect(a[0]+12,b[1]-16,a[0]+12+(b[0]-a[0]-24)*clamp(A.hold/AVR_HOLD,0,1),b[1]-12,"rgb(127,230,216)",.85);
 }
 
+/* 21a зовёт на выходе с базы; разрез печей не держит — отпускать нечего */
+function baseBakeFree(){}
 /* ── переключатель ──
    2D-базы под разрезом больше нет: кадр не собрался — в нём одни приборы */
 function drawBase(){
@@ -465,7 +599,7 @@ exitBase=function(){
 /* ── слова на вещах: строка отсека — табличкой на его комнате ──
    Глагол ДЕЙСТВИЯ говорит кнопка; табличка несёт остальное, по куску на строку. #prompt под
    слоем (body.basewords), как в пещере */
-const SECT_W={on:false};
+const SECT_W={on:false,hush:false};
 function sectWordsOn(){return G.mode==="base"&&SECT.live&&!!SECT.lens&&!!G.base&&hangOk();}
 function sectPlate(pr){
   const out=[];
@@ -494,4 +628,7 @@ hud=function(){
   if(typeof document==="undefined"||!document.body||!document.body.classList)return;
   const on=sectWordsOn();
   if(on!==SECT_W.on){SECT_W.on=on;document.body.classList.toggle("basewords",on);}
+  /* лента стройки под шапкой (телефон лёжа) стоит там, где #msg: он молчит, строка остаётся в ЭФИРЕ */
+  const hush=on&&!!G.base.menu&&SECT_MENU.top;
+  if(hush!==SECT_W.hush){SECT_W.hush=hush;document.body.classList.toggle("basehush",hush);}
 };
