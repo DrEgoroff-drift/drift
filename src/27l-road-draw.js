@@ -65,25 +65,16 @@ function roadFrame(ts){
   if(RD)RD.raf=requestAnimationFrame(roadFrame);
 }
 /* ── полуразмах корпуса на экране (M168g) ──
-   h.bw — ширина ТЕЛА, а по бортам ещё пилоны, баки и крылья: у «Стрижа» размах
-   вдвое больше bw. Чтобы шараханье могло уходить к самому краю и при этом не
-   срезать корпус, размах меряем честно — один раз рисованием, с запасом хранения
-   по id корпуса, в единицах корпуса (умножается на sc уже на месте). */
+   h.bw — ширина ТЕЛА, а по бортам ещё пилоны, баки и крылья: у «Стрижа» размах вдвое больше bw. Чтобы
+   шараханье могло уходить к самому краю и не срезать корпус, размах меряем честно — по сетке объёма
+   (17c2a, та же, что рисуется), с запасом хранения по id, в единицах корпуса. Плоскость краски (шесть
+   последних вершин) не в счёт: она квадрат вокруг всего корпуса */
 const ROAD_HALF={};
 function roadHullHalf(id){
   if(ROAD_HALF[id]!=null)return ROAD_HALF[id];
-  const h=hullOf(id),K=8;
-  const o=document.createElement("canvas");
-  o.width=Math.max(32,Math.ceil(h.bw*K*6));o.height=Math.max(32,Math.ceil(h.len*K*2));
-  const oc=o.getContext("2d"),old=ctx;ctx=oc;
-  oc.save();oc.translate(o.width/2,o.height/2);oc.rotate(-Math.PI/2);oc.scale(K,K);
-  drawHull(id,false,false,0,0);
-  oc.restore();ctx=old;
-  const d=oc.getImageData(0,0,o.width,o.height).data;
-  let lo=o.width,hi=-1;
-  for(let y=0;y<o.height;y++)for(let x=0;x<o.width;x++)
-    if(d[(y*o.width+x)*4+3]>20){if(x<lo)lo=x;if(x>hi)hi=x;}
-  return ROAD_HALF[id]=hi<0?h.bw:Math.max(o.width/2-lo,hi-o.width/2)/K;
+  const h=hullOf(id),m=h3dMesh(h,shipGear3d());let y=h.bw;
+  for(let i=0;i<(m.n-6)*12;i+=12)y=Math.max(y,Math.abs(m.v[i+1]));
+  return ROAD_HALF[id]=y;
 }
 function drawRoad(ts){
   const t=ts/1000;
@@ -104,12 +95,11 @@ function drawRoad(ts){
   const hue=roadMoodHue(),en=RD.energy;
   /* задник целиком — в 27la-road-sky: туманности, звёзды, попутчики, искры,
      импульсы касания. Здесь остаётся корабль, шлейф, маневровые и числа */
-  /* кадр — видеокартой (G12): небо и свет — её поля, корпус и шлейф — 2D на #c,
-     числа — на слое приборов. Полуразмах корпуса меряется своим 2D-холстом с
-     подменой ctx (roadHullHalf) — ДО кадра: внутри кадра ctx принадлежит ему */
+  /* кадр — видеокартой (G12, M851): небо и свет — её поля, корпус — объём движка, огни — её фигуры,
+     числа — на слое приборов. Полуразмах корпуса меряется по сетке объёма (roadHullHalf) */
   const id=G.shipId,h=hullOf(id),half=roadHullHalf(id);
   roadFit();                              /* W,H — рамка листа, а не окно (27lc) */
-  const gOn=gpuFrame();let c=MAIN_CTX;
+  const gOn=gpuFrame();let c;
   roadSky(W,H,t,dt,spd,tier,fast,hue,en);
   const bd=roadBands(RD.wave);
   RD.flow=(RD.flow||0)+dt*(.09+bd.bass*.34);   /* время шума: бас гонит течение */
@@ -209,191 +199,90 @@ function drawRoad(ts){
     }
   }
   RD.cxPrev=cx;RD.cyPrev=cy;
+  /* ── огни дороги — на видеокарте (M851) ──
+     Шлейф, выход сопел, маневровые и кокон гипердрайва — фигуры gpuShapes сложением света в проход
+     сцены, под корпусом. 2D-холста у кадра дороги нет (22.10, автор: «2D не должно быть»): прежде
+     ореол ленты ложился с #c поверх неба смешением «over» и темнил вокруг газа прямоугольник.
+     Низ гаснет множителем по высоте, а не стиранием: под лентой то же погашенное небо (27lb) */
+  const FX=[],fade=y=>clamp((H-y)/(H*ROAD_MASK),0,1),T=trailTint(id,G.mods.engine|0);
+  const disc=(x,y,r,soft,C,a)=>{if(a>.003)FX.push([1,x,y,r,0,0,soft,C[0],C[1],C[2],a]);};
   {
-    const T=trailTint(id,G.mods.engine|0);
-    c.save();c.globalCompositeOperation="lighter";
-    /* ── ОДНО ТЕЛО НА ВСЕ СОПЛА (M168k) ──
-       Прежде каждое сопло рисовалось своей заливкой, и там, где струи сходятся,
-       «lighter» складывал их — двойная, у «Топора» шестерная яркость: тон
-       выгорал в белое, и шлейф читался стеной дыма. Теперь все ленты вспышки
-       кладутся ПОДПУТЯМИ в один путь и заливаются ОДИН раз: перекрытие ничего
-       не прибавляет, и ширина остаётся честной. То же правило, что у корпуса и
-       у процедурных сборок вообще — много кусков, одно тело. */
+    /* цвет к соплу — акцент, добела раскалён только срез; спад пологий, пик низкий (M168k, проходы 2–3) */
+    const RT={core:T.core,mid:mixc(T.edge,T.mid,.42),edge:T.edge};
+    const col=u=>u>.96?mixc(RT.mid,RT.core,(u-.96)/.04):mixc(RT.edge,RT.mid,Math.pow(u/.96,1.5));
+    const alp=u=>(u*.075+u*u*.12+Math.pow(u,5)*.13)*(1+burn*.55);
+    /* повадка от хода: на выдохе лента расходится облаком, на форсаже — копьё */
+    const wid=(p,u)=>p.r*(1.25+burn*.40+(1-u)*(3.6-burn*2.3));
     const groups={};
-    for(const p of RD.trail){
-      const g=groups[p.b]||(groups[p.b]={});
-      (g[p.e]||(g[p.e]=[])).push(p);
-    }
+    for(const p of RD.trail){const g=groups[p.b]||(groups[p.b]={});(g[p.e]||(g[p.e]=[])).push(p);}
     for(const b in groups){
       const lanes=[];
       for(const e in groups[b])if(groups[b][e].length>1)lanes.push(groups[b][e]);
       if(!lanes.length)continue;
-      /* ПОВАДКА ЗАВИСИТ ОТ ХОДА (M168k). На выдохе лента быстро расходится к
-         хвосту — облако; на форсаже кромки почти параллельны, и то же самое
-         тело читается копьём. У сопла она при этом шире, а не уже: автор просил
-         «больше и виднее». Путь строится отдельной функцией, потому что рисуется
-         дважды — телом и раскалённой нитью внутри. */
-      const wid=(p,u)=>p.r*(1.25+burn*.40+(1-u)*(3.6-burn*2.3));
-      const lay=k=>{
-        c.beginPath();
-        for(const arr of lanes){
-          const nrm=i=>{
-            const q=arr[Math.min(arr.length-1,i+1)],o=arr[Math.max(0,i-1)];
-            const tx=q.x-o.x,ty=q.y-o.y,tl=Math.hypot(tx,ty)||1;
-            const p=arr[i],u=clamp(p.life/p.max,0,1),w=wid(p,u)*k;
-            return [-ty/tl*w,tx/tl*w];
-          };
-          for(let i=0;i<arr.length;i++){
-            const p=arr[i],nn=nrm(i);
-            if(i===0)c.moveTo(p.x+nn[0],p.y+nn[1]);else c.lineTo(p.x+nn[0],p.y+nn[1]);
-          }
-          for(let i=arr.length-1;i>=0;i--){
-            const p=arr[i],nn=nrm(i);
-            c.lineTo(p.x-nn[0],p.y-nn[1]);
-          }
-          c.closePath();
-        }
-      };
-      const arr=lanes[0];
-      const a0=arr[0],a1=arr[arr.length-1];
-      const u0=clamp(a0.life/a0.max,0,1),u1=clamp(a1.life/a1.max,0,1);
-      /* ── почему шлейф был белым, хотя цвет в нём есть ── (M168k, проход 2)
-         Альфа и цвет были ПРОТИВОНАПРАВЛЕНЫ. Яркость держится у сопла (u→1), а
-         там `col` отдавал `T.mid` — акцент, уведённый на 42% в сливочный, — и
-         дальше `T.core`, уведённый на 82% в белый. Цветная часть ленты (`edge`,
-         чистый акцент корпуса) лежала в хвосте, где альфа уже 0.07: глазу
-         доставалось молоко, а цвет был там, где его не видно.
-         Правка не в степенях, а в самой палитре: на дороге середина ленты
-         подтянута обратно к акценту, и добела раскаляется только самый срез
-         сопла. «Стриж» теперь мятный, «Вьюк» янтарный — как их корпуса. */
-      const RT={core:T.core,mid:mixc(T.edge,T.mid,.42),edge:T.edge};
-      const col=u=>u>.96?mixc(RT.mid,RT.core,(u-.96)/.04):mixc(RT.edge,RT.mid,Math.pow(u/.96,1.5));
-      /* спад квадратичный, как в полёте. Пик снят с .80 до .32 (M168k): под
-         «lighter» две струи внахлёст давали 1.6, каналы упирались в потолок, и
-         газ становился белой пластиковой трубой — тем более теперь, когда снизу
-         светит сияние: прежняя формула настраивалась на чёрное небо */
-      /* спад пологий: прежний `u²·.20 + u⁴·.30` весь свет держал у сопла, а
-         тело ленты был почти прозрачным — газ читался коротким и плотным.
-         Теперь длина видна целиком, а пик ниже: перекрытий больше нет, и
-         набирать яркость сложением не нужно (M168k, проход 2) */
-      const alp=u=>((u*.075+u*u*.12+Math.pow(u,5)*.13)*(1+burn*.55)).toFixed(3);
-      const paint=(cf,af)=>{
-        if(Math.hypot(a1.x-a0.x,a1.y-a0.y)<1)c.fillStyle=rgba(cf(u1),af(u1));
-        else{
-          const gr=c.createLinearGradient(a1.x,a1.y,a0.x,a0.y);
-          for(let j=0;j<=4;j++){const s=j/4,u=u1+(u0-u1)*s;gr.addColorStop(s,rgba(cf(u),af(u)));}
-          c.fillStyle=gr;
-        }
-        c.fill();
-      };
-      /* ── у газа не бывает контура (M168k, проход 3) ──
-         Одна заливка, даже правильной ширины, читается вырезанной фигурой:
-         видно кромку. Кладём то же тело ДВАЖДЫ — широкий бледный ореол и
-         основное тело внутри него. Спад получается двухступенчатым, и силуэт
-         растворяется, не требуя ни размытия, ни лишних точек. */
-      lay(1.55);paint(col,u=>(+alp(u)*.30).toFixed(3));
-      lay(1);paint(col,alp);
-      /* раскалённая нить внутри — только на разгоревшемся. Это и есть «по-другому»:
-         на светофоре её нет вовсе, с тридцати она проступает и тянется от сопла */
-      if(burn>.04){
-        lay(.36-burn*.12);
-        paint(u=>mixc(T.mid,T.core,clamp(u*1.2-.2,0,1)),
-              u=>((u*u*u*.30+Math.pow(u,5)*.26)*burn).toFixed(3));
+      /* много сопел — ОДНО тело (M168k): ленты сведены в одну по номеру точки — середина и две кромки,
+         каждая по самой дальней из лент. Сложение света не удваивает газ там, где струи сходятся */
+      const n=Math.min(...lanes.map(a=>a.length)),M=[];
+      for(let i=0;i<n;i++){let x=0,y=0;for(const a of lanes){x+=a[i].x;y+=a[i].y;}
+        M.push({x:x/lanes.length,y:y/lanes.length,u:clamp(lanes[0][i].life/lanes[0][i].max,0,1)});}
+      for(let i=0;i<n;i++){
+        const q=M[Math.min(n-1,i+1)],o=M[Math.max(0,i-1)],tx=q.x-o.x,ty=q.y-o.y,tl=Math.hypot(tx,ty)||1,nx=-ty/tl,ny=tx/tl;
+        let l=0,r=0;
+        for(const a of lanes){const p=a[i],d=(p.x-M[i].x)*nx+(p.y-M[i].y)*ny,w=wid(p,M[i].u);l=Math.max(l,d+w);r=Math.max(r,w-d);}
+        Object.assign(M[i],{nx,ny,l,r});
       }
-      /* выход из сопла: раскалённое ядро с ореолом — у КАЖДОГО сопла своё */
-      for(const ln of lanes){
-        const e1=ln[ln.length-1];
-        if(e1.life<=e1.max-.06)continue;
-        /* и шире, чем прежде: ореол сопла — это ещё и шов между нарисованным
-           факелом корпуса (тёплым) и лентой (в цвет акцента). Без него на
-           стыке видно, где кончается одно и начинается другое */
-        const rr2=Math.max(2,e1.r*1.7);
-        const hg=c.createRadialGradient(e1.x,e1.y,0,e1.x,e1.y,rr2*4.5);
-        hg.addColorStop(0,rgba(T.core,.42+burn*.24));hg.addColorStop(.35,rgba(RT.mid,.22));hg.addColorStop(1,rgba(RT.edge,0));
-        c.fillStyle=hg;c.beginPath();c.arc(e1.x,e1.y,rr2*4.5,0,TAU);c.fill();
-        c.fillStyle=rgba(T.core,.55+burn*.25);
-        c.beginPath();c.arc(e1.x,e1.y,rr2,0,TAU);c.fill();
-      }
+      /* полоса из четырёхугольников; стыки жёсткие (без шва), кромки сглажены; хвост (старшие пять точек)
+         гаснет всегда — у молодой ленты, пока срок не дотёк, конец иначе обрублен */
+      const lay=(k,cf,af)=>{for(let i=0;i+1<n;i++){const P=M[i],Q=M[i+1];
+        /* звено делится на четыре: цвет и альфа идут ровно, без ступеней на редких точках */
+        const at=f=>{const g=(x,y)=>x+(y-x)*f,x=g(P.x,Q.x),y=g(P.y,Q.y),nx=g(P.nx,Q.nx),ny=g(P.ny,Q.ny),l=g(P.l,Q.l)*k,r=g(P.r,Q.r)*k;
+          return {L:[x+nx*l,y+ny*l],R:[x-nx*r,y-ny*r],u:g(P.u,Q.u),y,j:i+f};};
+        let A=at(0);
+        for(let q=1;q<=4;q++){const B=at(q/4),u=(A.u+B.u)/2,a=af(u)*fade((A.y+B.y)/2)*Math.min(1,(A.j+B.j+1)/10);
+          if(a>=.002)gpuQuad(FX,A.L,B.L,B.R,A.R,cf(u).concat(a),2|8);A=B;}}};
+      /* у газа нет контура: ореол — три слоя шире тела, кромка тает ступенями мельче пикселя света;
+         тело и сердцевина в нём; раскалённая нить — только на разгоне */
+      for(const [k,m] of [[1.95,.09],[1.65,.10],[1.35,.11],[1,.62],[.72,.38]])lay(k,col,u=>alp(u)*m);
+      if(burn>.04)lay(.36-burn*.12,u=>mixc(T.mid,T.core,clamp(u*1.2-.2,0,1)),u=>(u*u*u*.30+Math.pow(u,5)*.26)*burn);
+      /* выход из сопла: ядро с ореолом у каждого сопла — шов между корпусом и лентой */
+      for(const ln of lanes){const e1=ln[ln.length-1];if(e1.life<=e1.max-.06)continue;
+        const rr2=Math.max(2,e1.r*1.7),f=fade(e1.y);
+        disc(e1.x,e1.y,rr2*.5,rr2*4,RT.mid,(.24+burn*.12)*f);disc(e1.x,e1.y,rr2,1,T.core,(.55+burn*.25)*f);}
     }
-    c.restore();
   }
-  /* нижняя кромка гаснет в фон: под ней подвал с кнопкой НАЗАД, и лента любой
-     длины не должна её резать (M168g) */
-  /* небо гасит поле 27lb, ленту — стирание: под ней видно то же погашенное небо */
-  const mg=c.createLinearGradient(0,H*(1-ROAD_MASK),0,H);
-  mg.addColorStop(0,"rgba(0,0,0,0)");mg.addColorStop(1,"rgba(0,0,0,1)");
-  c.save();c.globalCompositeOperation="destination-out";
-  c.fillStyle=mg;c.fillRect(0,H*(1-ROAD_MASK),W,H*ROAD_MASK);c.restore();
   /* ── маневровые крупным планом (M168i) ──
-     Штатные носовые сопла из drawHull на этом масштабе — три пикселя, и на
-     видео тормоза просто не видно. Рисуем свои факелы в экранных координатах,
-     ДО корпуса, чтобы срез сопла прятался под обшивкой: тормоз — два холодных
-     конуса вперёд от носа (газ бьёт по ходу), сильный поворот — короткий
-     боковой выдох от носа в сторону, ПРОТИВОПОЛОЖНУЮ сносу: корпус уходит
-     вправо — струя ушла влево. Цвет холодный, голубоватый, как у маневровых
-     в полёте — чтобы не спутать с маршевым факелом. */
+     Штатные носовые сопла на этом масштабе не видны: свои факелы в экранных координатах, под корпусом.
+     Тормоз — два холодных конуса вперёд от носа, сильный поворот — выдох от носа против сноса. Цвет
+     холодный, чтобы не спутать с маршевым */
   const co2=Math.cos(rot),si2=Math.sin(rot);
   const jet=(lx,ly,dx,dy,L,w0,a0)=>{
-    const x=cx+(lx*co2-ly*si2)*sc,y=cy+(lx*si2+ly*co2)*sc;
-    const g2=c.createLinearGradient(x,y,x+dx*L,y+dy*L);
-    g2.addColorStop(0,"rgba(235,248,255,"+(a0*.95).toFixed(3)+")");
-    g2.addColorStop(.35,"rgba(205,232,246,"+(a0*.5).toFixed(3)+")");
-    g2.addColorStop(1,"rgba(205,232,246,0)");
-    c.fillStyle=g2;
-    c.beginPath();
-    c.moveTo(x-dy*w0,y+dx*w0);c.lineTo(x+dy*w0,y-dx*w0);
-    c.lineTo(x+dx*L+dy*w0*.45,y+dy*L-dx*w0*.45);
-    c.lineTo(x+dx*L-dy*w0*.45,y+dy*L+dx*w0*.45);
-    c.closePath();c.fill();
-    c.fillStyle="rgba(240,250,255,"+(a0*.9).toFixed(3)+")";
-    c.beginPath();c.arc(x,y,w0*.8,0,TAU);c.fill();
+    const x=cx+(lx*co2-ly*si2)*sc,y=cy+(lx*si2+ly*co2)*sc,N=6;
+    const w=s=>w0*(1-.55*s),al=s=>s<.35?a0*(.95-.45*s/.35):a0*.5*(1-(s-.35)/.65),pt=s=>[x+dx*L*s,y+dy*L*s];
+    for(let j=0;j<N;j++){const s0=j/N,s1=(j+1)/N,P=pt(s0),Q=pt(s1);
+      gpuQuad(FX,[P[0]-dy*w(s0),P[1]+dx*w(s0)],[Q[0]-dy*w(s1),Q[1]+dx*w(s1)],[Q[0]+dy*w(s1),Q[1]-dx*w(s1)],
+        [P[0]+dy*w(s0),P[1]-dx*w(s0)],[218,240,250,al((s0+s1)/2)],2|8);}
+    disc(x,y,w0*.8,1,[240,250,255],a0*.9);
   };
   const brk=clamp(-RD.acc*1.6,0,1);
-  if(brk>.2){
-    c.save();c.globalCompositeOperation="lighter";
-    for(const sg of [-1,1]){
-      /* пульс у бортов свой: сопла дышат вразнобой, как настоящие;
-         лёгкий развал наружу — иначе две струи сливаются в одно копьё */
-      const fl=.8+.25*Math.sin(RD.wob*43+sg*2.1);
-      const aj=rot+sg*.16,dj=[Math.cos(aj),Math.sin(aj)];
-      jet(h.nose*.66,sg*h.bw*.42,dj[0],dj[1],H*(.05+.09*brk)*fl,
-          Math.max(3,h.bw*sc*.20),.45+.5*brk);
-    }
-    c.restore();
+  if(brk>.2)for(const sg of [-1,1]){
+    /* пульс у бортов свой; лёгкий развал наружу — иначе две струи сливаются в одно копьё */
+    const fl=.8+.25*Math.sin(RD.wob*43+sg*2.1),aj=rot+sg*.16;
+    jet(h.nose*.66,sg*h.bw*.42,Math.cos(aj),Math.sin(aj),H*(.05+.09*brk)*fl,Math.max(3,h.bw*sc*.20),.45+.5*brk);
   }
-  /* боковой выдох: только на живом повороте, у носа — струя видна и объясняет,
-     кто разворачивает корпус. Локальная ось +y на экране смотрит вправо. */
   const tv=clamp((Math.abs(RD.turn)-.3)*1.6,0,1)*gate;
   if(tv>.1){
-    const sg=RD.turn>0?-1:1;                 /* корпус вправо → выдох влево */
-    c.save();c.globalCompositeOperation="lighter";
-    const fl=.8+.25*Math.sin(RD.wob*37);
-    jet(h.nose*.55,sg*h.bw*.72,-si2*sg,co2*sg,
-        H*(.025+.055*tv)*fl,Math.max(2.5,h.bw*sc*.16),.35+.4*tv);
-    c.restore();
+    const sg=RD.turn>0?-1:1,fl=.8+.25*Math.sin(RD.wob*37);   /* корпус вправо → выдох влево */
+    jet(h.nose*.55,sg*h.bw*.72,-si2*sg,co2*sg,H*(.025+.055*tv)*fl,Math.max(2.5,h.bw*sc*.16),.35+.4*tv);
   }
-  /* Отсвета вокруг корпуса нет и не будет (автор, M168k: «вокруг корабля можно
-     убить сияние»). Мысль была верная — корабль идёт над светом, свет должен на
-     него ложиться, — а исполнение нет: любое пятно вокруг силуэта читается
-     нимбом, то есть отдельным предметом, а не освещением. Свет ложится на
-     корпус там, где ему и место: факелом из сопел и шлейфом под ним. */
-  const old=ctx;ctx=c;
-  c.save();
-  c.translate(cx,cy);
-  /* световой кокон гипердрайва — под корпусом, одним светом */
-  if(tier===3){
-    c.save();c.globalCompositeOperation="lighter";
-    const cg=c.createRadialGradient(0,0,h.len*sc*.1,0,0,h.len*sc*.75);
-    cg.addColorStop(0,"hsla("+hue+",80%,70%,.14)");cg.addColorStop(1,"hsla("+hue+",80%,70%,0)");
-    c.fillStyle=cg;c.beginPath();c.ellipse(0,0,h.bw*sc*1.6,h.len*sc*.75,0,0,TAU);c.fill();
-    c.restore();
-  }
-  /* нос вверх: портретный экран — дорога впереди; шлейф уже лёг лентой ниже */
-  c.rotate(rot);
-  c.scale(sc,sc);
-  drawHull(id,spd>ROAD_VMIN||RD.acc>.2,RD.acc<-.25,Math.min(3,fast*3+Math.max(0,RD.acc)*2+(tier===3?1:0)+RD.beat*.8),RD.bank);
-  c.restore();
-  ctx=old;
+  /* Отсвета вокруг корпуса нет и не будет (автор, M168k: «вокруг корабля можно убить сияние»): любое
+     пятно вокруг силуэта читается нимбом. Исключение — кокон гипердрайва: он и есть свет хода */
+  if(tier===3){const hc=gcColor("hsl("+hue+",80%,70%)").map(v=>v*255),L2=h.len*sc*.32;
+    FX.push([2,cx-co2*L2,cy-si2*L2,cx+co2*L2,cy+si2*L2,h.bw*sc*.5,h.len*sc*.45,hc[0],hc[1],hc[2],.14]);}
+  if(gOn&&FX.length)gpuShapes(gpuScene(),FX,{blend:"add"});
+  /* корпус — объём движка (17c2a через hullGpuDraw, M851): нос вверх, крен настоящий, свет звезды слева сверху.
+     2D-корпуса нет: без видеокарты дороги нет — плашка 08b2. Тяга — false: огонь у дороги свой (выше),
+     огонь полёта лёг бы поверх него вторым */
+  if(gOn)hullGpuDraw(id,cx,cy,rot,sc,false,RD.acc<-.25,
+    Math.min(3,fast*3+Math.max(0,RD.acc)*2+(tier===3?1:0)+RD.beat*.8),RD.bank,-.55,-.83,shipGear3d());
   /* ── «моя волна» снизу (M168j) ──
      Сияние от центра нижней кромки, как у одноимённой заставки: РАЗНОЦВЕТНОЕ —
      ядро цвета настроения, два спутниковых пятна с тоном, сдвинутым на ±100°
@@ -414,7 +303,8 @@ function drawRoad(ts){
   /* числа — интерфейс: слой #ovl (08bi), без свечения и зерна. Очередь слоя сводится
      внутри gpuWorld, поэтому числа кладутся ДО него, а мир собирается в конце кадра.
      Монеты — свет: они летят в мире (#c) и светятся вместе с ним */
-  c=gOn?roadOvl():ctx;c.save();
+  /* без видеокарты строки уходят в пустую запись: 2D-дороги нет, экран закрывает плашка 08b2 */
+  c=gOn?roadOvl():new GcCtx(1,1,1);c.save();
   /* числа. Строки складываются курсором: чего нет — того нет, дыр не остаётся.
      На стоянке ни «—», ни «+0 кр» не висят (проход самокритики M168c) */
   const R=roadAll();
@@ -574,7 +464,7 @@ function drawRoad(ts){
     c.restore();c.textAlign="left";
   }
   /* ── монеты: кредит летит от корпуса в счётчик ── */
-  const tgt=RD.crXY||[W*.1,H*.2],m=ctx;
+  const tgt=RD.crXY||[W*.1,H*.2],FC=[];
   for(let i=RD.coins.length-1;i>=0;i--){
     const k=RD.coins[i];
     k.p+=dt/1.05;
@@ -582,17 +472,11 @@ function drawRoad(ts){
     if(k.p<0)continue;
     const u=k.p*k.p*(3-2*k.p);
     const x=k.x+(tgt[0]-k.x)*u, y=k.y+(tgt[1]-k.y)*u-Math.sin(Math.PI*k.p)*H*.07;
-    const rr3=Math.max(1.6,W*.007);
-    m.globalAlpha=Math.sin(Math.PI*Math.min(1,k.p*1.25))*.95;
-    m.save();m.globalCompositeOperation="lighter";
-    const cg2=m.createRadialGradient(x,y,0,x,y,rr3*4);
-    cg2.addColorStop(0,"rgba(242,178,92,.55)");cg2.addColorStop(1,"rgba(242,178,92,0)");
-    m.fillStyle=cg2;m.beginPath();m.arc(x,y,rr3*4,0,TAU);m.fill();
-    m.restore();
-    m.fillStyle="rgba(255,214,150,1)";
-    m.beginPath();m.arc(x,y,rr3,0,TAU);m.fill();
-    m.globalAlpha=1;
+    const rr3=Math.max(1.6,W*.007),a=Math.sin(Math.PI*Math.min(1,k.p*1.25))*.95;
+    FC.push([1,x,y,rr3*.5,0,0,rr3*3.5,242,178,92,.55*a],[1,x,y,rr3,0,0,1,255,214,150,a]);
   }
+  /* монета — свет в мире: тем же сложением в проход сцены, поверх корпуса */
+  if(gOn&&FC.length)gpuShapes(gpuScene(),FC,{blend:"add"});
   /* Окно правды по датчикам (M168k) — долгое нажатие или `?road=diag`. Мера
      поворота тонкая, но на настоящей поездке корпус не сошёл с центра ни разу
      за шесть минут, и понять по экрану — врёт мера или дорога была прямая —

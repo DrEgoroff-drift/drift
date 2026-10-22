@@ -217,11 +217,16 @@ function hallWalkTagList(){
   if(i<0){let d=1e9;P.forEach((p,j)=>{const e=Math.abs(p.x-W.x);if(e<d){d=e;i=j;}});}
   return P.slice(Math.max(0,i-1),i+2).map(p=>({p:p.tag,t:p.tn,s:p.id==="trade"?hallTradeLine():p.ts,dn:0}));
 }
-/* вторая строка стойки — что здесь дёшево (три товара ниже всего к базе), а не тип станции: он уже в шапке */
+/* вторая строка стойки — что здесь дёшево (три товара ниже всего к базе), а не тип станции: он уже в шапке.
+   Табличка спрашивает её каждый кадр, а buyPriceFor гоняет рынок станции (marketFor, хроника): на ходу по залу это
+   было 63 выборки из 300 за 5 с. Порядок цен меняется медленно — строка живёт 2 с на станцию */
+const HALL_TL={k:"",t:-1e9,s:""};
 function hallTradeLine(){
   const sys=G.sys;if(!sys||!sys.station)return "";
+  const tw=wallMs();if(HALL_TL.k===sys.key&&tw-HALL_TL.t<2000)return HALL_TL.s;
   const r=TRADE_KEYS.map(k=>({k,q:buyPriceFor(sys,k)/RES[k].price})).sort((a,b)=>a.q-b.q).slice(0,3);
-  return "дёшево: "+r.map(x=>RES[x.k].ru.toLowerCase()).join(", ");
+  HALL_TL.k=sys.key;HALL_TL.t=tw;
+  return HALL_TL.s="дёшево: "+r.map(x=>RES[x.k].ru.toLowerCase()).join(", ");
 }
 /* клавиши: действие входит, назад выходит, 1–7 — к месту по полосе */
 if(typeof addEventListener==="function")addEventListener("keydown",e=>{

@@ -226,6 +226,12 @@ fn outside(w:vec3f)->vec3f{
   if(kind==3){   /* научная: туманность акцента и холодная планета краем */
     let nb=fb2(q*3.+vec2f(tt*.002,0.));c+=mix(vec3f(.05,.07,.14),ac*.35,nb)*smoothstep(.35,.85,nb)*1.4*select(1.,.45,pon);
     if(!pon){let pd=length(q-vec2f(.5,-1.4))-1.12;c=mix(c,vec3f(.03,.05,.09)*(1.+q.y),step(pd,0.));c+=vec3f(.3,.55,.9)*exp(-abs(pd)*40.)*.9;}}
+  else if(kind==10){   /* щель «Сороки» (M851): край холодной планеты низко и крупно, кромка светится, над ней слабая
+                         пыль акцента — узкое окно над стойкой видит только лимб и его ореол */
+    let qq=q-vec2f(u.win2.z*.013,0.);let pc=vec2f(.1,-.74);let pd=length(qq-pc)-.96;let nb=fb2(qq*2.2+vec2f(tt*.0015,.4));
+    c+=mix(vec3f(.03,.045,.09),ac*.25,nb)*smoothstep(.4,.9,nb)*.9*(1.-smoothstep(-.1,.3,pd));
+    let body=vec3f(.012,.02,.04)+vec3f(.05,.09,.16)*fb2(qq*6.+pc)*(.3+.7*clamp(-pd*4.,0.,1.));
+    c=mix(c,body,step(pd,0.));c+=vec3f(.42,.62,.95)*exp(-abs(pd)*28.)*.75+vec3f(.1,.2,.4)*exp(-max(pd,0.)*6.)*.35;}
   else if(kind==5){   /* аванпост: звёзды, полоса пыли и патруль, что идёт медленно, огни ровные */
     c+=vec3f(.05,.04,.06)*fb2(q*1.5+vec2f(3.,1.))*(1.-smoothstep(-.7,.4,q.y));
     let d=q-vec2f(fract(tt*.004+u.win2.z*.0071)*3.6-1.8,.34);
@@ -441,9 +447,48 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
     let q=i.l*vec3f(520.,46.,520.);let h0=vn3(q);n=normalize(n-.22*vec3f(vn3(q+vec3f(.5,0.,0.))-h0,0.,vn3(q+vec3f(0.,0.,.5))-h0));
     let dn=vec3f(0.,-1.,0.);let tq=dn-n*dot(dn,n);tg=select(normalize(tq+vec3f(0.,0.,1e-4)),vec3f(0.,0.,-1.),dot(tq,tq)<1e-6);}
   else if(pat==10u){fres=.12;}   /* стекло */
-  else if(pat==11u){   /* полотно кино: кадр из текстуры своим светом */
-    let r=u.flm;let uv=vec2f((W.x-r.x)/(r.z-r.x),(r.w-W.y)/(r.w-r.y));
-    a=pow(textureSampleLevel(tfl,smp,clamp(uv,vec2f(0.),vec2f(1.)),0.).rgb,vec3f(2.2));em=1.6*u.flm2.y;sp=0.;}
+  else if(pat==11u){   /* полотно кино (M816d): кадр журнала процедурно. uv — в цвете вершины (i.c.xy, v вниз),
+                         flm2.y = 1 + номер кадра + фаза (0 — кино нет); сюжеты — KINO_REEL 27da по порядку */
+    let kv=max(u.flm2.y-1.,0.);let k=u32(floor(kv))%6u;let ph=fract(kv);
+    let jt=vec2f(vn3(vec3f(t*18.,3.,0.))-.5,vn3(vec3f(5.,t*18.,0.))-.5)*.004;   /* кадр дрожит в окне проектора */
+    let p=clamp(i.c.xy,vec2f(0.),vec2f(1.))+jt;let c2=vec2f((p.x-.5)*2.05,.5-p.y);
+    var f=.3;
+    if(k==0u){   /* карта: изолинии берега, сетка, вехи */
+      let h=vn3(vec3f(c2*2.6+vec2f(ph*.15,0.),.5))+.5*vn3(vec3f(c2*7.,1.5));
+      f=select(.22,.62,h>.78);f+=.5*smoothstep(.025,0.,abs(h-.78));
+      let g=abs(fract(c2*5.)-.5);f+=.12*smoothstep(.485,.5,max(g.x,g.y));
+      let d=length(fract(c2*vec2f(1.3,1.7)+.31)-.5);f+=.6*smoothstep(.03,.015,d);}
+    else if(k==1u){   /* корабль: силуэт на светлом небе, плывёт */
+      f=.55+.3*c2.y;let s=c2-vec2f(-.25+ph*.5,.02);
+      let hull=length(s/vec2f(.62,.11));let tw=max(abs(s.x+.12)-.07,abs(s.y-.15)-.08);
+      f=mix(f,.06,smoothstep(1.03,.97,hull));f=mix(f,.06,step(tw,0.));
+      f=mix(f,.14,step(c2.y,-.3));}
+    else if(k==2u){   /* смена: строй фигур на светлом */
+      f=.62+.15*c2.y;let cx=c2.x*3.4+ph*.4;let id=floor(cx);let lx=fract(cx)-.5;let hh=.08*vn3(vec3f(id,7.,0.));
+      let lw=lx/3.4;let hd=length(vec2f(lw,c2.y-(.15+hh)));   /* в метрах кадра: голова круглая, плечи шире шеи */
+      let bd=max(abs(lw)-.075,max(c2.y-(.09+hh)+.025*smoothstep(.04,.075,abs(lw)),-.5-c2.y));
+      f=mix(f,.08,max(smoothstep(.052,.046,hd),step(bd,0.)));}
+    else if(k==3u){   /* биология: стебли и соцветия */
+      f=.5+.2*c2.y;let cx=c2.x*4.;let id=floor(cx);let hh=.05+.3*vn3(vec3f(id,3.,0.));
+      let sx=abs(fract(cx+.06*sin(c2.y*7.+id))-.5);
+      f=mix(f,.1,step(sx,.025)*step(c2.y,hh));
+      let fl=length(vec2f(fract(cx)-.5,(c2.y-hh)*4.));f=mix(f,.92,smoothstep(.17,.13,fl));}
+    else if(k==4u){   /* небо: звёзды, дуга орбиты, светило */
+      f=.04;let q=floor((c2+vec2f(ph*.04,0.))*42.);let st=vn3(vec3f(q,9.));f+=.85*step(.86,st)*smoothstep(.5,.1,length(fract((c2+vec2f(ph*.04,0.))*42.)-.5));
+      f+=.7*smoothstep(.008,0.,abs(length(c2-vec2f(0.,-1.25))-1.15));
+      f=max(f,.95*smoothstep(.13,.11,length(c2-vec2f(-.5+ph*.9,.22))));}
+    else{   /* быт: дома, окна горят */
+      f=.5+.25*c2.y;let cx=c2.x*2.2+.3;let id=floor(cx);let lx=fract(cx)-.5;let hh=-.05+.18*vn3(vec3f(id,5.,0.));
+      let body=max(abs(lx)-.36,max(c2.y-hh,-.42-c2.y));let roof=c2.y-(hh+.24-abs(lx)*.66);
+      f=mix(f,.1,max(step(body,0.),step(roof,0.)*step(hh,c2.y)));
+      let w=abs(fract(vec2f(lx*3.,c2.y*5.))-.5);f=mix(f,.85,step(body,0.)*step(max(w.x,w.y),.2)*step(abs(lx),.3));
+      f=mix(f,.16,step(c2.y,-.42));}
+    /* плёнка: зерно, царапина, мерцание лампы, виньетка, затемнение на склейке */
+    f+=(vn3(vec3f(p*vec2f(420.,260.),floor(t*24.)))-.5)*.07;
+    let sc=vn3(vec3f(floor(t*6.),11.,0.));f+=.35*step(.7,sc)*smoothstep(.0025,0.,abs(p.x-fract(sc*7.3)));
+    f*=(.9+.1*sin(t*47.)*sin(t*29.))*(1.-.42*dot(c2/vec2f(1.3,.62),c2/vec2f(1.3,.62)));
+    f*=smoothstep(0.,.05,ph)*smoothstep(1.,.95,ph);
+    let v=clamp(f,0.,1.);a=mix(vec3f(.003,.003,.004),vec3f(1.,.88,.7),pow(v,2.4));em=2.2*step(.5,u.flm2.y);sp=0.;}
   else if(pat==13u){a*=.9+.2*vn3(i.l*vec3f(160.));}   /* кожа сиденья */
   else if(pat==14u){   /* опасность: косые полосы */
     let q=pl2(W,n);let s=step(.5,fract((q.x+q.y)*4.));a=mix(vec3f(.05,.045,.04),vec3f(.75,.55,.08),s);}

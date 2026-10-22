@@ -64,34 +64,40 @@ function dig3BeastFrame(F,Fd,D,gy){
     const yaw=b.alien==="manta"?PLN_BEAST.mantaYaw:PLN_BEAST.yaw;
     const I=Q.inst[nb]||(Q.inst[nb]=plnInst(new Float32Array(16),0,1));
     plnRec(a,0,[x,y+Math.max(0,up),z],R,flip?Math.PI-yaw:yaw,1,nb+1,null,0);
-    plnInstSet(I,a,1);
+    dig3InstPut(I,a,1);
     F.draw.push({geo,inst:I,lamp:true,sun:true,refl:false});
     tris+=geo.n/3;nb++;
   }
-  if(ne){plnInstSet(E.inst,E.a,ne);F.draw.push({geo:E.geo,inst:E.inst,lamp:false,sun:false,refl:false});tris+=E.geo.n/3*ne;}
+  if(ne){dig3InstPut(E.inst,E.a,ne);F.draw.push({geo:E.geo,inst:E.inst,lamp:false,sun:false,refl:false});tris+=E.geo.n/3*ne;}
   return tris;
 }
 
-/* импульс: от человека расходится светящееся кольцо до края досягаемости (ZAP_R — кого оглушит) и холодная
-   вспышка, что бьёт по граням скалы и гаснет. Кольцо — перед листом разреза: его видно и над породой,
-   где сидят глаза зверей, которых оно накрывает. Кольцо одно на рудник: единичное, растёт масштабом */
-const DIG3_ZAP={r:.012,seg:72,col:[.62,.9,1],glow:4,light:[.35,.62,.85],lk:4};
-const DIG3Z={geo:null,inst:null,a:new Float32Array(16),gen:-1};
+/* импульс — волна: от человека за dur с расходится кольцо и гаснет; чем дальше, тем оно тоньше и тусклее
+   (несколько колец с разной толщиной трубки — масштаб инстанса толщину бы раздувал). Доходит до reach·ZAP_R:
+   до дальней крепи, не до края досягаемости оглушения. Сильнее кольца — холодная вспышка по граням скалы,
+   она гаснет быстрее. Своё время (DIG3.dt): счётчик 23-mode-dig короче волны, новый импульс — когда он
+   вырос. hold — фаза для съёмки (0..1) */
+const DIG3_ZAP={dur:.4,reach:.5,tube:[.022,.015,.01,.006],seg:72,col:[.62,.9,1],glow:4,light:[.35,.62,.85],lk:9,flashR:1.4};
+const DIG3Z={geo:[],inst:null,a:new Float32Array(16),gen:-1,t:9,prev:0,hold:null};
 function dig3ZapFrame(F,D,gy){
-  if(!(D.zapT>0))return 0;
-  const Z=DIG3_ZAP,Q=DIG3Z;
-  if(Q.gen!==PLN_GPU.gen){if(Q.geo)plnGeoFree(Q.geo);if(Q.inst)plnInstFree(Q.inst);Q.geo=null;Q.inst=null;Q.gen=PLN_GPU.gen;}
-  if(!Q.geo){
-    const m=plnMesh(Z.seg*16),path=[];
+  const Z=DIG3_ZAP,Q=DIG3Z,zt=D.zapT>0?D.zapT:0;
+  if(zt>Q.prev+.5)Q.t=0;
+  Q.prev=zt;Q.t+=DIG3.dt||0;
+  const p=Q.hold!=null?Q.hold:Q.t/Z.dur;
+  if(!(p>=0&&p<1))return 0;
+  if(Q.gen!==PLN_GPU.gen){for(const g of Q.geo)plnGeoFree(g);if(Q.inst)plnInstFree(Q.inst);Q.geo=[];Q.inst=null;Q.gen=PLN_GPU.gen;}
+  if(!Q.geo.length){
+    const path=[];
     for(let i=0;i<=Z.seg;i++){const a=i/Z.seg*TAU;path.push([Math.cos(a),Math.sin(a),0]);}
-    plnTube(m,{path,rad:Z.r,sides:6,col:Z.col,mat:PLN_MAT.glow,glow:Z.glow});
-    Q.geo=plnGeo(plnMeshDone(m));Q.inst=plnInst(new Float32Array(16),0,1);
+    Q.geo=Z.tube.map(r=>{const m=plnMesh(Z.seg*16);plnTube(m,{path,rad:r,sides:6,col:Z.col,mat:PLN_MAT.glow,glow:Z.glow});return plnGeo(plnMeshDone(m));});
+    Q.inst=plnInst(new Float32Array(16),0,1);
   }
-  const k=1-D.zapT/16,f=(1-k)*.85,R=ZAP_R/DIG3_PPM;
+  const e=1-Math.pow(1-p,3),R=Z.reach*ZAP_R/DIG3_PPM*e,f=.6*Math.pow(1-p,2),fl=Math.pow(1-p,2);
   const x=(D.col*DIG_CELL+DIG_CELL/2)/DIG3_PPM,y=gy(D.row*DIG_CELL+DIG_CELL/2);
-  plnRec(Q.a,0,[x,y,-.05],Math.max(1e-3,R*k),0,1,0,[f,f,f]);
+  const g=Q.geo[Math.min(Q.geo.length-1,Math.floor(p*Q.geo.length))];
+  plnRec(Q.a,0,[x,y,-.05],Math.max(1e-3,R),0,1,0,[f,f,f]);
   plnInstSet(Q.inst,Q.a,1);
-  F.draw.push({geo:Q.geo,inst:Q.inst,lamp:false,sun:false,refl:false});
-  F.lights.unshift({p:[x,y,DIG3_Z+.4],r:1.5+R*k,c:Z.light.map(v=>v*Z.lk*f)});
-  return Q.geo.n/3;
+  F.draw.push({geo:g,inst:Q.inst,lamp:false,sun:false,refl:false});
+  F.lights.unshift({p:[x,y,DIG3_Z+.4],r:1.5+R*Z.flashR,c:Z.light.map(v=>v*Z.lk*fl)});
+  return g.n/3;
 }

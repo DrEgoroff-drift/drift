@@ -24,6 +24,10 @@ const DIG3_ROOM={zd:2.8,hall:5.2,wide:.6,r:.42,e:.14,k:.35};
    рудника вчетверо ближе пещерного, и та же кромка в метрах обводила выработку белым ободом — запас до
    пустоты отдаётся листу умноженным: обод ~6 см, отсвет ~.45 м — мягкий, как у пустот стенда (cave.html) */
 const DIG3_LIP=8;
+/* запас до пустоты для шейдера: первые 6 см — кромка (умножено на DIG3_LIP), дальше — отсвет пологий: свет
+   ламп выработки ложится на плиты листа на пару метров вокруг, затухая, а кромка остаётся ниткой */
+const DIG3_WASH=1.2;
+function dig3Ex(dv){const e=.5/DIG3_LIP;return clamp(dv<=e?dv*DIG3_LIP:.5+(dv-e)*DIG3_WASH,0,4);}
 const DIG3_CH={s:8,vox:.25,zcap:16,keep:80,ms:8,hold:10,first:420};
 
 function dig3Hash(c,r){return (hashi(c,r,0xD16C)>>>8)/16777216;}
@@ -129,6 +133,31 @@ function dig3Nodes(F,x0,x1,y0,y1){
     }
   return out;
 }
+/* вес рудного тела в точке (0 — вне линзы, 1 — сердце): линза с бугристым краем. Одна мерка у краски листа
+   и у зерна (23cb dig3OreBodies): вне пятна зерна нет ни одного */
+function dig3OreW(n,X,Y,Z){
+  const r=n.r*.75,e=Math.hypot((X-n.x)*.8,(Y-n.y)*1.25)+.45*r*cave3N3(X*.5,Y*.5,Z*.5,33);
+  return e<r?1-plnSmooth(r*.45,r,e):0;
+}
+let DIG3_PAINT_W=0;   /* вес тела в последней точке dig3Paint: лист берёт по нему цвет руды */
+/* лист разреза колется плитами по пластам: в пласте — плиты длиной 1.8–5 м, у каждой свой тон, свой скат
+   (тон идёт градиентом, как по наклонной грани) и свой наклон к пустоте — свет ламп штрека в отсвете
+   кромки ложится на плиты по-разному; шов между плитами темнее. Отдаёт [тон, наклон x, наклон y] */
+const DIG3_PLATE={len:[1.8,3.2],tone:.6,ramp:.9,seam:.1,crack:.3,bed:.4,bseam:.07,lam:3,lamk:.22,tilt:.9};
+const DIG3_PL=[1,0,0];
+function dig3Plate(F,x,y){
+  const K=DIG3_PLATE,s0=y-.06*x+.25*Math.sin(x*.09),sb=(s0+.28*Math.sin(s0*1.9+.7))/F.bed,kb=Math.floor(sb),fb=sb-kb;
+  const h=(a,b)=>(hashi(a,b,0x91A7)>>>8)/16777216;
+  const len=K.len[0]+K.len[1]*h(kb,1),u=(x+h(kb,2)*len)/len,pi=Math.floor(u),fx=u-pi;
+  const h1=h(pi*7+kb*131,3),h2=h(pi*7+kb*131,4),h3=h(pi*7+kb*131,5);
+  let t=(1-K.tone/2+K.tone*h1)*(1+K.ramp*((h2-.5)*(fx-.5)*2+(h3-.5)*(fb-.5)*2));
+  const fl=(fb*K.lam)%1;
+  t*=(1-K.crack*(1-plnSmooth(0,K.seam,Math.min(fx,1-fx)*len)))*(1-K.bed/2+K.bed*h(kb,6))   /* пласт — своим тоном */
+    *(1-.5*(1-plnSmooth(0,K.bseam,Math.min(fb,1-fb)*F.bed)))   /* шов пласта темнее шва плиты */
+    *(1-K.lamk*(1-plnSmooth(0,K.bseam*.6,Math.min(fl,1-fl)*F.bed/K.lam)));   /* слойки внутри пласта — тонкие линии */
+  DIG3_PL[0]=t;DIG3_PL[1]=(h2-.5)*K.tilt;DIG3_PL[2]=(h3-.5)*K.tilt;
+  return DIG3_PL;
+}
 /* цвет камня в точке: rgb (линейный) и мокрость; ny — куда смотрит грань */
 function dig3Paint(F,X,Y,Z,ny){
   const o=CAVE3_INK,P=DIG3_PPM,S=F.sty,L=F.geo;
@@ -157,13 +186,15 @@ function dig3Paint(F,X,Y,Z,ny){
   /* верх земли — то, что видно сверху: грунт мира */
   if(ny>.55&&gd<4)c=plnMix3(c,F.top,plnSmooth(.55,.85,ny)*plnSmooth(4,1,gd));
   /* рудное тело — линза с бугристым краем (край четверть метра, не туман) и блёстками в сердце */
+  DIG3_PAINT_W=0;
   for(const n of F.nk){
-    const e=Math.hypot((X-n.x)*.8,(Y-n.y)*1.25)+.45*n.r*cave3N3(X*.5,Y*.5,Z*.5,33);
-    if(e<n.r){
-      const w=1-plnSmooth(n.r*.82,n.r,e);
-      c=plnMix3(c,[n.c[0]*.62,n.c[1]*.62,n.c[2]*.62],w*.6);   /* тело — тёмное пятно цвета руды под зерном (23cb); светлое туманило стену */
-      if(e<n.r*.6&&cave3N3(X*4.1,Y*4.1,Z*4.1,35)>.62)c=plnMix3(c,n.c,.85);
-    }
+    const w=dig3OreW(n,X,Y,Z);
+    if(w<=0)continue;
+    DIG3_PAINT_W=Math.max(DIG3_PAINT_W,w);
+    /* тело — тёмное пятно цвета руды, пёстрое: зерно (23cb) сидит в нём, а не на голом камне */
+    const mt=.5+.18*cave3N3(X*1.7,Y*1.7,Z*1.7,37);
+    c=plnMix3(c,[n.c[0]*mt,n.c[1]*mt,n.c[2]*mt],Math.min(1,w*1.6)*.8);
+    if(w>.5&&cave3N3(X*4.1,Y*4.1,Z*4.1,35)>.62)c=plnMix3(c,n.c,.85);
   }
   /* вода по стене — светлая корка, на полу осадок */
   const run=plnSmooth(.4,.75,cave3N3(X*.55,Y*.1,Z*.55,27))*plnSmooth(.95,.55,Math.abs(ny));
@@ -275,10 +306,13 @@ function* dig3ChunkGen(F,ci,cj){
     const p=cutP[c],x=P[p*3],y=P[p*3+1],z=P[p*3+2],zc=.08;
     const dv=dig3Den(F,x,y,zc),gx=dig3Den(F,x+.06,y,zc)-dig3Den(F,x-.06,y,zc),gy=dig3Den(F,x,y+.06,zc)-dig3Den(F,x,y-.06,zc),gl=Math.hypot(gx,gy)||1;
     /* страница темна и почти без цвета: пласт читается тоном и линией, оттенок — половиной */
-    const ink=dig3Paint(F,x,y,0,0),k=.3*(1+.16*cave3N3(x*.13,y*.13,3,31)),o=(nv+c)*PLN_VS,gr=(ink[0]+ink[1]+ink[2])/3;
-    out[o]=x;out[o+1]=y;out[o+2]=z;out[o+3]=-gx/gl;out[o+4]=-gy/gl;out[o+5]=0;
-    out[o+6]=lerp(gr,ink[0],.5)*k;out[o+7]=lerp(gr,ink[1],.5)*k;out[o+8]=lerp(gr,ink[2],.5)*k;
-    out[o+9]=CAVE3_MAT.cut;out[o+10]=0;out[o+11]=0;out[o+12]=clamp(dv*DIG3_LIP,0,4);
+    const ink=dig3Paint(F,x,y,0,0),ow=DIG3_PAINT_W,pl=dig3Plate(F,x,y),o=(nv+c)*PLN_VS,gr=(ink[0]+ink[1]+ink[2])/3;
+    const k=.3*(1+.16*cave3N3(x*.13,y*.13,3,31))*pl[0]*(1-.45*ow),sat=.5+.4*ow;   /* линза — тёмное пятно */
+    /* в нормали — путь к пустоте, наклонённый плитой: свет из выработки делит плиты */
+    const qx=-gx/gl+pl[1],qy=-gy/gl+pl[2],ql=Math.hypot(qx,qy)||1;
+    out[o]=x;out[o+1]=y;out[o+2]=z;out[o+3]=qx/ql;out[o+4]=qy/ql;out[o+5]=0;
+    out[o+6]=lerp(gr,ink[0],sat)*k;out[o+7]=lerp(gr,ink[1],sat)*k;out[o+8]=lerp(gr,ink[2],sat)*k;
+    out[o+9]=CAVE3_MAT.cut;out[o+10]=0;out[o+11]=0;out[o+12]=dig3Ex(dv);
   }
   const I=new Uint32Array(IR.length+IC.length);
   I.set(IR,0);for(let k=0;k<IC.length;k++)I[IR.length+k]=IC[k]+nv;
