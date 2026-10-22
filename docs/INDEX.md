@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 634 · top-level symbols: 8710
+Files: 634 · top-level symbols: 8705
 
 ## SYMBOLS
 
@@ -483,8 +483,8 @@ DIG3_HOOKS                   src/23c0-dig-hooks.js:6-10
 DIG3_LENS                    src/23c-dig-pln.js:17
 DIG3_LIP                     src/23ca-dig-pln-rock.js:26
 DIG3_NOSCENE                 src/23cd-dig-pln-top.js:374
-DIG3_OLD_HSURF               src/23cf-dig-words.js:37
-DIG3_OLD_HUD                 src/23cf-dig-words.js:54
+DIG3_OLD_HSURF               src/23cf-dig-words.js:22
+DIG3_OLD_HUD                 src/23cf-dig-words.js:39
 DIG3_OLD_WALK                src/23c-dig-pln.js:278
 DIG3_ORE                     src/23cb-dig-pln-dress.js:101
 DIG3_PAINT_W                 src/23ca-dig-pln-rock.js:142
@@ -504,7 +504,7 @@ DIG3_TOP_SURF                src/23cd-dig-pln-top.js:388
 DIG3_TOP_WGSL                src/23cd-dig-pln-top.js:276
 DIG3_TUB                     src/23cb-dig-pln-dress.js:177
 DIG3_VZ                      src/23ca-dig-pln-rock.js:83
-DIG3_W                       src/23cf-dig-words.js:12
+DIG3_W                       src/23cf-dig-words.js:10
 DIG3_WASH                    src/23ca-dig-pln-rock.js:29
 DIG3_Z                       src/23c-dig-pln.js:14
 DIG3_ZAP                     src/23ce-dig-pln-beasts.js:80
@@ -777,7 +777,7 @@ GEN_MINE                     src/13z-gpu-combat.js:63
 GEN_WGSL                     src/13z-gpu-combat.js:17
 GEO                          tests/90b2-geom.js:27
 GEO_CC                       tests/90b2-geom.js:72
-GEO_CTL                      tests/90b2-geom.js:382
+GEO_CTL                      tests/90b2-geom.js:379
 GEO_DANGER                   tests/90b2-geom.js:31
 GEO_FAULT                    src/18b-geology.js:91
 GEO_JUNK                     tests/90b2-geom.js:30
@@ -1034,8 +1034,7 @@ HANGAR                       src/27j1-ui-hangar.js:15
 HANG_ACC                     src/27j1-ui-hangar.js:18
 HANG_ALARM_HOLD              src/08bj-ovl-hang.js:21
 HANG_DIR                     src/08bj-ovl-hang.js:26
-HANG_KEYF                    src/08bj-ovl-hang.js:77
-HANG_MSG_AT                  src/08bj-ovl-hang.js:342
+HANG_MSG_AT                  src/08bj-ovl-hang.js:323
 HAUL_BARGE_K                 src/16c-rescue.js:199
 HAUL_BIT_GAP                 src/16c-rescue.js:202
 HAUL_BIT_TALK                src/16c-rescue.js:209
@@ -1362,7 +1361,7 @@ MAP_DRY_INK                  src/18-mode-map.js:3
 MAP_INK                      src/18-mode-map.js:51
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
-MAP_ORB                      src/18l-map-plate.js:80
+MAP_ORB                      src/18l-map-plate.js:75
 MAP_OVER                     src/18-mode-map.js:146
 MAP_SPIKE_N                  src/17z3-map-gpu.js:201
 MAP_TOP                      src/18a-map-addr.js:253
@@ -3726,8 +3725,6 @@ dig3HeapMesh                 src/23cb-dig-pln-dress.js:240-251
 dig3HeapTint                 src/23cb-dig-pln-dress.js:253-258
 dig3Hex                      src/23cb-dig-pln-dress.js:179-185
 dig3InstPut                  src/23c-dig-pln.js:121-127
-dig3IsKey                    src/23cf-dig-words.js:25
-dig3KeyLine                  src/23cf-dig-words.js:27-36
 dig3Land                     src/23ca-dig-pln-rock.js:75-81
 dig3Lens                     src/23c-dig-pln.js:19-26
 dig3LensMk                   src/23cd-dig-pln-top.js:52-55
@@ -3771,8 +3768,8 @@ dig3TopSkirt                 src/23cd-dig-pln-top.js:141-154
 dig3TopTab                   src/23cd-dig-pln-top.js:29-34
 dig3TubBody                  src/23cb-dig-pln-dress.js:188-237
 dig3Void                     src/23ca-dig-pln-rock.js:84-101
-dig3WordsLines               src/23cf-dig-words.js:15-23
-dig3WordsOn                  src/23cf-dig-words.js:13
+dig3WordsLines               src/23cf-dig-words.js:13-21
+dig3WordsOn                  src/23cf-dig-words.js:11
 dig3ZapFrame                 src/23ce-dig-pln-beasts.js:82-108
 digCell                      src/23-mode-dig.js:30-50
 digFauna                     src/23-mode-dig.js:259-335
@@ -4475,22 +4472,22 @@ geoAnd                       tests/90b2-geom.js:37
 geoArea                      tests/90b2-geom.js:36
 geoAt                        src/18b-geology.js:73-77
 geoBoxy                      tests/90b2-geom.js:352-358
-geoBtns                      tests/90b2-geom.js:905
-geoCalm                      tests/90b2-geom.js:915-1038
-geoChipTouch                 tests/90b2-geom.js:447-459
-geoChipZones                 tests/90b2-geom.js:441-446
+geoBtns                      tests/90b2-geom.js:893
+geoCalm                      tests/90b2-geom.js:903-1026
+geoChipTouch                 tests/90b2-geom.js:444-456
+geoChipZones                 tests/90b2-geom.js:438-443
 geoClipPoly                  tests/90b2-geom.js:44
 geoCol                       tests/90b2-geom.js:73-84
-geoCompose                   tests/90b2-geom.js:706-731
+geoCompose                   tests/90b2-geom.js:703-728
 geoContrast                  tests/90b2-geom.js:87
 geoD                         tests/90b2-geom.js:35
-geoDom                       tests/90b2-geom.js:383-435
+geoDom                       tests/90b2-geom.js:380-432
 geoEdge                      tests/90b2-geom.js:68
 geoExtra                     tests/90b2-geom.js:223-245
 geoFaultAt                   src/18b-geology.js:92-97
 geoFaultX                    src/18b-geology.js:99-102
 geoFin                       tests/90b2-geom.js:58
-geoFontProbe                 tests/90b2-geom.js:1040-1049
+geoFontProbe                 tests/90b2-geom.js:1028-1037
 geoFrame                     tests/90b2-geom.js:309-312
 geoFrame1                    tests/90b2-geom.js:313-329
 geoHang                      tests/90b2-geom.js:252
@@ -4501,35 +4498,35 @@ geoHookBake                  tests/90b2-geom.js:168-176
 geoHookCtx                   tests/90b2-geom.js:94-126
 geoHookOvl                   tests/90b2-geom.js:258-303
 geoIn                        tests/90b2-geom.js:60
-geoLaws                      tests/90b2-geom.js:462-698
-geoLbl                       tests/90b2-geom.js:904
+geoLaws                      tests/90b2-geom.js:459-695
+geoLbl                       tests/90b2-geom.js:892
 geoLum                       tests/90b2-geom.js:85
 geoMin                       tests/90b2-geom.js:59
-geoOpaque                    tests/90b2-geom.js:359-369
+geoOpaque                    tests/90b2-geom.js:359-366
 geoOut                       tests/90b2-geom.js:62-66
 geoOvQ                       tests/90b2-geom.js:257
 geoOver                      tests/90b2-geom.js:86
 geoPArea                     tests/90b2-geom.js:42
-geoPad                       tests/90b2-geom.js:370
+geoPad                       tests/90b2-geom.js:367
 geoPoly                      tests/90b2-geom.js:41
 geoR                         tests/90b2-geom.js:34
 geoRec                       tests/90b2-geom.js:178-218
-geoRich                      tests/90b2-geom.js:865
+geoRich                      tests/90b2-geom.js:853
 geoRoadFrame                 tests/90b2-geom.js:333-348
 geoRs                        tests/90b2-geom.js:69
-geoRun                       tests/90b2-geom.js:956-1038
+geoRun                       tests/90b2-geom.js:944-1026
 geoSat                       tests/90b2-geom.js:51
-geoScreens                   tests/90b2-geom.js:871-903
-geoSelf                      tests/90b2-geom.js:734-861
-geoSettle                    tests/90b2-geom.js:923
+geoScreens                   tests/90b2-geom.js:859-891
+geoSelf                      tests/90b2-geom.js:731-849
+geoSettle                    tests/90b2-geom.js:911
 geoShape                     tests/90b2-geom.js:128-132
-geoShut                      tests/90b2-geom.js:914
-geoSig                       tests/90b2-geom.js:907-910
-geoStation                   tests/90b2-geom.js:866
+geoShut                      tests/90b2-geom.js:902
+geoSig                       tests/90b2-geom.js:895-898
+geoStation                   tests/90b2-geom.js:854
 geoSty                       tests/90b2-geom.js:351
-geoTable                     tests/90b2-geom.js:870
+geoTable                     tests/90b2-geom.js:858
 geoText                      tests/90b2-geom.js:133-147
-geoWho                       tests/90b2-geom.js:372-381
+geoWho                       tests/90b2-geom.js:369-378
 geoWob                       src/18b-geology.js:80-82
 geoWorld                     tests/90b3-geom-world.js:41-56
 geoWorldBox                  tests/90b3-geom-world.js:15-26
@@ -5028,34 +5025,32 @@ handBtnTick                  src/12td-settle-hand.js:123-134
 hangAlarmOn                  src/08bj-ovl-hang.js:63
 hangAt                       src/08bj-ovl-hang.js:41-45
 hangBlock                    src/08bj-ovl-hang.js:48-52
-hangCase                     src/08bj-ovl-hang.js:372-381
-hangCue                      src/08bj-ovl-hang.js:386-400
-hangCueHung                  src/08bj-ovl-hang.js:401
-hangCut                      src/08bj-ovl-hang.js:96-99
-hangDraw                     src/08bj-ovl-hang.js:250-278
+hangCase                     src/08bj-ovl-hang.js:353-362
+hangCue                      src/08bj-ovl-hang.js:367-381
+hangCueHung                  src/08bj-ovl-hang.js:382
+hangCut                      src/08bj-ovl-hang.js:85-88
+hangDraw                     src/08bj-ovl-hang.js:239-259
 hangFont                     src/08bj-ovl-hang.js:74
-hangHex                      src/08bj-ovl-hang.js:244-249
-hangHint                     src/08bj-ovl-hang.js:405-417
-hangHit                      src/08bj-ovl-hang.js:94
+hangHex                      src/08bj-ovl-hang.js:233-238
+hangHint                     src/08bj-ovl-hang.js:386-398
+hangHit                      src/08bj-ovl-hang.js:83
 hangIn                       src/08bj-ovl-hang.js:30
-hangLW                       src/08bj-ovl-hang.js:79-85
-hangLayout                   src/08bj-ovl-hang.js:196-235
-hangMsg                      src/08bj-ovl-hang.js:343-368
-hangMsgBand                  src/08bj-ovl-hang.js:121-130
-hangMsgHung                  src/08bj-ovl-hang.js:369
-hangNamed                    src/08bj-ovl-hang.js:185-194
-hangObstacles                src/08bj-ovl-hang.js:106-118
+hangLayout                   src/08bj-ovl-hang.js:185-224
+hangMsg                      src/08bj-ovl-hang.js:324-349
+hangMsgBand                  src/08bj-ovl-hang.js:110-119
+hangMsgHung                  src/08bj-ovl-hang.js:350
+hangNamed                    src/08bj-ovl-hang.js:174-183
+hangObstacles                src/08bj-ovl-hang.js:95-107
 hangOk                       src/08bj-ovl-hang.js:29
-hangPlace                    src/08bj-ovl-hang.js:138-168
-hangRectAt                   src/08bj-ovl-hang.js:100-104
-hangRuns                     src/08bj-ovl-hang.js:78
+hangPlace                    src/08bj-ovl-hang.js:127-157
+hangRectAt                   src/08bj-ovl-hang.js:89-93
 hangSay                      src/08bj-ovl-hang.js:54-61
-hangSize                     src/08bj-ovl-hang.js:87-92
+hangSize                     src/08bj-ovl-hang.js:76-81
 hangSt                       src/08bj-ovl-hang.js:65
-hangSurface                  src/08bj-ovl-hang.js:302-336
+hangSurface                  src/08bj-ovl-hang.js:283-317
 hangTW                       src/08bj-ovl-hang.js:66-73
-hangTri                      src/08bj-ovl-hang.js:237-240
-hangWrap                     src/08bj-ovl-hang.js:170-183
+hangTri                      src/08bj-ovl-hang.js:226-229
+hangWrap                     src/08bj-ovl-hang.js:159-172
 hasEpisode                   src/03-ships.js:139-142
 hasSave                      src/14a-cloud.js:76
 hashi                        src/01-core.js:23-27
@@ -5851,9 +5846,9 @@ mapMarkAt                    src/18a-map-addr.js:31
 mapMarkToggle                src/18a-map-addr.js:33-41
 mapMarks                     src/18a-map-addr.js:30
 mapMarksDraw                 src/18a-map-addr.js:98-113
-mapOrbFan                    src/18l-map-plate.js:83-102
-mapOrbInk                    src/18l-map-plate.js:81
-mapOrbsDraw                  src/18l-map-plate.js:103-118
+mapOrbFan                    src/18l-map-plate.js:78-92
+mapOrbInk                    src/18l-map-plate.js:76
+mapOrbsDraw                  src/18l-map-plate.js:93-108
 mapOverOn                    src/18-mode-map.js:148
 mapOverTap                   src/18-mode-map.js:213-217
 mapOverview                  src/18-mode-map.js:191-212
@@ -5871,7 +5866,7 @@ mapRoseDraw                  src/18a-map-addr.js:191-214
 mapRulerTop                  src/18a-map-addr.js:53
 mapRulersDraw                src/18a-map-addr.js:115-189
 mapRumoursDraw               src/18a-map-addr.js:82-96
-mapSelBlock                  src/18l-map-plate.js:61-68
+mapSelBlock                  src/18l-map-plate.js:61-66
 mapSelHang                   src/18l-map-plate.js:18-35
 mapSelInk                    src/18l-map-plate.js:54-58
 mapStarsGpu                  src/17z3-map-gpu.js:202-230
@@ -6306,7 +6301,7 @@ ovEll                        src/08bi-gpu-ovl.js:341-344
 ovFlush                      src/08bi-gpu-ovl.js:229-243
 ovGraph                      src/08bi-gpu-ovl.js:362-366
 ovHang                       src/08bj-ovl-hang.js:34-38
-ovHangFlush                  src/08bj-ovl-hang.js:280-297
+ovHangFlush                  src/08bj-ovl-hang.js:261-278
 ovHushed                     src/08bi-gpu-ovl.js:204
 ovImage                      src/08bi-gpu-ovl.js:290-296
 ovInto                       src/08bi-gpu-ovl.js:90-93
@@ -8872,7 +8867,7 @@ zoomTo                       src/15-input.js:358
 ## src/08bi-gpu-ovl.js · 31 KB
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
-## src/08bj-ovl-hang.js · 31 KB
+## src/08bj-ovl-hang.js · 30 KB
   · Слова на вещах (M803): табличка у вещи, центр кадра пуст:1
 
 ## src/08c-gpu-kit.js · 34 KB
@@ -9525,7 +9520,7 @@ zoomTo                       src/15-input.js:358
 ## src/17ga-gpu-planets.js · 30 KB
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
-## src/17gab-gpu-orb.js · 39 KB
+## src/17gab-gpu-orb.js · 38 KB
   · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
 
 ## src/17gab1-gpu-orb-draw.js · 9 KB
@@ -9646,7 +9641,7 @@ zoomTo                       src/15-input.js:358
 ## src/18k-rail-scheme.js · 19 KB
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
-## src/18l-map-plate.js · 12 KB
+## src/18l-map-plate.js · 10 KB
   · карта: веса и таблички (M822):1
 
 ## src/19-mode-landing-ground.js · 27 KB
@@ -10075,7 +10070,7 @@ zoomTo                       src/15-input.js:358
 ## src/23ce-dig-pln-beasts.js · 8 KB
   · рудник на движке: кусачие — звери планеты (M631):1
 
-## src/23cf-dig-words.js · 5 KB
+## src/23cf-dig-words.js · 3 KB
   · шахта: слова на вещах (как 22d в пещере, 21ae на базе):1
 
 ## src/24-mode-belt.js · 23 KB
@@ -10459,7 +10454,7 @@ zoomTo                       src/15-input.js:358
 ## tests/90b-detect.js · 26 KB
   · детекторы: законы, которые смотрят после каждого шага (M443):1
 
-## tests/90b2-geom.js · 95 KB
+## tests/90b2-geom.js · 93 KB
   · Зрение: экран в числах и неравенствах (27.09.2026):1
 
 ## tests/90b3-geom-world.js · 4 KB
@@ -10575,7 +10570,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim.js · 42 KB
+## tests/91zzzw4-ecosim.js · 45 KB
   · проба · экономика (M903):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
