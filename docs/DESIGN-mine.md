@@ -35,7 +35,8 @@ biters were a 2D brush unrelated to the planet's beasts.
   tinted by the heaviest ore.
 - **Ore shows in the section** (22.10, reworked the same day). An ore body reads from the drift's
   distance as a field of grain: faceted nuggets of the ore's colour scattered over the whole lens,
-  denser and larger towards its heart (`23cb dig3OreBodies`, `DIG3_ORE`), sunk into the sheet so only
+  denser and larger towards its heart (`23cb dig3OreBodies`, `DIG3_ORE`; instances of three nugget
+  shapes — a merged mesh cost 11–22 ms per dressing rebuild, instances 1.5–3.9), sunk into the sheet so only
   a cap shows (grain in the rock, not gravel in front of it), and on the back wall of a working the
   body crosses. Under them the sheet's paint darkens towards the ore's colour (`23ca`). The tone is
   three quarters ore, a quarter the cave's mineral band, so iron is not ice. Grain stops half a metre
@@ -55,6 +56,12 @@ biters were a 2D brush unrelated to the planet's beasts.
   a failed frame is named «СБОЙ · … · шахта» and retried next frame, `?dig=0` is gone. The impulse
   is a glowing ring in the scene (`23ce dig3ZapFrame`, in front of the sheet, to the stun radius)
   with a cold flash on the rock; the drill's progress bar is the engine's shapes, no canvas branch.
+  The flat mine's modules are deleted (`23a-dig-draw`, `23aa-dig-rock`, `23ac-dig-mid-gpu`,
+  `23b-dig-gpu`, and their warm-up pipelines `fld.dig.*`). What outlived them — the mine's record
+  (`mineKey/SpotX/Deep/Load/Save`) and the land line with its turf (`digSurfY`, `digSoilCols`,
+  `DIG_TURF/SUB`) — lives in `23-0-mine-rec`, before `23-mode-dig`. `23-mode-dig` is not edited:
+  `23c0-dig-hooks` sets `drawDig` to the engine's frame and turns its canvas `drawDigFauna` into a
+  loud error; a hook that finds nothing to hook fails at load.
 - **Sinking:** at the bottom of the shaft S drills the shaft down and the cage follows the face;
   reaching a level row opens the level.
 - **Up and down off a drift only along ore** (an ore cell or one beside an ore body): that is how
