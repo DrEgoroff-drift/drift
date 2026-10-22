@@ -471,6 +471,9 @@ function drawCombat(zx,zy,Z){
        if(hit)ly=y-22;}
       domLabel("pn"+p.seed,x,ly,lbl,font,fill,"center");
       if(p.rogue)domLabel("pr"+p.seed,x,y+37,"БЫВШИЙ УПРАВЛЯЮЩИЙ","8px ui-monospace,monospace","rgba(197,138,224,.6)","center");
+      /* прыжок виден заранее (M902c, §8 «награда»): отсчёт под именем — три-четыре секунды, пока его ещё догнать */
+      else if(p.jumpT&&p.hull>0&&!p.fled){const js=Math.max(0,Math.ceil((p.jumpT-G.t)/60));
+        domLabel("pj"+p.seed,x,ly>y?ly+10:ly-10,"УХОДИТ · "+js+" С",font,"rgba(255,178,92,.95)","center");}
     }else if(G.tech.has("radar")){
       const ang=Math.atan2(p.y-G.ship.y,p.x-G.ship.x);
       const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-26),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-26);

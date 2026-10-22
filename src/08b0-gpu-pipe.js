@@ -34,11 +34,11 @@ const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>G
   "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsy.belt":()=>SBELT_HAZE_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY,
   "fld.abil.cone":()=>ABIL_CONE_WGSL,"fld.belt.rocklay":()=>BROCK_LAY_WGSL,
   /* поля режимов (поздний прогрев, GPU_LATE_KEYS ниже): шахта, база, дом, черпак, карта, «Сорока», комната 3D */
-  "fld.gsky2":()=>GSK_WGSL,"fld.dig.mul":()=>CAVE_MUL_WGSL+DIG_OWN_WGSL,"fld.dig.add":()=>CAVE_ADD_WGSL+DIG_OWN_WGSL,
-  "fld.dig.dark":()=>DIG_DARK_WGSL+DIG_OWN_WGSL,"fld.warm.glow":()=>WARM_GLOW_WGSL,
+  "fld.gsky2":()=>GSK_WGSL,
+  "fld.warm.glow":()=>WARM_GLOW_WGSL,
   "fld.baselight":()=>baseLightWgsl(),"fld.baseair":()=>baseAirWgsl(),
   "fld.scoop.air":()=>SCP_AIR,"fld.scoop.flow":()=>SCP_FLOW,"fld.scoop.obs":()=>SCP_OBS,
-  "fld.map.gal":()=>GAL_WGSL,"fld.wansky":()=>WAN_SKY_WGSL,"fld.wanlit":()=>WAN_LIT_WGSL,"fld.wanair":()=>WAN_AIR_WGSL,
+  "fld.map.gal":()=>GAL_WGSL,
   "fld.r3post":()=>R3_POST_WGSL};
 const GPU_PIPE_SRC={
   "kit.img":()=>[GPU_IMG_WGSL,gpuImgLayout()],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
@@ -93,7 +93,7 @@ function gpuAfterWarm(fn,ms){
    набор «входы в режимы не строят конвейеры» (tests/91zzzzzzy5-modepipes.js).
    Ярусные группы (планета, пещера) приносят свои дескрипторы: GPU_LATE_GROUPS.push(() => [[ключ, {desc}]…]) */
 const GPU_LATE_KEYS=[
-  "pipe:fld.gsky2|over","pipe:fld.dig.mul|mul","pipe:fld.dig.add|add","pipe:fld.dig.dark|mul","pipe:fld.warm.glow|add",
+  "pipe:fld.gsky2|over","pipe:fld.warm.glow|add",
   "pipe:fld.baselight|mul","pipe:fld.baseair|add",
   "pipe:fld.hin.light|mul","pipe:fld.hin.haze|add","pipe:fld.hin.air|add","pipe:fld.hin.flit|over",
   "pipe:fld.scoop.air|over","pipe:fld.scoop.flow|over","pipe:fld.scoop.obs|over",

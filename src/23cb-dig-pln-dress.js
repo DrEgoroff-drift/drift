@@ -88,18 +88,35 @@ function dig3DressMesh(F){
       for(let y=y0+.25;y<y1-.05;y+=.3)box(lx-.22,lx+.22,y,y+.04,zd-.6,zd-.54,K.woodD);
     }
   }
-  DIG3.stat.ore=dig3OreBodies(m,F);
-  return {geo:plnGeo(plnMeshDone(m)),lamps,gen:PLN_GPU.gen,v:F.v,D:F.D};
+  const t0=wallMs(),ore=dig3OreBodies(F);
+  DIG3.stat.ore=ore.n;DIG3.stat.oreMs=+(wallMs()-t0).toFixed(1);
+  return {geo:plnGeo(plnMeshDone(m)),ore,lamps,gen:PLN_GPU.gen,v:F.v,D:F.D};
 }
 /* рудное тело — россыпь гранёных самородков цвета руды по всей линзе, гуще и крупнее к сердцу: на листе
    разреза и на задней стене выработки, которую тело пересекает. Мерило — штрек: тело видно с его расстояния
    как пятно зерна, не как туман (жилы-трубки вблизи читались палками, 22.10). Тон — руда на три четверти,
    полоса пещеры на четверть: железо не лёд. Строится только у выработок (near клеток от выкопанного, под
-   забоем ствола — дальше): дальше игрок тела не видит. Возвращает число самородков (для замера) */
-const DIG3_ORE={near:7,sink:.45,dens:3.2,cap:340,wall:.7};
-function dig3OreBodies(m,F){
-  const D=F.D,CM=DIG3_CM,Z=DIG3_ORE,want=new Set();
-  if(!D||!F.g)return 0;
+   забоем ствола — дальше): дальше игрок тела не видит. Зерно — инстансы трёх форм (DIG3_ORE.shapes): тысячи
+   капель, слепленных в меш, стоили 11–22 мс на каждую пересборку обвеса (22.10). Отдаёт {n, inst[форма]} */
+const DIG3_ORE={near:7,sink:.45,dens:3.2,cap:340,wall:.7,
+  shapes:[{r:[1.25,.9,.8],pitch:.3,lean:1},{r:[1,.75,.8],pitch:-.4,lean:2.2},{r:[1.4,1,.8],pitch:.1,lean:.4}]};
+const DIG3OG={gen:-1,geo:[]};
+/* формы самородка в мерке «размер = 1»: тон белый — цвет руды несёт инстанс */
+function dig3OreGeo(){
+  const Q=DIG3OG;
+  if(Q.gen===PLN_GPU.gen&&Q.geo.length)return Q.geo;
+  for(const g of Q.geo)plnGeoFree(g);
+  Q.geo=DIG3_ORE.shapes.map((h,i)=>{const m=plnMesh(256);
+    plnBlob(m,{c:[0,0,0],r:h.r,sub:0,bump:.35,yaw:i*1.7,pitch:h.pitch,lean:h.lean,seed:i*13+5,col:[1,1,1],mat:CAVE3_MAT.vein,glow:.9,x:1});
+    return plnGeo(plnMeshDone(m));});
+  Q.gen=PLN_GPU.gen;
+  return Q.geo;
+}
+function dig3OreFree(o){if(o&&o.inst)for(const I of o.inst)if(I)plnInstFree(I);}
+function dig3OreBodies(F){
+  const D=F.D,CM=DIG3_CM,Z=DIG3_ORE,want=new Set(),NS=Z.shapes.length,out={n:0,inst:[]};
+  if(!D||!F.g)return out;
+  const recs=Z.shapes.map(()=>[]);
   /* какие узлы руды рядом с выработкой: каждая выкопанная клетка отмечает узлы в радиусе near */
   for(let r=0;r<F.NR;r++)for(let c=-MINE_HALF;c<=MINE_HALF;c++){
     if(!dig3Dug(F,c,r))continue;
@@ -134,12 +151,18 @@ function dig3OreBodies(m,F){
       if(rock(x,y))z=sz*Z.sink;   /* утоплен в лист: наружу шапка, зерно в породе, не гравий перед ней */
       else if(r()<Z.wall){const w=wallZ(x,y);if(w!=null)z=w+sz*.25;}
       if(z==null)continue;
-      plnBlob(m,{c:[x,y,z],r:[sz*(1+r()*.5),sz*(.7+r()*.4),sz*.8],sub:0,bump:.35,yaw:r()*6.3,pitch:r()-.5,lean:r()*3,seed:j*13+nc,
-        col:tone,mat:CAVE3_MAT.vein,glow:.9,x:1});
-      n++;
+      recs[(((j+nc)%NS)+NS)%NS].push(x,y,z,sz*(.9+r()*.25),r()*6.3,tone[0],tone[1],tone[2]);
     }
   }
-  return n;
+  /* записи инстансов: место, размер, поворот, тон руды */
+  recs.forEach((L,h)=>{
+    const k=L.length/8;
+    if(!k){out.inst.push(null);return;}
+    const a=new Float32Array(16*k);
+    for(let i=0;i<k;i++){const o=i*8;plnRec(a,i,[L[o],L[o+1],L[o+2]],L[o+3],L[o+4],1,i+h*7919,[L[o+5],L[o+6],L[o+7]]);}
+    out.inst.push(plnInst(a,k,k));out.n+=k;
+  });
+  return out;
 }
 
 /* вагонетка в клети: короб x ±w, по высоте y0..y1 над полом клети, вглубь z0..z1 (за человеком, z 1.1) */
@@ -269,9 +292,12 @@ function dig3RopeSet(Q,xb,yb,xt,yt,z){
 /* кадр: убранство, клеть, канат и огни ламп в окне */
 function dig3DressFrame(F,Fd,D,Mm,x0,x1,y0,y1,Lt){
   const M=DIG3;
-  if(!M.dr||M.dr.gen!==PLN_GPU.gen||M.dr.v!==Fd.v||M.dr.D!==D){if(M.dr)plnGeoFree(M.dr.geo);M.dr=dig3DressMesh(Fd);}
+  if(!M.dr||M.dr.gen!==PLN_GPU.gen||M.dr.v!==Fd.v||M.dr.D!==D){if(M.dr){plnGeoFree(M.dr.geo);dig3OreFree(M.dr.ore);}M.dr=dig3DressMesh(Fd);}
   F.draw.push({geo:M.dr.geo,lamp:true,sun:true,refl:false});
   let tris=M.dr.geo.n/3;
+  /* зерно руды: три формы, каждая своим инстансным вызовом */
+  const og=dig3OreGeo();
+  M.dr.ore.inst.forEach((I,h)=>{if(I){F.draw.push({geo:og[h],inst:I,lamp:true,sun:true,refl:false});tris+=og[h].n/3*I.n;}});
   for(const q of M.dr.lamps){
     if(q[0]<x0||q[0]>x1||q[1]<y0||q[1]>y1)continue;
     Lt(q,7.5,[.42,.28,.13]);

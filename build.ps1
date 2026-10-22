@@ -178,7 +178,6 @@ $BULK_OLD = @{     # известные крупные; замер обновл�
   "91zzzw-combat.js" = 41
   "91zzzw-base.js" = 42     # помощники четырёх базовых наборов, включая bShift (M418)
   "26-ui-station.js" = 41    # M415: доска, рынок и док — в 26e-ui-station-trade
-  "23a-dig-draw.js" = 41
 }
 function Bulk($files, $tfiles) {
   $big = @(@($files) + @($tfiles) | Where-Object {
