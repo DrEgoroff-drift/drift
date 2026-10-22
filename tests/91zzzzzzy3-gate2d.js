@@ -35,6 +35,16 @@ const GATE2D=[
      return {S};},
    done(){ok(!!TRC.it,"чужой след: тело собрано");
      if(G.surf)G.surf.trace=null;}},
+  /* земля поверхности (M807): грунт, разрез и порода — тела движка (21pf); старая 2D-земля (18a fillMaterial,
+     18a1 лессировка, 18b drawStrata) снята, её имена — заглушки для запертых 19/20a/21b. Художники — и движок
+     земли, и всё, что осталось от старой: позови кто-нибудь из них 2D — ворота красные */
+  {name:"земля поверхности (21pf, M807): грунт и разрез движком, 2D-краски старой земли нет",
+   painters:["plnLandStep","plnGpuFrame","drawGround","groundChunkPaint","drawRocks","fillMaterial","drawStrata",
+     "glazeGround","planetMatHue","greyOf","greyA","greyStretch"],probe:["plnGpuFrame"],
+   place(first){
+     if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
+       const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
+     return G.surf?{S:G.surf}:null;}},
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
    place(){
