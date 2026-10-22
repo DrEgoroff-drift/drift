@@ -39,9 +39,9 @@ function drawGalaxyNames(V,cell){
   if(cell>=24)return;
   const k=clamp((24-cell)/10,0,1);          /* проявляются по мере отъезда */
   const X=x=>W/2+(x-V.x)*cell,Y=y=>H/2+(y-V.y)*cell;
-  ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.font=(11*mapU()).toFixed(1)+"px ui-monospace,monospace";
-  ctx.fillStyle="rgba(200,214,255,"+(.42*k).toFixed(2)+")";
+  const MS=mapSave();MPN.textAlign="center";MPN.textBaseline="middle";
+  MPN.font=(11*mapU()).toFixed(1)+"px ui-monospace,monospace";
+  MPN.fillStyle="rgba(200,214,255,"+(.42*k).toFixed(2)+")";
   for(const A of GAL_ARMS){
     const t=A.ru.toUpperCase().split("").join(" ");   /* разрядка: слово лежит на рукаве, а не стоит поверх */
     for(const [r,kk] of [[14,0],[24,1]]){
@@ -56,13 +56,13 @@ function drawGalaxyNames(V,cell){
       if(sp.length)mapLate(t,sp,0);
     }
   }
-  ctx.font=(9*mapU()).toFixed(1)+"px ui-monospace,monospace";
+  MPN.font=(9*mapU()).toFixed(1)+"px ui-monospace,monospace";
   for(const n of GAL_NEBULAE){
     const x=X(n.x),y=Y(n.y);
     if(x<-60||x>W+60||y<-30||y>H+30)continue;
     mpDisc(x,y,1.6,"rgba(255,190,220,"+(.55*k).toFixed(2)+")");
-    ctx.fillStyle="rgba(230,214,236,"+(.5*k).toFixed(2)+")";
+    MPN.fillStyle="rgba(230,214,236,"+(.5*k).toFixed(2)+")";
     mapLate(n.ru.toLowerCase(),[[x,y+10],[x,y-8]],0);   /* под точкой или над ней */
   }
-  ctx.restore();
+  mapRestore(MS);
 }

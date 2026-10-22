@@ -140,8 +140,8 @@ function mapHoldingsDraw(vis,cell,V,st){
       const R=rallyAt(v.gx,v.gy);
       if(R){
         mpCircle(x0+cell*.5,y0+cell*.5,cell*.32,1.4,"rgba(255,214,120,.9)");
-        ctx.font=Math.max(8,cell*.16).toFixed(0)+"px ui-monospace,monospace";
-        ctx.textAlign="center";
+        MPN.font=Math.max(8,cell*.16).toFixed(0)+"px ui-monospace,monospace";
+        MPN.textAlign="center";
         mpText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06,"rgba(255,214,120,.9)");mapInkText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06);
       }
     }
@@ -219,22 +219,22 @@ function mapHoldingsTop(vis,cell,V,st){
     if(best&&bl>60){
       const [a,b]=best,ang=Math.atan2(b.y-a.y,b.x-a.x);
       const ra=Math.abs(ang)>Math.PI/2?ang+Math.PI:ang,mx=(a.x+b.x)/2,my=(a.y+b.y)/2,o=cell*.32,c=Math.cos(ra),s=Math.sin(ra);
-      mapFont(8);ctx.textAlign="center";ctx.fillStyle="rgba(236,232,220,.55)";
+      mapFont(8);MPN.textAlign="center";MPN.fillStyle="rgba(236,232,220,.55)";
       mapLate("Г Л А В Т Р А С С А",[[mx+o*s,my-o*c,ra],[mx-o*s,my+o*c+8*c,ra]],1);   /* над плечом или под ним */
     }
     /* бирки перемен */
     const now=clockNow();
     for(const v of vis){
       const tg=mapTagAt(v.gx,v.gy,now);if(!tg)continue;
-      mapFont(8);ctx.textAlign="left";
+      mapFont(8);MPN.textAlign="left";
       const tw=mapTM(tg.ru).width;
-      ctx.fillStyle="rgba(127,230,216,"+(.85*tg.a).toFixed(2)+")";
+      MPN.fillStyle="rgba(127,230,216,"+(.85*tg.a).toFixed(2)+")";
       mapLate(tg.ru,[[v.x+14,v.y+14],[v.x+14,v.y-8],[v.x-tw-14,v.y+14]],2,[-4,-8,tw+8,11,"rgba(6,10,16,"+(.6*tg.a).toFixed(2)+")"]);
     }
   }
   /* ценники: лучшая виденная цена станции — коротко, под звездой */
   if(mapLayerOn("prices")&&G.seenPrices){
-    mapFont(8);ctx.textAlign="center";
+    mapFont(8);MPN.textAlign="center";
     for(const v of vis){
       if(!v.s||!v.s.station)continue;
       let pr=G.seenPrices[v.s.key];
@@ -243,7 +243,7 @@ function mapHoldingsTop(vis,cell,V,st){
       let bk=null;for(const k of TRADE_KEYS){if(pr.p[k]&&(!bk||pr.p[k]>pr.p[bk]))bk=k;}
       if(!bk)continue;
       const hot=(G.cargo[bk]|0)>0;
-      ctx.fillStyle=hot?"#f2b25c":"rgba(160,182,192,.75)";
+      MPN.fillStyle=hot?"#f2b25c":"rgba(160,182,192,.75)";
       mapLate(RES[bk].ru.toLowerCase()+" "+pr.p[bk],[[v.x,v.y+cell*.42],[v.x,v.y-cell*.42-2]],hot?3:2);   /* под звездой, а занято — над ней */
     }
   }

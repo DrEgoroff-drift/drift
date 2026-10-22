@@ -310,7 +310,7 @@ function drawFactRoute(vis){
   const pts=m.route.slice(0,mgrRouteMax(m)).map(at).filter(Boolean);
   if(pts.length<2)return;
   const col="rgba(242,178,92,";
-  ctx.save();
+  const MS=mapSave();
   /* пером карты (17z4): точки по плечам — пунктир 1/5 с круглыми концами */
   for(let i=1;i<pts.length;i++)mpDash(pts[i-1].x,pts[i-1].y,pts[i].x,pts[i].y,1.2,col+".45)",[1,5]);
   /* борт идёт по маршруту: точка, ползущая от плеча к плечу, — это и есть
@@ -336,11 +336,11 @@ function drawFactRoute(vis){
   const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
   const rel=Math.round((leg.sell-leg.buy)/Math.max(1,leg.buy)*100);
   const label=RES[leg.k].ru.toUpperCase()+" "+leg.buy+" → "+leg.sell+" ("+rel+"%)";
-  ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
-  const tw=ctx.measureText(label).width;
+  MPN.font="9px ui-monospace,monospace";MPN.textAlign="center";MPN.textBaseline="middle";
+  const tw=mapTM(label).width;
   mpRect(mx-tw/2-6,my-8,tw+12,16,"rgba(6,10,16,.85)");mapInkBox(mx-tw/2-6,my-8,tw+12,16);
   mpFrame(mx-tw/2-5.5,my-7.5,tw+11,15,1,col+".55)");
   mpText(label,mx,my+.5,"#f2b25c");
-  ctx.textBaseline="alphabetic";
-  ctx.restore();
+  MPN.textBaseline="alphabetic";
+  mapRestore(MS);
 }

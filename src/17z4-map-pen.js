@@ -13,7 +13,9 @@
    видеокарты кадр не отправляется, и игрок видит плашку 08b2, а не 2D-карту. 2D-цели у пера
    нет и вне карты (M817, 22.10): эмблему на сайте рисует своё 2D-перо site/war-pen.js (build.ps1
    кладёт его в war.js вместо этого модуля), табличка стапеля 26e2 — перо холста движка. На ctx перо не красит */
-const MPN={q:[],lay:"u",al:1,a0:1,w:1};
+/* регистр текста пера (M817): шрифт, выравнивание, основание и цвет строки — поля MPN, а не свойства ctx
+   (их сеттеры на 2D-контексте стоили 360 вызовов за 90 кадров карты). Начальные — как у нового ctx */
+const MPN={q:[],lay:"u",al:1,a0:1,w:1,font:"10px sans-serif",textAlign:"start",textBaseline:"alphabetic",fillStyle:"#000000"};
 /* MPN.dev — устройство есть: без него у слоя нет атласа и кадр не уйдёт — строки не кладутся (мерка у карты своя) */
 function mpBegin(){MPN.dev=typeof GPU!=="undefined"&&!!GPU.ok&&!!GPU.dev;MPN.lay="u";MPN.q.length=0;MPN.al=MPN.a0=MPN.w=1;}
 function mpEnd(){mpFlush();MPN.al=MPN.a0=MPN.w=1;}
@@ -128,7 +130,7 @@ function mpHatch(x0,y0,w,h,st,dir,lw,col){
 function mpTextAlong(t,x,y,ang,dy,col){
   const ca=Math.cos(ang),sa=Math.sin(ang);
   /* вся строка одной повёрнутой маской (08bi ovTextRot), как 2D под rotate */
-  if(MPN.dev)ovTextRot(OVL.uq,x-dy*sa,y+dy*ca,t,ctx.font,col,"center",ctx.textBaseline,MPN.al,ang);
+  if(MPN.dev)ovTextRot(OVL.uq,x-dy*sa,y+dy*ca,t,MPN.font,col,"center",MPN.textBaseline,MPN.al,ang);
 }
 /* сеть пеленгов — mapRhumbPaint (site/war-backdrop.js, ею рисует карта войны сайта) пером:
    шестнадцать румбов из вашей системы до дальнего угла кадра и окружность построения */
@@ -149,8 +151,8 @@ function mpPlate(x,y,w,h){
   hangHex(sn(x0-e),sn(y0-e),sn(x1+e),sn(y1+e),sn(c+e*.42),HANG.EDGE,.17*MPN.al);
   hangHex(x0,y0,x1,y1,c,HANG.BODY,.94*MPN.al);
 }
-/* подпись: шрифт, выравнивание и линия — нынешние ctx (mapFont, textAlign, textBaseline) */
+/* подпись: шрифт, выравнивание и линия — нынешний регистр пера (mapFont, MPN.textAlign, MPN.textBaseline) */
 function mpText(t,x,y,col){
   if((!t&&t!==0)||!MPN.dev)return;
-  ovText(OVL.uq,x,y,String(t),ctx.font,col,ctx.textAlign,ctx.textBaseline,MPN.al,1);
+  ovText(OVL.uq,x,y,String(t),MPN.font,col,MPN.textAlign,MPN.textBaseline,MPN.al,1);
 }
