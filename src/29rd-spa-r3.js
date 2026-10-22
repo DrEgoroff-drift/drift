@@ -17,7 +17,7 @@
    6. 2D-веранды нет (22.10, автор: «2D не должно быть»): старый художник 29i удалён вместе с ?room=0 и ?spa3=0.
       Без видеокарты кадра нет — плашка «нет WebGPU» (08b2); сбой кадра называет страж (28-loop). */
 /* профиль токарки K.lathe — пары [y, r] */
-const SPA3={cn:null,tags:null,mesh:null,mkey:"",err:0,frames:0,stat:null,vp:null,sz:null,meas:null,hit:[],sl:0,day:0,dt0:0,board:null,bkey:""};
+const SPA3={cn:null,tags:null,mesh:null,mkey:"",err:0,frames:0,S:null,vp:null,sz:null,meas:null,hit:[],sl:0,day:0,dt0:0,board:null,bkey:""};
 const SPA3_L=-4.6,SPA3_R=6,SPA3_B=-2.2,SPA3_F=6.5;
 const SPA3_DAYMS=240000;   /* мс на веранде от утра до вечера */
 const SPA3_SLEEP=2600;
@@ -200,7 +200,7 @@ function spa3Frame(){
   U[43]=t;U[44]=1;U[47]=1;
   const oq=r3Proj(cam.vp,cam.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   U.set([1,sz.ch/sz.cw,HALL_SHARP,1],52);
-  SPA3.frames++;SPA3.stat=hallLimits(Sc);SPA3.vp=cam.vp;SPA3.sz=sz;
+  SPA3.frames++;SPA3.S=Sc;SPA3.vp=cam.vp;SPA3.sz=sz;
   SPA3.meas={man:+hallManK(cam,SPA3_MAN[0],SPA3_MAN[1],sz.ch).toFixed(3),sun:+spa3Sun(S).toFixed(2),day:S.day,sleep:+spa3SleepPh().toFixed(2)};
   SPA3.hit=spa3Hits(S,cam,sz);
   room3TagsDraw(spa3Tags(S),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.wide?sz.cw-200*UIK:sz.cw-170,yr:sz.ch-(sz.wide?150:230)},SPA3.tags,spa3SleepPh()>0);
