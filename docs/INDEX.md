@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 634 · top-level symbols: 8721
+Files: 629 · top-level symbols: 8695
 
 ## SYMBOLS
 
@@ -106,20 +106,15 @@ BARGE_SS                     src/12l-barge.js:413
 BARGE_TEMPER                 src/12l-barge.js:17-21
 BARGE_TKEYS                  src/12l-barge.js:22
 BARTER                       src/04-mods.js:70-76
-BASE_BK                      src/21ad-base-gpu.js:26
 BASE_CAP_SH                  src/21a1-base-life.js:24
 BASE_COLS                    src/21a-mode-base.js:6
 BASE_DETAIL                  src/21a1-base-life.js:25
-BASE_LAMP_KEYS               src/21ad-base-gpu.js:32
 BASE_LOG                     src/21a1-base-life.js:26
 BASE_MIN                     src/21a1-base-life.js:27
 BASE_NOTE_W                  src/21a-mode-base.js:120
 BASE_OX                      src/21a-mode-base.js:9
-BASE_PASS                    src/21aa-base-rooms.js:27
 BASE_ROLES                   src/12a-crew.js:158-168
-BASE_ROOM                    src/21ab-base-interiors.js:9-149
 BASE_WALKED                  src/21a-mode-base.js:119
-BASE_WGSL_HEAD               src/21ad-base-gpu.js:38
 BATT_COOL                    src/21d-battery.js:13
 BATT_DMG                     src/21d-battery.js:14
 BATT_RANGE                   src/21d-battery.js:12
@@ -181,7 +176,6 @@ BMGR_FLAWS                   src/21b2-base-mgr.js:24-31
 BMGR_SAY_ASK                 src/21b2-base-mgr.js:72-77
 BMGR_SAY_FLAT                src/21b2-base-mgr.js:66-71
 BMGR_SEV                     src/21b2-base-mgr.js:33
-BM_WARM                      src/21aa-base-rooms.js:20
 BODY                         src/17c2e-body-kit.js:7
 BODY_BARGE_KEEP              src/17c2f-body-barge.js:8
 BODY_CAM                     src/17-mode-system.js:79
@@ -362,7 +356,6 @@ CLOUD_ST                     src/14a-cloud.js:107
 CLOUD_TIER                   src/19e-clouds.js:49-62
 CLR_HOURS                    src/05e-clearance.js:29
 CLR_KILLS                    src/05e-clearance.js:28
-COLS                         src/21ad-base-gpu.js:48
 COOP_ASKS                    src/12aj-coop.js:126-134
 COOP_ASK_BY                  src/12aj-coop.js:135
 COOP_FEE                     src/12aj-coop.js:27
@@ -647,7 +640,6 @@ FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19-25
 FIND_R                       src/17b-finds.js:236
-FIN_DEF                      src/21aa-base-rooms.js:77
 FIRE_ALONE                   src/21a5-base-dir.js:121
 FIRM_TOWN                    src/12al1-toponym.js:26
 FIRM_WORD                    src/12al1-toponym.js:27
@@ -873,16 +865,16 @@ GPU_FRONT_LIKE               src/08b-gpu.js:533
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:193
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:167
-GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:106
-GPU_LATE_KEYS                src/08b0-gpu-pipe.js:95-126
+GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:104
+GPU_LATE_KEYS                src/08b0-gpu-pipe.js:94-124
 GPU_LIT_DK                   src/17c-system-draw.js:25
 GPU_LIT_SH                   src/17c-system-draw.js:23
 GPU_MIP                      src/08c-gpu-kit.js:98
 GPU_MIP_LOD                  src/08c-gpu-kit.js:192
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-67
-GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:51
-GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:43-64
+GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:50
+GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:42-63
 GPU_PL_WGSL                  src/08b-gpu.js:485
 GPU_POST_WGSL                src/08b-gpu.js:80
 GPU_SCR                      src/08c-gpu-kit.js:174
@@ -1517,7 +1509,6 @@ OV_CV                        src/08bi-gpu-ovl.js:304
 OV_EYE                       src/08bi-gpu-ovl.js:300
 OWN                          src/21pig-pln-own.js:26
 OWN_WIN                      src/21pig-pln-own.js:31
-OX                           src/21ad-base-gpu.js:47
 P3                           src/17c2b-parts3d.js:18
 P3T                          src/17c2d-parts-thumb.js:21
 P3T_CAM                      src/17c2d-parts-thumb.js:22
@@ -2007,7 +1998,6 @@ ROLE_LIM                     src/13c-roles.js:7
 ROMAN                        src/01-core.js:185
 ROOM3                        src/29r-rooms-r3.js:13
 ROOM3_M                      src/29r-rooms-r3.js:15
-ROOM_FIN                     src/21aa-base-rooms.js:61-71
 ROUTE_MAX                    src/12r-route.js:29
 RPG_IDS                      src/27f1-room-gpu.js:37
 RTONE                        src/09a-roomtone.js:22
@@ -2065,20 +2055,20 @@ SD_MAN                       src/12tb-settle-draw.js:31
 SD_SHSINK                    src/12tb-settle-draw.js:241
 SEAT                         src/27j-console.js:40
 SECT                         src/21ae-base-sect.js:16
-SECT_COLD                    src/21ae-base-sect.js:25
+SECT_COLD                    src/21ae-base-sect.js:24
 SECT_KIT_C                   src/21aea-base-kits.js:13
 SECT_KIT_FILL                src/21aea-base-kits.js:17
-SECT_LIVE                    src/21ae-base-sect.js:27
-SECT_M                       src/21ae-base-sect.js:21
-SECT_MAT_WALL                src/21ae-base-sect.js:29
-SECT_MENU                    src/21ae-base-sect.js:386
-SECT_MONO                    src/21ae-base-sect.js:332
-SECT_OLD_EXIT                src/21ae-base-sect.js:590
-SECT_OLD_HSURF               src/21ae-base-sect.js:611
-SECT_OLD_HUD                 src/21ae-base-sect.js:624
-SECT_OLD_TAP                 src/21ae-base-sect.js:497
-SECT_SIT                     src/21ae-base-sect.js:23
-SECT_W                       src/21ae-base-sect.js:601
+SECT_LIVE                    src/21ae-base-sect.js:26
+SECT_M                       src/21ae-base-sect.js:20
+SECT_MAT_WALL                src/21ae-base-sect.js:28
+SECT_MENU                    src/21ae-base-sect.js:385
+SECT_MONO                    src/21ae-base-sect.js:331
+SECT_OLD_EXIT                src/21ae-base-sect.js:591
+SECT_OLD_HSURF               src/21ae-base-sect.js:612
+SECT_OLD_HUD                 src/21ae-base-sect.js:625
+SECT_OLD_TAP                 src/21ae-base-sect.js:496
+SECT_SIT                     src/21ae-base-sect.js:22
+SECT_W                       src/21ae-base-sect.js:602
 SEC_CAP                      src/26-ui-station.js:411
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
 SEC_KING_GOAL                src/12b2-fx-sec.js:23
@@ -2558,16 +2548,6 @@ avrTick                      src/21a6-base-avral.js:76-102
 avrWin                       src/21a6-base-avral.js:103-111
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
-bBox                         src/21aa-base-rooms.js:38-43
-bCrate                       src/21aa-base-rooms.js:108-115
-bGlow                        src/21aa-base-rooms.js:147-160
-bHazard                      src/21aa-base-rooms.js:138-144
-bL                           src/21aa-base-rooms.js:29
-bLamp                        src/21aa-base-rooms.js:117-136
-bPipe                        src/21aa-base-rooms.js:79-89
-bS                           src/21aa-base-rooms.js:28
-bScreen                      src/21aa-base-rooms.js:91-106
-bWorker                      src/21aa-base-rooms.js:178-240
 bakeAt                       src/20ab-poi-gpu.js:148-153
 bakeIdle                     tests/90-harness.js:438-445
 bakeKeep                     src/08c-gpu-kit.js:76-81
@@ -2575,11 +2555,11 @@ bakePut                      src/20ab-poi-gpu.js:155
 bakeRect                     src/20ab-poi-gpu.js:154
 bakeStand                    src/20ab-poi-gpu.js:157
 bakeTrim                     src/21bc-deco-gpu.js:25-35
-banyaLive                    src/21ac1-base-banya.js:37-40
-banyaRested                  src/21ac1-base-banya.js:64
-banyaSpirit                  src/21ac1-base-banya.js:47
-banyaStep                    src/21ac1-base-banya.js:49-62
-banyaWarm                    src/21ac1-base-banya.js:42-46
+banyaLive                    src/21ac1-base-banya.js:35-38
+banyaRested                  src/21ac1-base-banya.js:62
+banyaSpirit                  src/21ac1-base-banya.js:45
+banyaStep                    src/21ac1-base-banya.js:47-60
+banyaWarm                    src/21ac1-base-banya.js:40-44
 bargeArtOf                   src/12l-barge.js:415-558
 bargeAttackers               src/12l-barge.js:167-169
 bargeAutoLoad                src/12ag-holdfx.js:35-55
@@ -2626,10 +2606,9 @@ baseAdjLine                  src/21a4-base-adj.js:111-120
 baseAdjMine                  src/21a4-base-adj.js:108
 baseAdjPairs                 src/21a4-base-adj.js:34-54
 baseAdjSpirit                src/21a4-base-adj.js:102-104
-baseAirWgsl                  src/21ad-base-gpu.js:157-201
 baseAssignHere               src/21a3-base-people.js:61-66
 baseAt                       src/21a-mode-base.js:85
-baseBakeFree                 src/21ad-base-gpu.js:28
+baseBakeFree                 src/21ae-base-sect.js:570
 baseBlocked                  src/21b1-base-pay.js:86-89
 baseCall                     src/21a2-base-link.js:35-39
 baseCallOut                  src/21a2-base-link.js:128-135
@@ -2690,7 +2669,6 @@ baseLifeLine                 src/21a1-base-life.js:454-467
 baseLifeMakers               src/21a1-base-life.js:304-311
 baseLifeNeed                 src/21a1-base-life.js:298-302
 baseLifeStep                 src/21a1-base-life.js:336-402
-baseLightWgsl                src/21ad-base-gpu.js:127-155
 baseLinkCan                  src/21a2-base-link.js:114
 baseLinkPark                 src/21a2-base-link.js:115-123
 baseList                     src/21a-mode-base.js:376-380
@@ -2744,7 +2722,6 @@ baseWake                     src/21a1-base-life.js:325-332
 baseWalkOut                  src/21a1b-base-food.js:51-71
 baseWarnLine                 src/21a9-base-laws.js:56-62
 baseWearStep                 src/21a9-base-laws.js:73-88
-baseWgslHead                 src/21ad-base-gpu.js:39-125
 baseWho                      src/21a1-base-life.js:45-49
 baseWhy                      src/21a9-base-laws.js:135-155
 baseWordLine                 src/21a2-base-link.js:65-74
@@ -2785,7 +2762,7 @@ beamAdd                      src/13a-guns.js:79-83
 beamsTick                    src/13a-guns.js:84-90
 beastBias                    src/20f-fauna.js:46-54
 beastFormWord                src/20e-species.js:215-223
-beastTake                    src/21ac2-base-farm.js:47-53
+beastTake                    src/21ac2-base-farm.js:45-51
 beastTraitWord               src/20e-species.js:224-233
 beltBasis                    src/24-mode-belt.js:150-160
 beltDots                     src/17gc-sys-belt.js:159-165
@@ -3925,7 +3902,7 @@ drawAstronaut                src/20-life.js:4-140
 drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-651
 drawBargesMap                src/12l-barge.js:653-672
-drawBase                     src/21ae-base-sect.js:572-588
+drawBase                     src/21ae-base-sect.js:573-589
 drawBaseBuilding             src/21c-built.js:142-202
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
@@ -3933,7 +3910,6 @@ drawBeastAlien               src/20f-fauna.js:68-238
 drawBelt                     src/24-mode-belt.js:372
 drawBeltRocks                src/17gc-sys-belt.js:67-152
 drawBillboard                src/17k-billboard.js:182-198
-drawBuildMenu                src/21aa-base-rooms.js:259-275
 drawBuilt                    src/21c-built.js:64-102
 drawCave                     src/22d-cave-pln.js:317-334
 drawCheburek                 src/17j-cheburek.js:78-109
@@ -4048,8 +4024,6 @@ drawTierTrim                 src/03b-hull-paint.js:63-156
 drawTiles                    src/18c-chunks.js:154-165
 drawTrail                    src/16-flight.js:457-460
 drawTransitPlate             src/03d-hull-marks.js:186-196
-drawVan                      src/21ac3-base-van.js:71-137
-drawVanSmall                 src/21ac3-base-van.js:139-145
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
 drawWanderRoom               src/29re-wander-r3.js:353-356
@@ -4234,15 +4208,15 @@ farVein                      src/06e-far-take.js:74-83
 farVeinCompany               src/06e-far-take.js:197-200
 farVeinRumour                src/06e-far-take.js:182-195
 farVeinsKnown                src/06e-far-take.js:168-180
-farmBeast                    src/21ac2-base-farm.js:56-66
-farmCell                     src/21ac2-base-farm.js:37-40
-farmEnter                    src/21ac2-base-farm.js:82-93
-farmGood                     src/21ac2-base-farm.js:69-76
-farmName                     src/21ac2-base-farm.js:67
-farmOf                       src/21ac2-base-farm.js:54
-farmStep                     src/21ac2-base-farm.js:95-117
-farmTalk                     src/21ac2-base-farm.js:77-80
-farmWanted                   src/21ac2-base-farm.js:42-45
+farmBeast                    src/21ac2-base-farm.js:54-64
+farmCell                     src/21ac2-base-farm.js:35-38
+farmEnter                    src/21ac2-base-farm.js:80-91
+farmGood                     src/21ac2-base-farm.js:67-74
+farmName                     src/21ac2-base-farm.js:65
+farmOf                       src/21ac2-base-farm.js:52
+farmStep                     src/21ac2-base-farm.js:93-115
+farmTalk                     src/21ac2-base-farm.js:75-78
+farmWanted                   src/21ac2-base-farm.js:40-43
 faucetPrice                  src/12ab-hold.js:155-158
 faunaOf                      src/20e-species.js:268-284
 fbm1                         src/01-core.js:117
@@ -4359,8 +4333,8 @@ frameLastAt                  src/28-loop.js:674
 freeVoice                    src/09-audio.js:104-108
 fridgeFee                    src/21ac4-base-fridge.js:19
 fridgeFirmAt                 src/21ac4-base-fridge.js:15-18
-fridgeLocked                 src/21ac4-base-fridge.js:36
-fridgeStep                   src/21ac4-base-fridge.js:37-56
+fridgeLocked                 src/21ac4-base-fridge.js:34
+fridgeStep                   src/21ac4-base-fridge.js:35-54
 ftFoe                        tests/91zzzw9j-fight.js:4-12
 fuelPriceHere                src/12k-rep.js:63-70
 furColor                     src/20f-fauna.js:25-34
@@ -4649,7 +4623,7 @@ gplSun                       src/17ga-gpu-planets.js:334-337
 gpsBake                      src/17gb-gpu-planet-strip.js:106-122
 gpsDesc                      src/17gb-gpu-planet-strip.js:98
 gpsPipe                      src/17gb-gpu-planet-strip.js:100-104
-gpuAfterWarm                 src/08b0-gpu-pipe.js:81-85
+gpuAfterWarm                 src/08b0-gpu-pipe.js:80-84
 gpuArena                     src/08c-gpu-kit.js:156-166
 gpuBake                      src/08ca-gpu-canvas.js:529-534
 gpuBakeDrop                  src/08ca-gpu-canvas.js:544
@@ -4706,12 +4680,12 @@ gpuOver                      src/08b-gpu.js:605-625
 gpuPass                      src/08b-gpu.js:455-458
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
-gpuPipeRecipe                src/08b0-gpu-pipe.js:56-64
+gpuPipeRecipe                src/08b0-gpu-pipe.js:55-63
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
 gpuPipes                     src/08b-gpu.js:370-391
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
-gpuPipesLate                 src/08b0-gpu-pipe.js:109-126
-gpuPipesWarm                 src/08b0-gpu-pipe.js:67-79
+gpuPipesLate                 src/08b0-gpu-pipe.js:107-124
+gpuPipesWarm                 src/08b0-gpu-pipe.js:66-78
 gpuPirateBody                src/12i-pirate-hull.js:425-436
 gpuPirateLive                src/12i-pirate-hull.js:443-489
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
@@ -4757,12 +4731,12 @@ greenWatered                 src/21g-greenhouse.js:32-34
 greyA                        src/18a1-glaze.js:106-109
 greyOf                       src/18a1-glaze.js:102-105
 greyStretch                  src/18a1-glaze.js:120
-gribAvral                    src/21ac1-base-banya.js:81-98
-gribCut                      src/21ac1-base-banya.js:99-109
-gribEat                      src/21ac1-base-banya.js:72-79
-gribMul                      src/21ac1-base-banya.js:71
-gribOn                       src/21ac1-base-banya.js:66
-gribStart                    src/21ac1-base-banya.js:67-70
+gribAvral                    src/21ac1-base-banya.js:79-96
+gribCut                      src/21ac1-base-banya.js:97-107
+gribEat                      src/21ac1-base-banya.js:70-77
+gribMul                      src/21ac1-base-banya.js:69
+gribOn                       src/21ac1-base-banya.js:64
+gribStart                    src/21ac1-base-banya.js:65-68
 grokBlock                    src/27c-ui-hq.js:164-214
 grokBusy                     src/12tb-grok.js:68
 grokCanTeach                 src/12tb-grok.js:136-143
@@ -7835,46 +7809,46 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:412-431
-sectAvr                      src/21ae-base-sect.js:560-568
+sectAvr                      src/21ae-base-sect.js:559-567
 sectBaseFix                  tests/91qf-sect.js:6-16
-sectBox                      src/21ae-base-sect.js:73-82
-sectBuild                    src/21ae-base-sect.js:103-199
-sectCageMesh                 src/21ae-base-sect.js:201-210
-sectCursor                   src/21ae-base-sect.js:546-559
+sectBox                      src/21ae-base-sect.js:72-81
+sectBuild                    src/21ae-base-sect.js:102-198
+sectCageMesh                 src/21ae-base-sect.js:200-209
+sectCursor                   src/21ae-base-sect.js:545-558
 sectCyl                      src/21aea-base-kits.js:20-34
-sectFarWin                   src/21ae-base-sect.js:50-54
-sectFloor                    src/21ae-base-sect.js:40
-sectFrame                    src/21ae-base-sect.js:245-320
-sectGeo                      src/21ae-base-sect.js:211-217
+sectFarWin                   src/21ae-base-sect.js:49-53
+sectFloor                    src/21ae-base-sect.js:39
+sectFrame                    src/21ae-base-sect.js:244-319
+sectGeo                      src/21ae-base-sect.js:210-216
 sectKit                      src/21aea-base-kits.js:37-222
-sectLens                     src/21ae-base-sect.js:44-48
+sectLens                     src/21ae-base-sect.js:43-47
 sectLensAt                   tests/91qf-sect.js:21-30
-sectLensStep                 src/21ae-base-sect.js:221-244
-sectMenuDom                  src/21ae-base-sect.js:403-417
-sectMenuKey                  src/21ae-base-sect.js:402
-sectMenuLay                  src/21ae-base-sect.js:420-443
-sectMenuRect                 src/21ae-base-sect.js:396-400
-sectMenuWhy                  src/21ae-base-sect.js:388-394
-sectNearWin                  src/21ae-base-sect.js:57-62
-sectOvAdj                    src/21ae-base-sect.js:359-378
-sectOvBoard                  src/21ae-base-sect.js:511-531
-sectOvDash                   src/21ae-base-sect.js:335-338
-sectOvFrame                  src/21ae-base-sect.js:334
-sectOvMenu                   src/21ae-base-sect.js:444-495
-sectOvNote                   src/21ae-base-sect.js:533-544
-sectOver                     src/21ae-base-sect.js:339-354
-sectPal                      src/21ae-base-sect.js:30-37
-sectPj                       src/21ae-base-sect.js:324-328
-sectPlate                    src/21ae-base-sect.js:603-610
-sectQuad                     src/21ae-base-sect.js:67-71
-sectRoomX                    src/21ae-base-sect.js:41
-sectShare                    src/21ae-base-sect.js:64
-sectSty                      src/21ae-base-sect.js:99-102
-sectVoids                    src/21ae-base-sect.js:84-98
+sectLensStep                 src/21ae-base-sect.js:220-243
+sectMenuDom                  src/21ae-base-sect.js:402-416
+sectMenuKey                  src/21ae-base-sect.js:401
+sectMenuLay                  src/21ae-base-sect.js:419-442
+sectMenuRect                 src/21ae-base-sect.js:395-399
+sectMenuWhy                  src/21ae-base-sect.js:387-393
+sectNearWin                  src/21ae-base-sect.js:56-61
+sectOvAdj                    src/21ae-base-sect.js:358-377
+sectOvBoard                  src/21ae-base-sect.js:510-530
+sectOvDash                   src/21ae-base-sect.js:334-337
+sectOvFrame                  src/21ae-base-sect.js:333
+sectOvMenu                   src/21ae-base-sect.js:443-494
+sectOvNote                   src/21ae-base-sect.js:532-543
+sectOver                     src/21ae-base-sect.js:338-353
+sectPal                      src/21ae-base-sect.js:29-36
+sectPj                       src/21ae-base-sect.js:323-327
+sectPlate                    src/21ae-base-sect.js:604-611
+sectQuad                     src/21ae-base-sect.js:66-70
+sectRoomX                    src/21ae-base-sect.js:40
+sectShare                    src/21ae-base-sect.js:63
+sectSty                      src/21ae-base-sect.js:98-101
+sectVoids                    src/21ae-base-sect.js:83-97
 sectWith                     tests/91qf-sect.js:17-20
-sectWordsOn                  src/21ae-base-sect.js:602
-sectX                        src/21ae-base-sect.js:38
-sectY                        src/21ae-base-sect.js:39
+sectWordsOn                  src/21ae-base-sect.js:603
+sectX                        src/21ae-base-sect.js:37
+sectY                        src/21ae-base-sect.js:38
 seedLand                     tests/91qm-seeds.js:27-33
 seedWorlds                   tests/91qm-seeds.js:14-26
 sellCargo                    src/12-economy.js:181-209
@@ -8201,7 +8175,7 @@ subBreakEven                 src/05b3-sub.js:20
 subBuy                       src/05b3-sub.js:21-33
 subCharge                    src/05b3-sub.js:36-50
 subFee                       src/05b3-sub.js:19
-subFightOffer                src/21ac4-base-fridge.js:92-103
+subFightOffer                src/21ac4-base-fridge.js:59-70
 subHereBy                    src/05b3-sub.js:12-15
 subOff                       src/05b3-sub.js:34
 subRush                      src/05b3-sub.js:65-71
@@ -8867,9 +8841,9 @@ zoomTo                       src/15-input.js:358
 ## src/08b-gpu.js · 54 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08b0-gpu-pipe.js · 11 KB
+## src/08b0-gpu-pipe.js · 10 KB
   · конвейеры: одна воронка и прогрев (DESIGN-gpu §G):1
-  · поздний прогрев: конвейеры режимов:86
+  · поздний прогрев: конвейеры режимов:85
 
 ## src/08b1-gpu-pipe-keys.js · 2 KB
   · таблица ключей прогрева (08b0) — пишет детектор, руками не править:1
@@ -9793,33 +9767,17 @@ zoomTo                       src/15-input.js:358
 ## src/21a9-base-laws.js · 9 KB
   · девять законов трудности (M401, DESIGN-base §22):1
 
-## src/21aa-base-rooms.js · 21 KB
-  · база: внутренности отсеков:1
-  · внутренности отсеков:5
-
-## src/21ab-base-interiors.js · 39 KB
-  · база: восемь отсеков изнутри:1
-
-## src/21ab-base-interiors2.js · 25 KB
-  · отсеки базы: вторая половина:1
-
-## src/21ac-base-draw.js · 3 KB
-  · база: рисование разреза:1
-
-## src/21ac1-base-banya.js · 15 KB
+## src/21ac1-base-banya.js · 7 KB
   · баня и чайный гриб (M497, PLAN st. 7, DESIGN-base §6/§10):1
 
-## src/21ac2-base-farm.js · 12 KB
+## src/21ac2-base-farm.js · 7 KB
   · ферма — одомашнивание (M496, PLAN st. 7, DESIGN-birchpunk §4.3):1
 
-## src/21ac3-base-van.js · 10 KB
+## src/21ac3-base-van.js · 4 KB
   · «Буханка» — машина базы с именем (M498 хвост, M485):1
 
-## src/21ac4-base-fridge.js · 8 KB
+## src/21ac4-base-fridge.js · 5 KB
   · холодильник по подписке (M487, DESIGN-birchpunk §4.2):1
-
-## src/21ad-base-gpu.js · 14 KB
-  · база на видеокарте (G11):1
 
 ## src/21ae-base-sect.js · 44 KB
   · база в разрезе на движке (M632a):1
