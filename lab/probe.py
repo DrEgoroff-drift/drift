@@ -29,6 +29,8 @@ def main():
     ap.add_argument("--alloc", action="store_true", help="with --heap: count everything allocated, garbage too (who churns the GC)")
     ap.add_argument("--all", action="store_true", help="--profile counts every sample, not only frames over 33 ms")
     ap.add_argument("--ws", type=float, default=300, help="CDP socket timeout, seconds: a long snippet needs more")
+    ap.add_argument("--headful", action="store_true", help="a real window instead of headless")
+    ap.add_argument("--pin", type=int, default=0, help="virtual clock from page load and exactly N rAF frames (lab/snippets/pin.js): two builds reach the snippet in one state")
     a = ap.parse_args()
     if not a.port: a.port = noise.free_port()
     if a.js.startswith("@"): a.js = open(a.js[1:], encoding="utf-8").read()   # сниппет файлом: кавычки консоли его не портят
@@ -38,7 +40,8 @@ def main():
     pg = os.path.join(tmp, "probe.html")
     open(pg, "w", encoding="utf-8").write(jank.page(shot.stand_tail(), a.root))
     prof = os.path.join(tempfile.gettempdir(), "drift-probe-%d" % a.port)
-    proc = subprocess.Popen([chrome, "--headless=new", "--remote-debugging-port=%d" % a.port, "--user-data-dir=" + prof,
+    # --headful: настоящее окно (своё, свой профиль) — сборка конвейеров в headless и в окне идёт разными путями (22.10)
+    proc = subprocess.Popen([chrome] + ([] if a.headful else ["--headless=new"]) + ["--remote-debugging-port=%d" % a.port, "--user-data-dir=" + prof,
                              "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--mute-audio",
                              "--enable-unsafe-webgpu", "--enable-precise-memory-info", "--window-size=%d,%d" % (a.w, a.h), "about:blank"],
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -52,6 +55,7 @@ def main():
         ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=a.dpr, mobile=a.mobile)
         ws.call("Network.enable"); ws.call("Network.setBlockedURLs", urls=shot.BLOCK)
         ws.call("Page.enable"); ws.call("Page.addScriptToEvaluateOnNewDocument", source=shot.CATCH)
+        if a.pin: ws.call("Page.addScriptToEvaluateOnNewDocument", source=open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "snippets", "pin.js"), encoding="utf-8").read().replace("__PIN_MAX__", str(a.pin)))
         ws.call("Page.navigate", url="file:///" + pg.replace("\\", "/") + "?s=" + a.scene)
         t0 = time.time()
         while time.time() - t0 < 40:

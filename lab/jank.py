@@ -433,7 +433,10 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
             ge = gs + gsec * 1000
             cut = lambda t: ge - 50 <= t <= ge + 800
             pf = [f["d"] for f in d["f"] if cut(f["t"])]
-            d["f"] = [f for f in d["f"] if not cut(f["t"])]
+            # кадры остаются: дыра в ряду кадров — сама ложный брак («свет рывком» = шаг × 51 кадр, просадка FPS);
+            # у стопа в окне гасится только длительность
+            for f in d["f"]:
+                if cut(f["t"]) and f["d"] > 17: f["d"] = 16.7
             for k in ("lt", "la"): d[k] = [x for x in d.get(k) or [] if not cut(x[0])]
             if pf and max(pf) > 50: print("%-8s проба видеокарты: кадр %.0f мс на %.1f с, за 0,3 с после конца окна меток — цена замера, не игры" % (sc, max(pf), ge / 1000))
         st100 = [(round(f["t"]), round(f["d"])) for f in d["f"] if f["d"] > 100]
