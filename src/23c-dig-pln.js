@@ -119,6 +119,7 @@ function dig3ShaftLight(F,Ls,sY,night,skyLo,dayK,my){
 function dig3Frame(){
   const t0=wallMs(),D=G.dig,Fd=dig3Field(D),M=DIG3,Ln=DIG3_LENS,CM=DIG3_CM;
   const first=M.D!==D,t=wallMs(),dt=first?0:Math.min(.1,Math.max(0,(t-M.t)/1000));
+  M.dt=dt;   /* шаг кадра для своих часов вида (волна импульса, 23ce) */
   M.t=t;
   /* человек: ноги рудника (23cc, px мира, y вниз) — без своего сглаживания, иначе он отстанет
      от пола клети; у верха ствола пол клети — земля у устья */

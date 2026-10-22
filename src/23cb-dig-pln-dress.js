@@ -98,7 +98,7 @@ function dig3DressMesh(F){
    полоса пещеры на четверть: железо не лёд. Строится только у выработок (near клеток от выкопанного, под
    забоем ствола — дальше): дальше игрок тела не видит. Зерно — инстансы трёх форм (DIG3_ORE.shapes): тысячи
    капель, слепленных в меш, стоили 11–22 мс на каждую пересборку обвеса (22.10). Отдаёт {n, inst[форма]} */
-const DIG3_ORE={near:7,sink:.45,dens:3.2,cap:340,wall:.7,
+const DIG3_ORE={near:7,sink:.45,dens:3.2,cap:340,wall:.7,bare:1.3,farKeep:.25,farSink:.12,
   shapes:[{r:[1.25,.9,.8],pitch:.3,lean:1},{r:[1,.75,.8],pitch:-.4,lean:2.2},{r:[1.4,1,.8],pitch:.1,lean:.4}]};
 const DIG3OG={gen:-1,geo:[]};
 /* формы самородка в мерке «размер = 1»: тон белый — цвет руды несёт инстанс */
@@ -140,16 +140,24 @@ function dig3OreBodies(F){
     const [nc,nr]=key.split(",").map(Number),q=oreNode(D,nc,nr);
     if(!q||!RES[q.res])continue;
     const r=rng(hashi(nc*131+7,nr*977+3,0x5EA3)),R=q.rad*CM,cx=(q.cx+.5)*CM,cy=-(q.cy+.5)*CM;
-    const a=R/.8,b=R/1.25,th=(r()-.5)*.7,ux=Math.cos(th),uy=Math.sin(th);
+    const a=R/.8*1.45,b=R/1.25*1.45,n={x:cx,y:cy,r:R};
     const col=plnMix3(band,plnHex(RES[q.res].col),.75);
-    const k=Math.min(Z.cap,Math.round(Math.PI*a*b*Z.dens));
+    const k=Math.min(Z.cap,Math.round(4*a*b*Z.dens));
     for(let j=0;j<k;j++){
-      /* к сердцу гуще и крупнее; край линзы — редкое мелкое зерно */
-      const u=Math.pow(r(),.7),an=r()*TAU,lx=Math.cos(an)*u*a,ly=Math.sin(an)*u*b,x=cx+lx*ux-ly*uy,y=cy+lx*uy+ly*ux;
-      const sz=(.05+r()*.08)*(1.35-u*.7)*(r()<.08?1.7:1),tone=plnMul(col,.8+r()*.45);
+      /* место — по весу тела (та же мерка, что у пятна на листе, 23ca dig3OreW): к сердцу гуще и крупнее,
+         к краю реже и мельче, вне пятна — ни одного; у края зерно глубже в породе — наружу лишь искра */
+      const x=cx+(r()*2-1)*a,y=cy+(r()*2-1)*b,w=dig3OreW(n,x,y,0);
+      if(w<=0||r()>Math.pow(w,1.3))continue;
+      const sz=(.05+r()*.07)*(.55+.6*w)*(r()<.08?1.6:1),tone=plnMul(col,.8+r()*.45);
       let z=null;
-      if(rock(x,y))z=sz*Z.sink;   /* утоплен в лист: наружу шапка, зерно в породе, не гравий перед ней */
-      else if(r()<Z.wall){const w=wallZ(x,y);if(w!=null)z=w+sz*.25;}
+      if(rock(x,y)){
+        /* утоплен в лист: наружу шапка, зерно в породе, не гравий перед ней. Вдали от выработки порода цела —
+           зерно почти всё под ней: редкая искра на срезе, а шапки — только у штрека, где порода сколота */
+        const far=!dugAt(x+Z.bare,y)&&!dugAt(x-Z.bare,y)&&!dugAt(x,y+Z.bare)&&!dugAt(x,y-Z.bare);
+        if(far&&r()>Z.farKeep)continue;
+        z=far?sz*Z.farSink:sz*(Z.sink+.3*(1-w));
+      }
+      else if(r()<Z.wall*w){const wz=wallZ(x,y);if(wz!=null)z=wz+sz*.25;}
       if(z==null)continue;
       recs[(((j+nc)%NS)+NS)%NS].push(x,y,z,sz*(.9+r()*.25),r()*6.3,tone[0],tone[1],tone[2]);
     }
