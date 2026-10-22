@@ -57,14 +57,56 @@ function plnDescent(){
       /* посадочная фара в сумерках и ночью: свет перед кораблём, к объективу — огни площадки светят
          ему в спину, и без неё у плиты ночью виден только силуэт */
       const dusk=plnSmooth(.1,.6,(PLN.sun&&PLN.sun.night)||0);
+      plnDescNight(F,alt,dusk);
       /* ключ плиты — огни на стойках: их лампы первыми, фара — второй свет. Волна «сюда» — только
          пока корабль выше трёх метров: у самой плиты она уже ничего не говорит */
       PLN_DESC.alt=alt;
-      plnPadFrame(F,Ld,tr,touched?0:plnSmooth(2.5,3.5,alt));
-      if(dusk>.05&&F.lamps.length<4)F.lamps.push({p:[sp[0],sp[1]+.8,sp[2]-4.5],r:10,c:[.95,.9,.8],k:1.6*dusk});
+      /* ламп в кадре четыре (21pe): у плиты — тяга, два огня стоек, фара. Высоко (СР · Визуал, M830) огни
+         стоек — один свет, и слот отдан пятну фары на земле под кораблём: ночью это единственный свет людей в
+         кадре, по нему видно, куда садимся, и равнина перестаёт быть ровной */
+      const hi=plnSmooth(5,11,alt);
+      plnPadFrame(F,Ld,tr,touched?0:plnSmooth(2.5,3.5,alt),hi);
+      /* фара: у плиты — белая, над кораблём к объективу; высоко — тёплая и ниже носа, лепит брюхо и борт,
+         которые иначе чёрный силуэт на небе */
+      if(dusk>.05&&F.lamps.length<4)F.lamps.push({p:[sp[0]-2.2*hi,sp[1]+.8-4*hi,sp[2]-4.5],r:10+4*hi,
+        c:[lerp(.95,1,hi),lerp(.9,.76,hi),lerp(.8,.5,hi)],k:1.6*dusk*(1+.4*hi)});
+      const pk=dusk*hi;
+      if(pk>.02&&F.lamps.length<4)F.lamps.push({p:[sp[0],sp[1]-alt+.6,sp[2]],r:5+.38*alt,c:[1,.80,.55],k:1.9*pk});   /* пятно — под кораблём, не на всю рощу */
       /* выхлоп бьёт в землю: пятно света на грунте под соплами — трава и брюхо в его отсвете */
       const wk=thr*plnSmooth(24,2,alt);
       if(wk>.02&&F.lamps.length<4)F.lamps.push({p:[sp[0],sp[1]-alt+.6,sp[2]],r:3+.22*alt,c:[1,.58,.25],k:2.6*wk});}});
+}
+
+/* ── ночь спуска (M830, СР · Визуал 22.10) ──
+   Ночной кадр с высоты судится по docs/look/night.html: земля читается, а не тонет в синем; воздух
+   редкий и серо-лиловый, не один синий тон; у неба есть ключ, даже когда тела неба нет (свечение
+   неба, низко, со стороны ушедшего светила — тени 21pz уже оттуда); заполнение от неба сильнее,
+   чем на земле у героя, потому что объектив высоко и смотрит на всё разом. Днём — ничего */
+function plnDescNight(F,alt,nk){
+  const lk=F.look,mx=(v,c,k)=>{v[0]=lerp(v[0],c[0],k);v[1]=lerp(v[1],c[1],k);v[2]=lerp(v[2],c[2],k);},sc=(v,k)=>{v[0]*=k;v[1]*=k;v[2]*=k;};
+  /* день (M830b, против docs/look/far.html): с высоты объектив смотрит на сотни метров земли разом, и дневной
+     воздух, верный у героя, здесь — голубой кисель: земля светлее и синее стенда на всю полосу. Дымку реже
+     (сильнее с высотой), её цвет — к серому неба, не к синему; экспозиция и заполнение от неба ниже — у стенда
+     даль светлее и холоднее ближнего, но ближнее насыщенное и тёмное в тени */
+  const dk=(1-nk)*plnSmooth(0,.1,alt),hk=plnSmooth(8,30,alt);
+  if(dk>.01){
+    lk.airFar[3]*=1-(.36+.22*hk)*dk;
+    mx(lk.airFar,[.56,.68,.80],.5*dk);mx(lk.airFarS,[.80,.76,.70],.3*dk);
+    sc(lk.ambSky,1-.15*dk);
+    F.expo*=1-.12*dk;
+  }
+  if(nk<.01)return;
+  /* воздух: с сорока метров вся земля — за дымкой; ночью её вдвое реже, а цвет — к лиловому серому */
+  lk.airFar[3]*=1-.62*nk;
+  mx(lk.airFar,[.056,.046,.088],.6*nk);mx(lk.airFarS,[.070,.056,.100],.6*nk);
+  mx(lk.skyHor,[.070,.066,.124],.4*nk);mx(lk.skyHorS,[.082,.072,.132],.4*nk);
+  /* ключ неба: холодный, слабый, низкий — гребни и кроны получают светлую сторону */
+  const kf=[.15,.165,.25];
+  for(let i=0;i<3;i++)F.key[i]=Math.max(F.key[i],kf[i]*nk);
+  sc(lk.bounce,1+.6*nk);
+  /* заполнение: от неба — в полтора и холоднее (кроны ночью серо-зелёные, не зелёные), от земли — чуть */
+  sc(lk.ambSky,1+.15*nk);mx(lk.ambSky,[.036,.038,.100],.35*nk);
+  F.expo*=1+.12*nk;
 }
 
 /* ── площадка (M830) ──
@@ -131,7 +173,7 @@ function plnPadLift(Ld,tr,wy,x){
   if(Math.abs(x-px)>PLN_LPAD.hx)return 0;
   return Math.max(0,plnPadTop(Ld,tr,wy)-plnLandRibAt(Ld,x,Ld.shipZ));
 }
-function plnPadFrame(F,Ld,tr,kw){
+function plnPadFrame(F,Ld,tr,kw,hi){
   if(!Ld)return;
   const Q=plnPadGeo(),px=tr.padX/PLN_M,pz=Ld.shipZ+Q.dz,yaw=Ld.shipYaw||0,cs=Math.cos(yaw),sn=Math.sin(yaw);
   const t=(G.t/60)%7200,c=Q.col,top=plnPadTop(Ld,tr,F.waterY),dusk=plnSmooth(.1,.6,(PLN.sun&&PLN.sun.night)||0);
@@ -157,7 +199,10 @@ function plnPadFrame(F,Ld,tr,kw){
     const s=i?1:-1,p=at(s*(Q.hx-.45),Q.post+.1,Q.hz-.45),g=plnPadBulb(i,t);
     plnRec(Q.u,nu++,p,.21,0,1,0,[c[0]*g,c[1]*g,c[2]*g],0);
     /* светят на плиту в сумерках и ночью; днём их свет тонет в солнце, место лампы — другим */
-    if(dusk>.05&&F.lamps.length<4)F.lamps.push({p,r:10,c:[1,.66,.34],k:2.2*dusk});
+    if(dusk>.05&&F.lamps.length<4){
+      if(!(hi>.5))F.lamps.push({p,r:10,c:[1,.66,.34],k:2.2*dusk});
+      else if(i===0)F.lamps.push({p:at(0,Q.post+.1,Q.hz-.45),r:12,c:[1,.66,.34],k:3*dusk});   /* высоко — один свет на обе стойки */
+    }
   }
   plnInstSet(Q.iu,Q.u,nu);
   F.batches.push({geo:Q.bulb,inst:Q.iu,kind:PLN_KIND.body,to:PLN_TO.main|PLN_TO.mirror});

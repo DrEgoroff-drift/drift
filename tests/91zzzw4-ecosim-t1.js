@@ -8,6 +8,16 @@ function ecoFresh(X){
   const ENV=(globalThis.process&&globalThis.process.env)||{};
   const T1=ENV.ECO_T1||"",KEEP=900,SL=10;
   const sum=o=>Object.values(o||{}).reduce((a,b)=>a+b,0);
+  /* M920: каждая авария свежей записи — минута, корпус, застрахован ли, первый ли час (тогда корпус
+     не отнимают, 28i) и потерян ли он; снимается в конце прогона (off) */
+  const WR0=wreck;
+  wreck=function(why){
+    const TL=X.tl;
+    if(TL){const id=G.shipId,ins=insOn(id),fh=firstHour();
+      (TL.wrecks||(TL.wrecks=[])).push({m:+fwMin().toFixed(1),hull:id,ins,fh,lost:id!=="strizh"&&!ins&&!fh,why:String(why||""),ph:X.ph,sys:G.sys&&G.sys.key});}
+    return WR0.apply(this,arguments);
+  };
+  function off(){wreck=WR0;}
   /* ── хронология первого часа (ярус «свежий») ── */
   function tlSample(){
     const TL=X.tl,BOOK=X.book;
@@ -42,6 +52,11 @@ function ecoFresh(X){
       clr:G.clearance|0,kills:G.kills|0,turn:Math.round(H.turn|0),norm:ecoNormNow()};
     /* срез по десять минут игры (M919): касса, время по фазам, трюм, чего игрок ждёт */
     if(TL.home==null&&G.sys)TL.home=G.sys.key;
+    /* M920: доска верфи — единственное место, где игрок видит Страхкассу (insSection, 28i);
+       сколько раз он стоял у верфи со своим корпусом, кроме «Стрижа», и когда впервые */
+    const yard=G.mode==="dock"&&G.st&&G.st.stype==="yard"&&Object.keys(G.owned).some(id=>id!=="strizh"&&G.owned[id]);
+    if(yard&&!TL.inYard){TL.yardN=(TL.yardN|0)+1;if(TL.insSeen==null)TL.insSeen=m;}
+    TL.inYard=yard;
     const dt=TL.mPrev==null?0:m-TL.mPrev;TL.mPrev=m;
     if(TL.wait){const W=TL.waitMin||(TL.waitMin={});W[TL.wait]=(W[TL.wait]||0)+dt;}
     if(!TL.sl){TL.sl=[];TL.s0=snap(TL,BOOK);}
@@ -120,7 +135,7 @@ function ecoFresh(X){
       mark(TL,"t1hand");
     }finally{X.ph=PH;}
   }
-  return {tlSample,shop,holdMods};
+  return {tlSample,shop,holdMods,off};
 }
 /* печать: путь T0→T1 и срезы по десять минут (зовёт ecoPrint) */
 function ecoFreshPrint(rows){
@@ -132,5 +147,10 @@ function ecoFreshPrint(rows){
     console.log("  | до минуты | касса | вложено | валовый | чистый | кругов | залежей на круг | трюм полон | ходьба · грунт · полёт · паузы · дела · за дроном · прочее, мин | дел | ждёт | ступень дома (очки) | снаряжение |");
     console.log("  |---|---|---|---|---|---|---|---|---|---|---|---|---|");
     for(const s of L.sl)console.log("  | "+s.m+" | "+s.cr+" | "+s.inv+" | "+s.g+" | "+s.net+" | "+s.laps+" | "+n(s.dep)+" (трюм "+s.cap+") | "+s.full+" | "+
-      [s.walk,s.ground,s.fl,s.pz,s.pp,s.dr,s.rest].map(n).join(" · ")+" | "+s.deeds+" | "+s.wait+" | "+s.rung+" | "+s.kit+" |");}
+      [s.walk,s.ground,s.fl,s.pz,s.pp,s.dr,s.rest].map(n).join(" · ")+" | "+s.deeds+" | "+s.wait+" | "+s.rung+" | "+s.kit+" |");
+    /* M920: одна строка на прогон — для свода по сидам */
+    const hr=[0,0,0];for(const s of L.sl){const h=Math.min(2,Math.floor((s.m-1)/60));hr[h]+=s.net;}
+    const E=(globalThis.process&&globalThis.process.env)||{};
+    console.log("  M920 "+JSON.stringify({seed:+E.ECO_SEED||0,t1:E.ECO_T1||"",coop:L.t1coop,drone:L.t1drone,hand:L.t1hand,
+      net:hr,wrecks:L.wrecks||[],insSeen:L.insSeen,yardN:L.yardN|0}));}
 }
