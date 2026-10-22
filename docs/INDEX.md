@@ -10544,7 +10544,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd-hall-walk.js · 6 KB
   · станция пешком (M816):1
 
-## tests/91qd1-hull-plane.js · 3 KB
+## tests/91qd1-hull-plane.js · 4 KB
   · плоскость краски объёмного корпуса (22.10, «двойной корпус»):1
 
 ## tests/91qe-own.js · 11 KB
