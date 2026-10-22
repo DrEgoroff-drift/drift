@@ -262,6 +262,13 @@ const GATE2D=[
      return null;},
    done(){RAIL_ARRIVE=-1e9;},
    warm:30,probe:["railGpu","drawRailArrive"]},
+  /* карта (хвосты переписи M828): перо на видеокарте, регистр текста и мерка строк — мимо ctx */
+  {name:"карта (18, 18a, 18b): подписи, кольца, линейки, роза, владения — без вызовов на ctx",
+   painters:["mapLateFlush","mapOverview","mapRingsDraw","mapRumoursDraw","mapRulersDraw","mapRoseDraw","mapHoldingsDraw","mapHoldingsTop"],
+   place(first){if(first){G.mode="map";G.mapView=null;G.mapMore=false;G.sel={x:G.sx+1,y:G.sy};}return {};},
+   done(){G.mode="system";},
+   reg:true,   /* регистр текста пера (font, textAlign, textBaseline, fillStyle) — свойства ctx без рисования; меряются методы */
+   warm:30,probe:["mapRulersDraw","mapLateFlush","mapRingsDraw"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
@@ -283,7 +290,7 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
         if(GATE2D_DYRY.includes(m[1])){if(!GATE2D_TXT.includes(m[1]))return null;t=true;continue;}
         if(!p&&own.has(m[1]))p=m[1];}
       return p&&{p,t};};
-    const note=k=>{if(!K.on)return;const w=who();if(!w)return;
+    const note=(k,set)=>{if(!K.on||set&&S.reg)return;const w=who();if(!w)return;
       if(w.t){K.tx++;if(S.warm!=null&&K.i>=S.warm)K.late++;return;}
       K.n++;const q=w.p+"."+k;K.by[q]=(K.by[q]||0)+1;};
     const run0=G.running,loop0=LOOP_OFF,wrap={},lim0=Error.stackTraceLimit;
@@ -301,7 +308,7 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
         if(d.value instanceof Function){const o=d.value;saved.push([P,k,d]);
           P[k]=function(){note(k);return o.apply(this,arguments);};}
         else if(d.set){const s=d.set;saved.push([P,k,d]);
-          Object.defineProperty(P,k,{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){note(k);return s.call(this,v);}});}}
+          Object.defineProperty(P,k,{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){note(k,1);return s.call(this,v);}});}}
       for(const k of CO){const o=C[k];saved.push([C,k,{value:o,writable:true,configurable:true,enumerable:true}]);
         C[k]=function(){if(dep.n)note(k);return o.apply(this,arguments);};}
       /* с первого кадра: выпечка — тоже часть ворот */
