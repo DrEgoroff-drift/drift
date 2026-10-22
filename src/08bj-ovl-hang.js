@@ -59,6 +59,8 @@ function hangSay(id,text,kind,d,o){
   T.push({id,lines:L,kind,n:d||150,n0:d||150,mode:G.mode,o:o||{}});
   return true;
 }
+/* выдержка тревоги: 45 кадров после неё спокойные жмутся к краю — но только в её режиме */
+function hangAlarmOn(){return OVL.fno-HANG.alarmF<HANG_ALARM_HOLD&&HANG.alarmM===G.mode;}
 /* ── мерки: ширина строки та же, что у ovText (цифры — моноширинно по «0») ── */
 function hangSt(font){let s=HANG.st.get(font);if(!s)HANG.st.set(font,s=Object.assign({},GC_DEF,{font,textBaseline:"alphabetic",textAlign:"left"}));return s;}
 function hangTW(font,s){
@@ -183,8 +185,10 @@ function hangLayout(Q,k){
   const C={band:{x0:W*.3,y0:H*.3,x1:W*.7,y1:H*.7},top,bot,O:hangObstacles(bot+6),placed:[],
     g:12*k,step:4*k,maxD:Math.max(W,H)*.7,Lmax:H*.25};
   /* тревога ставится первой; пока она идёт и 45 кадров после — спокойные у края */
-  if(Q.some(P=>P.o.urg))HANG.alarmF=OVL.fno;
-  const alarm=OVL.fno-HANG.alarmF<HANG_ALARM_HOLD;
+  /* выдержка живёт в том режиме, где была тревога: черпак после СРОЧНО в системе — не тревога
+     (на 360 «Заход в атмосферу» жался в треть и ехал на «НАГРЕВ КОРПУСА») */
+  if(Q.some(P=>P.o.urg)){HANG.alarmF=OVL.fno;HANG.alarmM=G.mode;}
+  const alarm=hangAlarmOn();
   Q.sort((a,b)=>(b.o.urg?1:0)-(a.o.urg?1:0));
   for(const P of Q){
     /* спокойное в тревогу: сперва в левой трети, потом где угодно, но не в полосе */

@@ -77,6 +77,7 @@ function storyAddrMatch(S,c){
   if(at==="planet")return c.p?c.key:null;         // любой мир, на который сели
   if(at==="settle")return c.p&&typeof settleCanLive==="function"&&settleCanLive(c.p)?c.key:null;
   if(at==="tin")return c.p&&typeof tinCanLive==="function"&&tinCanLive(c.p)?c.key:null;
+  if(at==="watch")return c.sys&&c.st&&typeof watchHas==="function"&&watchHas(c.sys)?c.key:null;   /* станция вашего участка (28j, M910) */
   if(at==="hours:core")return c.sys&&c.st&&typeof hoursDepthAt==="function"&&hoursDepthAt(c.sys.sx,c.sys.sy)===2?c.key:null;   /* ядро уезда (M157) */
   return null;
 }
@@ -350,7 +351,7 @@ function storyLint(){
         for(const k in w)if(!STORY_WHEN[k])bad.push(S.id+" turn:"+k);
     }
     const at=S.at||"any";
-    if(!/^(any|planet|settle|tin|hours:core|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
+    if(!/^(any|planet|settle|tin|watch|hours:core|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
     const ids=new Set();for(const t of S.traces){if(ids.has(t.id))bad.push(S.id+": след "+t.id+" дважды");ids.add(t.id);}
     for(const t of S.traces){
       /* сиденье сцены — только из STORY_SEAT: неизвестное молча падало в

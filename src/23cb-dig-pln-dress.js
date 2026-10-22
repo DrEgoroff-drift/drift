@@ -6,15 +6,16 @@
    Статичное собирается одной сеткой и пересобирается, когда выработка изменилась (D.maskV);
    клеть — одна запись экземпляра, канат — два кольца в своём буфере, их пишут каждый кадр. */
 const DIG3_DR={wood:[.105,.066,.036],woodD:[.062,.04,.022],steel:[.075,.078,.085],rail:[.15,.15,.16],
-  rust:[.13,.065,.03],band:[.62,.2,.03],paint:[.78,.74,.62],lamp:[1,.72,.4],set:1.6,rails:[.82,1.42],lampStep:4};
+  rust:[.13,.065,.03],band:[.62,.2,.03],paint:[.78,.74,.62],steelD:[.038,.04,.044],bolt:[.2,.19,.17],wheel:[.03,.03,.03],lamp:[1,.72,.4],set:1.6,rails:[.82,1.42],lampStep:4};
 
 /* выкопан ли пол под клеткой: штрек стоит на полу, над пустотой — лестница */
 function dig3Floor(F,c,r){return !dig3Dug(F,c,r+1);}
 /* доска с цифрами краской: семь брусков на знак (a верх, b c правые, d низ, e f левые, g середина);
    середина доски — (x, y), лицо — к разрезу на глубине z */
-const DIG3_SEG={"0":"abcdef","1":"bc","2":"abdeg","3":"abcdg","4":"bcfg","5":"acdfg","6":"acdefg","7":"abc","8":"abcdefg","9":"abcdfg","-":"g"};
+/* семёрка с крючком (f), как на счётах: с одной верхней чертой она на телефоне читалась единицей («−27» как «−21») */
+const DIG3_SEG={"0":"abcdef","1":"bc","2":"abdeg","3":"abcdg","4":"bcfg","5":"acdfg","6":"acdefg","7":"abcf","8":"abcdefg","9":"abcdfg","-":"g"};
 function dig3DepthBoard(box,x,y,z,txt,K){
-  const h=.3,w=.16,t=.04,gap=.08,W=txt.length*w+(txt.length-1)*gap;
+  const h=.34,w=.2,t=.06,gap=.08,W=txt.length*w+(txt.length-1)*gap;
   box(x-W/2-.14,x+W/2+.14,y-h/2-.12,y+h/2+.12,z-.04,z+.02,K.woodD);
   box(x-W/2-.16,x+W/2+.16,y-h/2-.14,y-h/2-.1,z-.06,z+.02,K.steel);
   const zf=z-.06,zb=z-.04;
@@ -87,11 +88,146 @@ function dig3DressMesh(F){
       for(let y=y0+.25;y<y1-.05;y+=.3)box(lx-.22,lx+.22,y,y+.04,zd-.6,zd-.54,K.woodD);
     }
   }
-  return {geo:plnGeo(plnMeshDone(m)),lamps,gen:PLN_GPU.gen,v:F.v,D:F.D};
+  const t0=wallMs(),ore=dig3OreBodies(F);
+  DIG3.stat.ore=ore.n;DIG3.stat.oreMs=+(wallMs()-t0).toFixed(1);
+  return {geo:plnGeo(plnMeshDone(m)),ore,lamps,gen:PLN_GPU.gen,v:F.v,D:F.D};
+}
+/* рудное тело — россыпь гранёных самородков цвета руды по всей линзе, гуще и крупнее к сердцу: на листе
+   разреза и на задней стене выработки, которую тело пересекает. Мерило — штрек: тело видно с его расстояния
+   как пятно зерна, не как туман (жилы-трубки вблизи читались палками, 22.10). Тон — руда на три четверти,
+   полоса пещеры на четверть: железо не лёд. Строится только у выработок (near клеток от выкопанного, под
+   забоем ствола — дальше): дальше игрок тела не видит. Зерно — инстансы трёх форм (DIG3_ORE.shapes): тысячи
+   капель, слепленных в меш, стоили 11–22 мс на каждую пересборку обвеса (22.10). Отдаёт {n, inst[форма]} */
+const DIG3_ORE={near:7,sink:.45,dens:3.2,cap:340,wall:.7,
+  shapes:[{r:[1.25,.9,.8],pitch:.3,lean:1},{r:[1,.75,.8],pitch:-.4,lean:2.2},{r:[1.4,1,.8],pitch:.1,lean:.4}]};
+const DIG3OG={gen:-1,geo:[]};
+/* формы самородка в мерке «размер = 1»: тон белый — цвет руды несёт инстанс */
+function dig3OreGeo(){
+  const Q=DIG3OG;
+  if(Q.gen===PLN_GPU.gen&&Q.geo.length)return Q.geo;
+  for(const g of Q.geo)plnGeoFree(g);
+  Q.geo=DIG3_ORE.shapes.map((h,i)=>{const m=plnMesh(256);
+    plnBlob(m,{c:[0,0,0],r:h.r,sub:0,bump:.35,yaw:i*1.7,pitch:h.pitch,lean:h.lean,seed:i*13+5,col:[1,1,1],mat:CAVE3_MAT.vein,glow:.9,x:1});
+    return plnGeo(plnMeshDone(m));});
+  Q.gen=PLN_GPU.gen;
+  return Q.geo;
+}
+function dig3OreFree(o){if(o&&o.inst)for(const I of o.inst)if(I)plnInstFree(I);}
+function dig3OreBodies(F){
+  const D=F.D,CM=DIG3_CM,Z=DIG3_ORE,want=new Set(),NS=Z.shapes.length,out={n:0,inst:[]};
+  if(!D||!F.g)return out;
+  const recs=Z.shapes.map(()=>[]);
+  /* какие узлы руды рядом с выработкой: каждая выкопанная клетка отмечает узлы в радиусе near */
+  for(let r=0;r<F.NR;r++)for(let c=-MINE_HALF;c<=MINE_HALF;c++){
+    if(!dig3Dug(F,c,r))continue;
+    const bottom=c===0&&!dig3Dug(F,0,r+1),dn=bottom?Z.near+5:Z.near;
+    for(let nr=Math.floor(Math.max(0,r-Z.near)/ORE_NODE_H);nr<=Math.floor((r+dn)/ORE_NODE_H);nr++)
+      for(let nc=Math.floor((c-Z.near)/ORE_NODE_W);nc<=Math.floor((c+Z.near)/ORE_NODE_W);nc++)want.add(nc+","+nr);
+  }
+  const dugAt=(x,y)=>dig3Dug(F,Math.floor(x/CM),Math.floor(-y/CM));
+  /* камень ли под точкой: в пустоте и в полуметре от её края на листе зерна нет (лист там — кромка) */
+  const rock=(x,y)=>!dugAt(x,y)&&!dugAt(x+.45,y)&&!dugAt(x-.45,y)&&!dugAt(x,y+.45)&&!dugAt(x,y-.45);
+  /* задняя стена выработки за точкой: первая порода по лучу вглубь; в метре от пола и кровли — не ищем */
+  const wallZ=(x,y)=>{
+    const c=Math.floor(x/CM),rw=Math.floor(-y/CM),fy=-y/CM-rw;
+    if(!dig3Dug(F,c,rw)||fy<.12||fy>.88)return null;
+    for(let z=.6;z<DIG3_ROOM.hall+1.5;z+=.12)if(dig3Den(F,x,y,z)>0)return z;
+    return null;
+  };
+  const band=typeof CAVE3_DC!=="undefined"&&CAVE3_DC.band?CAVE3_DC.band:[.42,.4,.36];
+  let n=0;
+  for(const key of want){
+    const [nc,nr]=key.split(",").map(Number),q=oreNode(D,nc,nr);
+    if(!q||!RES[q.res])continue;
+    const r=rng(hashi(nc*131+7,nr*977+3,0x5EA3)),R=q.rad*CM,cx=(q.cx+.5)*CM,cy=-(q.cy+.5)*CM;
+    const a=R/.8,b=R/1.25,th=(r()-.5)*.7,ux=Math.cos(th),uy=Math.sin(th);
+    const col=plnMix3(band,plnHex(RES[q.res].col),.75);
+    const k=Math.min(Z.cap,Math.round(Math.PI*a*b*Z.dens));
+    for(let j=0;j<k;j++){
+      /* к сердцу гуще и крупнее; край линзы — редкое мелкое зерно */
+      const u=Math.pow(r(),.7),an=r()*TAU,lx=Math.cos(an)*u*a,ly=Math.sin(an)*u*b,x=cx+lx*ux-ly*uy,y=cy+lx*uy+ly*ux;
+      const sz=(.05+r()*.08)*(1.35-u*.7)*(r()<.08?1.7:1),tone=plnMul(col,.8+r()*.45);
+      let z=null;
+      if(rock(x,y))z=sz*Z.sink;   /* утоплен в лист: наружу шапка, зерно в породе, не гравий перед ней */
+      else if(r()<Z.wall){const w=wallZ(x,y);if(w!=null)z=w+sz*.25;}
+      if(z==null)continue;
+      recs[(((j+nc)%NS)+NS)%NS].push(x,y,z,sz*(.9+r()*.25),r()*6.3,tone[0],tone[1],tone[2]);
+    }
+  }
+  /* записи инстансов: место, размер, поворот, тон руды */
+  recs.forEach((L,h)=>{
+    const k=L.length/8;
+    if(!k){out.inst.push(null);return;}
+    const a=new Float32Array(16*k);
+    for(let i=0;i<k;i++){const o=i*8;plnRec(a,i,[L[o],L[o+1],L[o+2]],L[o+3],L[o+4],1,i+h*7919,[L[o+5],L[o+6],L[o+7]]);}
+    out.inst.push(plnInst(a,k,k));out.n+=k;
+  });
+  return out;
 }
 
 /* вагонетка в клети: короб x ±w, по высоте y0..y1 над полом клети, вглубь z0..z1 (за человеком, z 1.1) */
-const DIG3_TUB={w:.62,y0:.12,y1:.62,z0:1.38,z1:1.9};
+const DIG3_TUB={w:.62,wb:.5,y0:.27,y1:.72,z0:1.38,z1:1.9,wr:.1,wx:.34,rail:.05};
+/* шестигранник по восьми углам в порядке dig3Box (низ z0: 0 1, верх z0: 3 2; z1 — 4..7); нормали — от граней */
+function dig3Hex(m,P,col,mat){
+  const F6=[[0,3,2,1],[4,5,6,7],[0,4,7,3],[1,2,6,5],[3,7,6,2],[0,1,5,4]],M=mat==null?PLN_MAT.bark:mat;
+  for(const f of F6){
+    const n=plnNorm(plnCross(plnSub(P[f[1]],P[f[0]]),plnSub(P[f[3]],P[f[0]])));
+    const q=f.map(i=>plnVert(m,P[i],n,col,M));plnQuad(m,q[0],q[1],q[2],q[3]);
+  }
+}
+/* вагонетка (как в штреке 23a): корыто шире кверху, отбортовка с заклёпками, ребро жёсткости,
+   два колеса на рельсе клети; всё в метрах клети, p — её угол */
+function dig3TubBody(m,p,K){
+  const T=DIG3_TUB,M=PLN_MAT,t=.045,X=x=>x+p[0],Y=y=>y+p[1],Z=z=>z+p[2];
+  const box=(x0,x1,y0,y1,za,zb,col)=>dig3Box(m,X(x0),X(x1),Y(y0),Y(y1),Z(za),Z(zb),col);
+  /* полстенки по x на высоте y: корыто раскрывается от wb у дна до w у борта */
+  const hx=y=>T.wb+(T.w-T.wb)*(y-T.y0)/(T.y1-T.y0);
+  const slab=(sx,za,zb)=>{   /* боковая стенка: наклонная плита от дна до борта */
+    const a=sx*T.wb,b=sx*T.w,ai=a-sx*t,bi=b-sx*t;
+    const P=sx<0?[[a,T.y0,za],[ai,T.y0,za],[bi,T.y1,za],[b,T.y1,za],[a,T.y0,zb],[ai,T.y0,zb],[bi,T.y1,zb],[b,T.y1,zb]]
+                :[[ai,T.y0,za],[a,T.y0,za],[b,T.y1,za],[bi,T.y1,za],[ai,T.y0,zb],[a,T.y0,zb],[b,T.y1,zb],[bi,T.y1,zb]];
+    dig3Hex(m,P.map(q=>[X(q[0]),Y(q[1]),Z(q[2])]),K.rust,M.bark);
+  };
+  const face=(za,zb)=>{       /* торец: трапеция */
+    const P=[[-T.wb,T.y0,za],[T.wb,T.y0,za],[T.w,T.y1,za],[-T.w,T.y1,za],[-T.wb,T.y0,zb],[T.wb,T.y0,zb],[T.w,T.y1,zb],[-T.w,T.y1,zb]];
+    dig3Hex(m,P.map(q=>[X(q[0]),Y(q[1]),Z(q[2])]),K.rust,M.bark);
+  };
+  box(-T.wb,T.wb,T.y0,T.y0+.05,T.z0,T.z1,K.rust);
+  face(T.z0,T.z0+t);face(T.z1-t,T.z1);slab(-1,T.z0,T.z1);slab(1,T.z0,T.z1);
+  /* отбортовка: стальной пояс поверх борта, чуть шире корыта */
+  const rw=T.w+.035,ry0=T.y1-.035,ry1=T.y1+.03;
+  box(-rw,rw,ry0,ry1,T.z0-.03,T.z0+.02,K.steel);box(-rw,rw,ry0,ry1,T.z1-.02,T.z1+.03,K.steel);
+  box(-rw,-T.w+.01,ry0,ry1,T.z0-.03,T.z1+.03,K.steel);box(T.w-.01,rw,ry0,ry1,T.z0-.03,T.z1+.03,K.steel);
+  /* ребро жёсткости поперёк торца и угловые накладки — тёмный металл по ржавчине */
+  const ym=(T.y0+T.y1)*.5-.02,xm=hx(ym);
+  box(-xm,xm,ym-.025,ym+.025,T.z0-.018,T.z0+.005,K.steelD);
+  for(const sx of [-1,1]){
+    const x0=sx*hx(T.y0+.06),x1=sx*hx(T.y1-.04);
+    plnTube(m,{path:[[X(x0-sx*.03),Y(T.y0+.06),Z(T.z0-.012)],[X(x1-sx*.03),Y(T.y1-.04),Z(T.z0-.012)]],rad:.024,sides:4,col:K.steelD,mat:M.bark});
+  }
+  /* заклёпки: по отбортовке и по ребру, шаг ~.13 м — точки света на торце */
+  const rv=(x,y)=>box(x-.017,x+.017,y-.017,y+.017,T.z0-.05,T.z0-.025,K.bolt);
+  for(let x=-T.w+.06;x<=T.w-.05;x+=.13)rv(x,(ry0+ry1)/2);
+  for(let x=-xm+.07;x<=xm-.06;x+=.16)rv(x,ym);
+  /* рама и буксы над колёсами */
+  box(-T.wb-.03,T.wb+.03,T.y0-.06,T.y0,T.z0-.01,T.z1+.01,K.steelD);
+  /* рельс клети: головка на шейке, по оси колёс, перед и зад */
+  for(const zr of [T.z0+.02,T.z1-.02]){
+    box(-.86,.86,0,.018,zr-.035,zr+.035,K.steelD);
+    box(-.86,.86,.018,T.rail-.016,zr-.008,zr+.008,K.steelD);
+    box(-.86,.86,T.rail-.016,T.rail,zr-.022,zr+.022,K.rail);
+  }
+  /* колёса: диск с ребордой и ступицей, стоит на головке рельса */
+  const wy=T.rail+T.wr;
+  for(const sx of [-1,1])for(const zw of [T.z0-.035,T.z1-.005]){
+    const x=sx*T.wx,za=zw,zb=zw+.04;
+    plnTube(m,{path:[[X(x),Y(wy),Z(za)],[X(x),Y(wy),Z(zb)]],rad:T.wr,sides:12,col:K.wheel,mat:M.bark,cap:true});
+    plnTube(m,{path:[[X(x),Y(wy),Z(zb-.005)],[X(x),Y(wy),Z(zb+.012)]],rad:T.wr+.018,sides:12,col:K.wheel,mat:M.bark,cap:true});
+    plnTube(m,{path:[[X(x),Y(wy),Z(za-.03)],[X(x),Y(wy),Z(za)]],rad:.032,sides:6,col:K.steel,mat:M.bark,cap:true});
+    box(x-.07,x+.07,wy+.02,T.y0-.06,za+.005,zb,K.steelD);
+  }
+}
+
 /* куча руды в вагонетке: камни горкой, верх горки — y1+.22 при полной клети; цвет — от руды (экземпляр) */
 function dig3HeapMesh(){
   const m=plnMesh(1<<14),T=DIG3_TUB,r=rng(0x4EA9),zm=(T.z0+T.z1)/2,zw=(T.z1-T.z0)/2-.16;
@@ -130,13 +266,8 @@ function dig3CageBody(m,p){
   /* сетка задней стенки и боков — частые прутья */
   for(let x=-w+.15;x<w-.1;x+=.16)box(x,x+.02,0,h,z1-.04,z1-.02,K.steel);
   for(const x of [-w,w-.03])for(let z=z0+.15;z<z1-.1;z+=.16)box(x,x+.03,1.12,h,z,z+.02,K.steel);
-  /* вагонетка у задней сетки: в ней руда едет наверх (груз клети, 23cc); короб на раме, колёса */
-  const T=DIG3_TUB;
-  box(-T.w,T.w,T.y0,T.y0+.06,T.z0,T.z1,K.rust);
-  box(-T.w,T.w,T.y0,T.y1,T.z0,T.z0+.05,K.rust);box(-T.w,T.w,T.y0,T.y1,T.z1-.05,T.z1,K.rust);
-  for(const x of [-T.w,T.w-.05])box(x,x+.05,T.y0,T.y1,T.z0,T.z1,K.rust);
-  box(-T.w-.02,T.w+.02,T.y1-.05,T.y1+.01,T.z0-.02,T.z0+.03,K.steel);
-  for(const x of [-T.w+.18,T.w-.3])box(x,x+.12,0,T.y0,T.z0+.02,T.z0+.08,K.steel);
+  /* вагонетка у задней сетки: в ней руда едет наверх (груз клети, 23cc) */
+  dig3TubBody(m,p,K);
   /* подвеска: дуга над крышей и серьга каната */
   const zc=(z0+z1)/2+p[2];
   plnTube(m,{path:[[p[0]-w*.7,p[1]+h+.08,zc],[p[0],p[1]+h+.55,zc],[p[0]+w*.7,p[1]+h+.08,zc]],rad:.04,sides:4,col:K.steel,mat:M.bark});
@@ -161,9 +292,12 @@ function dig3RopeSet(Q,xb,yb,xt,yt,z){
 /* кадр: убранство, клеть, канат и огни ламп в окне */
 function dig3DressFrame(F,Fd,D,Mm,x0,x1,y0,y1,Lt){
   const M=DIG3;
-  if(!M.dr||M.dr.gen!==PLN_GPU.gen||M.dr.v!==Fd.v||M.dr.D!==D){if(M.dr)plnGeoFree(M.dr.geo);M.dr=dig3DressMesh(Fd);}
+  if(!M.dr||M.dr.gen!==PLN_GPU.gen||M.dr.v!==Fd.v||M.dr.D!==D){if(M.dr){plnGeoFree(M.dr.geo);dig3OreFree(M.dr.ore);}M.dr=dig3DressMesh(Fd);}
   F.draw.push({geo:M.dr.geo,lamp:true,sun:true,refl:false});
   let tris=M.dr.geo.n/3;
+  /* зерно руды: три формы, каждая своим инстансным вызовом */
+  const og=dig3OreGeo();
+  M.dr.ore.inst.forEach((I,h)=>{if(I){F.draw.push({geo:og[h],inst:I,lamp:true,sun:true,refl:false});tris+=og[h].n/3*I.n;}});
   for(const q of M.dr.lamps){
     if(q[0]<x0||q[0]>x1||q[1]<y0||q[1]>y1)continue;
     Lt(q,7.5,[.42,.28,.13]);

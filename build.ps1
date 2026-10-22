@@ -155,7 +155,6 @@ $BULK_OLD = @{     # известные крупные; замер обновл�
                    # Правило то же: имя тут не индульгенция, а замер. Растёт — кричит.
   "12ud-smena-text.js" = 560   # текст романа (M353): таблица, не делится
   "24aa-raid-draw.js" = 50
-  "29d-home-draw.js" = 49
   "27j-ui-opis.js" = 49
   "21-mode-surface.js" = 48
   "12c-mgr-core.js" = 48
@@ -179,7 +178,6 @@ $BULK_OLD = @{     # известные крупные; замер обновл�
   "91zzzw-combat.js" = 41
   "91zzzw-base.js" = 42     # помощники четырёх базовых наборов, включая bShift (M418)
   "26-ui-station.js" = 41    # M415: доска, рынок и док — в 26e-ui-station-trade
-  "23a-dig-draw.js" = 41
 }
 function Bulk($files, $tfiles) {
   $big = @(@($files) + @($tfiles) | Where-Object {

@@ -344,7 +344,7 @@ function sectOver(){
   if(!ox||!ax||!ay)return;
   const kx=ax[0]-ox[0],ky=ay[1]-ox[1];
   const X=px=>ox[0]+sectX(px)*kx,Y=py=>ox[1]+sectY(py)*ky;
-  if(ov)sectOvAdj(B,X,Y,lit);else baseDrawAdj(B,X,Y,lit);
+  if(ov)sectOvAdj(B,pj,lit);else baseDrawAdj(B,X,Y,lit);
   /* номера ярусов в стволе */
   if(!ov){ctx.font=uiFont(8);ctx.textAlign="center";}
   for(let r=0;r<baseRows(B);r++){
@@ -358,19 +358,27 @@ function sectOver(){
   if(ov){sectOvBoard(B,lit);sectOvNote(S);}else{baseDrawBoard(B,lit);baseDrawNote(S);}
   if(S.menu)drawBuildMenu(S);
 }
-/* патрубки соседства (21ac baseDrawAdj) — капсулами слоя */
-function sectOvAdj(B,X,Y,lit){
+/* патрубки соседства (21ac baseDrawAdj) — капсулами слоя. В 2D-базе клетка была мелкой, и труба от
+   середины к середине читалась связью; в разрезе отсек — комната в 9 м, и та же труба шла через всю
+   комнату и через человека (лист M632b, 22.10). Здесь связь — короткий патрубок сквозь общую стену под
+   потолком или сквозь перекрытие в двух метрах от левой стены (не встык со стенным); несколько связей одной стены — рядом, со ступенью */
+function sectOvAdj(B,pj,lit){
   if(typeof baseAdjPairs!=="function")return;
   const COL={wire:[242,178,92],green:[140,220,150],care:[150,220,255],feed:[130,200,255],vent:[190,210,230],
     store:[210,190,140],fix:[200,200,210],noise:[255,120,90],gun:[255,120,90]},ga=.78+lit*.2;
+  const M=SECT_M,z=M.z,n={},seen={};
   for(const P2 of baseAdjPairs(B)){
-    const x1=X(cellX(P2.ac)),y1=Y(cellY(P2.ar)),x2=X(cellX(P2.bc)),y2=Y(cellY(P2.br));
-    if(Math.min(x1,x2)<-BCELL_W||Math.max(x1,x2)>W+BCELL_W)continue;
-    const mx=(x1+x2)/2,my=(y1+y2)/2,c="rgb("+(COL[P2.k]||[200,200,200]).join(",")+")";
+    const side=P2.ar===P2.br,key=side?"h"+Math.max(P2.ac,P2.bc)+":"+P2.ar:"v"+P2.ac+":"+Math.min(P2.ar,P2.br);
+    if(seen[key+P2.k])continue;seen[key+P2.k]=1;
+    const i=n[key]=(n[key]|0)+1,s=i-1;
+    let a,b;
+    if(side){const wx=Math.max(P2.ac,P2.bc)*M.cw,y=sectFloor(P2.ar)+M.room-.45-s*.4;a=pj([wx-1.1,y,z]);b=pj([wx+1.1,y,z]);}
+    else{const r=Math.min(P2.ar,P2.br),x=P2.ac*M.cw+2+s*.45,f=sectFloor(r);a=pj([x,f+.55,z]);b=pj([x,f-(M.ch-M.room)-.55,z]);}
+    if(!a||!b||Math.max(a[0],b[0])<-40||Math.min(a[0],b[0])>W+40)continue;
+    const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,c="rgb("+(COL[P2.k]||[200,200,200]).join(",")+")";
     if(P2.k==="noise"||P2.k==="gun"){sectOvDash(mx-9,my-9,mx+9,my+9,2,4,4,c,.75*ga);continue;}
-    const ax=x1+(x2-x1)*.26,ay=y1+(y2-y1)*.26,bx=x1+(x2-x1)*.74,by=y1+(y2-y1)*.74;
-    ovCap(ax,ay,bx,by,7,"rgb(8,11,16)",.8*ga);ovCap(ax,ay,bx,by,4.5,c,.85*ga);
-    ovCap(ax,ay-1.4,bx,by-1.4,1.2,"#fff",(.12+lit*.16)*ga);
+    ovCap(a[0],a[1],b[0],b[1],7,"rgb(8,11,16)",.8*ga);ovCap(a[0],a[1],b[0],b[1],4.5,c,.85*ga);
+    ovCap(a[0],a[1]-1.4,b[0],b[1]-1.4,1.2,"#fff",(.12+lit*.16)*ga);
     ovCap(mx,my,mx,my,8.8,"rgb(8,11,16)",.85*ga);ovCap(mx,my,mx,my,6,c,.95*ga);
   }
 }

@@ -29,8 +29,39 @@ biters were a 2D brush unrelated to the planet's beasts.
   faces with «КЛЕТЬ ПОЛНА — РУДУ НАВЕРХ, К УСТЬЮ»; dead rock still drills. When the cage stands at
   the collar the load goes into the hold; what does not fit stays in the cage and waits. The load is
   kept in the mine's record beside the workings (`rec.cage`, written only when non-empty, an array
-  from the cloud reads as empty). In the frame a tub stands at the cage's back mesh; the ore heap
-  rises over its rim with the load, tinted by the heaviest ore.
+  from the cloud reads as empty). In the frame a tub stands at the cage's back mesh — the drift tub
+  of the old mine in the body: a trough wider at the top, a steel rim with rivets, a rib across the
+  end, two wheels with flanges on the cage's own rail; the ore heap rises over the rim with the load,
+  tinted by the heaviest ore.
+- **Ore shows in the section** (22.10, reworked the same day). An ore body reads from the drift's
+  distance as a field of grain: faceted nuggets of the ore's colour scattered over the whole lens,
+  denser and larger towards its heart (`23cb dig3OreBodies`, `DIG3_ORE`; instances of three nugget
+  shapes — a merged mesh cost 11–22 ms per dressing rebuild, instances 1.5–3.9), sunk into the sheet so only
+  a cap shows (grain in the rock, not gravel in front of it), and on the back wall of a working the
+  body crosses. Under them the sheet's paint darkens towards the ore's colour (`23ca`). The tone is
+  three quarters ore, a quarter the cave's mineral band, so iron is not ice. Grain stops half a metre
+  off a working. Only bodies within seven cells of a working (twelve under the shaft's bottom) are
+  built. The first try — short seams in the cave's vein language — read as sticks up close and as
+  nothing from the drift.
+- **Lens** (22.10, `DIG3_LENS`): the working is the hero — the man is about a tenth of the frame's
+  height on PC and a fifth on the phone, the drift about a third (PC). The section's lip
+  (`DIG3_LIP`) is scaled to that lens: the cave shader burns half a metre off the void, which at the
+  mine's lens drew a white rim round every working; the sheet now hands it its distance multiplied,
+  leaving the stand's soft glow (~.45 m) and a 6 cm rim.
+- **Day column** (22.10): the shader's moss and daylight fall inside the mouth's ellipse in plan;
+  with the man more than a few metres down it narrows to the shaft — rock above the frame is not in
+  the shadow map, and a wide column put moss on the drift floor through a roof that was not there.
+- **No 2D** (22.10, the author: get rid of 2D). The mine's frame is the engine's only: the old flat
+  frame (`23a`, `23aa`) is no longer a fallback — before the pipelines are ready the frame is empty,
+  a failed frame is named «СБОЙ · … · шахта» and retried next frame, `?dig=0` is gone. The impulse
+  is a glowing ring in the scene (`23ce dig3ZapFrame`, in front of the sheet, to the stun radius)
+  with a cold flash on the rock; the drill's progress bar is the engine's shapes, no canvas branch.
+  The flat mine's modules are deleted (`23a-dig-draw`, `23aa-dig-rock`, `23ac-dig-mid-gpu`,
+  `23b-dig-gpu`, and their warm-up pipelines `fld.dig.*`). What outlived them — the mine's record
+  (`mineKey/SpotX/Deep/Load/Save`) and the land line with its turf (`digSurfY`, `digSoilCols`,
+  `DIG_TURF/SUB`) — lives in `23-0-mine-rec`, before `23-mode-dig`. `23-mode-dig` is not edited:
+  `23c0-dig-hooks` sets `drawDig` to the engine's frame and turns its canvas `drawDigFauna` into a
+  loud error; a hook that finds nothing to hook fails at load.
 - **Sinking:** at the bottom of the shaft S drills the shaft down and the cage follows the face;
   reaching a level row opens the level.
 - **Up and down off a drift only along ore** (an ore cell or one beside an ore body): that is how
@@ -60,11 +91,12 @@ per MSAA sample: the nearer of the two wins.
 - **The headframe** is a planet body in both modes (on the surface with the cage parked at the
   mouth), so the light does not change on the way in.
 - Deep down, when no ground is in the window, the planet frame is not computed.
-- **Depth deep down** (22.10): the collar's light falls into the shaft from above the frame — the sky
-  by day, the headframe lamp by night — and fades with depth (`dig3ShaftK`, 1/(1+(d/24)²)): at
-  27 m the shaft above the cage is lit, at 72 m and below only a thread is left. Each level's gate
-  carries a painted board with its depth from the collar («−72»), on the back wall of the drift
-  beside the shaft.
+- **Depth deep down** (22.10): the collar's light falls into the shaft from the top edge of the frame
+  — the sky by day, the headframe lamp by night — and fades with depth (`dig3ShaftK`, 1/(1+(d/30)³)),
+  so depth reads in three steps: the shaft's column above the cage measures lum 48 at 27 m, 37 at
+  72 m and 31 at 117 m (the light's own share +20 / +9 / +2.5, by A/B against the light off). Each
+  level's gate carries a painted board with its depth from the collar («−72»); the seven has a hook
+  (segment f), as on an abacus — with a bare top bar it read as a one on the phone.
 
 ## 4. The biters are the planet's beasts
 
@@ -94,15 +126,44 @@ spot within 90 px of the man (`mineLaySpot`); with none near, the prompt says «
 
 ## 6. Cost (PC 1600×900 / phone 390×844 @1.5, real clock and GPU timestamps)
 
-| where | CPU frame | GPU per frame |
-|---|---|---|
-| surface, no mine | — | 0.33 (renders on 6 % of frames; 3.7 per render) |
-| collar, planet over the cut | 1.07 | 4.31 / 1.21 |
-| level 1 | 1.43 | 1.73 / 0.99 |
+22.10, 0.499.5 + this work, ms per drawn frame, p50 / p99 over 400 frames after 120 of warm-up:
 
-The collar pays the full planet frame every tick (the surface caches it while nothing moves);
-it stays inside the planet's own per-render cost. Tool: `digprof.py` (scratchpad), the
-snippets from `mk_digcost.py`.
+| where | JS PC | GPU PC | JS phone | GPU phone |
+|---|---|---|---|---|
+| surface, no mine | 2.3 / 4.5 | 4.83 / 5.06 | 2.5 / 5.0 | 0.93 / 0.99 |
+| collar, planet over the cut | 3.0 / 15.1 | 4.36 / 4.51 | 2.2 / 19.1 | 1.24 / 1.42 |
+| level 1, gallery | 2.0 / 3.6 | 4.45 / 5.01 | 2.9 / 15.0 | 1.40 / 1.52 |
+| level 1, at the face | 3.2 / 33.8 (max 712) | 4.36 / 6.74 | 1.7 / 4.2 | 1.36 / 1.48 |
+| 72 m, cage | 1.9 / 4.7 | 0.79 / 0.86 | 1.4 / 3.3 | 0.46 / 0.48 |
+
+Down to the first level the planet frame over the cut is most of the GPU bill; below the window's
+reach of the ground the mine costs under a millisecond. Ore bodies (§2) add up to a few hundred nuggets per scene,
+inside these numbers. The face row was measured before the chunk budget below; with it, a cell dug at
+the face costs JS max 4.9 ms on PC (was 712).
+
+**Entry** (22.10, three runs each, from the surface after the late warm-up, 3 s of frames):
+
+| | worst entry frame, ms | writeBuffer in 3 s | MB written |
+|---|---|---|---|
+| PC, before | 184 / 217 / 188 | ~4050 | 96 |
+| PC, after | 37.5 / 37.5 / 37.5 | ~3730 | 40 |
+| phone, before | 150 / 142 / 138 | ~3800 | 71 |
+| phone, after | 38 / 42 / 38 | ~3540 | 36 |
+
+What it took: the compositing pipeline (`dig3.top1/4`) is built by the late warm-up
+(`GPU_LATE_GROUPS`), so entry compiles nothing; a chunk is built in steps (`dig3ChunkGen`) within the
+frame's budget and resumed next frame; the slide from the surface holds its lens at the surface
+(where no rock shows) until the rock in the window is built, at most 0.6 s (`DIG3_HAND.wait`); the
+land ribbon's indices and the plants' records are written once per shaft mouth, and the cut that
+moves during the slide changes only counts and first instances (they were rewritten every frame of
+the slide: 22 MB and 40 MB). What is left of the first frame (~38 ms): the field, the planet's frame
+and the dressing, once. The remaining 40 MB per 3 s is the planet's man (`plnManFrame`, 21pha),
+rewritten every frame everywhere, not the mine's. Tool: `entry.py` (scratchpad).
+
+Steady frames: `minecost.py` (scratchpad) — the scene from `mkmine.py`, the page's own rAF
+(`--clock wall`; the stand's stepped clock lies about time), `FRAME_JS` and the GPU `frame`
+timestamp counted only on frames the GPU drew (the game skips rAF ticks on a 240 Hz screen).
+`cost.py` reads the CPU wrong inside the mine and is not used here.
 
 ## 7. Disputed — decided without the author
 
@@ -127,9 +188,11 @@ snippets from `mk_digcost.py`.
 - Ore in a cage left down the mine (suit failure, beacon) is kept and unloaded at the next arrival at
   the collar.
 - The shaft light is point lights only (two of the twelve, both «core»): the cave shader (`22d*`)
-  is not this work's to edit, so there is no visible beam. Its effect is measured on the frame (the
-  shaft's top above the cage at lum 37 at 27 m, 26 at 72 m and 117 m) and is quiet to the eye; the
-  depth board carries the number.
+  is not this work's to edit, so there is no visible beam; the steps are measured on the frame (§3).
+- Ore bodies borrow the cave's vein material and add the ore's colour, which the cave's veins refuse
+  («рыжего нет»): in the mine the ore's kind is the decision, so it must read. The sheet around and
+  between workings stays the cave's dark section paper with its strata lines — the planet session's
+  look; the mine fills it with ore bodies, not with a new paint.
 
 ## 8. Open
 

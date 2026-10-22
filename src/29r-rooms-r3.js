@@ -8,9 +8,9 @@
    2. Одна лампа-ключ с тенью на комнату, герой под ней; заливка — второй свет места, вдвое тише.
    3. Палитра: один тон (холодная сталь штаба), один акцент — тёплые лампы занятых доменов; оранжевое людей — только
       на людях. Свет говорит о состоянии: пустой домен — тёмный пульт без лампы, выбранный — ярче всех.
-   4. Старые художники (drawHqRoom, hqFigure) не правятся: они живут за ROOM3.on (?room=0 — старый путь до M890). */
-const ROOM3={on:!(typeof location!=="undefined"&&/[?&]room=0(&|$)/.test(location.search||"")),
-  open:null,host:null,cn:null,raf:0,last:0,from:null,to:null,g0:0,gd:600,place:"all",
+   4. 2D-рубки нет (22.10, автор: «2D не должно быть»): drawHqRoom удалён вместе с ?room=0; без видеокарты
+      рубки нет — плашка «нет WebGPU» (08b2), как во всей игре. */
+const ROOM3={open:null,host:null,cn:null,raf:0,last:0,from:null,to:null,g0:0,gd:600,place:"all",
   L:null,mesh:null,rkey:"",err:0,frames:0,stat:null,vp:null,sz:null,night:null};
 const ROOM3_M=new Float32Array(R3_MAXI*R3_PART*16),ROOM3_OT=new Float32Array(R3_MAXI*R3_PART*4);
 
@@ -175,7 +175,7 @@ function room3Go(place,first){
 /* дыхание камеры: 2 см в секунду по кругу — комната живая, когда никто не двигается */
 function room3Breath(c,t){return {eye:[c.eye[0]+.02*Math.sin(t*.31),c.eye[1]+.012*Math.sin(t*.23),c.eye[2]],tgt:c.tgt,fy:c.fy};}
 function room3Night(){return ROOM3.night!=null?ROOM3.night:hallNight();}
-function room3Ok(){return ROOM3.on&&typeof document!=="undefined"&&!!(GPU&&GPU.dev)&&!(typeof HALL!=="undefined"&&HALL.err);}
+function room3Ok(){return typeof document!=="undefined"&&!!(GPU&&GPU.dev)&&!(typeof HALL!=="undefined"&&HALL.err);}
 function room3Open(id,host){
   const first=ROOM3.open!==id;
   ROOM3.open=id;ROOM3.host=host;host.classList.add("room3");room3Canvas(host);
@@ -208,7 +208,7 @@ function room3Frame(){
   if(!ROOM3.mesh||ROOM3.rkey!==L.rkey){r3Drop(ROOM3.mesh);ROOM3.mesh=hq3Mesh(L);ROOM3.rkey=L.rkey;}
   const t=wallMs()/1000,c0=room3GlideAt(wallMs())||HQ3_CAMS.all,cam=hallCam(room3Breath(c0,t),sz.cw,sz.ch,sz.wide);
   const S=hq3Scene(L,cam,t);S.vp=hallCrop(cam.vp,sz.rw/sz.cw);
-  const lab=rpgBake(R,"r3lab","room3|"+cn.width+"x"+cn.height,cn.width,cn.height,()=>{});
+  const lab=r3Dev()?R3.blank:null;   /* подписей поверх кадра нет: пустой вид движка, а не выпечка 2D (как зал, M816c) */
   const U=new Float32Array(60);
   S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
     if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
@@ -221,10 +221,13 @@ function room3Frame(){
   return r3Frame(cn,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
 }
 /* слова на вещах (L5): пустой пульт — тусклая надпись в углу его тёмного экрана (не табличка, не заглавные по центру);
-   подсказка — одна, на пустом кресле ближе к цели объектива; занятый пульт говорит плитой */
+   подсказка — одна, на пустом кресле ближе к цели объектива; занятый пульт говорит плитой.
+   Надпись прижата к дальнему от голо-стола углу экрана (правые — вправо), а если голограмма всё равно
+   встаёт поверх неё (обзор) — надписи нет: яркое кольцо поперёк слова не читается (av — что обходить) */
 function hq3Tags(L,tx){const out=[];let hi=-1;
-  HQ3_X.forEach((x,i)=>{if(L.occ[i])return;const R=MGR_ROLES[HQ_ORDER[i]];
-    out.push({p:[x-.7,1.22,HQ3.B+.22],t:"ДОМЕН СВОБОДЕН",s:R?R.dom:"",c:"sg"});
+  out.av=[[[-.6,1.0,.56],[.6,1.72,.56]]];   /* голограмма: кольца ±.6 и ±.36 вокруг 1.36, ближняя грань */
+  HQ3_X.forEach((x,i)=>{if(L.occ[i])return;const R=MGR_ROLES[HQ_ORDER[i]],r=x>0;
+    out.push({p:[r?x+.7:x-.7,1.22,HQ3.B+.22],t:"ДОМЕН СВОБОДЕН",s:R?R.dom:"",c:"sg",al:r?"r":""});
     if(hi<0||Math.abs(x-tx)<Math.abs(HQ3_X[hi]-tx))hi=i;});
   if(hi>=0&&L.sel<0){const C=hq3Chair(hi);out.push({p:[C.x,.42,C.z],t:"ПУСТОЕ КРЕСЛО",s:"управляющих нанимают в кантине станции",c:"dn"});}
   return out;}
@@ -239,10 +242,16 @@ function room3TagsDraw(list,cam,sz,box,mv){
       if(g.s){const s=document.createElement("s");s.textContent=g.s;e.appendChild(s);}box.appendChild(e);}}
   list.forEach((g,i)=>{const e=box.children[i],q=r3Proj(cam.vp,g.p,sz.cw,sz.ch),sg=g.c==="sg";
     const w=(sg?Math.max(g.t.length*9,(g.s||"").length*6.2):Math.max(g.t.length*11+24,(g.s||"").length*7+24))*ui;
-    const lf=!sg&&!!q&&q[0]+w>xr&&q[0]-w>16*ui;
-    const dn=g.c==="dn",ok=!!q&&(lf?q[0]-w>16*ui:q[0]>16*ui&&q[0]+w<xr)&&q[1]>110*ui&&q[1]+(dn?96*ui:0)<yr;
-    e.style.visibility=ok?"":"hidden";e.classList.toggle("lf",lf);
-    if(ok)e.style.transform="translate("+(q[0]/ui).toFixed(1)+"px,"+(q[1]/ui).toFixed(1)+"px) "+(sg?"translate(0,-100%)":(lf?"translate(calc(1px - 100%),":"translate(-1px,")+(dn?"28px)":"calc(-100% - 28px))"));});
+    const lf=!sg&&!!q&&q[0]+w>xr&&q[0]-w>16*ui,ar=sg&&g.al==="r";
+    const dn=g.c==="dn";let ok=!!q&&(lf||ar?q[0]-w>16*ui&&q[0]<xr:q[0]>16*ui&&q[0]+w<xr)&&q[1]>110*ui&&q[1]+(dn?96*ui:0)<yr;
+    if(ok&&sg&&list.av)ok=!room3Over(list.av,cam,sz,ar?q[0]-w:q[0],q[1]-30*ui,ar?q[0]:q[0]+w,q[1]);
+    e.style.visibility=ok?"":"hidden";e.classList.toggle("lf",lf);e.classList.toggle("r",ar);
+    if(ok)e.style.transform="translate("+(q[0]/ui).toFixed(1)+"px,"+(q[1]/ui).toFixed(1)+"px) "+(sg?(ar?"translate(-100%,-100%)":"translate(0,-100%)"):(lf?"translate(calc(1px - 100%),":"translate(-1px,")+(dn?"28px)":"calc(-100% - 28px))"));});
+}
+/* перекрывает ли надпись (x0..x1, y0..y1, px холста) хоть один мировой прямоугольник из av (две угловые точки) */
+function room3Over(av,cam,sz,x0,y0,x1,y1){
+  return av.some(b=>{const a=r3Proj(cam.vp,b[0],sz.cw,sz.ch),c=r3Proj(cam.vp,b[1],sz.cw,sz.ch);if(!a||!c)return false;
+    return Math.max(x0,Math.min(a[0],c[0]))<Math.min(x1,Math.max(a[0],c[0]))&&Math.max(y0,Math.min(a[1],c[1]))<Math.min(y1,Math.max(a[1],c[1]));});
 }
 /* цена кадра комнаты — тем же замером, что зал (27f4k): кадры подряд, GPU меткой времени, CPU часами */
 room3Frame=hallCostWrap(room3Frame);
@@ -257,8 +266,8 @@ function room3PickHq(x,y){
   return best;
 }
 
-/* ── шов со штабом (27f): рубка 2D уходит за ROOM3.on; щелчок по полю экрана — выбор человека ── */
-{const f0=hqScene;hqScene=function(){if(!room3Ok())return f0();room3Open("hq",$hq);};}
+/* ── рубка штаба (27c зовёт hqScene): только движок; щелчок по полю экрана — выбор человека ── */
+function hqScene(){if(room3Ok())room3Open("hq",$hq);else if(ROOM3.open)room3Close();}
 if(typeof document!=="undefined"&&typeof $hq!=="undefined"&&$hq)$hq.addEventListener("click",ev=>{
   if(ROOM3.open!=="hq"||ev.target!==$hq)return;
   const id=room3PickHq(ev.clientX,ev.clientY);

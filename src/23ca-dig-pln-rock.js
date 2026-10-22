@@ -4,10 +4,10 @@
    2.8 м вглубь от разреза. Комната тянется на полклетки в выкопанного соседа, поэтому ход из
    нескольких клеток — один ход без перемычек, а скругляются только углы у камня. Пол — ровно по
    низу клетки: на нём стоит человек игры. В стволе раз в одиннадцать рядов — камера (как у 2D,
-   23a digVoidPath): шире на 0.6 м и вдвое глубже. Верх породы — земля планеты в этом месте
+   старый плоский digVoidPath): шире на 0.6 м и вдвое глубже. Верх породы — земля планеты в этом месте
    (23cd: таблица высот рельефа вокруг устья, F.tab): по разрезу ровно её линия, за разрезом —
    на четверть метра ниже, чтобы сверху всегда лежала сама планета с травой. Без планеты — старая
-   линия (digSurfY, 23aa — та же кривая, что считает игра). Цвет — пласты геологии планеты (geologyOf, глубина × DIG_GEO_K, как у строки места),
+   линия (digSurfY, 23-0 — та же кривая, что считает игра). Цвет — пласты геологии планеты (geologyOf, глубина × DIG_GEO_K, как у строки места),
    под дёрном подпочва (digSoilCols); рудное тело (oreNode) — тусклым оранжевым по его центру и
    радиусу. Лист разреза (z = 0) — тёмный, пласты на нём читаются.
    Сетка граней — surface nets по кускам 8 × 8 м на вокселях 0.25 м (счёт 22da cave3Chunk, своя
@@ -18,7 +18,13 @@ const DIG3_PPM=23.6/1.8;
 const DIG3_CM=DIG_CELL/DIG3_PPM;
 /* комната: глубина, глубина камеры, скругление угла, вынос стены в камень, сглаживание стыка */
 const DIG3_ROOM={zd:2.8,hall:5.2,wide:.6,r:.42,e:.14,k:.35};
-const DIG3_CH={s:8,vox:.25,zcap:16,keep:80,ms:8,first:420};
+/* бюджет стройки кусков, мс в кадре: ms — обычный, hold — пока вход держит объектив у поверхности (23cd),
+   first — первый кадр без съезда (сохранение, стенд): там порода нужна вся сразу */
+/* кромка листа разреза: шейдер пещеры (22dbw) жжёт её на полметра от пустоты, отсвет — на 3.6 м; объектив
+   рудника вчетверо ближе пещерного, и та же кромка в метрах обводила выработку белым ободом — запас до
+   пустоты отдаётся листу умноженным: обод ~6 см, отсвет ~.45 м — мягкий, как у пустот стенда (cave.html) */
+const DIG3_LIP=8;
+const DIG3_CH={s:8,vox:.25,zcap:16,keep:80,ms:8,hold:10,first:420};
 
 function dig3Hash(c,r){return (hashi(c,r,0xD16C)>>>8)/16777216;}
 function dig3Dug(F,c,r){return c>=-MINE_HALF&&c<=MINE_HALF&&r>=0&&r<F.NR&&F.g[r*F.NC+c+MINE_HALF]===1;}
@@ -155,7 +161,7 @@ function dig3Paint(F,X,Y,Z,ny){
     const e=Math.hypot((X-n.x)*.8,(Y-n.y)*1.25)+.45*n.r*cave3N3(X*.5,Y*.5,Z*.5,33);
     if(e<n.r){
       const w=1-plnSmooth(n.r*.82,n.r,e);
-      c=plnMix3(c,plnMix3(c,[n.c[0]*.5,n.c[1]*.5,n.c[2]*.5],.7),w*.75);
+      c=plnMix3(c,[n.c[0]*.62,n.c[1]*.62,n.c[2]*.62],w*.6);   /* тело — тёмное пятно цвета руды под зерном (23cb); светлое туманило стену */
       if(e<n.r*.6&&cave3N3(X*4.1,Y*4.1,Z*4.1,35)>.62)c=plnMix3(c,n.c,.85);
     }
   }
@@ -175,13 +181,15 @@ function dig3Span(F,X0,Y0,s,v){
   if(y1>-3.2)return DIG3_CH.zcap;   /* у поверхности: земля уходит к горизонту */
   return z;
 }
-/* ── кусок: surface nets (счёт 22da cave3Chunk; своя плотность, краска и глубина) ── */
-function dig3Chunk(F,ci,cj){
+/* ── кусок: surface nets (счёт 22da cave3Chunk; своя плотность, краска и глубина) ──
+   стройка с остановками: кусок стоит 5–80 мс по машине, и кадр, начавший его, ждал весь (замер 22.10 —
+   вход 179 мс на ПК); теперь dig3Chunks шагает его по бюджету кадра и продолжает в следующем */
+function* dig3ChunkGen(F,ci,cj){
   const s=DIG3_CH.s,v=DIG3_CH.vox,X0=ci*s,Y0=cj*s,n0=Math.round(s/v),NI=n0+2,NJ=NI;
   const px=i=>X0+(i-1)*v,py=j=>Y0+(j-1)*v;
   const zs=dig3Span(F,X0,Y0,s,v);
   if(zs<0)return {v:new Float32Array(0),i:new Uint32Array(0),nv:0,ni:0,nRock:0};
-  F.nk=dig3Nodes(F,X0-v,X0+s,Y0-v,Y0+s);
+  const nk=F.nk=dig3Nodes(F,X0-v,X0+s,Y0-v,Y0+s);   /* после остановки — снова свои: поле общее */
   const zmax=zs>0?zs:v*2,NK=Math.max(3,Math.ceil(zmax/v)+2);
   const zk=k=>(k-.5)*v,sJ=NI,sK=NI*NJ,V=new Float32Array(NI*NJ*NK).fill(NaN);
   /* блоки 4×4×4: далёкий от грани блок — одним числом */
@@ -194,6 +202,7 @@ function dig3Chunk(F,ci,cj){
     for(let k=k0;k<=k1;k++){const z=zk(k);for(let j=j0;j<=j1;j++){
       let n=i0+sJ*j+sK*k;const y=py(j);
       for(let i=i0;i<=i1;i++,n++)if(V[n]!==V[n])V[n]=fill?d:dig3Den(F,px(i),y,z);}}
+    if(bi===BI-1){yield;F.nk=nk;}
   }
   /* слой перед разрезом — воздух: грань между ним и первым слоем — лист разреза */
   for(let n=0;n<sK;n++)V[n]=-Math.abs(V[n+sK]);
@@ -219,6 +228,7 @@ function dig3Chunk(F,ci,cj){
       cell[i+CI*(j+CJ*k)]=nv++;
     }
   }
+  yield;F.nk=nk;
   const N=new Float32Array(nv*3),cutOf=new Int32Array(nv).fill(-1),cutP=[],IR=[],IC=[];
   const cid=(i,j,k)=>(i<0||j<0||k<0||i>=CI||j>=CJ||k>=CK)?-1:cell[i+CI*(j+CJ*k)];
   const own=(i,j)=>i>=1&&i<=n0&&j>=1&&j<=n0;
@@ -248,10 +258,12 @@ function dig3Chunk(F,ci,cj){
       if(k<CK&&(V[n+sK]>0)!==(a>0))quad(cid(i-1,j-1,k),cid(i,j-1,k),cid(i,j,k),cid(i-1,j,k),0,0,sg,k===0,m);
     }
   }
+  yield;F.nk=nk;
   /* краска: порода — пласт, мокрость, открытость воздуха перед гранью; лист разреза — тот же пласт
      втрое темнее (страница читается пластами), в нормали путь к пустоте в плоскости, в запасе — далеко ли она */
   const nc=cutP.length,out=new Float32Array((nv+nc)*PLN_VS);
   for(let c=0;c<nv;c++){
+    if((c&511)===511){yield;F.nk=nk;}
     const x=P[c*3],y=P[c*3+1],z=P[c*3+2],l=Math.hypot(N[c*3],N[c*3+1],N[c*3+2])||1,nx=N[c*3]/l,ny=N[c*3+1]/l,nz=N[c*3+2]/l;
     const ink=dig3Paint(F,x,y,z,ny);
     const a=clamp(-dig3Den(F,x+nx*.4,y+ny*.4,z+nz*.4)/.4,0,1),b=clamp(-dig3Den(F,x+nx*1.6,y+ny*1.6,z+nz*1.6)/1.6,0,1);
@@ -266,7 +278,7 @@ function dig3Chunk(F,ci,cj){
     const ink=dig3Paint(F,x,y,0,0),k=.3*(1+.16*cave3N3(x*.13,y*.13,3,31)),o=(nv+c)*PLN_VS,gr=(ink[0]+ink[1]+ink[2])/3;
     out[o]=x;out[o+1]=y;out[o+2]=z;out[o+3]=-gx/gl;out[o+4]=-gy/gl;out[o+5]=0;
     out[o+6]=lerp(gr,ink[0],.5)*k;out[o+7]=lerp(gr,ink[1],.5)*k;out[o+8]=lerp(gr,ink[2],.5)*k;
-    out[o+9]=CAVE3_MAT.cut;out[o+10]=0;out[o+11]=0;out[o+12]=clamp(dv,0,4);
+    out[o+9]=CAVE3_MAT.cut;out[o+10]=0;out[o+11]=0;out[o+12]=clamp(dv*DIG3_LIP,0,4);
   }
   const I=new Uint32Array(IR.length+IC.length);
   I.set(IR,0);for(let k=0;k<IC.length;k++)I[IR.length+k]=IC[k]+nv;
@@ -274,8 +286,9 @@ function dig3Chunk(F,ci,cj){
 }
 
 /* ── кэш кусков: что видно — по бюджету, ближние к человеку первыми; устаревшие перестраиваются
-   первыми, а до того рисуются старой сеткой (дыры в кадре на время стройки нет) ── */
-function dig3Chunks(F,box,mx,my,first){
+   первыми, а до того рисуются старой сеткой (дыры в кадре на время стройки нет). lim — мс на кадр;
+   кусок, не доделанный в бюджет, ждёт следующего кадра (Q.job) — бюджет держится и на медленной машине ── */
+function dig3Chunks(F,box,mx,my,lim){
   const s=DIG3_CH.s,Q=DIG3.ch||(DIG3.ch={m:new Map(),gen:-1,t:0,D:null,g:null,NC:0,NR:0});
   if(Q.gen!==PLN_GPU.gen||Q.D!==F.D){for(const k of Q.m.values())plnGeoFree(k.geo);Q.m.clear();Q.gen=PLN_GPU.gen;Q.D=F.D;Q.g=null;}
   /* что выкопано с прошлого раза: куски вокруг этих клеток — устаревшие */
@@ -301,11 +314,19 @@ function dig3Chunks(F,box,mx,my,first){
     else want.push([i,j,d]);
   }
   want.sort((a,b)=>a[2]-b[2]);
-  const t0=wallMs(),lim=first?DIG3_CH.first:DIG3_CH.ms;
+  /* начатый кусок — первым, если он ещё нужен и поле то же; иначе брошен */
+  const J0=Q.job;Q.job=null;
+  if(J0&&J0.F===F&&J0.g0===F.g){const at=want.findIndex(w=>w[0]===J0.i&&w[1]===J0.j);if(at>=0){want.unshift(want.splice(at,1)[0]);Q.job=J0;}}
+  const t0=wallMs();
   let built=0;
   for(const [i,j] of want){
-    if(built&&wallMs()-t0>lim)break;
-    const m=dig3Chunk(F,i,j),key=i+","+j,old=Q.m.get(key),c={i,j,t:Q.t,nRock:m.nRock,geo:m.ni?plnGeo(m):null};
+    if(wallMs()-t0>lim)break;
+    const J=Q.job&&Q.job.i===i&&Q.job.j===j?Q.job:(Q.job={i,j,F,g0:F.g,g:dig3ChunkGen(F,i,j)});
+    let r;
+    while(!(r=J.g.next()).done)if(wallMs()-t0>lim)break;
+    if(!r.done)break;
+    Q.job=null;
+    const m=r.value,key=i+","+j,old=Q.m.get(key),c={i,j,t:Q.t,nRock:m.nRock,geo:m.ni?plnGeo(m):null};
     if(old){plnGeoFree(old.geo);const at=list.indexOf(old);if(at>=0)list.splice(at,1);}
     Q.m.set(key,c);if(c.geo)list.push(c);built++;
   }
@@ -313,6 +334,6 @@ function dig3Chunks(F,box,mx,my,first){
     const old=[...Q.m.entries()].filter(e=>e[1].t!==Q.t).sort((a,b)=>a[1].t-b[1].t);
     for(let k=0;k<old.length&&Q.m.size>DIG3_CH.keep;k++){plnGeoFree(old[k][1].geo);Q.m.delete(old[k][0]);}
   }
-  Q.left=want.length-built;Q.built=built;
+  Q.left=want.length-built;Q.built=built;Q.busy=!!Q.job;
   return list;
 }

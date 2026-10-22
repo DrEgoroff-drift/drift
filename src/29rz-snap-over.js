@@ -6,3 +6,5 @@
 GPU_SNAP_OVER.push(()=>HOME3.cn);
 /* зимовка (M850c) — свой холст #win3d поверх #g, тот же случай */
 GPU_SNAP_OVER.push(()=>WIN3.cn);
+/* «Сорока» (M851) — свой холст #wan3d поверх #g, тот же случай */
+GPU_SNAP_OVER.push(()=>WAN3.cn);

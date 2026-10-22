@@ -11,7 +11,7 @@ function dispTestDock(S){
   G.st=G.sys.station;G.mode="dock";openStation();
 }
 TEST_SUITES.push(()=>suite("диспетчер: на каждой стыковке два адресных, срочное и наряд; глаголы не повторяются",()=>{
-  resetWorld();
+  resetWorld();G.flownMs=2*FIRST_HOUR_MS;   /* первая вахта (28o) держит срочное и наряд — здесь игрок налётан */
   const L=dispTestStations();
   ok(L.length>=6,"станций вокруг начала: "+L.length);
   const issued=[],O=dispIssue;
@@ -44,7 +44,7 @@ TEST_SUITES.push(()=>suite("диспетчер: на каждой стыковк
   resetWorld();
 }));
 TEST_SUITES.push(()=>suite("диспетчер: веса по шкалам станции",()=>{
-  resetWorld();
+  resetWorld();G.flownMs=2*FIRST_HOUR_MS;   /* первая вахта (28o) держит срочное и наряд — здесь игрок налётан */
   const S=dispTestStations()[0],D=dispSt();
   const share=(kind,v,set)=>{
     gaugeSet(S,set);let n=0,hit=0;
@@ -60,7 +60,7 @@ TEST_SUITES.push(()=>suite("диспетчер: веса по шкалам ст�
   resetWorld();
 }));
 TEST_SUITES.push(()=>suite("диспетчер: шаги исполняются, деньги через earn, срок, сданная смена, запись",()=>{
-  resetWorld();
+  resetWorld();G.flownMs=2*FIRST_HOUR_MS;   /* первая вахта (28o) держит срочное и наряд — здесь игрок налётан */
   const L=dispTestStations(),S=L[0],D=dispSt();
   dispTestDock(S);
   ok(D.it.length===4,"первая стыковка: пунктов "+D.it.length);
@@ -136,5 +136,19 @@ TEST_SUITES.push(()=>suite("диспетчер: шаги исполняются,
   const s2=JSON.parse(JSON.stringify(s));s2.disp={it:[{v:"нет",legs:[]},{v:"tri",legs:[{key:"0,0",do:"взорвать"}],f:{}}],vb:["x"]};
   G.disp=null;applySave(s2);
   ok(dispSt().it.length===0&&dispSt().vb.length===0,"битая запись диспетчера отброшена, мир цел");
+  resetWorld();
+}));
+TEST_SUITES.push(()=>suite("диспетчер: СРОЧНО в системе не жмёт таблички черпака, захода и грунта",()=>{
+  resetWorld();G.flownMs=2*FIRST_HOUR_MS;
+  const S=dispTestStations()[0];dispTestDock(S);
+  dispSt().it=[];const U=dispIssue("urg",S,{});
+  ok(U&&dispUrg()===U,"срочное есть");
+  for(const m of ["scoop","landing","surface"]){G.mode=m;eq(dispAlarm(true),false,m+": табличку диспетчера не вешают");}
+  G.mode="system";HANG.alarmF=OVL.fno;HANG.alarmM="system";
+  ok(hangAlarmOn(),"в системе тревога держит спокойные у края");
+  for(const m of ["scoop","landing","surface"]){G.mode=m;eq(hangAlarmOn(),false,m+": выдержка тревоги из системы не действует (360: «Заход в атмосферу» ехал на «НАГРЕВ КОРПУСА»)");}
+  G.mode="scoop";HANG.alarmM="scoop";
+  ok(hangAlarmOn(),"тревога самого черпака — держит");
+  HANG.alarmF=-1e9;HANG.alarmM=null;
   resetWorld();
 }));

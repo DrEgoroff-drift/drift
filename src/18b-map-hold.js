@@ -109,6 +109,10 @@ function mapBorderEdge(key,ax,ay,bx,by,a,cell,nx,ny){   /* nx,ny — внутр�
 function mapHoldingsDraw(vis,cell,V,st){
   if(!mapLayerOn("own"))return;
   const P=mapHousePatch(vis,st);
+  /* слой «ВСЕ» — владения шёпотом (M822): чип с эмблемой на каждой клетке и узор на каждой кромке
+     забивали лист ровным ковром одного веса со звёздами (кадр 390, 22.10). На общем слое чип — только
+     в круге прыжка и у выбора, кромки вполсилы; полная подробность — на слое «ВЛАДЕНИЯ» */
+  const allL=mapLayer()==="all",kE=allL?.5:1;
   ctx.save();
   /* ── чьи это системы (M370, §7.4 «на карте эмблемный чип») ──
      Летопись знает хозяина каждой системы обжитого круга. Шесть заливок на
@@ -120,12 +124,14 @@ function mapHoldingsDraw(vis,cell,V,st){
     const key=MAKER_KEYS[o];
     const x0=v.x-cell/2,y0=v.y-cell/2;
     const d=Math.hypot(v.gx-G.sx,v.gy-G.sy),fade=clamp(1.1-d/(st.jump*2.4),.25,1);
-    if(typeof powerEmblem==="function"&&cell>=18){
+    const chip=!allL||v.near||(v.gx===G.sel.x&&v.gy===G.sel.y);
+    if(!chip){}
+    else if(typeof powerEmblem==="function"&&cell>=18){
       /* чип растёт с клеткой: на трёх пикселях эмблема — точка, а точек на
          карте и так хватает */
       /* M458: вблизи чип дорастает до читаемых 14–18 px (радиус 7–9) */
-      const cr=clamp(cell*.12,3.2,9);
-      mpAlpha(.8*fade);
+      const cr=clamp(cell*.12,3.2,allL?7:9);
+      mpAlpha((allL?.6:.8)*fade);
       powerEmblem(key,x0+cell-cr*1.7,y0+cr*1.7,cr);
       mpAlpha(1);
     }else{
@@ -156,7 +162,7 @@ function mapHoldingsDraw(vis,cell,V,st){
       if(o2===o||(o2>=0&&typeof chronWarBetween==="function"&&chronWarBetween(o,o2)))continue;
       const ins=Math.max(1.5,cell*.05);
       const ax=x0+q[2]*cell-q[0]*ins,ay=y0+q[3]*cell-q[1]*ins,bx=x0+q[4]*cell-q[0]*ins,by=y0+q[5]*cell-q[1]*ins;
-      mapBorderEdge(key,ax,ay,bx,by,.55*fade,cell,-q[0],-q[1]);
+      mapBorderEdge(key,ax,ay,bx,by,.55*fade*kE,cell,-q[0],-q[1]);
     }
     if(typeof chronWarBetween==="function"){
       const wc="rgba(255,120,90,"+(.85*fade).toFixed(2)+")";

@@ -11,7 +11,7 @@
 
    ПРАВИЛА ФАЙЛА: те же, что у сотни (12k-stories-a). Адрес hours:core — новый
    вид (11c): ядро области «Расхождение времён». */
-CAST.sixth={name:"Зоя Варламова",role:"хронометрист",home:"hours:core"};
+CAST.sixth={name:"Зоя Варламова",role:"хронометрист",home:"watch"};   /* шестая — на вашем участке (M910, §7.3) */
 const STORIES_D=[
 
 /* ── 103. Пекарь на научной ── эстафета 1 · любая научная станция */
@@ -62,7 +62,7 @@ const STORIES_D=[
  links:["sixth_report"]},
 
 /* ── 108. Отчёт о хронометристе ── длинная · ядро уезда, где часы не сходятся */
-{id:"sixth_report",form:"report",at:"hours:core",cast:["sixth"],
+{id:"sixth_report",form:"report",at:"watch",cast:["sixth"],
  traces:[
   {id:"t1",via:"queue",when:{seenOf:"relay_sovenya.t1"},text:"— Варламова. Зоя. Хронометрист. Да, она здесь. Пока. Ленты принимала она — все, что сдавали. Сказала: «сходится». Больше ничего не сказала."},
   {id:"t2",via:"cant",when:{seenOf:"relay_sovenya.t1"},scene:{seat:"door",figure:1,col:[70,78,96],props:["paper","key"]}},
