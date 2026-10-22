@@ -130,30 +130,3 @@ function avrLose(S,B){
   return false;
 }
 /* ── рисование: отсек, в котором беда ── */
-function avrDraw(S,X,Y,lit){
-  const A=S&&S.avr;
-  if(!A||typeof ctx==="undefined")return;
-  const x=X(BASE_OX+A.c*BCELL_W),y=Y(BASE_OY+A.r*BCELL_H);
-  const p=.5+.5*Math.sin(G.t*.25);
-  const col=A.k==="fire"?[255,140,60]:(A.k==="vent"?[150,220,255]:(A.k==="grib"?[220,170,80]:[110,180,255]));
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  const g=ctx.createRadialGradient(x+BCELL_W/2,y+BCELL_H/2,4,x+BCELL_W/2,y+BCELL_H/2,BCELL_W*.8);
-  g.addColorStop(0,"rgba("+col.join(",")+","+(.20+.22*p).toFixed(3)+")");
-  g.addColorStop(1,"rgba("+col.join(",")+",0)");
-  ctx.fillStyle=g;ctx.fillRect(x-BCELL_W*.3,y-BCELL_H*.3,BCELL_W*1.6,BCELL_H*1.6);
-  ctx.restore();
-  ctx.strokeStyle="rgba("+col.join(",")+","+(.5+.4*p).toFixed(2)+")";
-  ctx.lineWidth=2;
-  ctx.strokeRect(x+5.5,y+5.5,BCELL_W-11,BCELL_H-11);
-  ctx.fillStyle="rgba("+col.join(",")+",.95)";
-  ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
-  const kind=AVR_KINDS.find(q=>q.k===A.k)||AVR_KINDS[0];
-  ctx.fillText(kind.ru,x+BCELL_W/2,y+16);
-  /* полоса удержания — там же, где беда, а не на краю экрана */
-  if(A.hold>0){
-    const w=(BCELL_W-24)*clamp(A.hold/AVR_HOLD,0,1);
-    ctx.fillStyle="rgba(127,230,216,.85)";
-    ctx.fillRect(x+12,y+BCELL_H-16,w,4);
-  }
-}

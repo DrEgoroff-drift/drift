@@ -14,6 +14,10 @@
    планете не будет — там в форму входит ещё и место, — но своё лицо у каждой
    грядки есть, и два одинаковых имени вырастут одинаковыми.
 
+   РИСУЕТ ДВИЖОК. Грядки стоят телами в теплице двора (21pig, M628a); 2D-кисти
+   грядки (greenDrawBed, greenDraw) удалены 22.10: в старом виде дома (?own=0) грядок нет.
+   Вид (greenSpecies) — данные для тела, не кисть.
+
    ЧЕГО ЗДЕСЬ НЕТ. Урожая, продажи, ускорителей роста, «удобрить за 200 кр».
    Грядка ничего не даёт и ничего не просит. Она растёт.
 
@@ -97,112 +101,6 @@ function greenSpeciesFields(r,p,bi,kind){
        (kind===0?1+Math.floor(r()*2):(kind===3?2+Math.floor(r()*3):0))),
     cap:.55+r()*.6, curl:(r()-.5)*.7, segs:3+Math.floor(r()*4),
     bloom:r()<.42, glow:r()<.30, spiny:r()<.3, branchLen:.16+r()*.30};
-}
-/* ── грядка в кадре ──
-   Рисуется у дома снаружи (21f). Земля, колышек с ярлыком и растение той
-   высоты, до которой доросло. Ярлык подписан не для интерфейса: так и
-   подписывают грядки. */
-function greenDrawBed(x,gy,w,b,p){
-  const sp=greenSpecies(b.name,p);
-  const t=greenGrow(b);
-  /* земля: вскопанный гребень, верх подсох и светлее, комья с тенью (G6) */
-  const L=(typeof placeSun==="function")?placeSun(p):{k:0,sx:1,col:[255,236,200]};
-  const gs=ctx.createLinearGradient(0,gy-w*.10,0,gy);
-  gs.addColorStop(0,"rgba(84,66,46,.95)");gs.addColorStop(1,"rgba(40,31,23,.95)");
-  ctx.fillStyle=gs;
-  ctx.beginPath();
-  ctx.moveTo(x-w*.5,gy);ctx.lineTo(x+w*.5,gy);
-  ctx.lineTo(x+w*.42,gy-w*.10);ctx.lineTo(x-w*.42,gy-w*.10);
-  ctx.closePath();ctx.fill();
-  {
-    const r=rng(hashi(b.t|0,0x6E,0x0C));
-    for(let i=0;i<7;i++){
-      const cx=x+(r()-.5)*w*.8,cy=gy-w*(.02+r()*.07),cr=Math.max(.8,w*.022);
-      ctx.fillStyle="rgba(22,16,10,.55)";ctx.fillRect(cx-cr+L.sx*.6,cy,cr*2,cr);
-      ctx.fillStyle="rgba(120,96,68,.7)";ctx.fillRect(cx-cr,cy-cr*.6,cr*2,cr*.8);
-    }
-  }
-  ctx.fillStyle="rgba(0,0,0,.30)";
-  ctx.fillRect(x-w*.5,gy-1,w,2);
-  /* растение: высота от возраста, форма от вида */
-  const hh=w*(0.25+t*1.15);
-  /* тень стебля по грунту — от той же звезды, что тень дома */
-  if(t>0.02&&L.k>.02){
-    ctx.fillStyle="rgba(0,0,0,"+(.22*L.k).toFixed(3)+")";
-    ctx.beginPath();ctx.ellipse(x-L.sx*hh*.35,gy-.5,hh*.36,Math.max(1,w*.03),0,0,TAU);ctx.fill();
-  }
-  const sc=`rgb(${sp.stem[0]|0},${sp.stem[1]|0},${sp.stem[2]|0})`;
-  const lc=`rgb(${sp.leaf[0]|0},${sp.leaf[1]|0},${sp.leaf[2]|0})`;
-  if(t>0.02){
-    ctx.strokeStyle=sc;
-    ctx.lineWidth=Math.max(1.2,hh*.06);
-    ctx.lineCap="round";
-    ctx.beginPath();
-    ctx.moveTo(x,gy-w*.06);
-    ctx.quadraticCurveTo(x+sp.curl*hh*.3,gy-hh*.6,x+sp.curl*hh*.5,gy-hh);
-    ctx.stroke();
-    const tipx=x+sp.curl*hh*.5, tipy=gy-hh;
-    if(sp.kind===0||sp.kind===5){                    /* зонтик */
-      ctx.fillStyle=lc;
-      ctx.beginPath();
-      ctx.ellipse(tipx,tipy,hh*sp.cap*.42,hh*sp.cap*.16,0,Math.PI,TAU);ctx.fill();
-    }else if(sp.kind===1||sp.kind===3){              /* ветви с листьями */
-      ctx.strokeStyle=lc;ctx.lineWidth=Math.max(1,hh*.045);
-      for(let i=0;i<sp.nb;i++){
-        const q=(i+1)/(sp.nb+1), by=gy-hh*q, side=i%2?1:-1;
-        ctx.beginPath();
-        ctx.moveTo(x+sp.curl*hh*q*.5,by);
-        ctx.lineTo(x+sp.curl*hh*q*.5+side*hh*sp.branchLen*1.6,by-hh*.10);
-        ctx.stroke();
-      }
-    }else if(sp.kind===2){                           /* метёлка */
-      ctx.fillStyle=lc;
-      for(let i=0;i<sp.nb;i++){
-        const a=-Math.PI/2+(i-(sp.nb-1)/2)*.30;
-        ctx.beginPath();
-        ctx.ellipse(tipx+Math.cos(a)*hh*.16,tipy+Math.sin(a)*hh*.16,
-          hh*.055,hh*.11,a+Math.PI/2,0,TAU);ctx.fill();
-      }
-    }else{                                            /* шар */
-      ctx.fillStyle=lc;
-      ctx.beginPath();ctx.arc(tipx,tipy,hh*.20,0,TAU);ctx.fill();
-    }
-    /* лист ловит свет стороной к звезде */
-    if(L.k>.02&&(sp.kind===0||sp.kind===5||sp.kind===4||sp.kind>5)){
-      ctx.fillStyle=rgba(sdMix(sp.leaf,L.col,.5),.45*L.k);
-      ctx.beginPath();
-      if(sp.kind===0||sp.kind===5)ctx.ellipse(tipx+L.sx*hh*sp.cap*.12,tipy-hh*sp.cap*.03,hh*sp.cap*.26,hh*sp.cap*.09,0,Math.PI,TAU);
-      else ctx.arc(tipx+L.sx*hh*.07,tipy-hh*.06,hh*.10,0,TAU);
-      ctx.fill();
-    }
-    if(sp.bloom&&t>0.7){
-      ctx.fillStyle="rgba(240,220,160,.85)";
-      ctx.beginPath();ctx.arc(tipx,tipy-hh*.06,Math.max(1.4,hh*.045),0,TAU);ctx.fill();
-    }
-    ctx.lineCap="butt";
-  }else{
-    /* только посеяно: два семядольных листка, и всё */
-    ctx.fillStyle=lc;
-    for(const s2 of [-1,1]){
-      ctx.beginPath();
-      ctx.ellipse(x+s2*w*.05,gy-w*.10,w*.05,w*.025,s2*0.5,0,TAU);ctx.fill();
-    }
-  }
-  /* колышек с ярлыком */
-  ctx.fillStyle="rgba(120,98,72,.9)";
-  ctx.fillRect(x+w*.34,gy-w*.34,Math.max(1.4,w*.024),w*.28);
-  ctx.fillStyle="rgba(226,218,196,.92)";
-  ctx.fillRect(x+w*.28,gy-w*.40,w*.18,w*.10);
-  ctx.fillStyle="rgba(90,78,58,.7)";
-  ctx.fillRect(x+w*.30,gy-w*.375,w*.13,Math.max(1,w*.012));
-  ctx.fillRect(x+w*.30,gy-w*.345,w*.09,Math.max(1,w*.012));
-}
-/* все грядки: ряд у стены дома */
-function greenDraw(x0,gy,w,p){
-  const B=greenAll().beds;
-  if(!B.length)return;
-  const bw=Math.min(w/GREEN_BEDS,w*0.26);
-  B.forEach((b,i)=>greenDrawBed(x0+bw*(i+0.5),gy,bw*0.92,b,p));
 }
 /* подсказка у дома: одна строка, и та про действие */
 function greenPrompt(){

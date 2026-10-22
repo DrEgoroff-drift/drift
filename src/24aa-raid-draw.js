@@ -25,12 +25,15 @@ function drawRaid(){
      соседней комнате. Выше 110 (потолок отсека) камеру поднимать нельзя:
      канва 2D не отсекает задние грани, и камера над потолком увидит его
      изнанку вместо зала. */
-  let back=236;
+  /* узкий кадр (телефон стоя): отсек должен заполнять кадр, а не стоять полосой посреди пола
+     и потолка — камера ближе и ниже, объектив длиннее (Контроль, 22.10) */
+  const tall=H>W*1.2,CAMH=tall?66:78;
+  let back=tall?190:236;
   for(let t=back;t>30;t-=20){
     const cx=S.x-Math.sin(S.a)*t, cz=S.z-Math.cos(S.a)*t;
     if(!raidSolidAt(R,cx,cz)){back=t;break;}
   }
-  const cam=[S.x-Math.sin(S.a)*back, 78+S.y, S.z-Math.cos(S.a)*back];
+  const cam=[S.x-Math.sin(S.a)*back, CAMH+S.y, S.z-Math.cos(S.a)*back];
   const fwd=[Math.sin(S.a),-.16,Math.cos(S.a)];
   const fl=Math.hypot(fwd[0],fwd[1],fwd[2]);fwd[0]/=fl;fwd[1]/=fl;fwd[2]/=fl;
   const right=[Math.cos(S.a),0,-Math.sin(S.a)];
@@ -48,7 +51,7 @@ function drawRaid(){
      функцией нарочно: за этим знаком не уследить глазами, его должен
      проверять автотест (`91zzze-raid-view`). */
   const up=raidUp(fwd,right);
-  const F=Math.min(W,H)*.95;
+  const F=Math.min(W,H)*.95*(tall?1.5:1);
   /* ── горизонт выше середины (M180) ──
      «Сверху всё» — первое, что сказал автор про этот экран: потолок занимал
      верхнюю треть кадра, потому что главная точка проекции стояла ровно в
@@ -293,14 +296,14 @@ function drawRaid(){
     }
     /* ── ворота ангара (хвост G4) ──
        Ангар — то, куда сели: в его торцевой стене ворота, за ними космос, и
-       от них по полу ложится холодный конус. Один на базу, в середине стены
-       первого отсека */
+       от них по полу ложится холодный свет — лампой LP, а не нарисованной трапецией
+       (она светилась сама и стояла синей плитой на полкадра, 22.10). Один на базу,
+       в середине стены первого отсека */
     if(K==="hangar"&&R.rooms&&R.rooms[0]){
       const HG=R.rooms[0];
       if(rr===HG.r0&&c===Math.floor((HG.c0+HG.c1)/2)&&raidSolid(R,c,rr-1)){
         quad([x0+8,h,z0+.6],[x0+8,RAID_H-6,z0+.6],[x1-8,RAID_H-6,z0+.6],[x1-8,h,z0+.6],[24,30,40],li,false,0,-.2);
         quad([x0+12,h+2,z0+.9],[x0+12,RAID_H-10,z0+.9],[x1-12,RAID_H-10,z0+.9],[x1-12,h+2,z0+.9],[140,180,225],1.0,false,1,-.3);
-        quad([x0+12,h+.8,z0+1],[x1-12,h+.8,z0+1],[x1+RCELL*.7,h+.8,z0+RCELL*2.4],[x0-RCELL*.7,h+.8,z0+RCELL*2.4],[110,150,200],.55,false,1,-.25);
         LP.push({x:(x0+x1)/2,y:h+48,z:z0+14,col:[140,180,225],f:1.3,r:RCELL*1.7});
       }
     }
@@ -313,33 +316,16 @@ function drawRaid(){
       const f=K==="reactor"?(.5+Math.sin(G.t*.09+c)*.22):(K==="corr"?.62:.42);
       /* полоса узкая и короткая: во всю клетку она под острым углом заливала
          светом полкадра и потолок читался ярче пола */
+      /* низкий объектив узкого кадра: ближняя лампа над головой вставала ярким бруском под
+         панелью состояния — ближнюю полосу не рисуем (свет LP остаётся), 22.10 */
+      const lzc=(x0+RCELL*.5-cam[0])*fwd[0]+(RAID_H-3-cam[1])*fwd[1]+((z0+z1)/2-cam[2])*fwd[2];
+      if(!(tall&&lzc<RCELL*1.6))
       quad([x0+RCELL*.45,RAID_H-3,z0+RCELL*.3],[x0+RCELL*.55,RAID_H-3,z0+RCELL*.3],
            [x0+RCELL*.55,RAID_H-3,z1-RCELL*.3],[x0+RCELL*.45,RAID_H-3,z1-RCELL*.3],em,Math.max(f,.55)*1.25,false,1);
       /* и сам светит: точка света со спадом в проходе видеокарты */
       LP.push({x:x0+RCELL*.5,y:RAID_H-10,z:(z0+z1)/2,col:em,f:f*(K==="hangar"?1.1:.95),r:RCELL*1.05});
-      /* ── и свет ЛОЖИТСЯ НА ПОЛ (хвост M180 pass 2) ──
-         Светильник был виден, но ничего не освещал: под ним пол оставался
-         ровно того же тона, что в углу за контейнерами. Свет, который никуда
-         не лёг, — плёнка на кадре, а не свет; тот же разбор был у фонаря в
-         шахте. Пятно кладётся отдельным четырёхугольником поверх плиты, на
-         тёплом конце шкалы, и оно же наконец даёт залу температуру: до сих
-         пор единственным ненейтральным пятном в ангаре была краска. */
-      /* пятно повторяет ФОРМУ светильника, а не клетку: над головой узкая
-         полоса, значит и на полу полоса. Квадрат во всю клетку заливал у
-         камеры весь передний план и читался ковром, а не светом */
-      /* ── и пятно должно быть ОСВЕЩЁННЫМ ПОЛОМ, а не тёмной краской ──
-         Красили цветом лампы при `li=f*.40`, но у этого рисовальщика нет
-         сложения: грань всегда непрозрачная заливка `цвет×li`. Тёплый
-         (255,232,196) на .17 давал ровный коричневый прямоугольник — на полу
-         ангара их набиралось по одному на плиту, и зал выходил шахматной
-         скатертью (M233). Пятно теперь считается как пол, чуть подмешанный к
-         свету лампы и поднятый по светлоте: плита под лампой светлее соседней,
-         и это ровно то, что глаз называет светом. */
-      const py=h+1.1;
-      const pcol=[0,1,2].map(i=>Math.round(lerp(base[i],em[i],.30)));
-      quad([x0+RCELL*.24,py,z0+RCELL*.26],[x0+RCELL*.76,py,z0+RCELL*.26],
-           [x0+RCELL*.76,py,z1-RCELL*.26],[x0+RCELL*.24,py,z1-RCELL*.26],
-           pcol,Math.min(1.35,li*(1+f*.42)),false,0,-.8);
+      /* свет ложится на пол сам — лампой LP в проходе видеокарты (24aa1); нарисованное
+         пятно-квад под ней было заглушкой времён канвы и читалось белой плитой (22.10) */
     }
     /* ── ангар: крупные предметы ──
        Большое помещение без обстановки — серый зал: пол, потолок и дальняя
@@ -458,6 +444,9 @@ function drawRaid(){
   /* тела-спрайты и тени на полу копятся в метках ниже; проход — после них */
   const FS=[],OC=[[S.x,S.z,11]];
   let AST=null;   /* ходок на видеокарте — после стен (G15): см. ниже */
+  /* метки, полоски, выстрелы и красный удар — фигурами набора поверх кадра (проход gpuNext);
+     #c в рейде не трогается вовсе: копия полного 2D-кадра на видеокарту ушла (22.10) */
+  const OV=[],OVA=[];
   /* ── метка не проходит сквозь стену (хвост M180) ──
      Маячки, трафареты и полоски здоровья рисуются поверх всей геометрии, без
      теста глубины: на кадре пиратской базы два маячка горели по тёмной стене
@@ -523,27 +512,17 @@ function drawRaid(){
       const on=Math.sin(G.t*.14)>0;
       /* размеры маячка — в единицах мира, чтобы он оставался лампочкой на
          крышке, а не рос в фонарь при подходе */
-      ctx.fillStyle=on?"#7fe6d8":"rgba(127,230,216,.35)";
-      ctx.beginPath();ctx.arc(m.p.x,m.p.y,Math.max(1.5,2.6*ppu),0,TAU);ctx.fill();
-      if(on){
-        const gr=Math.max(6,16*ppu);
-        const gg=ctx.createRadialGradient(m.p.x,m.p.y,0,m.p.x,m.p.y,gr);
-        gg.addColorStop(0,"rgba(127,230,216,.30)");gg.addColorStop(1,"rgba(127,230,216,0)");
-        ctx.fillStyle=gg;ctx.beginPath();ctx.arc(m.p.x,m.p.y,gr,0,TAU);ctx.fill();
-      }
+      OV.push([1,m.p.x,m.p.y,Math.max(1.5,2.6*ppu),0,0,.8,127,230,216,on?1:.35]);
+      if(on){const gr=Math.max(6,16*ppu);
+        OVA.push([1,m.p.x,m.p.y,gr*.15,0,0,gr*.85,127,230,216,.3]);}
     }else if(m.kind==="pick"){
       /* сам кофр стоит в мире; здесь только трафарет на крышке — маленький,
          без дыхания и без заливки: тара с маркировкой, а не парящая иконка */
-      const P=m.o,C=PICKUPS[P.kind];
-      ctx.save();ctx.translate(m.p.x,m.p.y);
-      ctx.scale(Math.max(.5,ppu*1.1),Math.max(.5,ppu*1.1));
-      ctx.strokeStyle=C.col;ctx.lineWidth=2;
-      if(P.kind==="medkit"){ctx.beginPath();ctx.moveTo(-4,0);ctx.lineTo(4,0);
-        ctx.moveTo(0,-4);ctx.lineTo(0,4);ctx.stroke();}
-      else if(P.kind==="armor"){ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(5,-1);
-        ctx.lineTo(0,5);ctx.lineTo(-5,-1);ctx.closePath();ctx.stroke();}
-      else{ctx.beginPath();ctx.rect(-3,-4,6,8);ctx.stroke();}
-      ctx.restore();
+      const P=m.o,C=PICKUPS[P.kind],k=Math.max(.5,ppu*1.1),c=hex2rgb(C.col),x=m.p.x,y=m.p.y;
+      const seg=(a,b,d,e)=>OV.push([2,x+a*k,y+b*k,x+d*k,y+e*k,k,.6,c[0],c[1],c[2],1]);
+      if(P.kind==="medkit"){seg(-4,0,4,0);seg(0,-4,0,4);}
+      else if(P.kind==="armor"){seg(0,-5,5,-1);seg(5,-1,0,5);seg(0,5,-5,-1);seg(-5,-1,0,-5);}
+      else{seg(-3,-4,3,-4);seg(3,-4,3,4);seg(3,4,-3,4);seg(-3,4,-3,-4);}
     }else if(m.kind==="foe"){
       const f=m.o,K=FOE_KINDS[f.kind]||FOE_KINDS.grunt;
       /* контактная тень на полу: без неё тело висит в воздухе на своей
@@ -568,36 +547,21 @@ function drawRaid(){
       /* полоска здоровья стоит над головой: середина тела плюс полроста */
       const w=Math.max(14,(f.baron?34:22)*ppu),hp=clamp(f.hp/f.hpMax,0,1);
       const by=m.p.y-Math.max(12,32*ppu),bh=f.baron?6:4;
-      ctx.fillStyle="rgba(0,0,0,.6)";ctx.fillRect(m.p.x-w/2,by,w,bh);
-      ctx.fillStyle=f.baron?"rgba(255,140,90,.98)":
-                   (f.boss?"rgba(255,90,70,.95)":"rgba(242,178,92,.9)");
-      ctx.fillRect(m.p.x-w/2,by,w*hp,bh);
-      if(f.baron){
-        ctx.fillStyle="rgba(255,180,120,.95)";ctx.font="9px ui-monospace,monospace";
-        ctx.textAlign="center";
-        ctx.fillText("БАРОН",m.p.x,by-6);
-      }
+      const bc=f.baron?[255,140,90,.98]:(f.boss?[255,90,70,.95]:[242,178,92,.9]),x0=m.p.x-w/2;
+      OV.push([0,x0,by,x0+w,by+bh,0,0,0,0,0,.6],[0,x0,by,x0+w*hp,by+bh,0,0,bc[0],bc[1],bc[2],bc[3]]);
+      if(f.baron){ctx.textBaseline="alphabetic";
+        domLabel("raidbaron",m.p.x,by-6,"БАРОН","9px ui-monospace,monospace","rgba(255,180,120,.95)","center");}
     }else{
       /* и у самого скафандра тень тоже: он ходит по тому же полу */
       const pm=proj(S.x,raidFloorAt(R,S.x,S.z)+1,S.z);
       const ao={phase:S.walkPhase,amp:keys.thrust||keys.brake?1:0,walk:false,air:false};
-      const gpu=GPU.on&&GPU.dev&&GPU.enc;
-      if(gpu){
-        /* с видеокартой и тень, и фигура ложатся после стен отсека: на #c они всегда
-           стояли поверх прохода, двойник в проходе до стен ушёл бы под них */
-        const sh=pm&&pm.y>m.p.y+2?lifeHere(pm.x,pm.y):null;
-        ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
-        AST={o:ao,h:lifeHere(0,0),sh,rx:Math.max(3,9.5*ppu),ry:Math.max(1.2,2.9*ppu)};ctx.restore();
-      }else if(pm&&pm.y>m.p.y+2){
-        ctx.fillStyle="rgba(0,0,0,.45)";
-        ctx.beginPath();ctx.ellipse(pm.x,pm.y,Math.max(3,9.5*ppu),Math.max(1.2,2.9*ppu),0,0,TAU);ctx.fill();
-      }
-      /* Метка стоит на середине роста, а спрайт нарисован вокруг своей
-         середины — доводка на +10*s больше не нужна и при честном масштабе
-         превратилась бы в полроста вниз. */
-      if(!gpu){ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
-        drawAstronaut(ao);
-        ctx.restore();}
+      /* тень и фигура ложатся после стен отсека (проход gpuNext): двойник в проходе
+         до стен ушёл бы под них. Метка стоит на середине роста, а фигура нарисована
+         вокруг своей середины. ctx здесь — только счётчик преобразования для lifeHere:
+         save/translate/scale #c не пачкают */
+      const sh=pm&&pm.y>m.p.y+2?lifeHere(pm.x,pm.y):null;
+      ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
+      AST={o:ao,h:lifeHere(0,0),sh,rx:Math.max(3,9.5*ppu),ry:Math.max(1.2,2.9*ppu)};ctx.restore();
     }
   }
   raidGpuDraw(polys,{cam,fwd,right,up,F,CY,px:S.x,py:S.y,pz:S.z,a:S.a},LP,FS,OC);
@@ -605,8 +569,8 @@ function drawRaid(){
     if(pass){
       if(AST.sh)gpuImage(pass,poiShadowTex(),[{x:AST.sh.x,y:AST.sh.y,w:AST.rx*2.6*k,h:AST.ry*2.6*k,a:.7}]);
       /* риг карточкой (21phc, M801): спиной к камере, объектив наклонён на её угол к середине роста */
-      if(!rigCardRaid(pass,h,AST.o,Math.atan2(78-RBODY*.5,back)))lifeAstroGpu(pass,h.x,h.y,Object.assign({},AST.o,{s:h.s}));
-    }else{ctx.save();ctx.setTransform(DPR*h.s,0,0,DPR*h.s,DPR*h.x,DPR*h.y);drawAstronaut(AST.o);ctx.restore();}}
+      if(!rigCardRaid(pass,h,AST.o,Math.atan2(CAMH-RBODY*.5,back)))lifeAstroGpu(pass,h.x,h.y,Object.assign({},AST.o,{s:h.s}));
+    }}
   /* ── воздух отсека ──
      Пыль вокруг человека: частицы привязаны к сетке мира, чтобы не «ехали» с
      камерой; в конусе фонаря они вспыхивают, вне его — едва. Сам луч в воздухе
@@ -635,14 +599,12 @@ function drawRaid(){
     const sy2=raidFloorAt(R,sh.x,sh.z)+40;
     const p=proj(sh.x,sy2,sh.z),q=proj(sh.x-sh.vx*2,sy2,sh.z-sh.vz*2);
     if(!p||!q)continue;
-    ctx.strokeStyle=sh.mine?"rgba(127,230,216,.95)":"rgba(255,120,90,.95)";
-    ctx.lineWidth=Math.max(1,2200/p.z*.06);
-    ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(p.x,p.y);ctx.stroke();
+    const c=sh.mine?[127,230,216]:[255,120,90];
+    OV.push([2,q.x,q.y,p.x,p.y,Math.max(1,2200/p.z*.06)/2,.6,c[0],c[1],c[2],.95]);
   }
   /* свет шлема и тьма по краям — в проходе видеокарты (24aa1) */
-  if(S.hurt>0){
-    ctx.fillStyle="rgba(255,50,40,"+(S.hurt/10*.28).toFixed(2)+")";ctx.fillRect(0,0,W,H);
-  }
+  if(S.hurt>0)OV.push([0,0,0,W,H,0,0,255,50,40,S.hurt/10*.28]);
+  {const P=gpuNext();if(P){if(OV.length)gpuShapes(P,OV);if(OVA.length)gpuShapes(P,OVA,{blend:"add"});}}
   /* приборы: скафандр — он же здоровье */
   /* полоса скафандра и заряды ушли из угла канвы: скафандр — в строке
      состояния, заряды и броня — в строке места (hud(), M178). Пэды больше

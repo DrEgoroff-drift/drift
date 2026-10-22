@@ -21,7 +21,7 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 `docs/DESIGN-remake.md` (M800+, built by the three builder sessions, judged by the designer); the
 game's logic — the shift, the bill, the dispatcher, loss, the three rails, combat — is
 `docs/DESIGN-game.md` (M900+; queue in its §10.8, the author's forks in §10.9). Where a stage below
-and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M911 are built (`28m-dispatch`, `28n-access`, `28o-firstwatch`, `28p-doors`, `28q-fork`, unreleased); the §10.8 queue is closed.
+and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M911 are done 22.10 (0.499.12–0.499.15: `28m-dispatch`, `28n-access`, `28o-firstwatch`, `28p-doors`, `28q-fork`; tests `91zzzw9e`–`9i`); the §10.8 queue is closed.
 
 Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
 bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
@@ -92,22 +92,18 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     `hullStudio`), the ОПИСЬ pictures, the suit doll and the album; to fix on the shipyard: the price on a buy button you
     cannot afford is dark on dark — it must still read, contrast ≥ 3 (Контроль 26.09); next: the slipway sheet (26e2, needs a hull mask in 08bi),
     the home garage hull, faces); a bake at first sight
-    costs a hitch on the phone (P1, §1), so rank by that too; the raid
-    comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
+    costs a hitch on the phone (P1, §1), so rank by that too;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
-  - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull. Moved off
-    `drawHull` (0.476.0): the shipyard 26e2, the left trace 12as, `look`/h (28y `makerRead`) and the home room 27e.
-    Left: the station 26:425 — GPU-3; the road 27l (two calls) and the scoop 19a — the fleet, after its landing;
-    29d — the worker, when homein moves (below). 03e1 is deleted with its last caller;
-  - the homein frame onto the engine — the worker, after the fleet's landing, on the fleet's room kit (light,
-    vignette, `kit.img`); pairs at 760 and 390 by the room rules; it takes 29d's `drawHull` with it;
+  - the hull: `hullStudio` / `hullGpuDraw` (17c2) is the one GPU hull. No screen calls `drawHull` any more (22.10:
+    the station, the road 27l, the scoop 19a and the home are on `hullGpuDraw` or gone); it lives on only as the
+    bake under the sprite path (§10, «drawHull stays as the flight's fallback path»);
   - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):
     the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
     (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),
     home outside (779 / 5), the base (104 / 2), the cave (58 / 2); then the road's own layer (hull, trail, glows,
-    jets, coins), the scoop, the raid. Labels drawn into the world layer (the surface HUD, the scoop, the base, the
+    jets, coins), the scoop. Labels drawn into the world layer (the surface HUD, the scoop, the base, the
     home) go onto `#ovl` with the 08bi primitives. Already 0 and 0: cinema, HQ, winter, spa, system, dock, cabin,
-    counter, belt, «Сорока». Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
+    counter, belt, «Сорока», the raid (22.10, `91zzzw9m`). Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
     the first census read 0 on `#c` at 2–5 uploads a frame), is checked against `#c` uploads, and turns red on an
     injected call. The base's GPU bake (the fleet's zone, a850203f; main draws the base in 2D) goes in tiles: at
     2560×1440 its 4078×2092 layer with 4× MSAA and a stencil is 198 MB for a moment, 277 MB with the pool (131 MB on
@@ -310,6 +306,11 @@ Check each against the code before building — some may already hold.
   functions, on touch only; the button family merge; `-Times` for the Node tier.
 - [ ] **The tether crosses the name (22.10):** the veteran's tether line is drawn through his own name
   plate (`13-pirates` labels against the tether pass) — route the line under the plate or break it there; not touched.
+- [ ] **The volume hull reads double up close (22.10, the road on a phone):** 17c2a lays the top-view bake on
+  the mesh from above, so the bake's inserts (the dish, the plate, the bar) and its outline land on whatever
+  surface is under them; where that is a wing, not the body, they show as a second outline, and the hull
+  reads see-through. Not the road's pass: the layer cap (1024) and a full-size bake change nothing, the
+  sprite path is clean. Fix in 17c2a: inserts outside the body silhouette become parts or are masked to it.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
   the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
@@ -318,6 +319,7 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
+- [ ] **The yard beds have no species (22.10, for planet):** the greenhouse beds in 21pig are one green body  sized by `greenGrow`; the 2D bed painter that drew the species (form, leaf and stem colour, bloom, curl) is  gone. `greenSpecies(name,p)` in 21g is pure data for that: the bodies should read it, or two beds of  different seed look the same (M204's rule «ФОРМА — ВИДОВАЯ»).
 - [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). The day is
   `CEL_DAY` of the sky calendar (`06a-celest`), copied in `21pifa` and `25m-probe`; a longer day moves
   the war chronicle's hashes and the need windows. Decide together with the chronicle, reshoot hashes.

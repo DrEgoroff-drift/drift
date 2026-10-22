@@ -1,7 +1,7 @@
 /* ══════════════ пещера на движке: кадр и переключатель (M630a) ══════════════
    Порода из сетки игры (22da), свет и проходы (22db, 22dbw). Здесь — объектив, человек,
-   фонарь, день в устье и огни, и обёртка drawCave: старая рисовалка не тронута, новый вид
-   упал — идёт она, после трёх сбоев подряд новый вид снимает себя сам. ?cave=0 — старая.
+   фонарь, день в устье и огни, и сам drawCave: 2D-пещеры нет, кадр не собрался — одни приборы;
+   после трёх сбоев подряд новый вид снимает себя сам. ?cave=0 — без вида, одни приборы.
    Игра не меняется: сетка, запросы, updateCave — те же; кадр только смотрит на них.
 
    Объектив — как на стенде: широкий на ПК, высокий на телефоне, между ними плавно. Окно кадра
@@ -134,22 +134,50 @@ function cave3PipesAhead(){
   };
   next();
 }
+/* Заготовка живёт ВНЕ мира (CAVE_PRE.st): кадр есть только с видеокартой, и мир не может зависеть от того,
+   сколько кадров простояли у устья (охотник 22.10: счётчик и заготовка в G.surf, caveMake сдвигал мир).
+   Лепка из простоя — в песочнице: поток случая мира возвращается, дозор посёлка читается без шага посёлка
+   (settleTick пишет мир и журнал), а то, что caveMake дописал в G, G.surf и планету, снимается.
+   Кэши планеты (caveFlora …) вход кладёт обратно — их положил бы и caveMake на входе, те же по зерну */
+function cavePreWatch(p){
+  const T=G.settle&&G.settle[settleKeyOf(G.sx,G.sy)];
+  if(!T||T.stage<2||(p&&(p.idx|0)!==(T.idx|0))||T.mood<30)return 0;
+  return clamp((T.stage>=3?1:.65)*(.3+T.mood/100),0,1);
+}
+function cavePreMake(S){
+  const p=S.p,rs=rndState(),kG=new Set(Object.keys(G)),kS=new Set(Object.keys(S)),kP=new Set(Object.keys(p));
+  const sw=settleWatch;
+  settleWatch=cavePreWatch;
+  let C;
+  try{C=caveMake(S);}
+  finally{
+    settleWatch=sw;rndRestore(rs);
+    for(const k of Object.keys(G))if(!kG.has(k))delete G[k];
+    for(const k of Object.keys(S))if(!kS.has(k))delete S[k];
+  }
+  const put={};
+  for(const k of Object.keys(p))if(!kP.has(k)){put[k]=p[k];delete p[k];}
+  return {C,done:false,put};
+}
 function caveTick(){
   const S=G.surf;
   if(G.mode!=="surface"||!S||!GPU.ok||!GPU.dev)return;
   try{cave3PipesAhead();}catch(e){console.error("пещера: конвейеры заранее",e);}
-  if(!S.cave||(S.preN=(S.preN|0)+1)<CAVE_PRE.wait)return;
-  let P=S.cavePre;
+  if(!S.cave)return;
+  let st=CAVE_PRE.st;
+  if(!st||st.S!==S)st=CAVE_PRE.st={S,n:0,P:null};
+  if(++st.n<CAVE_PRE.wait)return;
+  let P=st.P;
   if(P&&P.done)return;
   try{
     plnGpuDev();
-    if(!P){S.cavePre={C:caveMake(S),done:false};return;}
+    if(!P){st.P=cavePreMake(S);return;}
     /* поле породы — под бюджетом (холодное одним куском — до сотен мс), потом куски */
     if(!cave3FieldStep(P.C,CAVE_PRE.ms))return;
     const b=cave3EntryBox(P.C);
     cave3Chunks(P.C,b.box,b.mx,b.my,false,CAVE_PRE.ms);
     if(P.C.ch3&&P.C.ch3.left===0)P.done=true;
-  }catch(e){S.cavePre={C:null,done:true};console.error("пещера заранее",e);}
+  }catch(e){st.P={C:null,done:true,put:{}};console.error("пещера заранее",e);}
 }
 function cave3Frame(){
   const t0=wallMs(),C=G.cave,Fd=cave3Field(C),M=CAVE3,Ln=CAVE3_LENS;
@@ -313,8 +341,8 @@ function cave3Over(){
 }
 
 /* ── переключатель ──
-   2D-рисовалки пещеры больше нет (22-mode-cave): кадр не собрался — в нём одни приборы */
-drawCave=function(){
+   2D-рисовалки пещеры больше нет: кадр не собрался — в нём одни приборы */
+function drawCave(){
   let ok=false;
   if(CAVE3.on&&CAVE3.bad<3&&G.cave&&G.cave.g){
     try{
@@ -440,6 +468,13 @@ function cave3Biter(C,pj){
 /* вход: подсказку запоминаем, чтобы повесить её табличкой, а не полосой посреди пустоты */
 const CAVE3_OLD_ENTER=enterCave;
 enterCave=function(){
+  /* заготовка из простоя (caveTick) отдаётся входу здесь: до входа её нет в мире; enterCave сам
+     решит, годится ли она (тот же дозор и «древность»), и обнулит S.cavePre — как и без неё */
+  const S=G.surf,st=CAVE_PRE.st;
+  if(S&&st&&st.S===S&&st.P){
+    const P=st.P;CAVE_PRE.st=null;
+    if(P.C&&S.p){for(const k in P.put)if(!(k in S.p))S.p[k]=P.put[k];S.cavePre={C:P.C,done:true};}
+  }
   const r=CAVE3_OLD_ENTER.apply(this,arguments);
   CAVE3_W.tip=G.mode==="cave"?String(G.msg||""):null;
   return r;

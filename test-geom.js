@@ -205,6 +205,9 @@ function report(all) {
     lines.push({ n: hs.length, s: "  кегль   " + where + " › " + gs.length + " надп. мельче 8 px (" + Math.min(...ms) + "–" + Math.max(...ms) + "): " +
       gs.slice(0, 5).map(g => g.f.who.replace(/^холст /, "")).join(", ") + (gs.length > 5 ? " …" : "") + "\n           " + wins(hs) });
   }
+  /* что именно сошлось в наезде (tests/90b2-geom.js): у надписей — строки, ужатые до чернил; у DOM-кнопок —
+     видимые рамки элементов. Зона касания фишек холста (CHIP_TOUCH) здесь не меряется вовсе */
+  const GEO_MEAS = { "надписи": "меряются строки по чернилам, не плашки", "кнопки": "меряются видимые рамки кнопок, не зоны касания" };
   /* наезд-узел: одна надпись в одном месте наезжает на три и больше — одной строкой (подпись рукава
      поперёк карты, меловая приписка поперёк таблицы) */
   const hubN = new Map(), hk = (g, l) => place(g) + "\u0001" + l;
@@ -247,7 +250,9 @@ function report(all) {
       fontNote = "  · шрифт: родной 0.550 цел, ломается с a≈" + Math.max(A_NATIVE, Math.min(A_WORST, ast)).toFixed(3);
     } else if (N.length && W.length) fontNote = "  · ломается и родным шрифтом";
     const m = Math.max(...g.hits.map(h => h.m));
+    /* что меряет наезд: строители мерили рамки и спорили с воротами (22.10) — пишем прямо */
     lines.push({ n: g.hits.length, s: "  " + f.law.padEnd(7) + " " + place(g) + " › " + f.who + (f.with ? "  ⟷ " + f.with : "") + (f.by ? "  под " + f.by : "") +
+      (f.law === "наезд" && GEO_MEAS[f.kind] ? "  [" + GEO_MEAS[f.kind] + "]" : "") +
       (f.side ? "  " + f.side : "") + (m ? " до " + m + (f.law === "цель" ? " px" : f.law === "невидим" ? ":1" : f.law === "сжатие" ? " %" : " px") : "") +
       (f.k ? "  контраст сквозь " + f.k + ":1" : "") + (f.al && Math.min(...f.al) < .5 ? "  непрозрачность " + f.al.join("/") : "") +
       (f.s ? "  «" + f.s + "»" : "") + "\n           " + wins(g.hits) + fontNote });

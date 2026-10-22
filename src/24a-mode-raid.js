@@ -188,33 +188,8 @@ function drawPirateBase(zx,zy,Z){
   const PB=sysPirateBase();if(!PB)return;
   const x=zx(PB.x),y=zy(PB.y),s=clamp(Z,.3,1.4);
   if(x<-60||x>W+60||y<-60||y>H+60)return;
-  const pass=gpuScene();if(pass){pirateBaseGpu(pass,PB,x,y,s);return;}
-  ctx.save();ctx.translate(x,y);ctx.scale(s,s);
-  /* угловатая, тёмная, с красными огнями — читается как чужая с первого взгляда */
-  /* у базы с хозяином (12o) свой обвод и своё имя: логово наконец отличается
-     снаружи, а не только изнутри */
-  const HL=typeof huntLairAt==="function"?huntLairAt(G.sx,G.sy):null;
-  ctx.fillStyle=HL?"#1b0f16":"#171013";
-  ctx.strokeStyle=HL?"rgba(197,138,224,.9)":"rgba(220,90,70,.85)";ctx.lineWidth=2;
-  ctx.beginPath();
-  for(let i=0;i<5;i++){
-    const a=i*TAU/5+G.t*.002;
-    const px=Math.cos(a)*22,py=Math.sin(a)*16;
-    i?ctx.lineTo(px,py):ctx.moveTo(px,py);
-  }
-  ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.strokeStyle="rgba(220,90,70,.5)";ctx.lineWidth=1.4;
-  for(let i=0;i<4;i++){
-    const a=i*TAU/4-G.t*.004;
-    ctx.beginPath();ctx.moveTo(Math.cos(a)*20,Math.sin(a)*14);
-    ctx.lineTo(Math.cos(a)*33,Math.sin(a)*24);ctx.stroke();
-  }
-  ctx.fillStyle=(Math.sin(G.t*.18)>0)?"rgba(255,60,50,.95)":"rgba(255,60,50,.15)";
-  ctx.beginPath();ctx.arc(0,0,4,0,TAU);ctx.fill();
-  ctx.restore();
-  ctx.fillStyle=HL?"rgba(197,138,224,.8)":"rgba(220,90,70,.65)";
-  ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),x,y+34);
+  /* угловатая, тёмная, с красными огнями — читается как чужая; только на движке (22.10) */
+  const pass=gpuScene();if(pass)pirateBaseGpu(pass,PB,x,y,s);
 }
 function enterRaid(PB){
   if(typeof vegaOffend==="function"&&vegaAboard())vegaOffend("рейд, а она просила не лезть");   /* M153 */
@@ -269,8 +244,9 @@ function enterRaid(PB){
     walkPhase:0,hurt:0,flash:0,shots:[],exit:[sx0,sz0],level:PB.level};
   G.mode="raid";G.ap=null;
   for(const k in keys)keys[k]=false;
-  /* имя базы и счёт живых стоят в сводке места — здесь только управление */
-  say("◀ ▶ — поворот · ▲ ▼ — ход\nОГОНЬ — стрельба · вернитесь в ангар и ДЕЙСТВИЕ — уход");
+  /* имя базы и счёт живых стоят в сводке места; управление — строкой у пульта, пока человек
+     не отошёл от ворот (S.hint): посреди кадра тремя строками оно резалось на 390 (22.10) */
+  G.raid.hint=true;
 }
 function raidLeave(msg,lostShare){
   const S=G.raid;if(!S)return;
@@ -392,6 +368,7 @@ function updateRaid(dt){
     if(Math.hypot(L.x-S.x,L.z-S.z)<60){near=L;break;}
   }
   const atExit=Math.hypot(S.exit[0]-S.x,S.exit[1]-S.z)<70;
+  if(!atExit)S.hint=false;
   const alive=S.foes.filter(f=>f.hp>0).length;
   if(near){
     /* Скафандр отсюда убран: он стоит шкалой наверху, крупно и с цветом
@@ -415,10 +392,11 @@ function updateRaid(dt){
       }
     }
   }else if(atExit){
-    G.prompt="АНГАР · ДЕЙСТВИЕ — УХОД С ДОБЫЧЕЙ"+
-      "\nв сумке: техкомпонентов "+S.bag.tech+", данных "+S.bag.data+
-      (S.bag.parts.length?", частей "+S.bag.parts.length:"")+
-      (alive?"\nна базе ещё "+alive+" стволов":"\nбаза зачищена");
+    /* первая строка — глагол кнопки; на плашке её нет (28u): кнопка уже называет уход */
+    G.prompt="ДЕЙСТВИЕ — УХОД С ДОБЫЧЕЙ\nв сумке: техники "+S.bag.tech+" · данных "+S.bag.data+
+      (S.bag.parts.length?" · частей "+S.bag.parts.length:"")+
+      (alive?" · стволов "+alive:" · база зачищена")+
+      (S.hint?"\n◀ ▶ поворот · ▲ ▼ ход · ОГОНЬ — стрельба":"");
     if(actEdge){raidLeave(alive?"Уход с базы":"База зачищена",0);return;}
   }else{
     G.prompt="ЗАРЯДОВ "+S.ammo+

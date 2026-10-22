@@ -520,6 +520,12 @@ function hallLoop(){
   HALL.raf=requestAnimationFrame(hallLoop);
 }
 /* кадр: раскладка по станции, сетка по ключу, свет и движение каждый кадр */
+const HALL_BULB_R=48;   /* потолок ореола колбы, px: у ламп зала 3–9, у ламп у самого объектива — до 60 */
+function hallBulbU(U,vp,bulbs,cw,ch){
+  bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(vp,b,cw,ch),q2=r3Proj(vp,[b[0]+.05,b[1],b[2]],cw,ch);
+    if(!q||!q2||!(q[2]>0))return;const r=Math.max(2,Math.abs(q2[0]-q[0])),m=4*r;
+    if(r<HALL_BULB_R&&q[0]>-m&&q[0]<cw+m&&q[1]>-m&&q[1]<ch+m)U.set([q[0],q[1]+2,r,b[3]],i*4);});
+}
 function hallFrame(){
   const cn=HALL.cn,st=(G.st&&G.st.stype)||"trade",sz=hallSize(cn);
   if(!HALL.L||HALL.L.st!==st)HALL.L=hallLayout(st);
@@ -542,8 +548,9 @@ function hallFrame(){
   const S=hallScene(L,cam,t);S.vp=hallCrop(cam.vp,sz.rw/sz.cw);
   const lab=r3Dev()?R3.blank:null;   /* подписей зал не печёт: пустой слой во весь холст тянул пул MSAA 2D (M816c) */
   const U=new Float32Array(60);
-  S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
-    if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
+  /* ореол колбы — только у колбы в кадре и своего размера: на переходе к бару лампы стойки уходили к плоскости
+     объектива (x 2·10⁵ px, ореол 3·10⁵ px) — и ореол ложился ровным жёлтым молоком на весь зал */
+  hallBulbU(U,cam.vp,S.bulbs,sz.cw,sz.ch);
   const tl=r3Lin(L.T.key);U.set([tl[0],tl[1],tl[2],1.0],24);
   U[43]=t;U[44]=1;U[47]=1;
   /* оптический центр — куда смотрит объектив (цель камеры на экране), сила хроматики под планку: ≤ 1 px у центра */

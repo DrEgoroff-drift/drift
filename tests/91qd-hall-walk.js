@@ -73,3 +73,16 @@ TEST_SUITES.push(()=>suite("станция пешком: карточка — с
   hallWalkBack();ok(!$st.classList.contains("eng"),"назад снимает метку");
   T.leave();
 }));
+
+/* кинодень (27da): подошёл к бару — сеанс засчитан раз; после переноса кино в бар (0.499.12) kinoWatch никто не звал */
+TEST_SUITES.push(()=>suite("станция пешком: кинодень у бара засчитан один раз",{tier:"browser"},()=>{
+  resetWorld();
+  ok(T.board("near"),"причалили");
+  if(!HALL.walk||!hallPlacesHere().find(p=>p.id==="folk")){T.leave();ok(false,"у причала нет бара на ходу");return;}
+  const k0=kinoHere;G.kino=[];
+  kinoHere=()=>({title:"«Проба»",id:"t@1",seed:1});
+  try{hallWalkEngage("folk");hallWalkBack(true);hallWalkEngage("folk");}
+  finally{kinoHere=k0;hallWalkBack(true);}
+  eq(G.kino.join(","),"t@1","сеанс в трудовой — один раз за два подхода");
+  T.leave();
+}));
