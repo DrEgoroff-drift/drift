@@ -5473,10 +5473,10 @@ houseWallMark                src/17d-house-shapes.js:72-94
 hq3Chair                     src/29r-rooms-r3.js:27
 hq3Duty                      src/29r-rooms-r3.js:42
 hq3Layout                    src/29r-rooms-r3.js:29-41
-hq3Mesh                      src/29r-rooms-r3.js:46-125
-hq3Scene                     src/29r-rooms-r3.js:128-168
+hq3Mesh                      src/29r-rooms-r3.js:46-138
+hq3Scene                     src/29r-rooms-r3.js:141-181
 hq3Stand                     src/29r-rooms-r3.js:28
-hq3Tags                      src/29r-rooms-r3.js:253
+hq3Tags                      src/29r-rooms-r3.js:266
 hqAiOffer                    src/27c-ui-hq.js:390-410
 hqBtnTick                    src/27c-ui-hq.js:221-227
 hqJobCard                    src/27c-ui-hq.js:450-488
@@ -5484,7 +5484,7 @@ hqMgrAt                      src/27f-hq-room.js:8
 hqRelicSlot                  src/27c-ui-hq.js:416-446
 hqRender                     src/27c-ui-hq.js:228-385
 hqRentOffer                  src/12f1-mgr-rent.js:59-77
-hqScene                      src/29r-rooms-r3.js:296
+hqScene                      src/29r-rooms-r3.js:309
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
@@ -7778,24 +7778,24 @@ roleSteer                    src/13c-roles.js:8
 roleThrust                   src/13c-roles.js:9
 rollCrewEvent                src/12b-crew-events.js:70-96
 rollWorld                    src/02a-worldmix.js:67-76
-room3Breath                  src/29r-rooms-r3.js:202
-room3Cams                    src/29r-rooms-r3.js:188
-room3Canvas                  src/29r-rooms-r3.js:171-179
-room3Close                   src/29r-rooms-r3.js:214-220
-room3Cost                    src/29r-rooms-r3.js:284
-room3Frame                   src/29r-rooms-r3.js:229-248
-room3GlideAt                 src/29r-rooms-r3.js:189-193
-room3Go                      src/29r-rooms-r3.js:196-200
-room3Loop                    src/29r-rooms-r3.js:221-228
-room3Moving                  src/29r-rooms-r3.js:194
-room3Night                   src/29r-rooms-r3.js:203
-room3Ok                      src/29r-rooms-r3.js:204
-room3Open                    src/29r-rooms-r3.js:205-212
-room3Over                    src/29r-rooms-r3.js:278-281
-room3PickHq                  src/29r-rooms-r3.js:287-293
-room3Place                   src/29r-rooms-r3.js:213
-room3Size                    src/29r-rooms-r3.js:180-187
-room3TagsDraw                src/29r-rooms-r3.js:262-276
+room3Breath                  src/29r-rooms-r3.js:215
+room3Cams                    src/29r-rooms-r3.js:201
+room3Canvas                  src/29r-rooms-r3.js:184-192
+room3Close                   src/29r-rooms-r3.js:227-233
+room3Cost                    src/29r-rooms-r3.js:297
+room3Frame                   src/29r-rooms-r3.js:242-261
+room3GlideAt                 src/29r-rooms-r3.js:202-206
+room3Go                      src/29r-rooms-r3.js:209-213
+room3Loop                    src/29r-rooms-r3.js:234-241
+room3Moving                  src/29r-rooms-r3.js:207
+room3Night                   src/29r-rooms-r3.js:216
+room3Ok                      src/29r-rooms-r3.js:217
+room3Open                    src/29r-rooms-r3.js:218-225
+room3Over                    src/29r-rooms-r3.js:291-294
+room3PickHq                  src/29r-rooms-r3.js:300-306
+room3Place                   src/29r-rooms-r3.js:226
+room3Size                    src/29r-rooms-r3.js:193-200
+room3TagsDraw                src/29r-rooms-r3.js:275-289
 roomToneTick                 src/09a-roomtone.js:79-99
 routeEarn                    src/12r-route.js:196-204
 routeFork                    src/12r-route.js:64-67
@@ -10610,7 +10610,7 @@ zoomTo                       src/15-input.js:358
 ## src/29h-spa.js · 8 KB
   · санаторий: три дня, и ничего не происходит:1
 
-## src/29r-rooms-r3.js · 27 KB
+## src/29r-rooms-r3.js · 28 KB
   · комнаты игрока на движке (M850, docs/DESIGN-rooms.md):1
 
 ## src/29rb-home-r3.js · 38 KB
