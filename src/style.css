@@ -1325,6 +1325,9 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(var(--c-a
     display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
     left:10px;right:calc(var(--railw,128px) + 4px);transform:none;
     text-overflow:ellipsis;max-width:none;line-height:1.4}
+  /* плашка рейда (28u): зазор до борта и до края — 12 px, как у прочих плашек; строка управления
+     влезает в одну строку за счёт полей и разрядки */
+  body.raidui #prompt{left:12px;right:calc(var(--railw,128px) + 12px);padding:5px 8px;letter-spacing:.05em}
 }
 /* ── кнопка не исчезает — кнопка гаснет (M181, прямое указание автора) ──
    Правило M167 «призрачных кнопок нет» пряталo ДЕЙСТВИЕ и ТОРМОЗ совсем, и
