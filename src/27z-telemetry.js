@@ -228,6 +228,8 @@ function hudFloorMeasure(force){
 }
 /* колпачки клавиш на пэдах: [элемент, действие] — собраны раз, чтения DOM в кадре нет */
 let $vShip=null,$padKeys=null;
+/* разбор G.prompt по ключу «режим|текст»: dup — строка повторяет кнопку, lbl — [слово кнопки, есть действие] */
+const HUD_PROMPT={k:null,dup:false,lbl:null};
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
@@ -293,7 +295,10 @@ function hud(){
   /* Кошелёк, а под ним — облако, но только когда с ним что-то не так. Молчащий
      обмен места в кадре не занимает (docs/DESIGN-online-risks.md, A1). */
   const cl=(typeof cloudLine==="function")?cloudLine():"";
-  setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));
+  /* строка кошелька — только при перемене: toLocaleString("ru") стоил 3 мкс из 16 каждого кадра (M826) */
+  {const cr=Math.round(G.credits);if($purse&&($purse.__c!==cr||$purse.__d!==G.data||$purse.__l!==cl||$purse.textContent!==$purse.__s)){
+    $purse.__c=cr;$purse.__d=G.data;$purse.__l=cl;   /* и сверка с самим узлом: его пишут и мимо hud() (см. setTx) */
+    setTx($purse,$purse.__s=cr.toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));}}
   /* кошелёк шапки станции: экран может стоять открытым, когда мир меняет цифры (загрузка под ним, M331) — пишем при смене */
   if(HUD_NUM.wc!==G.credits||HUD_NUM.wd!==G.data){HUD_NUM.wc=G.credits;HUD_NUM.wd=G.data;if(typeof stWalletSync==="function")stWalletSync();}
   /* масштаб — служебная цифра, и место ей в шапке под кассой (R6, 12.09), а не
@@ -303,7 +308,7 @@ function hud(){
     /* цифра — повод, а не вывеска (M721): две секунды после того, как масштаб сдвинулся */
     if($zl.__z!==G.zoom){$zl.__z=G.zoom;$zl.__t=wallMs();}
     const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen")&&wallMs()-$zl.__t<2000;
-    $zl.style.display=zs?"":"none";
+    setSt($zl,"display",zs?"":"none");
     if(zs)setTx($zl,"Масштаб ×"+decRu(G.zoom,2));
   }
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
@@ -388,7 +393,8 @@ function hud(){
     /* меню называет цену (дизайнер 12.09): решать, не открывая окна */
     const cs=on&&(cbtn.__s||(cbtn.__s=cbtn.querySelector("s")));
     if(cs){const H=rescueHomeAt(),at=G.sx===H.sx&&G.sy===H.sy;
-      setTx(cs,at?"вы и так дома":"прыжок "+H.ru+" · "+rescueHomeCost().toLocaleString("ru")+" кр");}
+      const hc=at?-1:rescueHomeCost(),hk=H.ru+"|"+hc;   /* строка — при смене цены или дома */
+      if(cs.__k!==hk||cs.textContent!==cs.__s){cs.__k=hk;setTx(cs,cs.__s=at?"вы и так дома":"прыжок "+H.ru+" · "+hc.toLocaleString("ru")+" кр");}}
   }
   const sbtn=document.getElementById("starbtn");
   setSt(sbtn,"display",(G.mode==="system"&&!G.haul&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");   /* под буксиром курс не наш (16c) */
@@ -399,7 +405,7 @@ function hud(){
   if(gbtn){
     const on=G.mode==="system"&&!!G.course&&!(G.course.sx===G.sx&&G.course.sy===G.sy);
     setSt(gbtn,"display",on?"":"none");
-    if(on){const hops=Math.max(1,Math.ceil(Math.hypot(G.course.sx-G.sx,G.course.sy-G.sy)/Math.max(.5,stat().jump)));
+    if(on){const hops=Math.max(1,Math.ceil(Math.hypot(G.course.sx-G.sx,G.course.sy-G.sy)/Math.max(.5,st.jump)));
       setTx(gbtn,"К ЦЕЛИ · "+hops+" "+pl3(hops,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"));}
   }
   /* кнопка плеча: только на карте и только у выбранной системы со станцией —
@@ -454,8 +460,12 @@ function hud(){
   /* на карте подсказка висит табличкой у выбора (M822), в системе — у вещи, которую назвал cueAt (M826) */
   /* подсказка — один глагол, и кнопка ДЕЙСТВИЯ называет его целиком (два слова и число): строка над
      кнопкой повторяла бы её оранжевым капсом (M826). «УДЕРЖИВАЙТЕ…», хвост через «·» — новое, остаются */
-  const pv=/^ДЕЙСТВИЕ\s*—\s*([^·\n]+)$/.exec(String(G.prompt||"").trim());
-  const pDup=!!pv&&pv[1].replace(/\s*\(?\d+\)?\s*$/,"").trim().split(/\s+/).length<=2;
+  /* разбор подсказки (повтор в строке и слово кнопки) — только когда сменились текст или режим (M826, перф) */
+  const PK=HUD_PROMPT,pk=G.mode+"|"+(G.prompt||"");
+  if(PK.k!==pk){PK.k=pk;PK.lbl=null;
+    const pv=/^ДЕЙСТВИЕ\s*—\s*([^·\n]+)$/.exec(String(G.prompt||"").trim());
+    PK.dup=!!pv&&pv[1].replace(/\s*\(?\d+\)?\s*$/,"").trim().split(/\s+/).length<=2;}
+  const pDup=PK.dup;
   setTx($prompt,G.mode==="dock"||mapHintHung()||hangCueHung()||pDup?"":G.prompt);
   /* на тяге значок, на грунте и в шахте — слово. Слову, как подписям прочих пэдов, свой <span>,
      регистр предложения и кегль (.word): ПРЫЖОК капителью в 17 px был шире круга на телефоне в 320 */
@@ -482,7 +492,8 @@ function hud(){
        сигнала бедствия кнопка стояла погашенной, хотя подсказка звала жать.
        Клавиатуру это не трогало (Space шёл мимо кнопки), телефон и мышь —
        глухо. Признак действия — «ДЕЙСТВИЕ —» ГДЕ УГОДНО в подсказке. */
-    const m=/(?:УДЕРЖИВАЙТЕ\s+)?ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(G.prompt||"");
+    if(PK.lbl){actLbl=PK.lbl[0];hasAct=PK.lbl[1];}
+    else{const m=/(?:УДЕРЖИВАЙТЕ\s+)?ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(G.prompt||"");
     if(m){
       hasAct=true;
       /* пад называет действие всегда (R6, 12.09): не «влезло — показали, не
@@ -500,6 +511,7 @@ function hud(){
       const words=ws.slice(0,wn).join(" ");
       actLbl=(words||"ДЕЙСТВИЕ")+(nm?" "+nm[1]:"");
     }
+    PK.lbl=[actLbl,hasAct];}
   }
   setTx(padWord($act),padCase(actLbl));
   /* кнопка без действия гаснет, а не исчезает (M181): палец помнит место */

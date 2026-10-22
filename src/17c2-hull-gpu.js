@@ -193,7 +193,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly,gear){
   const FL=R?null:hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);   /* в студии огня нет, сглаженная тяга полёта не трогается */
   /* студия в объёме (M723: ангар ОПИСИ, R.v3 — курс, наклон, перспектива, оснастка): корпус наклонён к зрителю,
      и плоские огни, зевы и вставки легли бы мимо своих мест — их нет, жар сопел даёт сам объём */
-  const V3=!!(R&&R.v3&&H3D.on);
+  const V3=!!(R&&R.v3);
   if(V3)return h3dDraw(h,B,x,y,0,sc,0,lx,ly,null,.25,R.v3.gear||h3dStockGear(id),R)||(gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null),true);
   /* сопла без тяги: у люкса кольцо среза, у прочих тлеющий зев */
   if(!thrusting){
@@ -207,7 +207,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly,gear){
     gpuShapes(pass,gl,{blend:"add"});
   }
   /* брюхо: тёмный силуэт со стороны крена, под телом */
-  const H3=!R&&H3D.on;   /* объём M710 (17c2a): крен настоящий, брюхо — своё */
+  const H3=!R;   /* объём M710 (17c2a): крен настоящий, брюхо — своё */
   if(bank&&!H3){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
     if(Bl.B)gpuImage(pass,Bl.B,[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
   const FS=FL?S(FL.x,FL.y):null;

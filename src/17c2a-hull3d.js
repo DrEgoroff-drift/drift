@@ -10,10 +10,9 @@
    Свет — настоящий: звезда с высоты H3D_LZ, заливка снизу темнее, блик по маске металла,
    стекло, огни сцены (текстура света 08b), огонь у кормы. Свои огни (окна) — по маске материала.
    Рисуется в свой слой ×4 MSAA (слой текстуры-массива) отдельной отправкой до кадра — проход
-   сцены не рвётся, — и ложится в сцену одной картинкой смешением "hull" (маска корпуса 08b).
-   ?h3d=0 или H3D.on=false — старый спрайт 17c2 */
+   сцены не рвётся, — и ложится в сцену одной картинкой смешением "hull" (маска корпуса 08b). */
 /* cap — потолок стороны слоя: в полёте 512, ангар (M723) и крупная проба поднимают до 1024 на время рисования */
-const H3D={on:typeof location==="undefined"||!/[?&]h3d=0\b/.test(location.search),M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512};
+const H3D={M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512};
 const H3D_L=4;   /* слоёв на кадр: свой корабль и трое рядом */
 const H3D_SIDES=[128,256,512,1024];   /* классы слоя: мелкий корпус не чистит и не сводит 512² ×4 (телефон — тайлы); 1024 — только витрина, два слоя */
 const H3D_LZ=.48,H3D_FILL=.30,H3D_KEY=1.6;   /* высота звезды над плоскостью; заливка; сила звезды */
@@ -346,7 +345,7 @@ function h3dCls(n){
    (lx,ly) — к звезде, B — выпечка тела (hullGpuBake), fl — огонь у кормы на экране или null.
    false — слоя нет (не тот кадр, слои кончились): рисуй спрайтом */
 function h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,ember,gear,V){
-  if(!H3D.on||!GPU.on||!GPU.dev||!GPU.enc)return false;
+  if(!GPU.on||!GPU.dev||!GPU.enc)return false;
   /* новая сетка с частями — одна за кадр (M722): штука стоит 2–3,5 мс на ПК и вчетверо больше на телефоне, вход
      в систему с восемью корпусами иначе встаёт колом. Кто ждёт очереди — голый корпус, стволы ему рисует 05c */
   if(gear){const C4=H3D.MG.get(h);if(!(C4&&C4.has(gear.sig))){if(H3D.built===GPU.frameNo)gear=null;else H3D.built=GPU.frameNo;}}
@@ -507,6 +506,6 @@ function h3dPirMesh(art){
 }
 /* пират на место спрайта (12i gpuPirateBody): выпечка art.cn, свет корпуса — к звезде */
 function h3dPirate(art,p,x,y,s,lx,ly){
-  if(!H3D.on||!GPU.on||!GPU.dev||!GPU.enc||!art.B||!art.B.polys)return false;
+  if(!GPU.on||!GPU.dev||!GPU.enc||!art.B||!art.B.polys)return false;
   return h3dRun(h3dPirMesh(art),art.cn,x,y,p.a,s,(p.bank||0)*.6,lx,ly,null,.25);
 }
