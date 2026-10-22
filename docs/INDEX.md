@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 638 · top-level symbols: 8723
+Files: 639 · top-level symbols: 8737
 
 ## SYMBOLS
 
@@ -1112,7 +1112,7 @@ HG_U                         src/17c2-hull-gpu.js:92
 HIN_ROOM_W                   src/29c-home-in.js:21
 HIN_THINGS                   src/29c-home-in.js:199-223
 HIN_UP                       src/29e-home-up.js:20
-HIT_FX                       src/18d-postfx.js:6
+HIT_FX                       src/18d-postfx.js:10
 HIT_REAR                     src/13-combat.js:11
 HK_DARK                      src/17l1-hotel-kosmos.js:20
 HK_ROOM                      src/17l1-hotel-kosmos.js:24
@@ -1197,6 +1197,7 @@ HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
 HUNT_TIERS                   src/12o-hunter.js:19-23
 HX                           src/12v-wander.js:186
+HZ_CN                        src/18d-postfx.js:31
 ICO_F                        src/24-mode-belt.js:10
 ICO_V                        src/24-mode-belt.js:4-9
 IND_FEE                      src/12ac-bld.js:111
@@ -2291,6 +2292,7 @@ TEST_TIMES                   tests/99-run.js:18
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 TIER_RU                      src/05-parts.js:86
+TILE                         src/18c-chunks.js:128
 TIN_BIN                      src/12ta-tin.js:31
 TIN_CAP                      src/12ta-tin.js:28
 TIN_EAT                      src/12ta-tin.js:29
@@ -3974,7 +3976,7 @@ drawGround                   src/19-mode-landing-ground.js:11-232
 drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
 drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
-drawHitFx                    src/18d-postfx.js:14-20
+drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29rb-home-r3.js:454-459
 drawHomeOut                  src/21f-home-out.js:75-263
 drawHotel                    src/17l-hotel.js:147-177
@@ -4040,6 +4042,7 @@ drawTapes                    src/12s1-tape.js:51-66
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:63-156
+drawTiles                    src/18c-chunks.js:154-165
 drawTrail                    src/16-flight.js:457-460
 drawTransitPlate             src/03d-hull-marks.js:186-196
 drawWallPaper                src/11ae-concert.js:39-71
@@ -4101,7 +4104,12 @@ e2eLate                      tests/91zzzzz-e2e-life.js:384
 e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
-ecoEstate                    tests/91zzzw4-ecosim-est.js:5-163
+ecoEstate                    tests/91zzzw4-ecosim-est.js:5-203
+ecoLadder                    tests/91zzzw4-ecosim-rep.js:7-29
+ecoNormFold                  tests/91zzzw4-ecosim-rep.js:41-45
+ecoNormNow                   tests/91zzzw4-ecosim-rep.js:30-39
+ecoNormSum                   tests/91zzzw4-ecosim-rep.js:46-52
+ecoPrint                     tests/91zzzw4-ecosim-rep.js:53-107
 econCycleMul                 src/12ax-fx-econ.js:27-34
 econEmbargoOn                src/12ax-fx-econ.js:56-61
 econFairHere                 src/12ax-fx-econ.js:48-54
@@ -5089,7 +5097,9 @@ haulStart                    src/16c-rescue.js:171-187
 haulTick                     src/16c-rescue.js:319-437
 hazardBand                   src/25-cockpit.js:166-177
 hazeBand                     src/19cc-gpu-air.js:200-212
+hazeDone                     src/18d-postfx.js:68
 hazeFar                      src/19c-light.js:167-188
+hazeGrab                     src/18d-postfx.js:33-50
 hdA                          src/17l2-hotel-druzhba.js:19
 hdPaint                      src/17l2-hotel-druzhba.js:35-162
 hdS                          src/17l2-hotel-druzhba.js:22
@@ -5108,6 +5118,8 @@ heardUse                     src/12x-parrot.js:116-136
 heardWordsRu                 src/12x-parrot.js:79-85
 heardYours                   src/12x-parrot.js:71-74
 heatAdd                      src/13a-guns.js:47-52
+heatHaze                     src/18d-postfx.js:70-74
+heatHazeFrom                 src/18d-postfx.js:52-67
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:367
 helmApply                    src/15a-helm.js:450-548
@@ -5181,7 +5193,7 @@ hinUpRooms                   src/29e-home-up.js:24-34
 hinWidth                     src/29c-home-in.js:45
 hireMerc                     src/12a-crew.js:219-234
 hireMgr                      src/12c-mgr-core.js:302-318
-hitFx                        src/18d-postfx.js:7
+hitFx                        src/18d-postfx.js:11
 hitLocMul                    src/13-combat.js:32-35
 hitShip                      src/13-combat.js:89-153
 hkBand                       src/17l1-hotel-kosmos.js:46
@@ -8305,6 +8317,8 @@ tickLaunchHold               src/21-mode-surface.js:673-686
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
 tierOf                       src/04b-fleet.js:157
+tileAt                       src/18c-chunks.js:129-139
+tileSpan                     src/18c-chunks.js:145-153
 timeBucket                   src/03-ships.js:128-131
 tinAskOf                     src/12ta-tin.js:97-106
 tinAt                        src/12ta-tin.js:58
@@ -9623,11 +9637,11 @@ zoomTo                       src/15-input.js:358
 ## src/18b-map-hold.js · 16 KB
   · владения на карте (M348):1
 
-## src/18c-chunks.js · 9 KB
+## src/18c-chunks.js · 12 KB
   · кэш статичного: чанки и слои:1
 
-## src/18d-postfx.js · 2 KB
-  · эффекты кадра: хроматика (M325):1
+## src/18d-postfx.js · 6 KB
+  · эффекты кадра: марево, хроматика (M325):1
 
 ## src/18d-verlet.js · 8 KB
   · верле: верёвки и ткань:1
@@ -10596,10 +10610,12 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim-est.js · 12 KB
+## tests/91zzzw4-ecosim-est.js · 16 KB
 
-## tests/91zzzw4-ecosim.js · 48 KB
-  · проба · экономика (M903):1
+## tests/91zzzw4-ecosim-rep.js · 11 KB
+
+## tests/91zzzw4-ecosim.js · 39 KB
+  · проба · экономика (M903, M912):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
   · причальная полоса не перебивает посадку (0.493.4):1

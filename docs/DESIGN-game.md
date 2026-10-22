@@ -484,11 +484,42 @@ Read it:
 - **A haul to the makers does not pay.** The makers may not stand at home (home makes their ore),
   so each feeding is a jump: 440–540 cr of fuel for a round trip of one jump, carrying ~8.5 units
   of ore and earning ~395 cr of industrial goods (6 h: 16 hauls, 6 300 cr).
-- **No station within three jumps has a site rung for this player** (`bldSitesAt` = 0 at all 121):
-  the probe never climbs the access ladder, and none of its workshops could be built in the game.
-  A T3 player holds the ★11 rung at least at home; the probe does not model the ladder.
+- **No station within three jumps has a site rung for this player** (`bldSitesAt` = 0 at all 121)
+  — measured at the tier's start, before the first landing. M916 below measures it after play:
+  one site, at home.
 - Owner: the workshop chain (§3.1 workshops, 12ac families C–D) — the next link's buyer, or a market
   for the last link. Questions for the author; nothing changed.
+
+**The access ladder — M916, measured 22.10** (`ecoLadder` in `-rep` prints the ladder at a tier's
+start and end for home and the 121 stations within three jumps; `ECO_SAVE=1` adds a round through
+`snapshot()` → JSON → `applySave()`). A site is the ★11 rung «Монтажная площадка» (`bldSitesAt` →
+`rungHas(…,"site")`, `src/12ad-site.js:100-103`). The rung is derived, never stored: points for the
+player's deeds in that system (`rungPoints`, `12ad-site.js:45-68`), capped by three gates (`rungOf`,
+`12ad-site.js:69-83`) — landed on a body there, drilled a deposit there, a drone there. Under Node,
+a human's pace, three hours:
+
+| run | home rung, start → end (points) | home sites | stations within 3 jumps: docked / landed / rung ≥ 11 | after the save round |
+|---|---|---|---|---|
+| T0, a fresh game | 0 → 10 (18) | 0 — gate «оставить дрона» | 4 / 1 / 0 | 10 (18) · 0 sites |
+| T3, no estate | 0 → 11 (21) | 1 | 9 / 1 / 1 | 11 (21) · 1 site |
+| T3, estate | 5 → 13 (28) | 1 | 9 / 1 / 1 | 13 (28) · 1 site |
+
+Read it:
+
+- **Not a bug — the probe's timing.** The M914 survey ran at the tier's setup, before the first
+  landing. The rung climbs with play and survives a save (every input — `place`, `hold.deeds`,
+  drones, bases — is a saved field). No author save is on this machine (the cloud copy lives on the
+  live site, which this work does not touch); the save round is the proxy, and it changes nothing.
+- **The ladder needs feet on the ground, system by system.** A station the player only docks at
+  stays at rung ≤ 5 (the landing gate): the neighbour at 1,0 earns 14 points and is held at rung 5,
+  0,-1 earns 6 (rung 4). After three hours a T3 player has one site, at home — and the probe's
+  workshops at the neighbours (above) could not be built in the game.
+- **T0 stops one step short.** 18 points would give rung 10 anyway; the drone gate holds it there,
+  and a player with no drone has no site anywhere. The design of DESIGN-holding §6, noted.
+- **The eaters stand much higher.** A family-C workshop (thermocshop eats ferro) needs ★20
+  «Промышленный узел» (`bldTierOpenAt`, `12ad-site.js:104-108`): 55 points and three buildings in
+  the system; the slipway (eats plate) needs ★22, 65 points. Home at T3 holds 28 after three hours.
+  M914's «eater at home» is a late-game picture, not a T3 one.
 
 **Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
 
@@ -1090,7 +1121,8 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) **done 22.10 (`28q-fork`)** | every order has both sides; a found notch gives one access line |
 | M912 | economy after the dispatcher **measured 22.10, §4.1b**: the first hour counts play (`28v-playhour`); the probe plays the dispatcher and a fresh save | at a human's pace T0, T1 within ±20 %, T2 at its edge; T3 in band only with the estate at the bot's pace |
 | M913 | the logist in the probe **measured 22.10, §4.1b**: T3 at a human's pace, without and with the logist, minutes by phase | base + logist +10 % (6 h); with workshops −7…−28 %: the workshops are the remaining gap |
-| M914 | an eater for ferro/plate **measured 22.10, §4.1b**: where one may stand within 3 jumps, at what shadow price, whether the haul pays | an eater may stand at home; the haul to the makers does not pay (~395 cr for 440–540 fuel); the eater's own good has no eater; no site rung within 3 jumps |
+| M914 | an eater for ferro/plate **measured 22.10, §4.1b**: where one may stand within 3 jumps, at what shadow price, whether the haul pays | an eater may stand at home; the haul to the makers does not pay (~395 cr for 440–540 fuel); the eater's own good has no eater; no site rung within 3 jumps at the tier's start (M916: one at home after play) |
+| M916 | «no sites» checked **measured 22.10, §4.1b**: the probe's ladder or the game's | the probe's timing, not a bug: home climbs to ★11–13 in three hours at T3 (one site) and keeps it through a save; T0 stops at 10 on the drone gate; eaters need ★20–22 |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),

@@ -1,6 +1,32 @@
 /* Печать пробы экономики (91zzzw4-ecosim, M912) и суд нормы по сводкам. Вынесено из пробы
    (Контроль 22.10: набор ≤ 40 КБ). Сюиты здесь нет: проба зовёт ecoPrint(rows,X) в конце
    и ecoNorm* по ходу; X — часы, темп, окружение и цена найма из замыкания пробы */
+/* лестница доступа (M916): площадка цеха — ступень ★11 «Монтажная площадка» (bldSitesAt → rungHas "site"),
+   ступень — от дел игрока в системе (rungPoints) и трёх ворот (rungOf): посадка, бурение, дрон здесь.
+   Дом и станции в трёх прыжках; round — ещё и после круга snapshot → JSON → applySave, как у живого сейва */
+function ecoLadder(home,round){
+  const R=stat().jump,r3=Math.ceil(R*3),L=[];
+  for(let dx=-r3;dx<=r3;dx++)for(let dy=-r3;dy<=r3;dy++){
+    if(Math.hypot(dx,dy)>R*3+.01)continue;
+    const s=getSystem(home.sx+dx,home.sy+dy);if(!s||!s.station)continue;
+    const H=G.hold&&G.hold[s.key],D=(H&&H.deeds)||{},P=G.place||{};
+    L.push({key:s.key,home:!dx&&!dy,r:rungOf(s.sx,s.sy),p:rungPoints(s.sx,s.sy),sites:bldSitesAt(s.sx,s.sy),
+      seen:!!P[s.key],landed:Object.keys(P).some(k=>k.indexOf(s.key+"/")===0),drill:D.drill|0,
+      drone:(G.drones||[]).some(d=>d.sx===s.sx&&d.sy===s.sy)||(D.drone|0)>0,cargo:D.cargo|0,bld:H&&H.bld?Object.keys(H.bld).length:0,
+      gates:rungGateTxt(s.sx,s.sy)});
+  }
+  const h=L.find(x=>x.home)||{},n=f=>L.filter(f).length;
+  const out={sys:{sx:home.sx,sy:home.sy},n:L.length,seen:n(x=>x.seen),landed:n(x=>x.landed),drilled:n(x=>x.drill>0),drone:n(x=>x.drone),
+    r11:n(x=>x.r>=11),sites:n(x=>x.sites>0),
+    home:h.key+" ступень "+h.r+" (очков "+h.p+") · площадок "+h.sites+" · посадка "+(h.landed?"да":"нет")+" · бурений "+h.drill+
+      " · дрон "+(h.drone?"да":"нет")+" · груза "+h.cargo+" · построек "+h.bld+(h.gates&&h.gates.length?" · не хватает: "+h.gates.join(", "):""),
+    top:L.filter(x=>!x.home&&x.p>0).sort((a,b)=>b.p-a.p).slice(0,3).map(x=>x.key+" ст."+x.r+"/"+x.p+"оч"+(x.gates.length?" −"+x.gates.join("/"):"")).join("; ")};
+  if(round){try{
+    const S=JSON.parse(JSON.stringify(snapshot()));applySave(S);
+    out.saved="после сейва: ступень "+rungOf(home.sx,home.sy)+" (очков "+rungPoints(home.sx,home.sy)+") · площадок "+bldSitesAt(home.sx,home.sy);
+  }catch(e){out.saved="сейв: "+(e&&e.message);}}
+  return out;
+}
 function ecoNormNow(){
   const W=watchSt();watchTick();
   const L0=G.log.slice(),rec0=JSON.stringify(G.record||null);
@@ -40,6 +66,9 @@ function ecoPrint(rows,X){
       " · не нашёл едока "+E.indLeft+" кр "+E.indLeftQ+" · база "+E.base+": рейсов за рудой "+E.baseTrips+", забрано "+E.baseUnits+" ед, продано на "+Math.round(E.baseWorth/r.hrs)+" кр/ч");
     if(E.survey)console.log("  "+r.tier+" едоки в 3 прыжках: "+E.survey);
     if(ENV.ECO_TRACE)console.log("    "+E.dbg+" · "+E.hop);}
+  for(const r of rows)if(r.lad)r.lad.forEach((A,i)=>console.log("  "+r.tier+" лестница "+(i?"в конце":"в начале")+": станций в 3 прыжках "+A.n+
+    " · был "+A.seen+" · садился "+A.landed+" · бурил "+A.drilled+" · дрон "+A.drone+" · ступень ≥11 "+A.r11+" · с площадкой "+A.sites+
+    " · дом "+A.home+(A.top?" · соседи: "+A.top:"")+(A.saved?" · "+A.saved:"")));
   for(const r of rows)if(r.drn&&r.drn.length){const PARTS=6*60,price=DRONES.miner.price;
     console.log("  "+r.tier+" дроны (кр/ч за прогон · после запчастей 6 кр/мин · окупаемость "+price+" кр, ч): "+
       r.drn.map(d=>{const g=Math.round(d.earned/r.hrs);return d.res+" "+g+" → "+(g-PARTS)+" · "+
