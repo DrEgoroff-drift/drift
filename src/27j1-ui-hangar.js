@@ -42,8 +42,8 @@ function hgUnits(m,tilt,pp,yaws){
 /* ряды выносок: левый борт (y<0) уходит вверх сцены, правый — вниз; подвесы по оси добирают ряд, где меньше.
    В ряду — по месту метки слева направо (базовый курс, единицы) */
 function hgRows(){
-  const id=G.shipId,gear=shipGear3d(),m=h3dMesh(hullOf(id),gear),flat=!H3D.on;
-  const v3={yaw:flat?0:HANGAR.yaw,tilt:flat?0:HANGAR.tilt,persp:flat?0:HANGAR.pp};
+  const id=G.shipId,gear=shipGear3d(),m=h3dMesh(hullOf(id),gear);
+  const v3={yaw:HANGAR.yaw,tilt:HANGAR.tilt,persp:HANGAR.pp};
   const top=[],bot=[],mid=[];
   for(const t of (m.tops||[])){const q=h3dStudioPt(m,v3,0,0,1,t.x,t.y,t.z),e={i:t.slot,u:q[0]};
     (t.y<-.5?top:(t.y>.5?bot:mid)).push(e);}
@@ -181,7 +181,7 @@ function hgWire(cv,fm){
     OPIS.sel=(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i)?null:(fm[i]!=null?{t:"slot",i,id:fm[i]}:{t:"slot",i});opisRerender();
   });
   cv.addEventListener("pointerdown",e=>{
-    if(e.button||OPIS.drag||!HANGAR.L||HANGAR.L.flat)return;
+    if(e.button||OPIS.drag||!HANGAR.L)return;
     HANGAR.grab={x:e.clientX,s:HANGAR.spinT,pid:e.pointerId};HANGAR.moved=false;
   });
   cv.addEventListener("pointermove",e=>{
@@ -201,16 +201,16 @@ function hgLay(cv,sel,aim){
   OPIS.hullW=cw;OPIS.hullH=ch;
   const pw=Math.round(cw*dpr),ph=Math.round(ch*dpr);
   if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;}
-  const id=G.shipId,gear=shipGear3d(),m=h3dMesh(hullOf(id),gear),flat=!H3D.on;
-  const tilt=flat?0:HANGAR.tilt,pp=flat?0:HANGAR.pp,yaw=flat?0:HANGAR.yaw,sw=flat?0:HANGAR.sway;
-  const U=hgUnits(m,tilt,pp,flat?[0]:[yaw-sw,yaw,yaw+sw]);
+  const id=G.shipId,gear=shipGear3d(),m=h3dMesh(hullOf(id),gear);
+  const tilt=HANGAR.tilt,pp=HANGAR.pp,yaw=HANGAR.yaw,sw=HANGAR.sway;
+  const U=hgUnits(m,tilt,pp,[yaw-sw,yaw,yaw+sw]);
   const rows=(!phone&&OPIS.box)?OPIS.box.querySelectorAll(".hg-row"):[];
   const wide=rows.length===2,nT=wide?rows[0].children.length:0,nB=wide?rows[1].children.length:0;
   const bT=nT?30:12,bB=nB?30:12,mx=16;
   /* масштаб — по корпусу: круг пола шире корабля и уходит за кромку сцены, как пол за кадр */
   const sc=Math.max(.05,Math.min((cw-2*mx)/(U.hu1-U.hu0),(ch-bT-bB)/(U.hv1-U.hv0)));
   const x=cw/2-(U.hu0+U.hu1)/2*sc,y=bT+((ch-bT-bB)-(U.hv1-U.hv0)*sc)/2-U.hv0*sc;
-  const L={id,m,gear,flat,tilt,pp,yaw,ct:Math.cos(tilt),cw,ch,x,y,sc,phone,wide,sel,aim,pad:U.pad,
+  const L={id,m,gear,tilt,pp,yaw,ct:Math.cos(tilt),cw,ch,x,y,sc,phone,wide,sel,aim,pad:U.pad,
     kTop:Math.max(8,y+U.hv0*sc-12),kBot:Math.min(ch-8,y+U.hv1*sc+12),tops:m.tops||[],cards:[],pts:{}};
   const v3={yaw,tilt,persp:pp};
   for(const t of L.tops)L.pts[t.slot]=h3dStudioPt(m,v3,x,y,sc,t.x,t.y,t.z+.3);
@@ -249,7 +249,7 @@ function hgFloor(L,v3,t){
   const tw=cw*.16,bw=P.A*sc*1.15;
   ovQuad(c[0]+tw,0,c[0]+bw,c[1],c[0]-bw,c[1],c[0]-tw,0,"#ffe6c8",.07,1,0);
   ovEll(c[0],c[1],P.A*sc*1.5,P.B*sc*ct*2.1,-1,"#ffd9b0",.09);
-  if(!L.flat){
+  {
     /* сетка пола: продольные и поперечные линии до края пятна, гаснут к концам */
     const gx=Math.max(4,P.A/3),gy=Math.max(3,P.B*.75);
     for(let j=-3;j<=3;j++){const yy=j*gy,a=fp(P.cx-P.A*2.2,yy),b=fp(P.cx,yy),d=fp(P.cx+P.A*2.2,yy),al=.05*(1-Math.abs(j)/4);
@@ -263,7 +263,6 @@ function hgFloor(L,v3,t){
      два обода, деления каждые 5°, крупные — через 30° */
   const qn=fp(P.cx,P.B),qf=fp(P.cx,-P.B),qe=fp(P.cx+P.A,0),qw=fp(P.cx-P.A,0);
   ovEll((qe[0]+qw[0])/2,(qn[1]+qf[1])/2,(qe[0]-qw[0])/2*1.05,Math.max(2,(qn[1]-qf[1])/2)*1.05,-.22,"#050607",.5);
-  if(L.flat){ovEll(c[0],c[1],P.A*sc,P.B*sc,1.2,HANG_INK,.18);return;}
   hgRing(L,F,P.A,P.B,1.5,HANG_INK,.3,96);
   hgRing(L,F,P.A*.84,P.B*.84,1,HANG_INK,.12,72);
   const on=(f,r)=>fp(P.cx+P.A*r*Math.cos(f),P.B*r*Math.sin(f));
@@ -309,9 +308,9 @@ function hgTick(){
   const t=wallMs()/1000,v3=HANGAR.v3,S=g.S;
   HANGAR.spin+=(HANGAR.spinT-HANGAR.spin)*.14;if(Math.abs(HANGAR.spin)<1e-4)HANGAR.spin=0;
   v3.tilt=L.tilt;v3.persp=L.pp;
-  v3.yaw=L.yaw+(L.flat?0:HANGAR.sway*Math.sin(t*TAU/HANGAR.per)+HANGAR.spin);
-  v3.gear=L.gear;v3.aim=L.flat?null:(s=>.45*Math.sin(t*.4+s*1.9));   /* турели оглядываются, каждая в свой час */
-  S.v3=L.flat?null:v3;
+  v3.yaw=L.yaw+HANGAR.sway*Math.sin(t*TAU/HANGAR.per)+HANGAR.spin;
+  v3.gear=L.gear;v3.aim=s=>.45*Math.sin(t*.4+s*1.9);   /* турели оглядываются, каждая в свой час */
+  S.v3=v3;
   if(!hullStudio(S,D.id,D.cw,D.ch,D.nd,L.x,L.y,L.sc,G.mods.engine))return;
   /* метки на текущем курсе: и рисунку, и тычку */
   for(const h of OPIS.hit){const tp=L.tops.find(q=>q.slot===h.i);if(!tp)continue;

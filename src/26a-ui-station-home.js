@@ -18,30 +18,15 @@ function renderBasesTab(st){
          растёт, и делает это словами, которые человек говорит вслух */
       $body.appendChild(el("div","sec","ВАШ ДОМ · СЕКТОР "+G.home.sx+","+G.home.sy+
         " · ВЫРОС НА ЗАРАБОТАННЫЕ "+G.home.turn.toLocaleString("ru")+" КР"));
-      /* дом — помещение, а не список: комната растёт слева направо, и в ней
-         видно нажитое (27e-ui-home). Кадр рисуется один раз при открытии:
-         своего цикла у экрана станции нет и заводить его незачем */
-      /* картинка ровно такой ширины, какой сам дом: он растёт — растёт и она.
-         Растянутая на всю панель комната из двух ступеней теряла масштаб, а
-         вписанная в высоту жалась к левому краю */
-      const hcv=document.createElement("canvas");
-      const dpr=window.devicePixelRatio||1, upx=1.5;
-      const roomW=homeRoomW();
-      hcv.width=Math.round(roomW*upx*dpr);
-      hcv.height=Math.round(HOME_ROOM_H*upx*dpr);
-      hcv.style.cssText="display:block;border-radius:8px;margin:6px 0;max-width:100%;"+
-        "width:"+Math.round(roomW*upx)+"px";
-      $body.appendChild(hcv);
-      drawHomeRoom(hcv);
-      /* ── по вещам можно ткнуть ──
-         Кнопки ниже остаются, но перестают быть единственным входом: гараж
-         ставит корабль, витрина выносит редкое, кабинет и жилая часть
-         рассказывают, что там есть. Зоны считает сам рисунок (27e-ui-home),
-         второго описания геометрии нет. */
-      hcv.addEventListener("click",(e)=>{if(homeSceneClick(hcv,e))renderTab();});
+      /* дом — помещение, а не список: тот же дом, по которому ходят, снимком движка (29rf, M850b) —
+         общий план этажа, он растёт вместе с домом. Кадр рисуется один раз при открытии: своего цикла
+         у экрана станции нет. Без видеокарты холста нет — экран закрывает табличка 08b2 */
+      const hcv=homeStill();
+      if(hcv)$body.appendChild(hcv);
+      /* полоса «до следующей ступени» — строкой под домом: в снимке движка подписей нет */
+      if(pr)$body.appendChild(el("div","row","<div class='nm'><s>"+(pr.done?"дом достроен":pr.ru)+"</s></div>"));
       const rooms=HOME_TIERS.slice(0,G.home.tier).map(t=>t.ru).join(" · ");
       const hr=el("div","row");
-      /* строку «до ступени» не повторяем: она уже нарисована в самой комнате */
       hr.appendChild(el("div","nm","<b>"+rooms+"</b><s>"+
         "здесь вас не найдут пираты, и сюда вы вернётесь, потеряв корабль</s>"));
       const hb=document.createElement("button");
@@ -98,6 +83,15 @@ function renderBasesTab(st){
             ?"стоят: "+G.home.garage.map(id=>"«"+shipData(id).ru+"»").join(", ")
             :"пуст — потеряв корабль, вы вернётесь домой пешком")+
           "<br>отсюда поднимается корабль, если ваш погиб</s>"));
+        /* первое, зачем сюда заходят: снять налёт прожитых часов — дома до чистого и даром (12s-wear);
+           раньше это делал только палец по гаражу на 2D-рисунке */
+        if(typeof wearOf==="function"&&wearOf()>.02){
+          const wb=document.createElement("button");
+          wb.textContent="ОТМЫТЬ «"+shipData(G.shipId).ru.toUpperCase()+"» · ДАРОМ";
+          wb.addEventListener("click",()=>{const got=wearService(1);
+            logAdd("tech","Гараж дома: с «"+shipData(G.shipId).ru+"» снят налёт ("+Math.round(got*100)+"%)");renderTab();});
+          gr.appendChild(wb);
+        }
         if(free.length){
           const gb=document.createElement("button");
           gb.textContent="ПОСТАВИТЬ «"+shipData(free[0]).ru.toUpperCase()+"»";
