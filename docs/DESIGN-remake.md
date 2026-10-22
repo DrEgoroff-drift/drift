@@ -510,7 +510,9 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   the frame and clear of the plate at 1920 and 390.
   *M822c (22.10):* every world of the selected system is a lit orb on the real GPU (the flat discs
   were headless virtual time, not the game); orb families absent from the first system (`gor1/2/5/6`)
-  join `GPU_LATE_KEYS`, so the map never waits on a pipeline. The fan also avoids the «ВЫ» plate and
+  join `GPU_LATE_KEYS`, so the map never waits on a pipeline. *M829 note (22.10):* the orb families
+  are ready ~20 s after page start (the late queue builds `r3.*` first, by decision); until then the
+  map draws the `17ga` fallback orb. The fan also avoids the «ВЫ» plate and
   your ring, tries 8 directions, and with no clean full row falls back to a compact one (`rMin`, no
   rings). The selection plate gets a spare side (`o.spare`, map only): beside the star it slides along
   it into the frame, then wraps narrower (85/72/60 %), breaking at « · » first; the centre band of M803
