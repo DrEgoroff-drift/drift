@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 620 · top-level symbols: 8749
+Files: 620 · top-level symbols: 8750
 
 ## SYMBOLS
 
@@ -497,8 +497,8 @@ DIG3_HF                      src/23c-dig-pln.js:45
 DIG3_HOOKS                   src/23c0-dig-hooks.js:6-10
 DIG3_LENS                    src/23c-dig-pln.js:17
 DIG3_LIP                     src/23ca-dig-pln-rock.js:26
-DIG3_NOSCENE                 src/23cd-dig-pln-top.js:372
-DIG3_OLD_WALK                src/23c-dig-pln.js:269
+DIG3_NOSCENE                 src/23cd-dig-pln-top.js:374
+DIG3_OLD_WALK                src/23c-dig-pln.js:278
 DIG3_ORE                     src/23cb-dig-pln-dress.js:101
 DIG3_PAINT_W                 src/23ca-dig-pln-rock.js:142
 DIG3_PL                      src/23ca-dig-pln-rock.js:147
@@ -509,11 +509,11 @@ DIG3_ROOM                    src/23ca-dig-pln-rock.js:20
 DIG3_SEG                     src/23cb-dig-pln-dress.js:16
 DIG3_SHAFT                   src/23c-dig-pln.js:100
 DIG3_TOP                     src/23cd-dig-pln-top.js:13
-DIG3_TOP_DRAWSURF            src/23cd-dig-pln-top.js:405
-DIG3_TOP_ENTER               src/23cd-dig-pln-top.js:386
-DIG3_TOP_EXIT                src/23cd-dig-pln-top.js:393
+DIG3_TOP_DRAWSURF            src/23cd-dig-pln-top.js:409
+DIG3_TOP_ENTER               src/23cd-dig-pln-top.js:390
+DIG3_TOP_EXIT                src/23cd-dig-pln-top.js:397
 DIG3_TOP_MINE                src/23cd-dig-pln-top.js:214
-DIG3_TOP_SURF                src/23cd-dig-pln-top.js:384
+DIG3_TOP_SURF                src/23cd-dig-pln-top.js:388
 DIG3_TOP_WGSL                src/23cd-dig-pln-top.js:276
 DIG3_TUB                     src/23cb-dig-pln-dress.js:177
 DIG3_VZ                      src/23ca-dig-pln-rock.js:83
@@ -3779,7 +3779,7 @@ dig3Chunks                   src/23ca-dig-pln-rock.js:325-373
 dig3Den                      src/23ca-dig-pln-rock.js:103-122
 dig3DepthBoard               src/23cb-dig-pln-dress.js:17-34
 dig3Dir                      src/23c-dig-pln.js:37-41
-dig3Draw                     src/23c-dig-pln.js:251-267
+dig3Draw                     src/23c-dig-pln.js:260-276
 dig3DressFrame               src/23cb-dig-pln-dress.js:301-331
 dig3DressMesh                src/23cb-dig-pln-dress.js:35-94
 dig3Dug                      src/23ca-dig-pln-rock.js:34
@@ -3787,7 +3787,7 @@ dig3Ex                       src/23ca-dig-pln-rock.js:30
 dig3EyesMesh                 src/23ce-dig-pln-beasts.js:20-24
 dig3Field                    src/23ca-dig-pln-rock.js:41-70
 dig3Floor                    src/23cb-dig-pln-dress.js:12
-dig3Frame                    src/23c-dig-pln.js:119-229
+dig3Frame                    src/23c-dig-pln.js:128-238
 dig3Ground                   src/23ca-dig-pln-rock.js:72
 dig3Hall                     src/23ca-dig-pln-rock.js:36
 dig3HandU                    src/23cd-dig-pln-top.js:61-71
@@ -3797,6 +3797,7 @@ dig3HeadMesh                 src/23c-dig-pln.js:52-55
 dig3HeapMesh                 src/23cb-dig-pln-dress.js:240-251
 dig3HeapTint                 src/23cb-dig-pln-dress.js:253-258
 dig3Hex                      src/23cb-dig-pln-dress.js:179-185
+dig3InstPut                  src/23c-dig-pln.js:121-127
 dig3Land                     src/23ca-dig-pln-rock.js:75-81
 dig3Lens                     src/23c-dig-pln.js:19-26
 dig3LensMk                   src/23cd-dig-pln-top.js:52-55
@@ -3807,7 +3808,7 @@ dig3OreBodies                src/23cb-dig-pln-dress.js:116-174
 dig3OreFree                  src/23cb-dig-pln-dress.js:115
 dig3OreGeo                   src/23cb-dig-pln-dress.js:105-114
 dig3OreW                     src/23ca-dig-pln-rock.js:138-141
-dig3Over                     src/23c-dig-pln.js:233-245
+dig3Over                     src/23c-dig-pln.js:242-254
 dig3Paint                    src/23ca-dig-pln-rock.js:162-203
 dig3PanX                     src/23c-dig-pln.js:31-35
 dig3PlantView                src/23cd-dig-pln-top.js:170-195
@@ -3824,16 +3825,16 @@ dig3TabAt                    src/23cd-dig-pln-top.js:35-41
 dig3TabLow                   src/23cd-dig-pln-top.js:43-47
 dig3TopAt                    src/23cd-dig-pln-top.js:21-27
 dig3TopCam                   src/23cd-dig-pln-top.js:93-98
-dig3TopComp                  src/23cd-dig-pln-top.js:352-370
+dig3TopComp                  src/23cd-dig-pln-top.js:352-372
 dig3TopDesc                  src/23cd-dig-pln-top.js:312-327
-dig3TopDrop                  src/23cd-dig-pln-top.js:423-429
+dig3TopDrop                  src/23cd-dig-pln-top.js:427-433
 dig3TopHead                  src/23cd-dig-pln-top.js:221-228
 dig3TopHole                  src/23cd-dig-pln-top.js:104
 dig3TopLand                  src/23cd-dig-pln-top.js:130-138
 dig3TopLens                  src/23cd-dig-pln-top.js:73-91
 dig3TopPipe                  src/23cd-dig-pln-top.js:339-351
 dig3TopPlants                src/23cd-dig-pln-top.js:196-211
-dig3TopPost                  src/23cd-dig-pln-top.js:373-381
+dig3TopPost                  src/23cd-dig-pln-top.js:375-385
 dig3TopPre                   src/23cd-dig-pln-top.js:232-273
 dig3TopReady                 src/23cd-dig-pln-top.js:332-338
 dig3TopSkirt                 src/23cd-dig-pln-top.js:141-154
