@@ -64,11 +64,11 @@ function dig3BeastFrame(F,Fd,D,gy){
     const yaw=b.alien==="manta"?PLN_BEAST.mantaYaw:PLN_BEAST.yaw;
     const I=Q.inst[nb]||(Q.inst[nb]=plnInst(new Float32Array(16),0,1));
     plnRec(a,0,[x,y+Math.max(0,up),z],R,flip?Math.PI-yaw:yaw,1,nb+1,null,0);
-    plnInstSet(I,a,1);
+    dig3InstPut(I,a,1);
     F.draw.push({geo,inst:I,lamp:true,sun:true,refl:false});
     tris+=geo.n/3;nb++;
   }
-  if(ne){plnInstSet(E.inst,E.a,ne);F.draw.push({geo:E.geo,inst:E.inst,lamp:false,sun:false,refl:false});tris+=E.geo.n/3*ne;}
+  if(ne){dig3InstPut(E.inst,E.a,ne);F.draw.push({geo:E.geo,inst:E.inst,lamp:false,sun:false,refl:false});tris+=E.geo.n/3*ne;}
   return tris;
 }
 

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 631 · top-level symbols: 8879
+Files: 632 · top-level symbols: 8883
 
 ## SYMBOLS
 
@@ -505,8 +505,8 @@ DIG3_HF                      src/23c-dig-pln.js:45
 DIG3_HOOKS                   src/23c0-dig-hooks.js:6-10
 DIG3_LENS                    src/23c-dig-pln.js:17
 DIG3_LIP                     src/23ca-dig-pln-rock.js:26
-DIG3_NOSCENE                 src/23cd-dig-pln-top.js:361
-DIG3_OLD_WALK                src/23c-dig-pln.js:269
+DIG3_NOSCENE                 src/23cd-dig-pln-top.js:374
+DIG3_OLD_WALK                src/23c-dig-pln.js:278
 DIG3_ORE                     src/23cb-dig-pln-dress.js:101
 DIG3_PAINT_W                 src/23ca-dig-pln-rock.js:142
 DIG3_PL                      src/23ca-dig-pln-rock.js:147
@@ -517,11 +517,11 @@ DIG3_ROOM                    src/23ca-dig-pln-rock.js:20
 DIG3_SEG                     src/23cb-dig-pln-dress.js:16
 DIG3_SHAFT                   src/23c-dig-pln.js:100
 DIG3_TOP                     src/23cd-dig-pln-top.js:13
-DIG3_TOP_DRAWSURF            src/23cd-dig-pln-top.js:394
-DIG3_TOP_ENTER               src/23cd-dig-pln-top.js:375
-DIG3_TOP_EXIT                src/23cd-dig-pln-top.js:382
+DIG3_TOP_DRAWSURF            src/23cd-dig-pln-top.js:409
+DIG3_TOP_ENTER               src/23cd-dig-pln-top.js:390
+DIG3_TOP_EXIT                src/23cd-dig-pln-top.js:397
 DIG3_TOP_MINE                src/23cd-dig-pln-top.js:214
-DIG3_TOP_SURF                src/23cd-dig-pln-top.js:373
+DIG3_TOP_SURF                src/23cd-dig-pln-top.js:388
 DIG3_TOP_WGSL                src/23cd-dig-pln-top.js:276
 DIG3_TUB                     src/23cb-dig-pln-dress.js:177
 DIG3_VZ                      src/23ca-dig-pln-rock.js:83
@@ -1829,12 +1829,12 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:580
+R3                           src/27f2-room3d.js:586
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:559
+R3_DOWN_WGSL                 src/27f2-room3d.js:565
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:730
+R3_POST_WGSL                 src/27f2-room3d.js:736
 R3_UN                        src/27f2-room3d.js:30
 R3_WGSL                      src/27f2-room3d.js:161
 RACK                         src/25d-instr-rack.js:44
@@ -2402,15 +2402,16 @@ WALL_KIND_RU                 src/11ah-wall.js:42
 WALL_MAX                     src/11ah-wall.js:40
 WALL_POEMS                   src/11ae-concert.js:16-21
 WALL_S                       src/11ah-wall.js:41
-WAN3                         src/29re-wander-r3.js:19
-WAN3_BRASS                   src/29re-wander-r3.js:29
-WAN3_CZ                      src/29re-wander-r3.js:23
-WAN3_HANG                    src/29re-wander-r3.js:28
-WAN3_L                       src/29re-wander-r3.js:22
-WAN3_LAMP                    src/29re-wander-r3.js:25
-WAN3_M                       src/29re-wander-r3.js:26
-WAN3_TURN                    src/29re-wander-r3.js:34
-WAN3_WIN                     src/29re-wander-r3.js:24
+WAN3                         src/29re-wander-r3.js:21
+WAN3_BRASS                   src/29re-wander-r3.js:32
+WAN3_CZ                      src/29re-wander-r3.js:25
+WAN3_HANG                    src/29re-wander-r3.js:31
+WAN3_L                       src/29re-wander-r3.js:24
+WAN3_LAMP                    src/29re-wander-r3.js:27
+WAN3_LANT                    src/29re-wander-r3.js:28
+WAN3_M                       src/29re-wander-r3.js:29
+WAN3_TURN                    src/29re-wander-r3.js:37
+WAN3_WIN                     src/29re-wander-r3.js:26
 WANDER_BY_ID                 src/12v-wander-shop.js:70
 WANDER_CAT                   src/12v-wander-shop.js:27-69
 WANDER_LINES                 src/12v-wander-shop.js:255-262
@@ -3817,7 +3818,7 @@ dig3Chunks                   src/23ca-dig-pln-rock.js:325-373
 dig3Den                      src/23ca-dig-pln-rock.js:103-122
 dig3DepthBoard               src/23cb-dig-pln-dress.js:17-34
 dig3Dir                      src/23c-dig-pln.js:37-41
-dig3Draw                     src/23c-dig-pln.js:251-267
+dig3Draw                     src/23c-dig-pln.js:260-276
 dig3DressFrame               src/23cb-dig-pln-dress.js:301-331
 dig3DressMesh                src/23cb-dig-pln-dress.js:35-94
 dig3Dug                      src/23ca-dig-pln-rock.js:34
@@ -3825,7 +3826,7 @@ dig3Ex                       src/23ca-dig-pln-rock.js:30
 dig3EyesMesh                 src/23ce-dig-pln-beasts.js:20-24
 dig3Field                    src/23ca-dig-pln-rock.js:41-70
 dig3Floor                    src/23cb-dig-pln-dress.js:12
-dig3Frame                    src/23c-dig-pln.js:119-229
+dig3Frame                    src/23c-dig-pln.js:128-238
 dig3Ground                   src/23ca-dig-pln-rock.js:72
 dig3Hall                     src/23ca-dig-pln-rock.js:36
 dig3HandU                    src/23cd-dig-pln-top.js:61-71
@@ -3835,6 +3836,7 @@ dig3HeadMesh                 src/23c-dig-pln.js:52-55
 dig3HeapMesh                 src/23cb-dig-pln-dress.js:240-251
 dig3HeapTint                 src/23cb-dig-pln-dress.js:253-258
 dig3Hex                      src/23cb-dig-pln-dress.js:179-185
+dig3InstPut                  src/23c-dig-pln.js:121-127
 dig3Land                     src/23ca-dig-pln-rock.js:75-81
 dig3Lens                     src/23c-dig-pln.js:19-26
 dig3LensMk                   src/23cd-dig-pln-top.js:52-55
@@ -3845,7 +3847,7 @@ dig3OreBodies                src/23cb-dig-pln-dress.js:116-174
 dig3OreFree                  src/23cb-dig-pln-dress.js:115
 dig3OreGeo                   src/23cb-dig-pln-dress.js:105-114
 dig3OreW                     src/23ca-dig-pln-rock.js:138-141
-dig3Over                     src/23c-dig-pln.js:233-245
+dig3Over                     src/23c-dig-pln.js:242-254
 dig3Paint                    src/23ca-dig-pln-rock.js:162-203
 dig3PanX                     src/23c-dig-pln.js:31-35
 dig3PlantView                src/23cd-dig-pln-top.js:170-195
@@ -3862,17 +3864,18 @@ dig3TabAt                    src/23cd-dig-pln-top.js:35-41
 dig3TabLow                   src/23cd-dig-pln-top.js:43-47
 dig3TopAt                    src/23cd-dig-pln-top.js:21-27
 dig3TopCam                   src/23cd-dig-pln-top.js:93-98
-dig3TopComp                  src/23cd-dig-pln-top.js:342-359
+dig3TopComp                  src/23cd-dig-pln-top.js:352-372
 dig3TopDesc                  src/23cd-dig-pln-top.js:312-327
-dig3TopDrop                  src/23cd-dig-pln-top.js:412-418
+dig3TopDrop                  src/23cd-dig-pln-top.js:427-433
 dig3TopHead                  src/23cd-dig-pln-top.js:221-228
 dig3TopHole                  src/23cd-dig-pln-top.js:104
 dig3TopLand                  src/23cd-dig-pln-top.js:130-138
 dig3TopLens                  src/23cd-dig-pln-top.js:73-91
-dig3TopPipe                  src/23cd-dig-pln-top.js:329-341
+dig3TopPipe                  src/23cd-dig-pln-top.js:339-351
 dig3TopPlants                src/23cd-dig-pln-top.js:196-211
-dig3TopPost                  src/23cd-dig-pln-top.js:362-370
+dig3TopPost                  src/23cd-dig-pln-top.js:375-385
 dig3TopPre                   src/23cd-dig-pln-top.js:232-273
+dig3TopReady                 src/23cd-dig-pln-top.js:332-338
 dig3TopSkirt                 src/23cd-dig-pln-top.js:141-154
 dig3TopTab                   src/23cd-dig-pln-top.js:29-34
 dig3TubBody                  src/23cb-dig-pln-dress.js:188-237
@@ -4088,7 +4091,7 @@ drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29rb-home-r3.js:453-458
 drawHomeOut                  src/21f-home-out.js:75-265
 drawHotel                    src/17l-hotel.js:147-174
-drawHull                     src/03e-hull-draw.js:117-196
+drawHull                     src/03e-hull-draw.js:1-80
 drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-52
@@ -4130,9 +4133,9 @@ drawRocks                    src/19-mode-landing-ground.js:323-415
 drawRouteMap                 src/12r-route.js:267-316
 drawRungRing                 src/12ae-ladder.js:72-86
 drawRushTraffic              src/17g-sys-lane.js:153-167
-drawScars                    src/03e-hull-draw.js:5-42
+drawScars                    src/03d-hull-marks.js:132-169
 drawScoop                    src/19a-mode-scoop.js:185-241
-drawSeal                     src/03e-hull-draw.js:47-58
+drawSeal                     src/03d-hull-marks.js:174-185
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:71-113
 drawSkyBase                  src/19c-light.js:318
@@ -4163,12 +4166,12 @@ drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:159-170
 drawTrail                    src/16-flight.js:457-460
-drawTransitPlate             src/03e-hull-draw.js:59-69
+drawTransitPlate             src/03d-hull-marks.js:186-196
 drawVan                      src/21ac3-base-van.js:71-137
 drawVanSmall                 src/21ac3-base-van.js:139-145
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
-drawWanderRoom               src/29re-wander-r3.js:288-291
+drawWanderRoom               src/29re-wander-r3.js:353-356
 drawWanderer                 src/12v-wander.js:339-443
 drawWater                    src/21e-surface-draw.js:221-309
 drawWear                     src/12s-wear.js:102-171
@@ -4178,7 +4181,7 @@ drawWorld                    src/28-loop.js:444-447
 drawWorldIn                  src/28-loop.js:448-472
 drawWreck                    src/20aa-poi-shapes.js:8-47
 drawWrecksSystem             src/12l-barge.js:378-405
-drawYardMark                 src/03e-hull-draw.js:73-116
+drawYardMark                 src/03d-hull-marks.js:200-243
 droneBreakP                  src/12e-drone-flight.js:171-175
 droneBreaks                  src/12e-drone-flight.js:176
 droneCapacity                src/12-economy.js:327-330
@@ -5514,9 +5517,9 @@ hullInkBox                   src/03e1-hull-bake.js:120-131
 hullLiveInserts              src/03e1-hull-bake.js:38-42
 hullLost                     src/28i-insure.js:46-62
 hullOf                       src/03a-hull-gen.js:1-532
-hullPart1                    src/03e-hull-draw.js:201-679
-hullPart2                    src/03e-hull-draw.js:681-684
-hullPart3                    src/03e-hull-draw.js:687-764
+hullPart1                    src/03e-hull-draw.js:85-563
+hullPart2                    src/03e2-hull-top.js:3-6
+hullPart3                    src/03e2-hull-top.js:9-86
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176-183
 hullStudio                   src/17c2-hull-gpu.js:161-165
@@ -7275,16 +7278,16 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:581-587
-r3Dev                        src/27f2-room3d.js:604-622
-r3DownDesc                   src/27f2-room3d.js:596-600
-r3Drop                       src/27f2-room3d.js:629
-r3Frame                      src/27f2-room3d.js:673-727
-r3Free                       src/27f2-room3d.js:631
+r3Desc                       src/27f2-room3d.js:587-593
+r3Dev                        src/27f2-room3d.js:610-628
+r3DownDesc                   src/27f2-room3d.js:602-606
+r3Drop                       src/27f2-room3d.js:635
+r3Frame                      src/27f2-room3d.js:679-733
+r3Free                       src/27f2-room3d.js:637
 r3Kit                        src/27f2-room3d.js:66-158
 r3Lin                        src/27f2-room3d.js:35
 r3Look                       src/27f2-room3d.js:43-158
-r3MeshR                      src/27f2-room3d.js:672
+r3MeshR                      src/27f2-room3d.js:678
 r3Mix                        src/27f2-room3d.js:36
 r3Mul                        src/27f2-room3d.js:40
 r3Persp                      src/27f2-room3d.js:42
@@ -7292,12 +7295,12 @@ r3Pivot                      src/27f2-room3d.js:57
 r3Proj                       src/27f2-room3d.js:60-158
 r3Pt                         src/27f2-room3d.js:58
 r3Sc                         src/27f2-room3d.js:37
-r3ShDesc                     src/27f2-room3d.js:588-593
-r3ShadowVP                   src/27f2-room3d.js:633-638
+r3ShDesc                     src/27f2-room3d.js:594-599
+r3ShadowVP                   src/27f2-room3d.js:639-644
 r3Step                       src/27f2-room3d.js:38
-r3Targets                    src/27f2-room3d.js:645-670
-r3Up                         src/27f2-room3d.js:624-628
-r3VB                         src/27f2-room3d.js:594
+r3Targets                    src/27f2-room3d.js:651-676
+r3Up                         src/27f2-room3d.js:630-634
+r3VB                         src/27f2-room3d.js:600
 r3Xf                         src/27f2-room3d.js:49-158
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
@@ -8682,18 +8685,19 @@ wallSpot                     src/11ah-wall.js:132-147
 wallStone                    src/11ah-wall.js:189-221
 wallStore                    src/11ah-wall.js:81-90
 wallWrap                     src/11ae-concert.js:72-80
-wan3Cam                      src/29re-wander-r3.js:236-244
-wan3Canvas                   src/29re-wander-r3.js:217-227
-wan3Case                     src/29re-wander-r3.js:35
-wan3Frame                    src/29re-wander-r3.js:246-272
-wan3Hide                     src/29re-wander-r3.js:279-284
-wan3Item                     src/29re-wander-r3.js:39-88
-wan3Keeper                   src/29re-wander-r3.js:176
-wan3Mesh                     src/29re-wander-r3.js:91-173
-wan3Ok                       src/29re-wander-r3.js:245
-wan3Scene                    src/29re-wander-r3.js:180-214
-wan3Station                  src/29re-wander-r3.js:229-235
-wan3Tags                     src/29re-wander-r3.js:274
+wan3Cam                      src/29re-wander-r3.js:301-309
+wan3Canvas                   src/29re-wander-r3.js:282-292
+wan3Case                     src/29re-wander-r3.js:38
+wan3Frame                    src/29re-wander-r3.js:311-337
+wan3Hide                     src/29re-wander-r3.js:344-349
+wan3Item                     src/29re-wander-r3.js:42-111
+wan3Keeper                   src/29re-wander-r3.js:238
+wan3Lantern                  src/29re-wander-r3.js:114-123
+wan3Mesh                     src/29re-wander-r3.js:126-235
+wan3Ok                       src/29re-wander-r3.js:310
+wan3Scene                    src/29re-wander-r3.js:242-279
+wan3Station                  src/29re-wander-r3.js:294-300
+wan3Tags                     src/29re-wander-r3.js:339
 wanAll                       src/24c-mode-wanderer.js:21
 wanCur                       src/24c-mode-wanderer.js:50
 wanLots                      src/24c-mode-wanderer.js:49
@@ -8923,12 +8927,14 @@ zoomTo                       src/15-input.js:358
 ## src/03c-hull-luxe.js · 18 KB
   · люксовая яхта:1
 
-## src/03d-hull-marks.js · 6 KB
+## src/03d-hull-marks.js · 15 KB
 
-## src/03e-hull-draw.js · 49 KB
+## src/03e-hull-draw.js · 35 KB
 
 ## src/03e1-hull-bake.js · 8 KB
   · печка корпуса (Stage 0, 18.09):1
+
+## src/03e2-hull-top.js · 6 KB
 
 ## src/03f-hull-role.js · 6 KB
   · корпус — это профессия, а не ступенька:1
@@ -10268,7 +10274,7 @@ zoomTo                       src/15-input.js:358
 ## src/23cc-mine-play.js · 24 KB
   · рудник: ствол, клеть, горизонты, забой (M631, docs/DESIGN-mine.md):1
 
-## src/23cd-dig-pln-top.js · 24 KB
+## src/23cd-dig-pln-top.js · 25 KB
   · рудник: планета над ним (M631):1
 
 ## src/23ce-dig-pln-beasts.js · 7 KB
@@ -10625,7 +10631,7 @@ zoomTo                       src/15-input.js:358
 ## src/29rd-spa-r3.js · 21 KB
   · санаторий на движке (M850d, docs/DESIGN-rooms.md §4):1
 
-## src/29re-wander-r3.js · 27 KB
+## src/29re-wander-r3.js · 34 KB
   · «Сорока» на движке (M851, docs/DESIGN-rooms.md §4):1
 
 ## src/29rf-home-still.js · 5 KB

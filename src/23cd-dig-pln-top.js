@@ -326,12 +326,22 @@ function dig3TopDesc(d,ms){
     primitive:{topology:"triangle-list",cullMode:"none"}}};
 }
 GPU_LATE_GROUPS.push(()=>{const ms=PLN_QUAL[plnQualWant()].ms;return [["dig3.top"+ms,{desc:dig3TopDesc(GPU.dev,ms).desc}]];});
+/* конвейер сводки. Его строит поздний прогрев (GPU_LATE_GROUPS выше); вошёл раньше, чем прогрев до него
+   дошёл, — строится асинхронно сейчас, а до готовности сводки нет (null): кадр — шахта без верха
+   (dig3TopPost), не стоп-кадр на синхронной сборке (Dawn собирал её 0.4–1.5 с в первом кадре шахты) */
+function dig3TopReady(ms,X){
+  const key="dig3.top"+ms,w=GPU_PIPES.warm.get(key);
+  if(w&&w.p)return gpuPipeline(key,()=>X.desc);
+  if(!w){const d=GPU.dev,e={p:null};GPU_PIPES.warm.set(key,e);
+    d.createRenderPipelineAsync(X.desc).then(p=>{if(GPU_PIPES.dev===d)e.p=p;},()=>{if(GPU_PIPES.warm.get(key)===e)GPU_PIPES.warm.delete(key);});}
+  return null;
+}
 function dig3TopPipe(){
   const Z=DIG3_TOP,Q=CAVE3_GPU,d=GPU.dev,ms=Q.ms;
-  if(Z.P&&Z.dev===d&&Z.ms===ms&&Z.gen===PLN_GPU.gen)return Z.P;
-  const X=dig3TopDesc(d,ms),m=X.m;Z.L=X.L;
+  if(Z.dev===d&&Z.ms===ms&&Z.gen===PLN_GPU.gen){if(!Z.P)Z.P=dig3TopReady(ms,Z.X);return Z.P;}
+  const X=dig3TopDesc(d,ms),m=X.m;Z.L=X.L;Z.X=X;
   m.getCompilationInfo().then(i=>{for(const x of i.messages)if(x.type==="error"){Z.err="wgsl "+x.lineNum+":"+x.linePos+" "+x.message;plnLog("рудник: "+Z.err);}}).catch(()=>{});
-  Z.P=gpuPipeline("dig3.top"+ms,()=>X.desc);
+  Z.P=dig3TopReady(ms,X);
   Z.U=d.createBuffer({size:80,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   Z.pp=d.createBuffer({size:32,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   const K=CAVE3_K.comp;
@@ -341,6 +351,7 @@ function dig3TopPipe(){
 }
 function dig3TopComp(Tp){
   const Z=DIG3_TOP,P=dig3TopPipe(),Q=CAVE3_GPU,V=Q.V,Vp=PLN_GPU.V;
+  if(!P)return false;   /* сюда без конвейера не приходят: dig3TopPost уже свернул на кадр без верха */
   if(!Z.B||Z.Bc!==V||Z.Bp!==Vp||Z.Bd!==Q.D){
     Z.B=GPU.dev.createBindGroup({layout:Z.L,entries:[{binding:0,resource:{buffer:Q.U.main}},{binding:1,resource:{buffer:Z.pp}},
       {binding:2,resource:V.hdr},{binding:3,resource:V.up[0]},{binding:4,resource:V.air},{binding:5,resource:Q.S.lin},
@@ -351,7 +362,9 @@ function dig3TopComp(Tp){
   const a=Z.ua||(Z.ua=new Float32Array(20)),C=Tp.C;
   plnM4inv(C.vp,a.subarray(0,16));
   a[16]=C.eye[0];a[17]=C.eye[1];a[18]=C.eye[2];a[19]=Z.margin;
-  GPU.dev.queue.writeBuffer(Z.U,0,a);
+  /* камера стоит — матрица та же, буфер не пишется */
+  const ul=Z.ul||(Z.ul=new Float32Array(20).fill(NaN));let k=0;while(k<20&&ul[k]===a[k])k++;
+  if(k<20||Z.uB!==Z.U){GPU.dev.queue.writeBuffer(Z.U,0,a);ul.set(a);Z.uB=Z.U;}
   const sp=gpuScene();
   if(!sp)return false;
   sp.setPipeline(P);sp.setBindGroup(0,Z.B);sp.draw(3);
@@ -360,7 +373,9 @@ function dig3TopComp(Tp){
 /* кадр: пещера без своей свёртки, планета со своей, потом пещера поверх там, где ближе */
 const DIG3_NOSCENE=()=>null;
 function dig3TopPost(F,Tp){
-  if(!Tp)return cave3GpuFrame(F);
+  /* сводки ещё нет (конвейер собирается асинхронно, вошли раньше позднего прогрева) — шахта без верха,
+     как глубоко в выработке: выработка в кадре есть, а стоп-кадра синхронной сборки нет */
+  if(!Tp||!dig3TopPipe())return cave3GpuFrame(F);
   const gs=gpuScene;
   gpuScene=DIG3_NOSCENE;
   try{cave3GpuFrame(F);}finally{gpuScene=gs;}
