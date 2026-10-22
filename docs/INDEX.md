@@ -1834,7 +1834,7 @@ RADIO_PROGS                  src/10a-radio.js:102
 RADIO_PROG_SETS              src/10a-radio.js:93-101
 RADIO_RH                     src/10a-radio.js:377-383
 RADIO_TRACKS                 src/10a-radio.js:41-87
-RAIDUI_HOOKS                 src/28u-raid-ui.js:6-10
+RAIDUI_HOOKS                 src/28u-raid-ui.js:9-18
 RAID_FOE_BK                  src/24ab-raid-foe.js:137
 RAID_GPU_WGSL                src/24aa1-raid-gpu.js:126
 RAID_LAMPS                   src/24aa1-raid-gpu.js:20
@@ -1843,7 +1843,7 @@ RAID_QF                      src/24aa1-raid-gpu.js:28
 RAID_ROOMS                   src/24a-mode-raid.js:7-13
 RAID_SPR_WGSL                src/24aa1-raid-gpu.js:194
 RAID_UF                      src/24aa1-raid-gpu.js:29
-RAID_UI                      src/28u-raid-ui.js:5
+RAID_UI                      src/28u-raid-ui.js:8
 RAID_WGSL_COMMON             src/24aa1-raid-gpu.js:86
 RAIL_ARM_RU                  src/18e-rail-net.js:25
 RAIL_BUFFET                  src/18f-rail-station.js:20
@@ -4011,7 +4011,7 @@ drawPlant                    src/20-life.js:423-431
 drawPlantAlien               src/20-life.js:227-394
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-613
-drawRaid                     src/24aa-raid-draw.js:14-608
+drawRaid                     src/24aa-raid-draw.js:14-612
 drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-271
@@ -7254,7 +7254,7 @@ raidGpuDesc                  src/24aa1-raid-gpu.js:21-27
 raidGpuDraw                  src/24aa1-raid-gpu.js:32-75
 raidIdx                      src/24a-mode-raid.js:14
 raidLeave                    src/24a-mode-raid.js:251-274
-raidLineOfSight              src/24a-mode-raid.js:409-416
+raidLineOfSight              src/24a-mode-raid.js:410-417
 raidSolid                    src/24a-mode-raid.js:78-81
 raidSolidAt                  src/24a-mode-raid.js:82
 raidSprDesc                  src/24aa1-raid-gpu.js:76-82
@@ -8410,7 +8410,7 @@ updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:73-145
 updateMap                    src/18-mode-map.js:694-708
-updateRaid                   src/24a-mode-raid.js:276-407
+updateRaid                   src/24a-mode-raid.js:276-408
 updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
@@ -10110,7 +10110,7 @@ zoomTo                       src/15-input.js:358
 ## src/24-mode-belt.js · 23 KB
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
-## src/24a-mode-raid.js · 26 KB
+## src/24a-mode-raid.js · 27 KB
   · рейд на пиратскую базу: полигональный интерьер:1
   · генерация: комнаты и коридоры со связностью:29
   · вход, выход, наполнение:84
@@ -10430,7 +10430,7 @@ zoomTo                       src/15-input.js:358
 ## src/28t-hallgone.js · 5 KB
   · лицо ушло из зала (M910c, docs/DESIGN-game.md §7.3):1
 
-## src/28u-raid-ui.js · 1 KB
+## src/28u-raid-ui.js · 2 KB
   · абордаж: строка у пульта — плашкой (22.10):1
 
 ## src/28y-look.js · 30 KB

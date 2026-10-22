@@ -392,10 +392,11 @@ function updateRaid(dt){
       }
     }
   }else if(atExit){
-    G.prompt="ДЕЙСТВИЕ — УХОД С ДОБЫЧЕЙ\n"+(S.hint?"◀ ▶ поворот · ▲ ▼ ход · ОГОНЬ — стрельба":
-      "техники "+S.bag.tech+" · данных "+S.bag.data+
+    /* первая строка — глагол кнопки; на плашке её нет (28u): кнопка уже называет уход */
+    G.prompt="ДЕЙСТВИЕ — УХОД С ДОБЫЧЕЙ\nв сумке: техники "+S.bag.tech+" · данных "+S.bag.data+
       (S.bag.parts.length?" · частей "+S.bag.parts.length:"")+
-      (alive?" · стволов "+alive:" · база зачищена"));
+      (alive?" · стволов "+alive:" · база зачищена")+
+      (S.hint?"\n◀ ▶ поворот · ▲ ▼ ход · ОГОНЬ — стрельба":"");
     if(actEdge){raidLeave(alive?"Уход с базы":"База зачищена",0);return;}
   }else{
     G.prompt="ЗАРЯДОВ "+S.ammo+
