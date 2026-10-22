@@ -17,6 +17,8 @@
    5. 2D-«Сороки» нет (22.10, автор: «2D не должно быть»): художник 24c-mode-wanderer-draw удалён. Без видеокарты
       кадра нет — плашка «нет WebGPU» (08b2); сбой кадра называет страж (28-loop). */
 const WAN3={cn:null,tags:null,mesh:null,mkey:"",err:0,frames:0,stat:null,vp:null,sz:null,meas:null,cam:null,t:0};
+/* «Сорока» говорит у хранителя: строка say() встаёт табличкой у якоря «keeper» (08bj HANG_MSG_AT), его кладёт wan3Frame */
+HANG_MSG_AT.wanderer="keeper";
 const WAN3_L=-1.5,WAN3_R=1.5,WAN3_H=2.6,WAN3_F=3.4,WAN3_B=-10.6;
 const WAN3_CZ=-9.3,WAN3_KZ=-9.95;   /* стойка и где стоит хранитель */
 const WAN3_WIN=[-1.25,1.25,2.14,2.44];   /* щель над занавесом: x0, x1, y0, y1 */
@@ -218,6 +220,9 @@ function wan3Canvas(){
     cn.style.cssText="position:fixed;left:0;top:0;pointer-events:none";(GPU.cv||document.body.firstChild).after(cn);WAN3.cn=cn;}
   let tg=WAN3.tags;
   if(!tg||!tg.isConnected){tg=document.getElementById("wan3Tags")||document.createElement("div");tg.id="wan3Tags";tg.setAttribute("aria-hidden","true");cn.after(tg);WAN3.tags=tg;}
+  /* слой табличек #ovl (08bi) — над комнатой: он встаёт сразу за #g, и заведённый позже холста комнаты лёг бы под неё */
+  const o=typeof OVL!=="undefined"?OVL.cv:null;
+  if(o&&o.parentNode===cn.parentNode&&(o.compareDocumentPosition(cn)&4))o.before(cn);
   cn.style.display="";tg.style.display="";return cn;
 }
 /* станция курсора: стоите у витрины, через плечо — коридор до стойки. Телефон — ближе к своей стене, уже */
@@ -258,6 +263,11 @@ function wan3Frame(){
   /* пульт «Сороки» (26d) внизу: таблички кончаются над ним */
   const pw=document.getElementById("wanwin"),pr=pw&&pw.classList.contains("open")?pw.getBoundingClientRect():null;
   room3TagsDraw(wan3Tags(lots,cur),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.wide?sz.cw-200*UIK:sz.cw-12,yr:pr?pr.top-8:sz.ch-(sz.wide?150:230)},WAN3.tags,cam.moving);
+  /* реплика хранителя — табличкой у его головы, с поводком (08bj, якорь режима «keeper»). Голова за кадром или под
+     пультом (телефон смотрит на витрину) — якоря нет, строка остаётся прежней строкой сообщения */
+  const hq=r3Proj(cam.vp,[0,1.62,WAN3_KZ],sz.cw,sz.ch),hq2=r3Proj(cam.vp,[.14,1.62,WAN3_KZ],sz.cw,sz.ch);
+  WAN3.head=hq&&hq2&&hq[2]>0&&hq[0]>sz.cw*.06&&hq[0]<sz.cw*.94&&hq[1]>sz.ch*.08&&hq[1]<(pr?pr.top:sz.ch)-24?[hq[0],hq[1]]:null;
+  if(WAN3.head)hangAt("keeper",hq[0],hq[1],Math.max(8,Math.abs(hq2[0]-hq[0])));
   return r3Frame(cn,Sc,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
 }
 /* цена — мелом у витрины: ближние три; пустая и проданная говорят словом */
