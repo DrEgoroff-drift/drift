@@ -46,7 +46,7 @@ try{["beginRenderPass","beginComputePass"].forEach(function(n){var o=GPUCommandE
 /* долгий кадр с виновником (Long Animation Frames): какая функция из какого файла съела кадр */
 try{new PerformanceObserver(function(l){if(__J.on)l.getEntries().forEach(function(e){
   __J.la.push([e.startTime-__J.t0,e.duration,e.blockingDuration||0,(e.scripts||[]).slice().sort(function(a,b){return b.duration-a.duration;}).slice(0,3).map(function(s){
-    return [(s.sourceFunctionName||s.invoker||"?").slice(0,60),Math.round(s.duration),(s.sourceURL||"").split("/").pop().slice(0,40)+":"+(s.sourceCharPosition|0)];})]);});}).observe({type:"long-animation-frame",buffered:false});}catch(e){}
+    return [(s.sourceFunctionName||s.invoker||"?").slice(0,60),Math.round(s.duration),(s.sourceURL||"").split("/").pop().slice(0,40)+":"+(s.sourceCharPosition|0)];}),e.renderStart?Math.round(e.startTime+e.duration-e.renderStart):0,e.styleAndLayoutStart?Math.round(e.startTime+e.duration-e.styleAndLayoutStart):0]);});}).observe({type:"long-animation-frame",buffered:false});}catch(e){}
 /* долгие задачи между кадрами — подгрузка, компиляция, мусор: rAF их не видит, если они легли между кадрами */
 try{new PerformanceObserver(function(l){if(__J.on)l.getEntries().forEach(function(e){__J.lt.push([e.startTime-__J.t0,e.duration]);});}).observe({type:"longtask",buffered:false});}catch(e){}
 (function(){var lt=0;function tick(t){requestAnimationFrame(tick);
@@ -239,7 +239,12 @@ def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
     def blame(t, dur):
         # виновник из Long Animation Frames, перекрывающего задачу
         hit = [x for x in la if x[0] <= t + dur and t <= x[0] + x[1] and x[3]]
-        if not hit: return ""
+        if not hit:
+            # без скрипта: кадр съела отрисовка — стиль и вёрстка (DOM) или растр; иначе сборка мусора
+            hr = [x for x in la if x[0] <= t + dur and t <= x[0] + x[1] and len(x) > 5]
+            if not hr: return ""
+            r = max(hr, key=lambda x: x[1])
+            return " · без скрипта: отрисовка %d мс, из них стиль и вёрстка %d мс" % (r[4], r[5])
         s = max(hit, key=lambda x: x[2])[3][0]
         return " · виновник %s (%d мс, %s)" % (s[0], s[1], s[2])
     if big:
