@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 638 · top-level symbols: 8721
+Files: 639 · top-level symbols: 8717
 
 ## SYMBOLS
 
@@ -613,10 +613,9 @@ EXP_GOODS                    src/11x-expedition.js:20
 EXP_PAX_LINES                src/11x-expedition.js:112
 EXP_QUIET                    src/11x-expedition.js:186
 EYES_SUITE                   tests/99-run.js:39-43
-FACE_EYE                     src/12d-mgr-face.js:14
-FACE_HAIR                    src/12d-mgr-face.js:12
-FACE_ROLE_BG                 src/12d-mgr-face.js:15
-FACE_SKIN                    src/12d-mgr-face.js:10
+FACE_EYE                     src/12d-mgr-face.js:18
+FACE_HAIR                    src/12d-mgr-face.js:16
+FACE_SKIN                    src/12d-mgr-face.js:14
 FAIL_IN                      src/05b1-warranty.js:101
 FAME_N                       src/21b3-base-hunt.js:27
 FARM_HOME                    src/21ac2-base-farm.js:22
@@ -2492,7 +2491,6 @@ afterFitChange               src/05-parts.js:408-414
 aiAfford                     src/12f-mgr-ai.js:25-28
 aiCanBuild                   src/12f-mgr-ai.js:24
 aiDrift                      src/12f-mgr-ai.js:52-105
-aiFace                       src/12d-mgr-face.js:229-263
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
@@ -4195,8 +4193,7 @@ expStart                     src/11x-expedition.js:29-38
 exportCode                   src/14a-cloud.js:77
 f16                          src/08b-gpu.js:471
 faceEl                       src/27c-ui-hq.js:6-12
-facePath                     src/12d-mgr-face.js:19-28
-faceRnd                      src/12d-mgr-face.js:16
+faceRnd                      src/12d-mgr-face.js:19
 factPrices                   src/27c-ui-hq.js:493-510
 failRoll                     src/05b1-warranty.js:103
 failShift                    src/05b1-warranty.js:102
@@ -5943,7 +5940,6 @@ mgrDefect                    src/12c-mgr-core.js:349-356
 mgrDomain                    src/12c-mgr-core.js:518-528
 mgrDomainLine                src/27c-ui-hq.js:512-531
 mgrDroneRate                 src/12c-mgr-core.js:220-223
-mgrFace                      src/12d-mgr-face.js:33-224
 mgrFee                       src/12c-mgr-core.js:300
 mgrHas                       src/12c-mgr-core.js:48
 mgrHead                      src/27c-ui-hq.js:24-42
@@ -9203,7 +9199,7 @@ zoomTo                       src/15-input.js:358
   · стоящие приказы:374
   · ленивый тик домена:422
 
-## src/12d-mgr-face.js · 14 KB
+## src/12d-mgr-face.js · 2 KB
   · портреты управляющих:1
 
 ## src/12e-drone-flight.js · 21 KB
@@ -10565,6 +10561,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qj-pace.js · 2 KB
   · темп мира: фон не носится (Зрение 2.0, закон «темп»):1
+
+## tests/91qj-rooms.js · 7 KB
+  · комнаты на движке (DESIGN-rooms §7):1
 
 ## tests/91qk-ground.js · 5 KB
   · тела на земле (Зрение 2.0, закон «опора»):1
