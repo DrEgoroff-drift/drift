@@ -417,6 +417,20 @@ function plnSetMark(K,m,W,H,C){
   else if(H.id==="kryl")plnCard(m,[px-s,py,zz],[px,py+s*.5,zz],[px+s,py,zz],[px,py-s*.2,zz],[0,0,-1],ink,PLN_MAT.man,null,0,0);
 }
 
+/* дым труб записями: s = [x, y, z, сила, клубов] от места pos; зовёт и Жестянка (21piia).
+   Клубы идут неровно: у каждого своя скорость, свой сдвиг и свой рост — ровная цепочка шаров
+   читалась бусами. Ночью дым почти не виден: светлый клуб на чёрном небе висел призраком */
+function plnSetSmoke(F,sa,inst,smoke,pos,t,nk){
+  const wd=WIND||0,g0=.78*(1-.88*nk);let n=0;
+  for(let j=0;j<smoke.length;j++){const s=smoke[j];
+    for(let i=0,ni=s[4]||7;i<ni&&n<64;i++){const u=plnHash(i,j,71),v=plnHash(i,j,72),w2=plnHash(i,j,73);
+      const ph=(t*.055*(.8+.4*u)/(.6+s[3]*.4)+v)%1,hh=ph*5.6*s[3];
+      const sc=s[3]*(.4+ph*2.3)*(.75+.5*w2)*plnSmooth(0,.1,ph)*(1-plnSmooth(.55,1,ph));
+      const g=g0*(.92-.2*ph+.12*w2);
+      plnRec(sa,n++,[pos[0]+s[0]+wd*hh*.8+(u-.5)*.5*ph*s[3],pos[1]+s[1]+hh,pos[2]+s[2]+ph*.6+(w2-.5)*.4],Math.max(.002,sc),i*1.7+j,1,0,[g,g,g]);}}
+  plnInstSet(inst,sa,n);
+  if(n)F.batches.push({geo:plnSetPuff(),inst,first:0,count:n,kind:PLN_KIND.body,to:PLN_TO.lit});
+}
 /* клуб дыма: одна сетка на все трубы, записи несут место, рост и тон */
 function plnSetPuff(){
   if(SET.puff&&SET.puff.gen===PLN_GPU.gen)return SET.puff;
@@ -462,19 +476,7 @@ function plnSetFrame(F,S,ex,V,nk,want){
   if(it.fire)F.batches.push({geo:it.fire,inst:it.inst,first:2,count:1,kind:Bk,to:LIT});
   if(it.door)F.batches.push({geo:it.door,inst:it.inst,first:3,count:1,kind:Bk,to:TO});
   /* дым — только у сытого посёлка: клубы растут, сносятся ветром и тают в вышине */
-  if(it.st.warm&&it.smoke.length){
-    /* клубы идут неровно: у каждого своя скорость, свой сдвиг и свой рост — ровная цепочка шаров
-       читалась бусами. Ночью дым почти не виден: светлый клуб на чёрном небе висел призраком */
-    const sa=it.sa,wd=WIND||0,g0=.78*(1-.88*nk);let n=0;
-    for(let j=0;j<it.smoke.length;j++){const s=it.smoke[j];
-      for(let i=0,ni=s[4]||7;i<ni&&n<64;i++){const u=plnHash(i,j,71),v=plnHash(i,j,72),w2=plnHash(i,j,73);
-        const ph=(t*.055*(.8+.4*u)/(.6+s[3]*.4)+v)%1,hh=ph*5.6*s[3];
-        const sc=s[3]*(.4+ph*2.3)*(.75+.5*w2)*plnSmooth(0,.1,ph)*(1-plnSmooth(.55,1,ph));
-        const g=g0*(.92-.2*ph+.12*w2);
-        plnRec(sa,n++,[A.x+s[0]+wd*hh*.8+(u-.5)*.5*ph*s[3],A.y+s[1]+hh,A.z+s[2]+ph*.6+(w2-.5)*.4],Math.max(.002,sc),i*1.7+j,1,0,[g,g,g]);}}
-    plnInstSet(it.sinst,sa,n);
-    if(n)F.batches.push({geo:plnSetPuff(),inst:it.sinst,first:0,count:n,kind:Bk,to:LIT});
-  }
+  if(it.st.warm&&it.smoke.length)plnSetSmoke(F,it.sa,it.sinst,it.smoke,pos,t,nk);
   if(nk>.05&&it.lampAt.hearth){const h=it.lampAt.hearth;
     want.push({o:.9,l:{p:[A.x+h[0],A.y+h[1],A.z+h[2]],r:9,c:[1,.62,.32],k:2.2*nk*fl}});}
   const b=F.blobs;let n=b[0]|0;
