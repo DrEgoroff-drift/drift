@@ -4112,8 +4112,8 @@ e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
 ecoEstate                    tests/91zzzw4-ecosim-est.js:5-221
-ecoFresh                     tests/91zzzw4-ecosim-t1.js:6-155
-ecoFreshPrint                tests/91zzzw4-ecosim-t1.js:157-174
+ecoFresh                     tests/91zzzw4-ecosim-t1.js:6-161
+ecoFreshPrint                tests/91zzzw4-ecosim-t1.js:163-180
 ecoLadder                    tests/91zzzw4-ecosim-rep.js:7-29
 ecoNormFold                  tests/91zzzw4-ecosim-rep.js:41-45
 ecoNormNow                   tests/91zzzw4-ecosim-rep.js:30-39
@@ -10669,7 +10669,7 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw4-ecosim-rep.js · 11 KB
 
-## tests/91zzzw4-ecosim-t1.js · 13 KB
+## tests/91zzzw4-ecosim-t1.js · 14 KB
 
 ## tests/91zzzw4-ecosim.js · 39 KB
   · проба · экономика (M903, M912):1

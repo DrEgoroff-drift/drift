@@ -623,7 +623,7 @@ eight) fell in the same phase: the probe's lap padding. The human pace pads a la
 the probe does it by waiting in open space after launch, without fighting back, at the neighbour
 systems where it digs (1,0 twelve times, 1,-1 three, -1,1 once). With the same wait spent at the
 pier instead (`ECO_PAD=dock`), the twenty runs have no wreck at all. Those runs have a slower first
-hour (9.8 k against 15.4 k cr/h, median; not analysed). Their T1 minutes are cooperative 71 / 81,
+hour (9.8 k against 15.4 k cr/h, median; explained under M921 below: the probe's lander, not the pier). Their T1 minutes are cooperative 71 / 81,
 drone 155 / 108, hand 164 / 115.
 
 Read it: **the uninsured hull is a rule of the world, not a rare case — for a ship that lingers in
@@ -642,6 +642,70 @@ home station's board (`28j-watch.js:265-266`). That row speaks of handing the wa
 first watch hides it for the first hour (`:261`). The first hour's protection (`firstHour()` in
 `wreck`, `28i:67`) is silent too: it ends at minute 60 with no word. Nothing changed; it goes to
 the author as it is.
+
+Caveat on the seeds (accepted with M920): a seed here is the hour the player enters the game, not
+another world. The map, the stations and the home are the same in all ten; what moves is every
+event drawn from the clock — pirates, the dispatcher's papers, the bodies' positions.
+
+**Who could offer the insurance — M921, measured 22.10** (the same twenty runs as M920; the
+probe counts every sample, ten seconds of play apart, in which the player is docked, owns a hull
+other than the Стриж without insurance, and has the fee in cash — «the window»; and every paper the
+game already lays on the desk inside it). The «Вьюк»'s fee is 62 cr a shift (1 % of 6 200,
+`insFee`, `28i-insure.js:24`): the cash is there from the minute the hull is.
+
+| ten seeds, median (min–max) | modules, then T1 | T1 first |
+|---|---|---|
+| the «Вьюк» boarded, uninsured — the window opens | 14.2′ (seeds 4–6: 20.5′) | the same |
+| minutes in the window, three hours | 10.5 (4.7–12.0) | 10.5 (4.0–11.7) |
+| dockings in the window | 42 (19–51) | 43.5 (18–50) |
+| …before the hull was lost (4 runs + 4 runs) | 19, 34, 37, 19 | 20, 18, 31, 20 |
+| the trainee's bill (`27ib`, `P.first`) in the window | 10 of 10, at 64.3–71.3′ | 10 of 10, at 64.3–64.8′ |
+| shift bills in the window, all | 1–3 | 1–8 |
+| dispatcher's papers issued in the window | 36 (18–42) | 38.5 (16–43) |
+| …of them «ремонт», the yard master's haul (`DISP_V.remont`) | 0–2, in 4 runs | 0–1, in 3 runs |
+| the first watch's lines (`28o`) in the window | 0 | 0 |
+
+The window is a lower bound: a docking shorter than ten seconds of play falls between samples.
+
+Read it:
+
+- **The player stands at the pier with the hull bare and the fee in hand forty times in three
+  hours**, and every one of the eight losses came after 18–37 such dockings. Nothing in the game
+  speaks in any of them.
+- **The first watch cannot say it under its own rules.** Its three moments (two addressed papers at
+  0′, the urgent capsule at 6′, the ether line at the first undocking, 0.2′) all come before the
+  «Вьюк» (14–21′), and the watch ends with the first hour, silently.
+- **The dispatcher could, but has no reason to.** It lays 16–43 papers in the window, chosen by
+  the station's scales; none is about the player's own hull. Its one yard verb, «ремонт», is a
+  haul of ore for a yard, issued in 7 runs of 20; it takes the player to a yard, not to the
+  insurance, and is not a word about it.
+- **The trainee's bill is the rule that exists.** It is laid in all twenty runs, a minute after the
+  first hour's protection ends (63.8′; the bill closes at the next docking), at the pier, in the
+  window, and before every one of the eight losses (the first at 82.2′). Its «стажёр» row
+  already says «Первая смена за счёт управления. Дальше — сами.» (`billSection`,
+  `27ib-bill.js:231`).
+
+**For the author, one line: the rule exists — the trainee's bill, 20 of 20 fresh saves, at the
+pier, uninsured, a minute after the protection ends; one row under «стажёр» in `billSection`
+(`27ib-bill.js:231`) — «Страхкасса: «Вьюк» не застрахован, 62 кр за смену, на доске верфи» — is
+one line of code.** 27ib is outside this worker's files; nothing changed.
+
+**Why the first hour with the wait at the pier made 9.8 k, not 15.4 k (M921).** Not the pier.
+Both ways the hour has the same seven laps, eight deeds and sixteen jumps; the pier runs mined 47
+deposits against 57 and sold 10.0 k against 15.4 k of ore (seed 1; the medians of ten agree). The
+minutes of hour one, medians of ten: walking 21.7 against 28.5, on the ground 4.9 against 5.6,
+waiting 24.2 against 16.5; flight and docking the same. The probe's lap log (`ECO_LAPLOG=1`, a line
+per lap: the body aimed at, the body landed on, its live deposits) shows where the seven minutes
+of walking went: at 55.7′ and 62.6′ the lander, aimed at the planet 0,0:2, comes down on its moon
+0,0:2m0, which has no deposits. The lap is empty, and the human pace pads it to six minutes — 5.2
+of them waiting at the pier. All twenty pier runs have that empty slice at minute 60, most also at
+70. It is the probe's lander, not the game, and not the pier: the space runs land on moons too
+(seed 1: three times, at 89.7′, 119.3′, 131.6′), only later — whose minute it hits is the clock's.
+The probe takes the first body the landing hint offers (`landAt`) and does not check which one it
+got; a player sees the moon. So the pier runs' net does not compare with the space runs'; their
+zero wrecks stand — a wreck needs the ship in space, and those minutes were at the pier. One more
+difference, by design: at the pier the first hour ends at 86′, not 64′ — docked time is not play
+time (`playTick`, `28v-playhour.js:14-17`).
 
 **Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
 
@@ -1249,6 +1313,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M917 | the ten dead industrial goods **measured 22.10, §11**: who eats each by meaning, and what an eater gives a chain with (а)+(в) | nine of ten are base modules by name, hullsec the hull; a chain with an eater pays 0.4–13k cr/h, mostly through its internal links (shadow price at every link); none fits three sites and the ★20–25 tiers at T3 |
 | M918 | the probe M912–M917 summed up for the author **written 22.10, §12**: proposals ranked by return per line, and what the measurements say to leave alone | (в) maker at home (1–3 lines) and (а) buyer of tier-1 goods (~40 lines) first: workshops −3.8k → −0.2k cr/h; prompt collisions; dead goods as base prices (~10 lines + a key each), late game; drone parts, internal-link pay and the allotment threshold disputed |
 | M919 | the second hour, T0 → T1 at a human's pace **measured 22.10, §4.1b**: ten-minute slices of the fresh save; three buying orders (modules only / modules then T1 / T1 first); where the first wall stands | cash is the wall (the drone waits 71 min behind hold 3 and drill 3; T1 assembled at 161.7′ or, T1 first, 82.6′), walking takes 48–63 % of play, the hold and the ladder are not walls; T1's kit loses money in its first hour; an uninsured «Вьюк» lost in a fight at 82′ halves hours two and three; no §12 item moves these walls |
+| M921 | who could offer the insurance **measured 22.10, §4.1b**: the window (docked, a bare hull, the fee in cash) and the papers the game lays inside it; the pier-wait hour explained; `ECO_LAPLOG` | 10.5 min and ~40 dockings in three hours; the first watch is over before the «Вьюк», the dispatcher has no rule; the trainee's bill lands in the window in 20 of 20 — one row of code; the pier hour lost two laps to the probe's lander on a moon |
 | M920 | the second hour across ten seeds **measured 22.10, §4.1b**: seed = random stream + start hour; both T1 orders; wrecks logged by minute, hull, insurance, phase | the uninsured «Вьюк» is lost in 4 of 10 runs within 3 h (2–3 in hour 2, never in hour 1), halving that hour; all wrecks fall in the probe's lap padding (idle in space next door), none with the wait at the pier; no run docked at a yard, so the Страхкасса was never offered; the first watch says nothing of insurance |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
@@ -1446,7 +1511,10 @@ line about insurance (`28o-firstwatch`). The offer itself is a plate on the ДО
 (`insSection`, `28i-insure.js:89`), and no run docked at a yard with a hull of its own. The M904c
 screen nearest that minute is the shift bill on the ДОСКА (`billSection`, `27ib-bill.js:225`). It
 shows wherever a bill is open or was issued, which is every few laps. It has a «Страхкасса» row
-(`27ib-bill.js:31`, `:134-136`), but the row appears only once a hull is insured. Lever and its price are M921 (§4.1b).
+(`27ib-bill.js:31`, `:134-136`), but the row appears only once a hull is insured. The lever is
+already in the game (M921, §4.1b): the trainee's bill reaches all twenty fresh saves a minute
+after the protection ends, at the pier, with the «Вьюк» bare; one row under its «стажёр» line
+(`27ib-bill.js:231`) is one line of code.
 
 ### Proposals, ranked
 
