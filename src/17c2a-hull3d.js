@@ -411,9 +411,13 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V){
   if(V){U[128]=2*sc*V.nd/V.bw;U[129]=2*sc*V.nd/V.bh;U[130]=2*x*V.nd/V.bw-1;U[131]=1-2*y*V.nd/V.bh;}
   else{U[128]=U[129]=1/Rb;}
   d.queue.writeBuffer(H3D.ub,0,U);
-  const mat=T.mat||{view:GPU.nView||(GPU.nView=GPU.N.createView())};
-  const bg=d.createBindGroup({layout:H3D.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:H3D.ub}},{binding:1,resource:gpuMipSmp()},
-    {binding:2,resource:T.view},{binding:3,resource:mat.view},{binding:4,resource:V?V.lt:GPU.V.lt}]});
+  const mat=T.mat||{view:GPU.nView||(GPU.nView=GPU.N.createView())},lt=V?V.lt:GPU.V.lt;
+  /* bind group — в кэше выпечки, пока её виды те же (охотник 22.10: по одной на каждый рисунок корабля и станции,
+     35 тыс. за 5 минут в системе — мусор сборщику, не утечка); студия (V) живёт своей рамкой — без кэша */
+  let bg=!V&&T.__bg&&T.__bgV===T.view&&T.__bgM===mat.view&&T.__bgL===lt&&T.__bgD===d&&T.__bgP===H3D.P?T.__bg:null;
+  if(!bg){bg=d.createBindGroup({layout:H3D.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:H3D.ub}},{binding:1,resource:gpuMipSmp()},
+    {binding:2,resource:T.view},{binding:3,resource:mat.view},{binding:4,resource:lt}]});
+    if(!V){T.__bg=bg;T.__bgV=T.view;T.__bgM=mat.view;T.__bgL=lt;T.__bgD=d;T.__bgP=H3D.P;}}
   const L=V?0:K.slot++,R=V?h3dStudioRT(V):null,enc=d.createCommandEncoder(),vw=V?V.bw:n,vh=V?V.bh:n,img=V?R.img:K.img[L];
   const p=enc.beginRenderPass({colorAttachments:[{view:V?R.msV:K.msV,resolveTarget:img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
     depthStencilAttachment:{view:V?R.mdV:K.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"}});

@@ -117,18 +117,23 @@ function r3Kit(){
       if(i<nl-1){K.vx(a[0],a[1],M,col);K.vx(e[0],e[1],M,col);K.vx(d[0],d[1],M,col);}}};
   /* поверхность по сетке параметров: f(u,v) → [p, краска?]; u — по кругу (wrap), v — вдоль. Нормаль — по сетке
      (центральные разности), наружу — cross(dP/du, dP/dv)·flip. keep(u,v) — какие клетки строить (вырезы) */
-  K.surf=(nu,nv,f,M,o)=>{o=o||{};const G=[],C=[],W=[];
+  /* поверхность по шагам: ms — бюджет шага (yield между рядами), без него — одним куском; K.surf гонит до конца */
+  K.surfG=function*(nu,nv,f,M,o,ms){o=o||{};const G=[],C=[],W=[];let t0=ms?wallMs():0;
+    const brk=()=>ms&&wallMs()-t0>ms;
     for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const r=f(i/nu,j/nv);G.push(r[0]);C.push(r[1]||null);W.push(r[2]||null);}
     const at=(i,j)=>{if(o.wrap)i=(i+nu)%nu;else i=Math.max(0,Math.min(nu,i));j=Math.max(0,Math.min(nv,j));return G[j*(nu+1)+i];};
     const NN=[];for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){
       const du=sub(at(i+1,j),at(i-1,j)),dv=sub(at(i,j+1),at(i,j-1));let n=cr(du,dv);
       if(Math.hypot(...n)<1e-14){const dv2=sub(at(i,j+(j<nv?2:-2)),at(i,j));n=cr(du,j<nv?dv2:[-dv2[0],-dv2[1],-dv2[2]]);}
-      n=nz(n);if(o.flip)n=[-n[0],-n[1],-n[2]];NN.push(n);}
+      n=nz(n);if(o.flip)n=[-n[0],-n[1],-n[2]];NN.push(n);
+      if(i===nu&&brk()){yield;t0=wallMs();}}
     const id=(i,j)=>j*(nu+1)+i;
-    for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){
+    for(let j=0;j<nv;j++){for(let i=0;i<nu;i++){
       if(o.keep&&!o.keep((i+.5)/nu,(j+.5)/nv))continue;
       const q=[id(i,j),id(i+1,j),id(i+1,j+1),id(i,j+1)];
-      for(const k of [q[0],q[1],q[2],q[0],q[2],q[3]])K.vx(G[k],NN[k],M,C[k]||null,W[k]);}};
+      for(const k of [q[0],q[1],q[2],q[0],q[2],q[3]])K.vx(G[k],NN[k],M,C[k]||null,W[k]);}
+      if(brk()){yield;t0=wallMs();}}};
+  K.surf=(nu,nv,f,M,o)=>{const it=K.surfG(nu,nv,f,M,o,0);while(!it.next().done);};
   /* труба по ломаной P с радиусом r (число или массив); N — граней; кольца — параллельным переносом */
   K.tube=(Pp,r,M,Nn,cap)=>{Nn=Math.round((Nn||8)*K.q);const R=[];let u0=null;
     for(let k=0;k<Pp.length;k++){const a=Pp[Math.max(0,k-1)],b=Pp[Math.min(Pp.length-1,k+1)],t=nz(sub(b,a));
@@ -436,9 +441,48 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
     let q=i.l*vec3f(520.,46.,520.);let h0=vn3(q);n=normalize(n-.22*vec3f(vn3(q+vec3f(.5,0.,0.))-h0,0.,vn3(q+vec3f(0.,0.,.5))-h0));
     let dn=vec3f(0.,-1.,0.);let tq=dn-n*dot(dn,n);tg=select(normalize(tq+vec3f(0.,0.,1e-4)),vec3f(0.,0.,-1.),dot(tq,tq)<1e-6);}
   else if(pat==10u){fres=.12;}   /* стекло */
-  else if(pat==11u){   /* полотно кино: кадр из текстуры своим светом */
-    let r=u.flm;let uv=vec2f((W.x-r.x)/(r.z-r.x),(r.w-W.y)/(r.w-r.y));
-    a=pow(textureSampleLevel(tfl,smp,clamp(uv,vec2f(0.),vec2f(1.)),0.).rgb,vec3f(2.2));em=1.6*u.flm2.y;sp=0.;}
+  else if(pat==11u){   /* полотно кино (M816d): кадр журнала процедурно. uv — в цвете вершины (i.c.xy, v вниз),
+                         flm2.y = 1 + номер кадра + фаза (0 — кино нет); сюжеты — KINO_REEL 27da по порядку */
+    let kv=max(u.flm2.y-1.,0.);let k=u32(floor(kv))%6u;let ph=fract(kv);
+    let jt=vec2f(vn3(vec3f(t*18.,3.,0.))-.5,vn3(vec3f(5.,t*18.,0.))-.5)*.004;   /* кадр дрожит в окне проектора */
+    let p=clamp(i.c.xy,vec2f(0.),vec2f(1.))+jt;let c2=vec2f((p.x-.5)*2.05,.5-p.y);
+    var f=.3;
+    if(k==0u){   /* карта: изолинии берега, сетка, вехи */
+      let h=vn3(vec3f(c2*2.6+vec2f(ph*.15,0.),.5))+.5*vn3(vec3f(c2*7.,1.5));
+      f=select(.22,.62,h>.78);f+=.5*smoothstep(.025,0.,abs(h-.78));
+      let g=abs(fract(c2*5.)-.5);f+=.12*smoothstep(.485,.5,max(g.x,g.y));
+      let d=length(fract(c2*vec2f(1.3,1.7)+.31)-.5);f+=.6*smoothstep(.03,.015,d);}
+    else if(k==1u){   /* корабль: силуэт на светлом небе, плывёт */
+      f=.55+.3*c2.y;let s=c2-vec2f(-.25+ph*.5,.02);
+      let hull=length(s/vec2f(.62,.11));let tw=max(abs(s.x+.12)-.07,abs(s.y-.15)-.08);
+      f=mix(f,.06,smoothstep(1.03,.97,hull));f=mix(f,.06,step(tw,0.));
+      f=mix(f,.14,step(c2.y,-.3));}
+    else if(k==2u){   /* смена: строй фигур на светлом */
+      f=.62+.15*c2.y;let cx=c2.x*3.4+ph*.4;let id=floor(cx);let lx=fract(cx)-.5;let hh=.08*vn3(vec3f(id,7.,0.));
+      let lw=lx/3.4;let hd=length(vec2f(lw,c2.y-(.15+hh)));   /* в метрах кадра: голова круглая, плечи шире шеи */
+      let bd=max(abs(lw)-.075,max(c2.y-(.09+hh)+.025*smoothstep(.04,.075,abs(lw)),-.5-c2.y));
+      f=mix(f,.08,max(smoothstep(.052,.046,hd),step(bd,0.)));}
+    else if(k==3u){   /* биология: стебли и соцветия */
+      f=.5+.2*c2.y;let cx=c2.x*4.;let id=floor(cx);let hh=.05+.3*vn3(vec3f(id,3.,0.));
+      let sx=abs(fract(cx+.06*sin(c2.y*7.+id))-.5);
+      f=mix(f,.1,step(sx,.025)*step(c2.y,hh));
+      let fl=length(vec2f(fract(cx)-.5,(c2.y-hh)*4.));f=mix(f,.92,smoothstep(.17,.13,fl));}
+    else if(k==4u){   /* небо: звёзды, дуга орбиты, светило */
+      f=.04;let q=floor((c2+vec2f(ph*.04,0.))*42.);let st=vn3(vec3f(q,9.));f+=.85*step(.86,st)*smoothstep(.5,.1,length(fract((c2+vec2f(ph*.04,0.))*42.)-.5));
+      f+=.7*smoothstep(.008,0.,abs(length(c2-vec2f(0.,-1.25))-1.15));
+      f=max(f,.95*smoothstep(.13,.11,length(c2-vec2f(-.5+ph*.9,.22))));}
+    else{   /* быт: дома, окна горят */
+      f=.5+.25*c2.y;let cx=c2.x*2.2+.3;let id=floor(cx);let lx=fract(cx)-.5;let hh=-.05+.18*vn3(vec3f(id,5.,0.));
+      let body=max(abs(lx)-.36,max(c2.y-hh,-.42-c2.y));let roof=c2.y-(hh+.24-abs(lx)*.66);
+      f=mix(f,.1,max(step(body,0.),step(roof,0.)*step(hh,c2.y)));
+      let w=abs(fract(vec2f(lx*3.,c2.y*5.))-.5);f=mix(f,.85,step(body,0.)*step(max(w.x,w.y),.2)*step(abs(lx),.3));
+      f=mix(f,.16,step(c2.y,-.42));}
+    /* плёнка: зерно, царапина, мерцание лампы, виньетка, затемнение на склейке */
+    f+=(vn3(vec3f(p*vec2f(420.,260.),floor(t*24.)))-.5)*.07;
+    let sc=vn3(vec3f(floor(t*6.),11.,0.));f+=.35*step(.7,sc)*smoothstep(.0025,0.,abs(p.x-fract(sc*7.3)));
+    f*=(.9+.1*sin(t*47.)*sin(t*29.))*(1.-.42*dot(c2/vec2f(1.3,.62),c2/vec2f(1.3,.62)));
+    f*=smoothstep(0.,.05,ph)*smoothstep(1.,.95,ph);
+    let v=clamp(f,0.,1.);a=mix(vec3f(.003,.003,.004),vec3f(1.,.88,.7),pow(v,2.4));em=2.2*step(.5,u.flm2.y);sp=0.;}
   else if(pat==13u){a*=.9+.2*vn3(i.l*vec3f(160.));}   /* кожа сиденья */
   else if(pat==14u){   /* опасность: косые полосы */
     let q=pl2(W,n);let s=step(.5,fract((q.x+q.y)*4.));a=mix(vec3f(.05,.045,.04),vec3f(.75,.55,.08),s);}
@@ -563,7 +607,7 @@ function r3Dev(){
   R3.P=gpuPipeline("r3.main",r3Desc);R3.PS=gpuPipeline("r3.shadow",r3ShDesc);R3.PD=gpuPipeline("r3.down",r3DownDesc);
   R3.sh=d.createTexture({size:[R3_SHN,R3_SHN,R3_SH],format:"depth24plus",usage:U.RENDER_ATTACHMENT|U.TEXTURE_BINDING});
   R3.shA=R3.sh.createView({dimension:"2d-array"});
-  R3.shL=[];for(let i=0;i<R3_SH;i++)R3.shL.push(R3.sh.createView({dimension:"2d",baseArrayLayer:i,arrayLayerCount:1}));
+  R3.shOwn=null;R3.shL=[];for(let i=0;i<R3_SH;i++)R3.shL.push(R3.sh.createView({dimension:"2d",baseArrayLayer:i,arrayLayerCount:1}));
   R3.ub=d.createBuffer({size:R3_UN*4,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   R3.cmp=d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"});
   R3.smp=d.createSampler({magFilter:"linear",minFilter:"linear"});
@@ -597,9 +641,9 @@ function r3ShadowVP(p,dir,cosO,range){
    post(pass, Sv, Vv, Bv) — последний проход на холст (27f1 rpgField): цвет, дым (половина), ступени отсвета (мипы).
    dst {cx, w, h} — рисовать в чужой холст (портреты: цели рендера общие, картинка — в холст карточки).
    false — нет устройства */
-function r3Frame(cn,S,post,dst){
-  const R=rpgGet(cn);if(!R||!r3Dev())return false;
-  const d=GPU.dev,w=dst?dst.w:cn.width,h=dst?dst.h:cn.height,U=GPUTextureUsage;if(w<2||h<2)return false;
+/* цели кадра холста под размер w×h: заводятся раз и живут, пока размер тот же (r3Free — освободить) */
+function r3Targets(R,w,h){
+  const d=GPU.dev,U=GPUTextureUsage;
   let T=R.r3;
   if(!T||T.dev!==d||T.w!==w||T.h!==h){
     if(T&&T.dev===d)GPU.trash.push(T.ms,T.mv,T.md,T.res,T.vres,T.bl,T.vl,...T.ubs);
@@ -622,16 +666,24 @@ function r3Frame(cn,S,post,dst){
     dn(T.vresV,w,h,0,T.vlV);
     R.bg.clear();
   }
+  return T;
+}
+/* радиус сетки от её начала (по вершинам, раз на массив) — отсечка тени по радиусу лампы */
+function r3MeshR(m){if(m.__rv!==m.v){let r=0;const v=m.v;for(let i=0;i<v.length;i+=12){const q=v[i]*v[i]+v[i+1]*v[i+1]+v[i+2]*v[i+2];if(q>r)r=q;}m.__rv=v;m.__r=Math.sqrt(r);}return m.__r;}
+function r3Frame(cn,S,post,dst){
+  const R=rpgGet(cn);if(!R||!r3Dev())return false;
+  const d=GPU.dev,w=dst?dst.w:cn.width,h=dst?dst.h:cn.height;if(w<2||h<2)return false;
+  const T=r3Targets(R,w,h);
   /* форма */
   const F=R3.U;F.fill(0);
   F.set(S.vp,R3U.vp);F.set([S.cam[0],S.cam[1],S.cam[2],S.t||0],R3U.cam);
   F.set(S.sky,R3U.sky);F.set(S.gnd,R3U.gnd);F.set(S.fog,R3U.fog);F.set(S.acc,R3U.acc);
   if(S.win)F.set(S.win,R3U.win);if(S.win2)F.set(S.win2,R3U.win2);if(S.sgn)F.set(S.sgn,R3U.sgn);if(S.sgn2)F.set(S.sgn2,R3U.sgn2);
   if(S.flm)F.set(S.flm,R3U.flm);if(S.flm2)F.set(S.flm2,R3U.flm2);
-  const L=S.lights.slice(0,R3_MAXL),SV=[];
+  const L=S.lights.slice(0,R3_MAXL),SV=[],SL=[];
   F[R3U.sgn2+2]=L.length;   /* число ламп — третье число вывески (её .x — глубина, .y — мигание) */
   L.forEach((l,k)=>{const o=R3U.lt+k*16;let si=-1;
-    if(l.shadow&&SV.length<R3_SH){si=SV.length;SV.push(r3ShadowVP(l.p,l.d||[0,-1,0],l.spot?l.cosO:-.2,l.range));}
+    if(l.shadow&&SV.length<R3_SH){si=SV.length;SL.push(l);SV.push(r3ShadowVP(l.p,l.d||[0,-1,0],l.spot?l.cosO:-.2,l.range));}
     F.set([l.p[0],l.p[1],l.p[2],l.range, l.c[0],l.c[1],l.c[2],l.spot?1:0, (l.d||[0,-1,0])[0],(l.d||[0,-1,0])[1],(l.d||[0,-1,0])[2],l.spot?l.cosO:-2, si,l.spot?l.cosI:-1,l.vol||0,0],o);});
   SV.forEach((m,k)=>F.set(m,R3U.sv+k*16));
   F.set(S.M,R3U.M);F.set(S.ot,R3U.ot);
@@ -644,10 +696,19 @@ function r3Frame(cn,S,post,dst){
       {binding:2,resource:R3.shA},{binding:3,resource:R3.cmp},{binding:4,resource:tsg},{binding:5,resource:tfl}]});R3.bgs.set(key,g0);}
   const enc=d.createCommandEncoder();
   const draw=(p)=>{for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}};
-  /* тени: по слою на лампу */
-  for(let k=0;k<R3_SH;k++){
-    const p=enc.beginRenderPass({colorAttachments:[],depthStencilAttachment:{view:R3.shL[k],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
-    if(k<SV.length){p.setPipeline(R3.PS);p.setBindGroup(0,R3.g0s);p.setBindGroup(1,R3.skG[k]);draw(p);}
+  /* тени: по слою на лампу; пустые слои не чистятся — их никто не читает (M816c: зал чистил 6 слоёв на 4 лампы).
+     В слой идут только тела в радиусе лампы: начало экземпляра (часть 0) ближе range + радиус сетки.
+     Кэшировать слой между кадрами в зале нечем: все люди жестикулируют в радиусе своих ламп. S.shKeep — сцена просит
+     оставить прошлые слои (зал в покое — через кадр): можно, только если их писала она же (S.own) и ламп столько же */
+  const keep=S.shKeep&&S.own&&R3.shOwn===S.own&&R3.shN===SV.length;
+  if(!keep){R3.shOwn=S.own||null;R3.shN=SV.length;}
+  for(let k=0;k<(keep?0:SV.length);k++){
+    const l=SL[k],p=enc.beginRenderPass({colorAttachments:[],depthStencilAttachment:{view:R3.shL[k],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
+    p.setPipeline(R3.PS);p.setBindGroup(0,R3.g0s);p.setBindGroup(1,R3.skG[k]);
+    for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;
+      if(!(cnt>1)){const o=(ii|0)*R3_PART*16,dx=S.M[o+12]-l.p[0],dy=S.M[o+13]-l.p[1],dz=S.M[o+14]-l.p[2],rr=l.range+r3MeshR(m);
+        if(dx*dx+dy*dy+dz*dz>rr*rr){R3.shCull=(R3.shCull||0)+1;continue;}}
+      p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}
     p.end();
   }
   const p=enc.beginRenderPass({colorAttachments:[{view:T.msV,resolveTarget:T.resV,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:1}},
@@ -704,6 +765,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   c=pow(acesP(c*fu.v[6].w),vec3f(1./2.2));
   let vd=length((vu-.5)*vec2f(1.,ar)*1.6);
   c*=1.-.42*smoothstep(.45,1.15,vd);
+  /* v[14].x > 0 (зал на ходу, M816): от героя к дальней кромке кадра — в темноту */
+  if(fu.v[14].x>0.){c*=1.-fu.v[14].x*smoothstep(.3,.75,abs(vu.x-fu.v[14].y));}
   let gp=floor(p*k);let t=fu.v[10].w;
   let gr=fract(sin(dot(gp+vec2f(fract(t*.37)*91.,fract(t*.53)*57.),vec2f(127.1,311.7)))*43758.5453)-.5;
   c=c*(1.+.05*gr*fu.v[11].x)+(fract(sin(dot(gp*1.37,vec2f(12.9,78.2)))*43758.5)-.5)/255.;

@@ -21,7 +21,11 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 `docs/DESIGN-remake.md` (M800+, built by the three builder sessions, judged by the designer); the
 game's logic — the shift, the bill, the dispatcher, loss, the three rails, combat — is
 `docs/DESIGN-game.md` (M900+; queue in its §10.8, the author's forks in §10.9). Where a stage below
-and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0); next is M907.
+and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M911 are built (`28m-dispatch`, `28n-access`, `28o-firstwatch`, `28p-doors`, `28q-fork`, unreleased); the §10.8 queue is closed.
+Left open from M910 (story doors), each its own small item:
+- **M910b · rivals at your landmarks.** The six rivals leave traces at landmarks you marked.
+- **M910c · a face gone from the hall.** A keeper you failed is missing from the cantina crowd.
+- ~~the `bill` deed~~ dropped: there is no stranger's bill in the game.
 
 Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
 bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
@@ -39,6 +43,14 @@ under the planets (17g), planets and moons (17ga), the system view on top — tr
 (16ga), combat (13z), lit station/barge/pirate sprites (17c), shuttles (17f), the interface overlay `#ovl` (08bi;
 `#hud` gone in 0.466.0, the sticks and the watch line on `#ovl`, the iPod on its own WebGPU canvas), planet
 occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py` on the GPU.
+
+**22.10 (the author: «мониторь, чтобы от 2D избавлялись, его не должно быть»).** Acceptance rule for every
+builder: what the engine has replaced loses its 2D code and its escape hatch in the same commit — `?spa3=0`,
+`?room=0`, `?walk=0`, the 2D winter and spa painters (29f–29i), the old hall without the walk, the section's
+2D sheet under the mine, the surface's front 2D layer (`front2`, 31 % of frames on the walk) and the 2D-canvas
+copy in the first surface frame (`copyExternalImageToTexture` 5.8 MB), the 2D base under the cross-section (21ac).
+A report lists the removed functions and the KB gone from `drift.html`. The hunter keeps the ledger: scene ·
+2D calls per frame · MB copied · owner.
 
 **The order (Контроль 26.09, after the audit: the middle was being built on an unchecked base):**
 1. Keep the base: the phone gate P1 (§1) passed on 0.468.0 and on 0.473.0 (26.09) and closed engine stage 1; it is re-run after
@@ -292,9 +304,10 @@ Check each against the code before building — some may already hold.
   11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl` into
   hashed state.
 - [ ] **Watch:** «прогоны: двенадцать путей» flickered once under load.
-- [ ] **The vision flickers on real time (22.10):** the DPR pair (one window at 1 and 3) catches the game mid-motion. Settled in `geoSettle`: the base section lens and the man walking to his cell; the landing assembled over frames (`plnWarmStep`). Still open: after «карта» › «Назад» the system cues («Нейэль I · 760», «Звезда…») sit 5–12 px apart between the two runs, 2 of 16 runs — find what the system view eases on the real clock after the map closes, or make the DPR check skip cues anchored to moving bodies.
+- [ ] **The vision flickers on real time (22.10):** the DPR pair (one window at 1 and 3) catches the game mid-motion. Settled in `geoSettle`: the base section lens and the man walking to his cell; the landing assembled over frames (`plnWarmStep`). Still open: after «карта» › «Назад» the system cues («Нейэль I · 760», «Звезда…») sit 5–12 px apart between the two runs, 2 of 16 runs — find what the system view eases on the real clock after the map closes, or make the DPR check skip cues anchored to moving bodies. Seen again 22.10 evening in scene «заход», 2 of 6 runs while neighbours' Chromes loaded the machine (`plnWarmStep` budgets by `wallMs`).
 - [ ] **Nets owed:** `TEST_T0` at local noon; not caught yet — the .55 auto-brake, the money-printing
   counter, idle drones; a per-suite dirty-page check after `fn()`.
+- [ ] **Dead code in `23-mode-dig` (22.10):** `drawDigFauna` and the canvas impulse ring there are dead — the mine draws by the engine, `23c0-dig-hooks` turns a call into a loud error; they go when the author lifts the ban on editing `23-mode-dig`.
 - [ ] **Refactor queue, each a commit:** `detStuck`'s key law (fires only on a diff of exactly 0 — soften
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
   names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long

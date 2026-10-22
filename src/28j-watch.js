@@ -246,17 +246,20 @@ function watchSection(){
     :!W.met?"Участок "+nm+" ваш: "+watchStations().length+" станций вокруг "+((starAt(W.c.sx,W.c.sy)&&getSystem(W.c.sx,W.c.sy).name)||"места приёма")+". Норму пишем раз в сводку — по всем, кто возит."
     :L?"Участок "+nm+". Норма "+L.norm+" %."+(L.norm<WATCH_LO?" Не тянем.":L.norm>=WATCH_HI?" Так держать.":"")
     :"Сводки по участку ещё не было. Нужды на станциях — ваши.";
+  /* свежая глава «Смены» (28p, M910): десять минут диспетчер говорит её строкой — 72 главы, 72 её реплики */
+  const ch=W.met&&!W.hand&&typeof doorsDispLine==="function"?doorsDispLine():null;
   W.met=1;W.seen=1;
   const r=el("div","row");
   r.appendChild(faceEl(D,56));
   const past=W.hist.slice(-5).map(x=>x.norm+" %").join(" · ");
-  r.appendChild(el("div","nm","<b>"+D.name+" · диспетчер участка</b><s>«"+line+"»"+
+  r.appendChild(el("div","nm","<b>"+D.name+" · диспетчер участка</b><s>«"+(ch||line)+"»"+
     (past&&W.hist.length>1?"<br>прошлые сводки: "+past:"")+
     (!here?"<br>эта станция — не ваш участок":"")+"</s>"));
   $body.appendChild(r);
   if(L&&(L.lost||L.allot))$body.appendChild(el("div","row","<div class='nm'><b>"+(L.lost?"станция «"+L.lost+"» передана соседу":"разнарядка: "+L.allot)+
     "</b><s>"+(L.lost?"три срыва подряд — участок меньше":"три сводки подряд не ниже 90 %")+"</s></div>"));
-  if(here||W.hand){
+  /* первая вахта (28o, M909): новичку «уезжаете надолго?» в первый час не нужно — сдать смену можно и из меню */
+  if(W.hand||(here&&!(typeof fwOn==="function"&&fwOn()))){
     const s=el("div","row");
     s.appendChild(el("div","nm",W.hand
       ?"<b>смена сдана · "+Math.max(1,Math.round((now()-W.hand.at)/60000))+" мин</b><s>счёт, оклады, руки, дроны и норма стоят; страхует только «Стриж»</s>"

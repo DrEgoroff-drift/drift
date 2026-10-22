@@ -108,20 +108,46 @@ function cave3EntryBox(C){
   const sp=(10-Ls.eye[2])/Ls.D,hw=Ls.w/2*sp,hh=Ls.Hf/2*sp,mid=(Ls.b+Ls.t)/2;
   return {box:[cx-hw-2,cx+hw+2,mid-hh-2,mid+hh+2],mx:cx,my:floorY};
 }
-/* из кадра поверхности раз в восемь кадров, когда устье в тысяче шагов: пещеру из зерна, потом по куску
-   породы за такт. Вход берёт готовую (enterCave) — первый кадр пещеры не лепит ни её, ни камень */
-let CAVE_PRE_N=0;
+/* Из кадра поверхности: пещеру из зерна, поле породы, потом куски окна входа — каждый кадр по 3 мс.
+   Вход берёт готовую (enterCave) — первый кадр пещеры не лепит ни её, ни камень. Раньше заготовка
+   начиналась в 1100 px от устья и шла раз в восемь кадров по 8 мс: 370 мс лепки занимали ~6 с, и вход
+   без неё (стенд, охотник, сейв у устья) лепил всё в кадре входа — 490 мс (замер 22.10). Теперь она
+   начинается через секунду после касания (кадры касания и так тяжёлые) и готова за ~2 с */
+const CAVE_PRE={wait:60,ms:3};
+/* Конвейеры пещеры и шахты — заранее, по одному, как только у планеты есть ярус (спуск, кадр поверхности).
+   Поздний прогрев (08b0) ставит их последними — через ~3 с после старта полёта (замер 22.10: на третьей
+   секунде готовы 2 из 10), и вход со стенда или с сейва на грунте собирал все десять на месте — кадр 1,5 с
+   (охотник, 0.499.5). Готовое кладётся в ту же карту GPU_PIPES.warm — воронка найдёт */
+const CAVE3_AHEAD={dev:null,ms:-1};
+function cave3PipesAhead(){
+  const d=GPU.dev,Z=PLN_GPU,A=CAVE3_AHEAD;
+  if(!d||Z.dev!==d||!(Z.ms>0)||(A.dev===d&&A.ms===Z.ms))return;
+  A.dev=d;A.ms=Z.ms;
+  const L=cave3Layouts(d);L.post=cave3LayPost(d,Z.ms);
+  const todo=cave3PipeDescs(d,L,Z.ms).map(([k,desc])=>[cave3PipeKey(k,Z.ms),desc]);
+  const next=()=>{
+    if(GPU_PIPES.dev!==d||!todo.length)return;
+    const [key,desc]=todo.shift();
+    if(GPU_PIPES.warm.get(key)){next();return;}   /* готов или уже строится поздним прогревом */
+    const w={p:null};GPU_PIPES.warm.set(key,w);
+    d.createRenderPipelineAsync(desc).then(p=>{if(GPU_PIPES.dev===d)w.p=p;},()=>{if(GPU_PIPES.warm.get(key)===w)GPU_PIPES.warm.delete(key);}).then(next);
+  };
+  next();
+}
 function caveTick(){
-  if((++CAVE_PRE_N&7)!==0)return;
   const S=G.surf;
-  if(G.mode!=="surface"||!S||!S.cave||!GPU.ok||!GPU.dev||Math.abs(S.cave.x-S.x)>1100)return;
+  if(G.mode!=="surface"||!S||!GPU.ok||!GPU.dev)return;
+  try{cave3PipesAhead();}catch(e){console.error("пещера: конвейеры заранее",e);}
+  if(!S.cave||(S.preN=(S.preN|0)+1)<CAVE_PRE.wait)return;
   let P=S.cavePre;
   if(P&&P.done)return;
   try{
     plnGpuDev();
     if(!P){S.cavePre={C:caveMake(S),done:false};return;}
+    /* поле породы — под бюджетом (холодное одним куском — до сотен мс), потом куски */
+    if(!cave3FieldStep(P.C,CAVE_PRE.ms))return;
     const b=cave3EntryBox(P.C);
-    cave3Chunks(P.C,b.box,b.mx,b.my,false);
+    cave3Chunks(P.C,b.box,b.mx,b.my,false,CAVE_PRE.ms);
     if(P.C.ch3&&P.C.ch3.left===0)P.done=true;
   }catch(e){S.cavePre={C:null,done:true};console.error("пещера заранее",e);}
 }

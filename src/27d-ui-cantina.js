@@ -28,10 +28,6 @@ function cantStyle(){
   const S=CANT_STYLE[G.st&&G.st.stype]||CANT_STYLE.trade;
   return S;
 }
-/* зал — сцена движка (27f4): возвращает попадания по людям и столикам в CSS-пикселях */
-function drawCantinaRoom(cn,list,sel,hover,deals,folk){
-  return cant3dFrame(cn,list,sel,hover,deals,folk);
-}
 /* свет зала: сколько ламп, где (на верфи качаются), какого тона; неон и окно */
 const CANT_LIGHT={
   trade:  {n:4, tone:[255,226,180], cone:1,   pow:1,   sway:0, amb:.70},

@@ -47,7 +47,9 @@ the door. The camera has stations and breathes; it never cuts.
 
 Eye 1.5 m, lens 40° on the desktop and 55° on the phone (`r3Persp`); the man 1.75 m (the
 generator's height) and .18–.22 of the frame's height at his station; on the phone the camera
-stands 1.5 m further back and the HUD's pads cover dark floor. The key is always **off centre**
+stands 1.5 m further back and the HUD's pads cover dark floor. In a cabin seen whole (the 7.2 m wintering room, M850c) the man drops to
+.14–.18 and that is right: the measure is the bunk, the table and the stove beside him, not
+the fraction; the fraction holds at a station, where the lens has come to him. The key is always **off centre**
 and the hero is under it; the fill is the second light of the place (a stove, a window, a
 screen) and it is dimmer by half at least. The palette per room is one hue, one accent, the
 rest value (the hall's rule); the accent is the people's orange only where people's things
