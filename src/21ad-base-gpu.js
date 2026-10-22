@@ -24,114 +24,12 @@
    Второе поле ПРИБАВЛЯЕТ воздух: пыль в конусах ламп, медленно всплывающая и
    гаснущая без мигания, едва видимый столб света, синь мороза и марево жары. */
 const BASE_BK=new Map();   /* имя слоя → {key,B,R,k,w,h} */
-/* выпечка слоя: R — мировой прямоугольник, k — пикселей выпечки на пиксель CSS */
-function baseBake(name,key,R,k,paint){
-  let E=BASE_BK.get(name);
-  if(E&&E.key===key&&E.B&&E.B.tex&&E.B.dev===GPU.dev)return E;
-  if(E&&E.B)gpuBakeDrop(E.B);
-  const tw=Math.max(1,Math.ceil((R.x1-R.x0)*k)),th=Math.max(1,Math.ceil((R.y1-R.y0)*k));
-  const B=gpuBake(tw,th,g=>{g.setTransform(k,0,0,k,-R.x0*k,-R.y0*k);paint(g);},{ss:1,mips:false});
-  E={key,B,R,k,w:tw/k,h:th/k};BASE_BK.set(name,E);
-  return E;
-}
 /* вышли из базы — отдаём видеопамять: на двойной плотности это десятки мегабайт */
 function baseBakeFree(){for(const E of BASE_BK.values())if(E.B)gpuBakeDrop(E.B);BASE_BK.clear();}
-function baseBakeShow(pass,E,dx,dy,cubic){
-  if(!E||!E.B)return;
-  gpuImage(pass,E.B,[{x:E.R.x0-dx+E.w/2,y:E.R.y0-dy+E.h/2,w:E.w,h:E.h,cubic}]);
-}
-/* всё, что камера базы вообще может показать (baseCam), с запасом */
-function baseWorldRect(B){
-  const cx0=BASE_OX-BCELL_W-60, cx1=BASE_OX+BASE_COLS*BCELL_W+90-W;
-  const cy0=-120, cy1=baseRows(B)*BCELL_H+260-H;
-  return {x0:Math.floor(Math.min(cx0,cx1))-4, y0:Math.floor(Math.min(cy0,cy1))-4,
-          x1:Math.ceil(Math.max(cx0,cx1)+W)+4, y1:Math.ceil(Math.max(cy0,cy1)+H)+4};
-}
-/* полоса гряды в координатах параллакса: u = экран + камера × par */
-function baseParRect(R,par){
-  return {x0:Math.floor((R.x0+4)*par)-4, x1:Math.ceil((R.x1-4-W)*par+W)+4,
-          y0:R.y0, y1:Math.min(R.y1,BASE_GY+26)};
-}
-/* подпись базы для ключа выпечек: что построено, что цело, сколько ярусов */
-function baseSig(B){
-  let s=(B.idx|0)+"|"+baseRows(B)+"|";
-  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
-    const x=baseCell(B,c,r);s+=x?(x.k+(x.hp>0?"":"!"))+",":".,";
-  }
-  return s;
-}
-function baseBakeK(){return Math.min(2,DPR||1);}
-/* что ещё читают тела станков, кроме отсеков и света: полки склада по запасу,
-   жар бани в банный вечер, зверь фермы, машина базы. Сменилось — перепекаем */
-function baseRoomsKey(B){
-  const P=basePower(B),fill=clamp(P.store?basePoolHeld(B)/P.store:0,0,1);
-  const n=(typeof baseShift==="function")?baseShift():0;
-  const F=(typeof farmOf==="function")?farmOf(B):null, v=(typeof vanOf==="function")?vanOf(B):null;
-  return [Math.floor((fill+.15)*4),(typeof banyaWarm==="function"&&banyaWarm(B,n))?1:0,
-    F?F.name+"#"+F.no:"",v?v.n+"."+v.q:"",Math.round(P.eff*20)].join("|");
-}
 /* ── под 2D: небо, гряды, задник, живое железо, отсеки ── */
-function baseGpuUnder(S,B,pl,lit,camx,camy){
-  const pass=gpuScene();if(!pass)return;
-  const k=baseBakeK(),lq=Math.round(lit*40)/40,R=baseWorldRect(B),sig=baseSig(B);
-  const sk=(pl?pl.seed|0:0)+"|"+W+"x"+H+"|"+k;
-  const up=k<(DPR||1);   /* выпечка реже экрана (телефон 2.6): бикубика вместо мыла */
-  const Rs=baseParRect(R,.3),Rn=baseParRect(R,.6);
-  baseBakeShow(pass,baseBake("sky",sk+"|"+B.idx,Rs,k,()=>baseSkyPaint(B,pl,Rs)),camx*.3,camy,up);
-  baseBakeShow(pass,baseBake("near",sk+"|"+B.idx,Rn,k,()=>baseRidgePaint(B,pl,Rn,1)),camx*.6,camy,up);
-  const vk=(typeof vanOf==="function"&&vanOf(B))?"v":"";
-  baseBakeShow(pass,baseBake("back",sk+"|"+sig+"|"+lq+vk,R,k,()=>{baseGroundPaint(B,pl,R);baseBackPaint(B,lq);}),camx,camy,up);
-  const SH=[];
-  baseGroundLive(SH,B,camx,camy);
-  baseLiveShapes(SH,S,B,lit,camx,camy);
-  gpuShapes(pass,SH);
-  const Rr={x0:BASE_OX-10,y0:BASE_OY-4,x1:BASE_OX+BASE_COLS*BCELL_W+10,y1:BASE_OY+baseRows(B)*BCELL_H+6};
-  baseBakeShow(pass,baseBake("rooms",sig+"|"+lq+"|"+k+"|"+baseRoomsKey(B),Rr,k,()=>baseRoomsPaint(B,lq)),camx,camy,up);
-}
 /* ── над 2D: передний план, иней, свет, воздух ── */
-const BASE_FU=new Float32Array(60);
-function baseGpuOver(S,B,pl,lit,camx,camy){
-  const pass=gpuNext();   /* смена карточек только что склеила 2D: проход открыт, второй шов не нужен */if(!pass)return;
-  const k=baseBakeK(),lq=Math.round(lit*40)/40,R=baseWorldRect(B),sig=baseSig(B);
-  const up=k<(DPR||1);
-  const Rf={x0:BASE_GATE_X+60,y0:BASE_OY-4,x1:BASE_OX+BASE_COLS*BCELL_W+10,y1:BASE_OY+baseRows(B)*BCELL_H+8};
-  baseBakeShow(pass,baseBake("front",sig+"|"+lq+"|"+k,Rf,k,()=>baseFrontPaint(B,lq)),camx,camy,up);
-  const bnd=(typeof baseHeatBand==="function")?baseHeatBand(B):0;
-  const a2=bnd?Math.min(.3,Math.abs(bnd)*.09):0;
-  /* иней по верхним кромкам отсеков — мороз виден не только цветом */
-  if(bnd<0){
-    const SH=[];
-    for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
-      const cell=baseCell(B,c,r);if(!cell||cell.hp<=0)continue;
-      const x=BASE_OX+c*BCELL_W+6-camx,y=BASE_OY+r*BCELL_H+6-camy;
-      SH.push([0,x,y,x+BCELL_W-12,y+2,0,0,220,240,255,Math.min(1,a2*1.6)]);
-    }
-    gpuShapes(pass,SH);
-  }
-  /* поле: маска слоёв и материал планеты */
-  const M=baseBake("mask",sig+"|"+R.x0+","+R.y0+","+R.x1+","+R.y1+"|"+lq+"|"+baseRoomsKey(B),R,.5,()=>baseMaskPaint(B,R));
-  if(!M||!M.B)return;
-  if(pl&&!pl.matCn&&typeof planetMat==="function"){planetMat(pl);if(typeof matTick==="function")matTick();}
-  const U=BASE_FU;U.fill(0);
-  const P=basePower(B);
-  U[0]=camx;U[1]=camy;U[2]=lit;U[3]=G.t/60;
-  U[4]=M.R.x0;U[5]=M.R.y0;U[6]=M.w;U[7]=M.h;
-  U[8]=clamp((camy+H*.5)/2000,0,.42);U[9]=bnd<0?-a2:a2;U[10]=pl&&pl.matCn?1:0;U[11]=baseRows(B);
-  const sh=baseShaftBox(B),cy=BASE_OY+(S.row|0)*BCELL_H+8;
-  U[12]=sh.sx0+sh.sw/2;U[13]=cy+4;U[14]=cellX(Math.floor(BASE_COLS/2));U[15]=cy+BCELL_H-23;
-  U[16]=BASE_GATE_X+34;U[17]=BASE_GY+4-40-11;U[18]=P.eff;U[19]=baseDeep(B);
-  const TL=baseTunnelLamps();U[20]=TL[0];U[21]=TL[1];U[22]=TL[2];U[23]=BASE_GY-31;
-  for(let r=0;r<Math.min(5,baseRows(B));r++)for(let c=0;c<BASE_COLS;c++){
-    const cell=baseCell(B,c,r);
-    U[24+r*BASE_COLS+c]=cell?(baseLampKind(cell.k)+1+(cell.hp>0?16:0)):0;
-  }
-  const tx=[M.B,pl&&pl.matCn?pl.matCn:null];
-  gpuField(pass,"baselight",baseLightWgsl(),U,tx,{blend:"mul"});
-  gpuField(pass,"baseair",baseAirWgsl(),U,tx,{blend:"add"});
-}
 /* вид отсека → строка таблицы ламп поля (порядок ROOM_FIN, последний — отделка по умолчанию) */
 const BASE_LAMP_KEYS=Object.keys(ROOM_FIN);
-function baseLampKind(k){const i=BASE_LAMP_KEYS.indexOf(k);return i<0?BASE_LAMP_KEYS.length:i;}
 /* ── общая часть двух полей ──
    Числа сетки вписаны в текст: они постоянны, а в равномерном буфере и так
    тесно (ячейки базы занимают 25 из 60). Таблица ламп — из ROOM_FIN, та же,

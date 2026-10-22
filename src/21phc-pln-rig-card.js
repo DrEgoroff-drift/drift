@@ -270,32 +270,12 @@ function rigLightBase(lit){
   const k=.55+clamp(lit,0,1)*.45;
   return {key:[.35,.86,-.38],col:[1.05*k,.92*k,.74*k],fill:[.16,.18,.22],gnd:[.09,.08,.07],acc:{d:[-.7,.3,.6],col:[.10,.13,.18]},lamp:0,exp:1};
 }
-/* пещера: свет — свой налобник: тёплый отсвет пятна на полу впереди и снизу, холод свода — контур
-   сзади; стекло фонаря горит */
-function rigLightCave(face){
-  const f=face<0?-1:1;
-  return {key:[.70*f,-.32,-.40],col:[.85,.60,.34],fill:[.035,.045,.07],gnd:[.07,.05,.035],acc:{d:[-.7*f,.55,.45],col:[.16,.24,.38]},lamp:1,exp:1};
-}
 /* абордаж: холодный ключ сверху и к камере (камера сзади и выше), тёплый акцент сбоку */
 function rigLightRaid(){
   return {key:[.30,.86,-.40],col:[.62,.74,.95],fill:[.05,.06,.09],gnd:[.06,.04,.04],acc:{d:[.95,.12,.25],col:[.85,.42,.20]},lamp:1,exp:1};
 }
 
 /* ══ первые три режима (правило: старая кисть остаётся до сдачи M890; RIG_CARD.on — переключатель) ══ */
-/* база: игрок. Перенос ctx уже стоит там, куда старый ходок клал своё начало; ноги — на 11.9 его
-   единиц ниже (20fa ASTRO_BOX). Мерка базы — единица игры на пиксель CSS: PLN_M на метр */
-function rigCardBase(ao,S){
-  if(!RIG_CARD.on||!GPU.on||!GPU.enc)return false;
-  const f=lifeHere(0,11.9),dx=cellX(S.cur)-S.x;
-  if(Math.abs(dx)>2)RIG_CARD.face.base=dx<0?-1:1;
-  const ppm=PLN_M*f.s/.9;             /* старый ходок был ужат на .9: человек снова 1.8 м */
-  const C=rigCard({pose:rigPoseOf(ao),phase:ao.phase,face:RIG_CARD.face.base,ppm,light:rigLightBase(RIG_CARD.lit==null?1:RIG_CARD.lit),
-    pal:"own",low:!!(G.surf&&G.surf.suit<25)});
-  if(!C)return false;
-  const pass=gpuNext();if(!pass)return false;
-  RIG_CARD.by.base++;RIG_CARD.last.base={x:f.x,y:f.y,ppm,h:RIG_H*ppm};
-  return rigCardDraw(pass,C,f.x,f.y,ppm,1);
-}
 /* база: смена. bWorker спрашивает здесь; стоящий и идущий человек в шлеме уходит в очередь и
    кладётся одним слоем до переборок (rigCardFlush), сидящий и без шлема — старой кистью (правило 1) */
 function rigCardWorker(x,fy,lit,sit,phase,face,bare){
@@ -304,27 +284,6 @@ function rigCardWorker(x,fy,lit,sit,phase,face,bare){
   const h=lifeHere(x,fy);
   R.q.push({x:h.x,y:h.y,ppm:PLN_M*h.s,lit,phase,face:face===-1?-1:1,walk:R.walk});
   return true;
-}
-function rigCardFlush(){
-  const R=RIG_CARD,L=R.q;R.baseQ=false;
-  if(!L.length)return;
-  const pass=gpuNext();
-  for(const w of L){
-    const C=pass?rigCard({pose:w.walk?"walk":"stand",phase:w.phase,face:w.face,ppm:w.ppm,light:rigLightBase(w.lit),pal:"issue"}):null;
-    if(C){rigCardDraw(pass,C,w.x,w.y,w.ppm,0);R.by.base++;}
-  }
-  L.length=0;
-}
-/* пещера и шахта (M801b): игрок. Мерка — та же, что у грунта (M217): PLN_M единиц на метр, ×K кадра;
-   свет — свой налобник; в шахте под резаком поза бура */
-function rigCardCave(ao,tag){
-  if(!RIG_CARD.on||!GPU.on||!GPU.enc)return false;
-  const f=lifeHere(0,11.9),ppm=PLN_M*f.s,m=tag||"cave";
-  const C=rigCard({pose:rigPoseOf(ao),phase:ao.phase,face:ao.face,ppm,light:rigLightCave(ao.face),pal:"own",low:!!ao.suitLow});
-  if(!C)return false;
-  const pass=gpuNext();if(!pass)return false;
-  RIG_CARD.by[m]++;RIG_CARD.last[m]={x:f.x,y:f.y,ppm,h:RIG_H*ppm};
-  return rigCardDraw(pass,C,f.x,f.y,ppm,ao.air?0:1);
 }
 /* абордаж: игрок. Камера всегда сзади и выше (24aa drawRaid), поэтому карточка — спиной к нам,
    объектив наклонён на угол камеры к середине роста. h — середина тела на экране и масштаб старого
