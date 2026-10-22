@@ -196,3 +196,15 @@ TEST_SUITES.push(()=>suite("база и дом телами: плашка у в�
   const w0=W;try{W=390;ok(surfChipPx()>=11,"фишка на 390 — кегль "+surfChipPx()+" ≥ 11");
     W=1600;eq(surfChipPx(),9,"фишка на ПК — прежний кегль");}finally{W=w0;}
 }));
+/* пятно налобника ночью у ворот (пустыня): было лимонным, хрома .7 — ярче скафандра. Хрома считается в sRGB как
+   (max-min)/max; от яркости она не зависит, поэтому пятно = альбедо песка × свет лампы по формуле шейдера
+   (plnLampPool, та же доля серого PLN_LAMP_GREY). Песок — самый жёлтый, что видели под лампой: (222,155,64) */
+TEST_SUITES.push(()=>suite("база и дом телами: пятно налобника тёплое белое, не лимон; скафандр ярче пятна",()=>{
+  const chroma=c=>{const s=c.map(v=>Math.pow(Math.max(v,0),1/2.2)),hi=Math.max(...s);return hi>0?(hi-Math.min(...s))/hi:0;};
+  const sand=plnRgb([222,155,64]);
+  const old=sand.map((v,i)=>v*[1,.86,.62][i]),now=plnLampPool(sand,PLN_HEADLAMP);
+  ok(chroma(old)>.6,"мерка ловит старое пятно: хрома "+chroma(old).toFixed(2));
+  ok(chroma(now)<=.4,"пятно на песке — хрома "+chroma(now).toFixed(2)+" ≤ .4");
+  ok(now[0]>=now[1]&&now[1]>=now[2],"пятно тёплое: красный ≥ зелёный ≥ синий");
+  ok(chroma(plnHex("#ee7326"))>chroma(now)+.2,"скафандр — самый сильный цвет: "+chroma(plnHex("#ee7326")).toFixed(2));
+}));
