@@ -199,7 +199,7 @@ function mineUpdate(dt){
   if(M.mode==="cage"){
     M.x+=(DIG_CELL/2-M.x)*Math.min(1,.2*dt);M.y=M.cy;sync();
     const stops=mineStops(D),here=stops.findIndex(r=>mineStopY(r)===M.cy),sump=mineSump(D),r=D.row;
-    M.word=here===stops.length-1?"УГЛУБИТЬ":"ВНИЗ";
+    M.word=here===stops.length-1?(r===0&&sump===0?"ЗАЛОЖИТЬ":"УГЛУБИТЬ"):"ВНИЗ";   /* слово кнопки — то же, что в строке хода */
     if(M.cto!=null){G.prompt=head+"\nКЛЕТЬ "+(M.ride>0?"ВНИЗ":"ВВЕРХ");return;}
     /* клеть меж остановок (выработку переписали) — к ближней */
     if(here<0){let b=stops[0];for(const q of stops)if(Math.abs(mineStopY(q)-M.cy)<Math.abs(mineStopY(b)-M.cy))b=q;M.cto=mineStopY(b);return;}
