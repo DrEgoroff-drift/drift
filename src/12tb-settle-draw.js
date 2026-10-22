@@ -25,8 +25,9 @@
       натоптанная тропа — по ним читается, что здесь живут. Пустые правильные
       домики читаются как макет.
 
-   Наружу: `settlePlan(S,tr,p)` (кому нужны дворы — 11h берёт отсюда окна) и
-   `settleDrawBody(S,tr,camx,camy,p)`, который зовёт `settleDraw` из 12t. */
+   Наружу: `settlePlan(S,tr,p)` — планировка дворов; её читают ходьба (стена M210, автомат,
+   перевал) и посёлок телами движка (21pii, 22.10.2026: 2D-посёлок удалён). Кисти ниже (sdBody,
+   sdWallTex, sdRoof, sdWindow, sdDoor, sdWoodpile, sdTerrace) живут для старого дома (21f, ?own=0). */
 
 const SD_MAN=17;                                  /* рост жителя: всё меряется им */
 /* сколько человек в высоту: изба, сарай, мастерская, печь */
@@ -84,14 +85,6 @@ function sdPal(p){
     stone:sdMix([128,126,120],base,.18),
     earth:sdMix(pal[Math.min(pal.length-1,3)],[92,74,52],.38)
   };
-}
-/* воздушная перспектива: дальний ряд не затемняется, а СВОДИТСЯ К НЕБУ —
-   так работает воздух. Затемнение дало бы силуэт в тени, а не даль */
-function sdFarPal(pal,p){
-  const sky=(p.T&&p.T.sky&&p.T.sky[1])||[120,140,160];
-  const k=.34,out={};
-  for(const key in pal)out[key]=sdMix(pal[key],sky,k);
-  return out;
 }
 /* ── планировка ──
    Считается один раз на состав посёлка: где полка, где улица, что где стоит.
@@ -427,4 +420,4 @@ function sdWoodpile(x,y,w,h,wood,seed){
   ctx.beginPath();ctx.moveTo(x+.5,y);ctx.lineTo(x+.5,y-h-2);
   ctx.moveTo(x+w-.5,y);ctx.lineTo(x+w-.5,y-h-2);ctx.stroke();
 }
-/* постройки, жители и settleDrawBody — в 12tb-settle-draw2 (распил 0.209.0) */
+/* дым труб (sdSmoke) — в 12tb-settle-draw2 */

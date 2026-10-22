@@ -34,7 +34,7 @@ function plnOverOld(tr,camx,camy,p){
     drawBuilt(tr,camx,camy,p);
     if(typeof drawHomeOut==="function"&&typeof homeHereP==="function"&&homeHereP(p))drawHomeOut(tr,camx,camy,p);
   }
-  if(settleCanLive(p))settleDraw(settleAt(G.sx,G.sy),tr,camx,camy,p);
+  if(settleCanLive(p)&&typeof hoursDrawPeople==="function")hoursDrawPeople(null,tr,camx,camy,p);   /* прохожий затмения (11h); посёлок — тела движка (21pii) */
   if(tinCanLive(p))tinDraw(tinAt(G.sx,G.sy),tr,camx,camy,p);
   if(typeof traceDraw==="function")traceDraw(tr,camx,camy,p);
   peepDrawMat(camx,camy);
