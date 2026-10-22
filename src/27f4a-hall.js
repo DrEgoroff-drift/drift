@@ -48,6 +48,11 @@ const HALL_SEAT_PILOT=1.72;   /* табурет пилота у правого �
 /* M814: столики разведены от луча камеры к герою: левый — передний план слева, правый — за кадром справа */
 const HALL_BAR_TABLES=[{x:-.9,z:2.7,seats:[[-1.45,2.4],[-.45,2.25]]},{x:2.3,z:2.85,seats:[[1.8,3.02],[2.75,2.6]]}];
 const HALL_BAR_SEATS=HALL_BAR_TABLES.flatMap(T2=>T2.seats.map(s=>({s,T2})));
+/* M853: сидящие у стойки лицом к ней — руки на столешнице (27f3 barc/barm), а не в воздухе перед ней: stool1 (локти
+   на стойку позади) и stool2 (руки висели в 11–21 см перед кромкой) у бара заменены; stool0 — кружка и колено */
+const HALL_BAR_POSE={stool1:"barc",stool2:"barm",stool3:"barc"};
+/* за столиком: прямо над столом или откинувшись (chair) — по сиду места */
+function hallTablePose(seed,i){return (hashi(seed,i,0x7AB2)>>>0)%3===0?"chair":"table";}
 /* вывеска бара (x относительно бара): над левым краем полки, в левой трети кадра ЛЮДИ — не посередине и не над героем;
    крупнее прежней (1.4 × .32 м), чтобы буквы читались с места камеры */
 const HALL_SGN=[-2.0,-.6,2.4,2.72];
@@ -166,13 +171,14 @@ function hallLayout(st,lazy){
     let ci=0,ti=0;
     for(const P of CL.people){if(P.kind==="kino"||P.z<HALL_B+.35)continue;
       const Q=Object.assign({},P,{x:P.x+HALL_XB,id:P.id&&("bar:"+P.id)});
-      if(P.kind==="cand"){Q.x=HALL_XB+L.seats[ci];Q.yaw=Math.PI+(ci%2?.5:-.5);if(Q.pose==="stool1")Q.pose="stool2";ci++;}
+      if(P.kind==="cand"){Q.x=HALL_XB+L.seats[ci];Q.pose=HALL_BAR_POSE[Q.pose]||Q.pose;
+        Q.yaw=Math.PI+(ci%2?1:-1)*(/^bar/.test(Q.pose)?.25:.5);ci++;}
       if(P.kind==="crowd"&&P.pose==="table"){const S2=HALL_BAR_SEATS[ti++];if(!S2)continue;const s=S2.s,T2=S2.T2;
         Q.x=HALL_XB+s[0];Q.z=s[1];Q.yaw=Math.atan2(T2.x-s[0],T2.z-s[1]);}
       L.people.push(Q);}
     /* за столиками всегда по двое: недостающих — из завсегдатаев */
     for(;ti<HALL_BAR_SEATS.length;ti++){const s=HALL_BAR_SEATS[ti].s,T2=HALL_BAR_SEATS[ti].T2;
-      L.people.push({id:null,m:{seed:hashi(seed,ti,0x7AB1)>>>0,loy:50,traits:[]},pose:"table",x:HALL_XB+s[0],z:s[1],yaw:Math.atan2(T2.x-s[0],T2.z-s[1]),lod:0,kind:"crowd"});}
+      L.people.push({id:null,m:{seed:hashi(seed,ti,0x7AB1)>>>0,loy:50,traits:[]},pose:hallTablePose(seed,ti),x:HALL_XB+s[0],z:s[1],yaw:Math.atan2(T2.x-s[0],T2.z-s[1]),lod:0,kind:"crowd"});}
     /* кинодень: бар смотрит на экран. Стоящие и на табуретах разворачиваются телом, за столиками — головой (P.watch) */
     /* СР · Визуал 22.10: кинозал — это силуэты против полотна. Сидевшие за столиками встают рядом перед экраном
        (кружка в руке, шаг вразнобой), табуреты разворачиваются телом; все смотрят на полотно */
@@ -180,9 +186,10 @@ function hallLayout(st,lazy){
     if(L.kino)for(const P of L.people){if(P.x<HALL_XB-.5||P.kind==="keep")continue;
       /* не шеренга — кучка: глубина и шаг разные, двое ближе к полотну, двое за ними со смещением (Контроль 22.10) */
       const KQ=[[-1.7,2.0,"mug"],[-.45,3.05,"stand"],[.85,2.3,"mug"],[1.75,3.35,"stand"]];
-      if(P.pose==="table"&&ri<4){const q=KQ[ri];P.pose=q[2];P.x=HALL_KINO[0]+q[0];P.z=HALL_B+q[1];P.mesh=null;ri++;}
+      if((P.pose==="table"||P.pose==="chair")&&ri<4){const q=KQ[ri];P.pose=q[2];P.x=HALL_KINO[0]+q[0];P.z=HALL_B+q[1];P.mesh=null;ri++;}
+      if(/^bar/.test(P.pose)){P.pose="stool0";P.mesh=null;}   /* к полотну телом — руки со стойки на колено и кружку */
       const a=Math.atan2(HALL_KINO[0]-P.x,HALL_B-P.z);
-      if(P.pose==="table")P.watch=a;else{P.yaw=a+(ri%2?.18:-.14);P.watch=a;}}
+      if(P.pose==="table"||P.pose==="chair")P.watch=a;else{P.yaw=a+(ri%2?.18:-.14);P.watch=a;}}
   }
   /* блошинец: у прилавков покупатели, дальняя толпа (LOD 0) */
   if(T.stalls){const n=3+((seed>>>3)%3);
