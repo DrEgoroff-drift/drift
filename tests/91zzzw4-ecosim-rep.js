@@ -65,6 +65,7 @@ function ecoPrint(rows,X){
     console.log("  "+r.tier+" хозяйство: цеха "+(E.shops||"—")+" · рейсов в цех "+E.hauls+", в бункеры "+E.fed+" ед · промтовар сдан в цеха "+Math.round(E.indSold/r.hrs)+" кр/ч"+(E.lev?" (из них рычагом "+(ENV.ECO_LEVER||"")+" ×"+(+ENV.ECO_LEVER_MUL||1)+" — "+Math.round(E.lev/r.hrs)+")":"")+
       " · не нашёл едока "+E.indLeft+" кр "+E.indLeftQ+" · база "+E.base+": рейсов за рудой "+E.baseTrips+", забрано "+E.baseUnits+" ед, продано на "+Math.round(E.baseWorth/r.hrs)+" кр/ч");
     if(E.survey)console.log("  "+r.tier+" едоки в 3 прыжках: "+E.survey);
+    if(E.sink)console.log("  "+r.tier+" сток "+E.sink);
     if(ENV.ECO_TRACE)console.log("    "+E.dbg+" · "+E.hop);}
   for(const r of rows)if(r.lad)r.lad.forEach((A,i)=>console.log("  "+r.tier+" лестница "+(i?"в конце":"в начале")+": станций в 3 прыжках "+A.n+
     " · был "+A.seen+" · садился "+A.landed+" · бурил "+A.drilled+" · дрон "+A.drone+" · ступень ≥11 "+A.r11+" · с площадкой "+A.sites+
