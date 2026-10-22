@@ -133501,31 +133501,17 @@ const FRAME_MS=16.667;
    Кадр без единого кванта (экран быстрее 240 Гц) не рисуется вовсе: картинка была
    бы той же, а растр — полной цены. Провал длиннее шести квантов не догоняем
    совсем: догонка стоит кадра, и из такой спирали игра не выбирается. */
-/* Квант мира — 1/1440 с (15.10; был 1/120). Кадр полки на 144 Гц длится 13.9 мс = 1.67 старого кванта, и
-   мир шагал 2-2-1: ровные кадры с неровным движением. 1440 делится на 60, 72, 80, 90, 120, 144, 240 —
-   на любой из этих полок кадр несёт одно и то же число квантов; на 165 Гц ошибка 6 % вместо 40 %.
-   Корабль дробит шаг по-прежнему около 8.3 мс (WORLD_SUB считается от времени, не от квантов) */
-const QUANT_MS=1000/1440;
-const QUANT_DT=QUANT_MS/FRAME_MS;      /* тот же квант в единицах dt (= 1/24) */
-const QUANT_MAX=144;                   /* до 100 мс мира за кадр: мир идёт в реальном времени до 10 кадров/с */
-const SUB_MS=1000/120;                 /* подшаг корабля */
+const QUANT_MS=1000/120;               /* квант мира — половина кадра шестидесяти герц */
+const QUANT_DT=QUANT_MS/FRAME_MS;      /* тот же квант в единицах dt (= .5) */
+const QUANT_MAX=12;                    /* до 100 мс мира за кадр: мир идёт в реальном времени до 10 кадров/с */
 /* Делит накопленное время на кванты. Раньше при переполнении остаток ОБНУЛЯЛСЯ — на 15 кадрах/с мир шёл вполовину,
    на 5 — на четверть. Теперь остаток переносится, а потолок накопления не даёт спирали смерти. */
-function quantSplit(acc,prev){
+function quantSplit(acc){
   let steps=Math.round(acc/QUANT_MS);
-  /* гистерезис: метки rAF дрожат на десятые мс, а квант — .69 мс; округление кидало кадр 19-20-21 квант
-     при ровной развёртке. Пока кадр в кванте от прошлого — берём столько же, разница ждёт в остатке */
-  if(prev>0){
-    const e=acc-prev*QUANT_MS;
-    if(Math.abs(e)<QUANT_MS)steps=prev;
-    /* развёртка, на которую 1440 не делится (165 Гц: 17.45 кванта), ходит по соседям 17/18 — без скачка через один */
-    else if(Math.abs(e)<2*QUANT_MS)steps=prev+Math.sign(e);
-  }
   if(steps>QUANT_MAX)steps=QUANT_MAX;
-  return{steps,acc:clamp(acc-steps*QUANT_MS,-QUANT_MS,QUANT_MS*QUANT_MAX)};
+  return{steps,acc:clamp(acc-steps*QUANT_MS,-QUANT_MS*.5,QUANT_MS*QUANT_MAX)};
 }
 let quantAcc=0;                        /* недошаганный остаток, мс */
-let quantPrev=0;                       /* сколько квантов нёс прошлый кадр — для гистерезиса */
 function loopReset(){last=wallMs();lastDroneTick=0;capPrev=0;capN=0;quantAcc=0;tactGood=0;tactBad=0;
   lastFuelWarn=0;lastHullWarn=0;sndWalk=0;
   for(const f of LOOP_PHASE)f();}
@@ -133679,19 +133665,6 @@ let capIv=16.667, capPrev=0, capN=0, capDue=0;
    Догоняющие кадры — меньшинство, медиана их не видит; на настоящих 120 Гц
    медиана и есть 8.3. Ошибка в другую сторону безопасна: шаг 1 — просто все кадры. */
 const CAP_RING=new Float32Array(48);let capRingN=0;
-/* такт развёртки для полки: медиана, пока её нет — шестьдесят герц */
-function capVsync(){return capRingN>=12?Math.max(2,capIv):16.667;}
-/* сколько тактов развёртки на кадр: целое, кадр не реже потолка (шаг per мс) */
-function capStride(per,vs){return Math.max(1,Math.floor(per/vs+.05));}
-/* рисовать ли кадр в миг now. Развёртка бывает живой (VRR, телефон 1–120 Гц, окно переехало на другой
-   монитор): такт меряется заново каждые 12 тактов, шаг пересчитывается на каждом кадре */
-function capGate(now,capOpt){
-  const vs=capVsync(),n=capStride(1000/Math.min(60,capOpt||60),vs);
-  /* время ушло назад (стенды и мотор тестов зовут кадр со своими часами) — срок заново */
-  if(capDue&&now<capDue&&now>capDue-n*vs-50)return false;
-  capDue=now+n*vs-vs*.5;
-  return true;
-}
 function capSample(d){
   CAP_RING[capRingN++%48]=d;
   if(capRingN%12)return;
@@ -133857,13 +133830,11 @@ function frameBody(now){
      На 60 Гц проходит каждый кадр, на 120/144 — через раз, на ГПУ под 100% не
      проваливается в 30, как проваливалась оценка по кратчайшему промежутку. */
   {
-    /* Ровный шаг на любом экране (15.10, автор: «на 144 Гц шаг 14 и 21 мс — поправь»). Сетка в 16.7 мс
-       на развёртке 6.94 мс ложилась то на второй, то на третий её такт: 2-3-2-3, глаз видит дёрганье.
-       Теперь кадр идёт каждый n-й такт развёртки, n — целое, при котором выходит не меньше
-       потолка: 144 → 72, 120 → 60, 165 → 82.5, 240 → 60, 90 → 90, 60 → 60. Срок следующего —
-       от времени ЭТОГО кадра (полтакта допуска), а не накоплением: сетка не уплывает от
-       развёртки, опоздавший под нагрузкой кадр не тянет за собой «вдогонку» короткий. */
-    if(!capGate(now,capOpt)){FRAME_DREW=false;FRAME_IN=false;return;}
+    const per=1000/Math.min(60,capOpt||60);
+    /* пропуск — только если чуть рано; время ушло назад (стенды и мотор тестов зовут
+       кадр со своими часами) — сетка встаёт заново, иначе ждали бы её вечно */
+    if(capDue&&now<capDue-4&&now>capDue-2*per){FRAME_DREW=false;FRAME_IN=false;return;}
+    capDue=(!capDue||now-capDue>per||now<capDue-2*per)?now+per:capDue+per;
   }
   FRAME_DREW=true;
   resAuto(now-last);
@@ -133874,7 +133845,7 @@ function frameBody(now){
      (взяли вперёд и отдадим следующим кадром). С полом на 120 Гц возвращалось
      то же чередование, только в мире: интервал дрожит вокруг 8.33, и 8.1 давал ноль
      шагов, а 8.5 — два. Округление даёт 8.33±1 → шаг, 16.6 → два, 25 → три. */
-  {const q=quantSplit(quantAcc,quantPrev);steps=q.steps;quantAcc=q.acc;quantPrev=steps;}
+  {const q=quantSplit(quantAcc);steps=q.steps;quantAcc=q.acc;}
   /* кадр короче половины кванта не рисуем — но флаг голоса снимаем сами:
      frameBody зовут не только из frame() (стенды, пробники), и там его никто не чистит */
   if(!steps){FRAME_DREW=false;FRAME_IN=false;return;}
@@ -133917,7 +133888,7 @@ function frameBody(now){
     if(G.mode==="system"||G.mode==="dock"||G.mode==="surface")autosave();
     /* мир шагает ОДИН раз за кадр, как и до 0.1; квантуется внутри только
        корабль — см. WORLD_SUB (08-state) и updateSystem */
-    WORLD_SUB=Math.max(1,Math.round(steps*QUANT_MS/SUB_MS));
+    WORLD_SUB=steps;
     try{stepWorld(dt);}finally{WORLD_SUB=1;}
     hullHeldTick();   /* корпус до беды (R5b) */
     if(typeof tapeTick==="function")tapeTick(dt);

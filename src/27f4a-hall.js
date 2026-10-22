@@ -408,8 +408,10 @@ function hallTagsDraw(L,cam,sz){
       if(g.s){const s=document.createElement("s");s.textContent=g.s;e.appendChild(s);}if(g.dn)e.classList.add("dn");box.appendChild(e);}}
   list.forEach((g,i)=>{const e=box.children[i],q=r3Proj(cam.vp,g.p,sz.cw,sz.ch);
     const ok=!!q&&q[0]>16*ui&&q[0]<xr&&(g.dn?q[1]>40*ui&&q[1]<yr-70*ui:q[1]>110*ui&&q[1]<yr);
-    e.style.visibility=ok?"":"hidden";
-    if(ok)e.style.transform="translate("+(q[0]/ui).toFixed(1)+"px,"+(q[1]/ui).toFixed(1)+"px) "+(g.dn?"translate(-1px,28px)":"translate(-1px,calc(-100% - 28px))");});
+    /* в стиль — только перемены: камера в покое большую часть кадров, а запись стиля стоит пересчёта (M826, охотник 0.499.10) */
+    const v=ok?"":"hidden";if(e.__v!==v){e.__v=v;e.style.visibility=v;}
+    if(ok){const tf="translate("+(q[0]/ui).toFixed(1)+"px,"+(q[1]/ui).toFixed(1)+"px) "+(g.dn?"translate(-1px,28px)":"translate(-1px,calc(-100% - 28px))");
+      if(e.__t!==tf){e.__t=tf;e.style.transform=tf;}}});
 }
 
 /* ── холст и цикл ── */
