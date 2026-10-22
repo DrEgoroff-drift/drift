@@ -24,7 +24,7 @@ TEST_SUITES.push(()=>suite("карта: без 2D, миры выбора шар�
       W=z[0];H=z[1];HUD_FLOOR=HUD_RAIL=0;G.mode="map";G.mapView=null;G.mapMore=false;G.sel={x:pick.x,y:pick.y};F=null;
       /* счётчик пикселей на ctx игры */
       let n=0;const real=sv.ctx;
-      ctx=new Proxy(real,{get(t,p){const v=t[p];return typeof v==="function"?(PAINT.has(p)?(...a)=>{n++;return v.apply(t,a);}:v.bind(t)):v;},
+      ctx=new Proxy(real,{get(t,p){const v=t[p];return v instanceof Function?(PAINT.has(p)?(...a)=>{n++;return v.apply(t,a);}:v.bind(t)):v;},
         set(t,p,v){t[p]=v;return true;}});
       drawMap();ovHangFlush();drawMap();   /* второй кадр — табличка уже висела: раскладка с ней */
       ctx=real;
