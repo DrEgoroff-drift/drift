@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 634 · top-level symbols: 8731
+Files: 635 · top-level symbols: 8733
 
 ## SYMBOLS
 
@@ -1829,6 +1829,7 @@ RADIO_PROGS                  src/10a-radio.js:102
 RADIO_PROG_SETS              src/10a-radio.js:93-101
 RADIO_RH                     src/10a-radio.js:377-383
 RADIO_TRACKS                 src/10a-radio.js:41-87
+RAIDUI_HOOKS                 src/28u-raid-ui.js:6-10
 RAID_FOE_BK                  src/24ab-raid-foe.js:137
 RAID_GPU_WGSL                src/24aa1-raid-gpu.js:126
 RAID_LAMPS                   src/24aa1-raid-gpu.js:20
@@ -1837,6 +1838,7 @@ RAID_QF                      src/24aa1-raid-gpu.js:28
 RAID_ROOMS                   src/24a-mode-raid.js:7-13
 RAID_SPR_WGSL                src/24aa1-raid-gpu.js:194
 RAID_UF                      src/24aa1-raid-gpu.js:29
+RAID_UI                      src/28u-raid-ui.js:5
 RAID_WGSL_COMMON             src/24aa1-raid-gpu.js:86
 RAIL_ARM_RU                  src/18e-rail-net.js:25
 RAIL_BUFFET                  src/18f-rail-station.js:20
@@ -4022,7 +4024,7 @@ drawPlant                    src/20-life.js:423-431
 drawPlantAlien               src/20-life.js:227-394
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-613
-drawRaid                     src/24aa-raid-draw.js:14-626
+drawRaid                     src/24aa-raid-draw.js:14-608
 drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-271
@@ -4142,7 +4144,7 @@ enterBelt                    src/24-mode-belt.js:71-120
 enterCave                    src/22-mode-cave.js:227-242
 enterDig                     src/23-mode-dig.js:51-73
 enterHomeIn                  src/29c-home-in.js:60-68
-enterRaid                    src/24a-mode-raid.js:194-249
+enterRaid                    src/24a-mode-raid.js:194-250
 enterSpa                     src/29h-spa.js:51-66
 enterSurface                 src/21-mode-surface.js:173-209
 enterWinter                  src/29f-winter.js:112-119
@@ -7264,8 +7266,8 @@ raidFoeSprite                src/24ab-raid-foe.js:138-144
 raidGpuDesc                  src/24aa1-raid-gpu.js:21-27
 raidGpuDraw                  src/24aa1-raid-gpu.js:32-75
 raidIdx                      src/24a-mode-raid.js:14
-raidLeave                    src/24a-mode-raid.js:250-273
-raidLineOfSight              src/24a-mode-raid.js:407-414
+raidLeave                    src/24a-mode-raid.js:251-274
+raidLineOfSight              src/24a-mode-raid.js:409-416
 raidSolid                    src/24a-mode-raid.js:78-81
 raidSolidAt                  src/24a-mode-raid.js:82
 raidSprDesc                  src/24aa1-raid-gpu.js:76-82
@@ -8421,7 +8423,7 @@ updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:73-145
 updateMap                    src/18-mode-map.js:694-708
-updateRaid                   src/24a-mode-raid.js:275-405
+updateRaid                   src/24a-mode-raid.js:276-407
 updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
@@ -10125,9 +10127,9 @@ zoomTo                       src/15-input.js:358
   · рейд на пиратскую базу: полигональный интерьер:1
   · генерация: комнаты и коридоры со связностью:29
   · вход, выход, наполнение:84
-  · обновление:274
+  · обновление:275
 
-## src/24aa-raid-draw.js · 51 KB
+## src/24aa-raid-draw.js · 49 KB
   · рейд: отрисовка:1
   · рисование: пол → стены → объекты → эффекты:13
 
@@ -10440,6 +10442,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/28t-hallgone.js · 5 KB
   · лицо ушло из зала (M910c, docs/DESIGN-game.md §7.3):1
+
+## src/28u-raid-ui.js · 1 KB
+  · абордаж: строка у пульта — плашкой (22.10):1
 
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1

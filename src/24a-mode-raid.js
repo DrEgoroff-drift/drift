@@ -244,8 +244,9 @@ function enterRaid(PB){
     walkPhase:0,hurt:0,flash:0,shots:[],exit:[sx0,sz0],level:PB.level};
   G.mode="raid";G.ap=null;
   for(const k in keys)keys[k]=false;
-  /* имя базы и счёт живых стоят в сводке места — здесь только управление */
-  say("◀ ▶ — поворот · ▲ ▼ — ход\nОГОНЬ — стрельба · вернитесь в ангар и ДЕЙСТВИЕ — уход");
+  /* имя базы и счёт живых стоят в сводке места; управление — строкой у пульта, пока человек
+     не отошёл от ворот (S.hint): посреди кадра тремя строками оно резалось на 390 (22.10) */
+  G.raid.hint=true;
 }
 function raidLeave(msg,lostShare){
   const S=G.raid;if(!S)return;
@@ -367,6 +368,7 @@ function updateRaid(dt){
     if(Math.hypot(L.x-S.x,L.z-S.z)<60){near=L;break;}
   }
   const atExit=Math.hypot(S.exit[0]-S.x,S.exit[1]-S.z)<70;
+  if(!atExit)S.hint=false;
   const alive=S.foes.filter(f=>f.hp>0).length;
   if(near){
     /* Скафандр отсюда убран: он стоит шкалой наверху, крупно и с цветом
@@ -390,10 +392,10 @@ function updateRaid(dt){
       }
     }
   }else if(atExit){
-    G.prompt="АНГАР · ДЕЙСТВИЕ — УХОД С ДОБЫЧЕЙ"+
-      "\nв сумке: техкомпонентов "+S.bag.tech+", данных "+S.bag.data+
-      (S.bag.parts.length?", частей "+S.bag.parts.length:"")+
-      (alive?"\nна базе ещё "+alive+" стволов":"\nбаза зачищена");
+    G.prompt="ДЕЙСТВИЕ — УХОД С ДОБЫЧЕЙ\n"+(S.hint?"◀ ▶ поворот · ▲ ▼ ход · ОГОНЬ — стрельба":
+      "техники "+S.bag.tech+" · данных "+S.bag.data+
+      (S.bag.parts.length?" · частей "+S.bag.parts.length:"")+
+      (alive?" · стволов "+alive:" · база зачищена"));
     if(actEdge){raidLeave(alive?"Уход с базы":"База зачищена",0);return;}
   }else{
     G.prompt="ЗАРЯДОВ "+S.ammo+
