@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 637 · top-level symbols: 8730
+Files: 638 · top-level symbols: 8723
 
 ## SYMBOLS
 
@@ -1112,7 +1112,7 @@ HG_U                         src/17c2-hull-gpu.js:92
 HIN_ROOM_W                   src/29c-home-in.js:21
 HIN_THINGS                   src/29c-home-in.js:199-223
 HIN_UP                       src/29e-home-up.js:20
-HIT_FX                       src/18d-postfx.js:10
+HIT_FX                       src/18d-postfx.js:6
 HIT_REAR                     src/13-combat.js:11
 HK_DARK                      src/17l1-hotel-kosmos.js:20
 HK_ROOM                      src/17l1-hotel-kosmos.js:24
@@ -1197,7 +1197,6 @@ HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
 HUNT_TIERS                   src/12o-hunter.js:19-23
 HX                           src/12v-wander.js:186
-HZ_CN                        src/18d-postfx.js:31
 ICO_F                        src/24-mode-belt.js:10
 ICO_V                        src/24-mode-belt.js:4-9
 IND_FEE                      src/12ac-bld.js:111
@@ -1801,16 +1800,16 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:654
+R3                           src/27f2-room3d.js:656
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:633
+R3_DOWN_WGSL                 src/27f2-room3d.js:635
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:804
+R3_POST_WGSL                 src/27f2-room3d.js:806
 R3_SCR                       src/27f2-room3d.js:45
 R3_UN                        src/27f2-room3d.js:30
 R3_VPOOL                     src/27f2-room3d.js:76
-R3_WGSL                      src/27f2-room3d.js:215
+R3_WGSL                      src/27f2-room3d.js:217
 RACK                         src/25d-instr-rack.js:44
 RACK_CH                      src/25d-instr-rack.js:26-32
 RACK_DQ                      src/25d-instr-rack.js:189
@@ -2115,7 +2114,7 @@ SETTLE_WAIT                  src/12t-settle.js:25
 SETTLE_WORD                  src/12t-settle.js:256
 SET_V                        src/21pii-pln-settle.js:23
 SFX                          src/09-audio.js:118-333
-SG_POOL                      src/27f2-room3d.js:79
+SG_FREE                      src/27f2-room3d.js:80
 SHARD_H                      tests/90-harness.js:32
 SHIELD_DELAY                 src/05c-arms.js:47
 SHIELD_KEYS                  src/05c-arms.js:46
@@ -2292,7 +2291,6 @@ TEST_TIMES                   tests/99-run.js:18
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 TIER_RU                      src/05-parts.js:86
-TILE                         src/18c-chunks.js:128
 TIN_BIN                      src/12ta-tin.js:31
 TIN_CAP                      src/12ta-tin.js:28
 TIN_EAT                      src/12ta-tin.js:29
@@ -3976,7 +3974,7 @@ drawGround                   src/19-mode-landing-ground.js:11-232
 drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
 drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
-drawHitFx                    src/18d-postfx.js:81-87
+drawHitFx                    src/18d-postfx.js:14-20
 drawHomeIn                   src/29rb-home-r3.js:454-459
 drawHomeOut                  src/21f-home-out.js:75-263
 drawHotel                    src/17l-hotel.js:147-177
@@ -4042,7 +4040,6 @@ drawTapes                    src/12s1-tape.js:51-66
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:63-156
-drawTiles                    src/18c-chunks.js:154-165
 drawTrail                    src/16-flight.js:457-460
 drawTransitPlate             src/03d-hull-marks.js:186-196
 drawWallPaper                src/11ae-concert.js:39-71
@@ -4104,6 +4101,7 @@ e2eLate                      tests/91zzzzz-e2e-life.js:384
 e2eLost                      tests/91zzzzz-e2e-life.js:157-174
 e2eScan                      tests/91zzzzz-e2e-life.js:66-93
 earn                         src/12j-home.js:38-46
+ecoEstate                    tests/91zzzw4-ecosim-est.js:5-163
 econCycleMul                 src/12ax-fx-econ.js:27-34
 econEmbargoOn                src/12ax-fx-econ.js:56-61
 econFairHere                 src/12ax-fx-econ.js:48-54
@@ -5091,9 +5089,7 @@ haulStart                    src/16c-rescue.js:171-187
 haulTick                     src/16c-rescue.js:319-437
 hazardBand                   src/25-cockpit.js:166-177
 hazeBand                     src/19cc-gpu-air.js:200-212
-hazeDone                     src/18d-postfx.js:68
 hazeFar                      src/19c-light.js:167-188
-hazeGrab                     src/18d-postfx.js:33-50
 hdA                          src/17l2-hotel-druzhba.js:19
 hdPaint                      src/17l2-hotel-druzhba.js:35-162
 hdS                          src/17l2-hotel-druzhba.js:22
@@ -5112,8 +5108,6 @@ heardUse                     src/12x-parrot.js:116-136
 heardWordsRu                 src/12x-parrot.js:79-85
 heardYours                   src/12x-parrot.js:71-74
 heatAdd                      src/13a-guns.js:47-52
-heatHaze                     src/18d-postfx.js:70-74
-heatHazeFrom                 src/18d-postfx.js:52-67
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:367
 helmApply                    src/15a-helm.js:450-548
@@ -5187,7 +5181,7 @@ hinUpRooms                   src/29e-home-up.js:24-34
 hinWidth                     src/29c-home-in.js:45
 hireMerc                     src/12a-crew.js:219-234
 hireMgr                      src/12c-mgr-core.js:302-318
-hitFx                        src/18d-postfx.js:11
+hitFx                        src/18d-postfx.js:7
 hitLocMul                    src/13-combat.js:32-35
 hitShip                      src/13-combat.js:89-153
 hkBand                       src/17l1-hotel-kosmos.js:46
@@ -7168,33 +7162,33 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:655-661
-r3Dev                        src/27f2-room3d.js:678-696
-r3DownDesc                   src/27f2-room3d.js:670-674
-r3Drop                       src/27f2-room3d.js:703
-r3Frame                      src/27f2-room3d.js:747-801
-r3Free                       src/27f2-room3d.js:705
-r3Kit                        src/27f2-room3d.js:82-212
+r3Desc                       src/27f2-room3d.js:657-663
+r3Dev                        src/27f2-room3d.js:680-698
+r3DownDesc                   src/27f2-room3d.js:672-676
+r3Drop                       src/27f2-room3d.js:705
+r3Frame                      src/27f2-room3d.js:749-803
+r3Free                       src/27f2-room3d.js:707
+r3Kit                        src/27f2-room3d.js:84-214
 r3Lin                        src/27f2-room3d.js:35
-r3Look                       src/27f2-room3d.js:50-212
-r3MeshR                      src/27f2-room3d.js:746
+r3Look                       src/27f2-room3d.js:50-214
+r3MeshR                      src/27f2-room3d.js:748
 r3Mix                        src/27f2-room3d.js:36
 r3MixI                       src/27f2-room3d.js:39
 r3Mul                        src/27f2-room3d.js:47
 r3Persp                      src/27f2-room3d.js:49
 r3Pivot                      src/27f2-room3d.js:66
-r3Proj                       src/27f2-room3d.js:69-212
+r3Proj                       src/27f2-room3d.js:69-214
 r3Pt                         src/27f2-room3d.js:67
 r3Sc                         src/27f2-room3d.js:37
 r3ScI                        src/27f2-room3d.js:40
 r3Scr                        src/27f2-room3d.js:46
-r3ShDesc                     src/27f2-room3d.js:662-667
-r3ShadowVP                   src/27f2-room3d.js:707-712
+r3ShDesc                     src/27f2-room3d.js:664-669
+r3ShadowVP                   src/27f2-room3d.js:709-714
 r3Step                       src/27f2-room3d.js:41
-r3Targets                    src/27f2-room3d.js:719-744
-r3Up                         src/27f2-room3d.js:698-702
-r3VB                         src/27f2-room3d.js:668
-r3Xf                         src/27f2-room3d.js:56-212
+r3Targets                    src/27f2-room3d.js:721-746
+r3Up                         src/27f2-room3d.js:700-704
+r3VB                         src/27f2-room3d.js:670
+r3Xf                         src/27f2-room3d.js:56-214
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
 rackBottom                   src/25d-instr-rack.js:331-336
@@ -7930,7 +7924,8 @@ settleWallX                  src/12t-settle.js:119
 settleWatch                  src/12t-settle.js:321-327
 settleWords                  src/12t-settle.js:258-262
 sfx                          src/09-audio.js:334-340
-sgArr                        src/27f2-room3d.js:80
+sgArr                        src/27f2-room3d.js:82
+sgTake                       src/27f2-room3d.js:81
 sharpWord                    src/21a9-base-laws.js:41-45
 shatter                      src/24-mode-belt.js:122-136
 shieldFace                   src/05c-arms.js:53-57
@@ -8310,8 +8305,6 @@ tickLaunchHold               src/21-mode-surface.js:673-686
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
 tierOf                       src/04b-fleet.js:157
-tileAt                       src/18c-chunks.js:129-139
-tileSpan                     src/18c-chunks.js:145-153
 timeBucket                   src/03-ships.js:128-131
 tinAskOf                     src/12ta-tin.js:97-106
 tinAt                        src/12ta-tin.js:58
@@ -9630,11 +9623,11 @@ zoomTo                       src/15-input.js:358
 ## src/18b-map-hold.js · 16 KB
   · владения на карте (M348):1
 
-## src/18c-chunks.js · 12 KB
+## src/18c-chunks.js · 9 KB
   · кэш статичного: чанки и слои:1
 
-## src/18d-postfx.js · 6 KB
-  · эффекты кадра: марево, хроматика (M325):1
+## src/18d-postfx.js · 2 KB
+  · эффекты кадра: хроматика (M325):1
 
 ## src/18d-verlet.js · 8 KB
   · верле: верёвки и ткань:1
@@ -10264,7 +10257,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 74 KB
+## src/27f2-room3d.js · 75 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 29 KB
@@ -10603,7 +10596,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim.js · 60 KB
+## tests/91zzzw4-ecosim-est.js · 12 KB
+
+## tests/91zzzw4-ecosim.js · 48 KB
   · проба · экономика (M903):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
