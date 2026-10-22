@@ -101,19 +101,21 @@ function hangObstacles(bot){
     else if(e.x0!=null)O.push({x0:e.x0,y0:e.y0,x1:e.x1,y1:e.y1});
   }
   if(HANG.blk&&HANG.blkF===OVL.fno){const s=1/ovNd();for(const b of HANG.blk)O.push({x0:b.x0*s,y0:b.y0*s,x1:b.x1*s,y1:b.y1*s});}
-  /* строка сообщения #msg (DOM, style.css): по центру на четверти высоты, капсом, разрядка .14em.
-     DOM в кадре не читаем — рамка считается по тексту теми же глифами, с запасом. Висит табличкой
-     (HANG.msgQ, M826) — DOM-строки нет, держать её место некому */
-  if(!HANG.msgQ&&G.msgT>0&&G.msg&&!(typeof msgHeld==="function"&&msgHeld())){
-    /* телефон (max-width:760px): верх 20 %, кегль 11, строка 1.4, ширина до краёв без 24, перенос до трёх строк */
-    const ph=W<=760,k=Math.max(1,uiK()),L=String(G.msg).toUpperCase().split("\n"),fs=ph?11:12,f=fs+"px "+HANG.FACE;
-    const mw=Math.min(ph?W-24:W*.84,W/2);let w=0,n=0;   /* left:50% — блок сжимается до половины окна */
-    for(const s of L){const sw=(hangTW(f,s)+s.length*fs*.14)*k+12*k;w=Math.max(w,sw);n+=Math.max(1,Math.ceil(sw/mw));}
-    w=Math.min(mw,w);const h=Math.min(n,ph?3:9)*fs*(ph?1.4:1.95)*k+4*k;
-    const t=Math.max(H*(ph?.2:.25),(typeof HUD_MAPBAR==="number"&&HUD_MAPBAR>0)?HUD_MAPBAR+8*k:0);
-    O.push({x0:W/2-w/2,y0:t,x1:W/2+w/2,y1:t+h});
-  }
+  /* строка сообщения #msg: висит табличкой (HANG.msgQ, M826) — DOM-строки нет, держать её место некому */
+  if(!HANG.msgQ){const b=hangMsgBand();if(b)O.push(b);}
   return O;
+}
+/* рамка строки #msg (DOM, style.css): по центру на четверти высоты, капсом, разрядка .14em. DOM в кадре
+   не читаем — рамка считается по тексту теми же глифами, с запасом. Сообщения нет — null */
+function hangMsgBand(){
+  if(!(G.msgT>0&&G.msg)||(typeof msgHeld==="function"&&msgHeld()))return null;
+  /* телефон (max-width:760px): верх 20 %, кегль 11, строка 1.4, ширина до краёв без 24, перенос до трёх строк */
+  const ph=W<=760,k=Math.max(1,uiK()),L=String(G.msg).toUpperCase().split("\n"),fs=ph?11:12,f=fs+"px "+HANG.FACE;
+  const mw=Math.min(ph?W-24:W*.84,W/2);let w=0,n=0;   /* left:50% — блок сжимается до половины окна */
+  for(const s of L){const sw=(hangTW(f,s)+s.length*fs*.14)*k+12*k;w=Math.max(w,sw);n+=Math.max(1,Math.ceil(sw/mw));}
+  w=Math.min(mw,w);const h=Math.min(n,ph?3:9)*fs*(ph?1.4:1.95)*k+4*k;
+  const t=Math.max(H*(ph?.2:.25),(typeof HUD_MAPBAR==="number"&&HUD_MAPBAR>0)?HUD_MAPBAR+8*k:0);
+  return {x0:W/2-w/2,y0:t,x1:W/2+w/2,y1:t+h};
 }
 /* раскладка (M803b): каждая табличка — первая годная точка по каждой стороне, лучшая по цене.
    Выноска от кромки вещи — не длиннее четверти высоты кадра, её длина — в цене; выноска не режет
@@ -179,11 +181,13 @@ function hangNamed(name,R){
   }
   return false;
 }
-function hangLayout(Q,k){
+/* mb — второй заход: сообщение табличкой не встало, его DOM-строка держит своё место (mb) */
+function hangLayout(Q,k,mb){
   const top=Math.max(8,(typeof HUD_BAND==="number"?HUD_BAND:0)+6);
   const bot=((typeof HUD_FLOOR==="number"&&HUD_FLOOR>0)?Math.min(H,HUD_FLOOR):H)-6;
   const C={band:{x0:W*.3,y0:H*.3,x1:W*.7,y1:H*.7},top,bot,O:hangObstacles(bot+6),placed:[],
     g:12*k,step:4*k,maxD:Math.max(W,H)*.7,Lmax:H*.25};
+  if(mb)C.O.push(mb);
   /* тревога ставится первой; пока она идёт и 45 кадров после — спокойные у края */
   /* выдержка живёт в том режиме, где была тревога: черпак после СРОЧНО в системе — не тревога
      (на 360 «Заход в атмосферу» жался в треть и ехал на «НАГРЕВ КОРПУСА») */
@@ -192,6 +196,7 @@ function hangLayout(Q,k){
   Q.sort((a,b)=>(b.o.urg?1:0)-(a.o.urg?1:0));
   for(const P of Q){
     /* спокойное в тревогу: сперва в левой трети, потом где угодно, но не в полосе */
+    if(mb&&P.id==="hud.msg"){P.hide=true;continue;}
     C.calm=alarm&&!P.o.urg;C.xMax=C.calm?W/3:0;
     let best=hangPlace(P,k,C);
     const edge=!!best;
@@ -211,6 +216,11 @@ function hangLayout(Q,k){
     HANG.mem[P.id]=best.di;P.R=best.R;P.nx=best.nx;P.ny=best.ny;P.r=best.r;P.side=best.side;
     C.placed.push(best.R);
   }
+  /* сообщение стояло в очереди табличкой и не встало (узкий экран, место занято) — оно скажется DOM-строкой
+     #msg, а её место раскладка не держала (msgQ): табличка, легшая туда, наехала бы на неё (шахта на 390,
+     22.10). Тогда раскладка заново, с этим местом в препятствиях */
+  if(!mb){const m=Q.find(P=>P.id==="hud.msg"&&P.hide),b=m&&hangMsgBand();
+    if(b&&Q.some(P=>!P.hide&&P.R&&hangHit(P.R,b,4*k))){for(const P of Q){P.hide=false;P.R=null;}hangLayout(Q,k,b);}}
 }
 /* ── рисунок ── */
 function hangTri(ax,ay,bx,by,cx,cy,pm){
@@ -308,9 +318,9 @@ function hangSurface(){
 /* ── строка сообщения (say, #msg) — табличкой у вещи (M826) ──
    Прежде она вставала капсом посреди кадра на четверти высоты. Теперь вещь строки: тело, которое назвал
    say(s,d,obj), пока оно в кадре; иначе — вещь режима (корабль в системе, ковш, человек на грунте, ваша
-   звезда на карте). Вещи нет (режим без точки, слоя нет) — строка остаётся прежним #msg. Капс строки
+   звезда на карте, человек в шахте — 23cf). Вещи нет (режим без точки, слоя нет) — строка остаётся прежним #msg. Капс строки
    переводится в регистр предложения: иерархия таблички — кегль и цвет, не капитель */
-const HANG_MSG_AT={system:"ship",scoop:"scoop",surface:"man",map:"you"};
+const HANG_MSG_AT={system:"ship",scoop:"scoop",surface:"man",dig:"man",map:"you"};
 function hangMsg(Q){
   HANG.msgQ=false;HANG.msgJoin=null;
   if(!(G.msgT>0&&G.msg)){HANG.msgEther=null;return;}
