@@ -20,7 +20,7 @@
    есть: walkPhase/walkAmp — шаг, on/vy — воздух, jetOn — факел ранца, swim — в
    круге; фонарь — по lampK кадра (21pz). Сетки лежат в начале координат, ноги на
    нуле; в мир человека ставит запись. */
-const PLN_MAN={gen:-1,geo:null,inst:null,a:new Float32Array(16),
+const PLN_MAN={gen:-1,bones:null,     /* сетка и запись на кость (plnManBones) */
   parts:null,V:null,nv:0,ni:0,ib:null,
   key:"",                              /* палитра и заряд, под которые собраны части */
   k:{air:0,jet:0,fall:0,drill:0,sit:0}, /* сглаженные доли поз: воздух, факел, падение, бур в руках, сидя */
@@ -217,14 +217,41 @@ function plnMan(st){
   if(key!==Q.key||!Q.parts){
     const b=plnManBuild(P,low);
     Q.parts=b.parts;Q.V=b.V;Q.nv=b.nv;Q.ni=b.ni;Q.ib=b.I;Q.key=key;
-    if(Q.gen===PLN_GPU.gen){plnGeoFree(Q.geo);Q.geo=plnGeo({v:Q.V,i:Q.ib,nv:Q.nv,ni:Q.ni});}
+    if(Q.gen===PLN_GPU.gen)plnManBones(Q,true);
   }
   if(Q.gen!==PLN_GPU.gen){
     Q.gen=PLN_GPU.gen;
-    Q.geo=plnGeo({v:Q.V,i:Q.ib,nv:Q.nv,ni:Q.ni});Q.inst=plnInst(Q.a,0,1);
+    plnManBones(Q,false);
   }
   return Q;
 }
+/* сетки по костям (22.10): вершины лежат в системе своей кости и пишутся один раз; поза едет
+   записью расстановки — место кости и крен вокруг z (размер −1, 21pc). Кадр пишет 13 записей по
+   64 байта вместо всех вершин (~60 КБ); вершины переписываются только у частей с dyn и только
+   когда их состояние сменилось. Своя сетка и запись на кость: так её рисуют и пещера, и шахта,
+   и разрез базы — без отрезков в общем буфере */
+function plnManBones(Q,free){
+  if(free&&Q.bones){for(const B of Q.bones)plnGeoFree(B.geo);plnInstFree(Q.ib1);}
+  const by=new Map();
+  for(const q of Q.parts){if(!by.has(q.bone))by.set(q.bone,[]);by.get(q.bone).push(q);}
+  Q.bones=[];
+  for(const [bone,list] of by){
+    let nv=0,ni=0;
+    for(const q of list){q.boff=nv;nv+=q.m.nv;ni+=q.m.ni;}
+    const V=new Float32Array(nv*PLN_VS),I=new Uint32Array(ni);
+    let o=0;
+    for(const q of list){V.set(q.m.v,q.boff*PLN_VS);for(let k=0;k<q.m.ni;k++)I[o++]=q.m.i[k]+q.boff;q.wk=null;}
+    const B={bone,V,nv,parts:list};
+    B.geo=plnGeo({v:V,i:I,nv,ni});
+    for(const q of list)q.B=B;
+    Q.bones.push(B);
+  }
+  /* записи всех костей — один буфер и одна запись за кадр; у кости — вид на свою (off) */
+  const nb=Q.bones.length;
+  Q.ia=new Float32Array(16*nb);Q.ib1=plnInst(Q.ia,0,nb);
+  Q.bones.forEach((B,k)=>{B.inst={buf:Q.ib1.buf,n:1,cap:1,gen:Q.ib1.gen,off:k*64};});
+}
+const PLN_MAN_ID={c:1,s:0,x:0,y:0,z:0,a:0};
 function plnManState(S,lampK,swim){
   return {phase:S?S.walkPhase||0:0,amp:S?clamp(S.walkAmp||0,0,1):0,on:S?S.on!==false:true,jet:!!(S&&S.jetOn),
     vy:S?S.vy||0:0,swim:clamp(swim||0,0,1),t:G.t||0,lamp:lampK||0,drill:!!(S&&S.mining),sit:!!(S&&S.sit),sitPin:S&&S.sitPin!=null?S.sitPin:null,low:!!(S&&S.suit!=null&&S.suit<25)};
@@ -232,31 +259,37 @@ function plnManState(S,lampK,swim){
 /* Ставит человека в кадр: поза по состоянию, вершины в буфер, запись, лампы фонаря и факела.
    pos — место ног в метрах, face — куда смотрит, swim — насколько он в круге, o — {S, lamp} */
 function plnManFrame(F,pos,face,swim,o){
-  const st=plnManState(o&&o.S,o&&o.lamp,swim),Q=plnMan(st),W=plnManPose(st),V=Q.V;
+  const st=plnManState(o&&o.S,o&&o.lamp,swim),Q=plnMan(st),W=plnManPose(st),ID=PLN_MAN_ID,q2=GPU.dev.queue;
   PLN_DRILL.on=st.drill?1:0;
+  /* вершины — только у частей с dyn и только при перемене: факел — пока есть тяга (и раз, чтобы
+     сжаться), бур — пока ходит его доля, огонёк и линза — когда сменилось свечение (шаг 1/64) */
   for(const q of Q.parts){
-    const w=W[q.bone],c=w.c,s=w.s,src=q.m.v,n=q.m.nv;
-    if(q.dyn==="flame"){plnManFlame(st,V,q.off,w);}
-    else if(q.dyn==="tool"){plnDrillWrite(st,V,q.off,w,q.m);}
+    if(!q.dyn)continue;
+    const B=q.B,V=B.V,n=q.m.nv,o2=q.boff*PLN_VS;
+    let wk;
+    if(q.dyn==="flame"){wk=Q.k.jet>.003?-1:0;if(wk===0&&q.wk===0)continue;plnManFlame(st,V,q.boff,ID);}
+    else if(q.dyn==="tool"){wk=Math.round(Q.k.drill*256)*2+PLN_DRILL.on;if(wk===q.wk)continue;plnDrillWrite(st,V,q.boff,ID,q.m);}
     else{
-      let d=q.dyn?q.dyn(st):null,o2=q.off*PLN_VS;
-      for(let k=0;k<n;k++){
-        const i=k*PLN_VS,px=src[i],py=src[i+1],nx=src[i+3],ny=src[i+4];
-        V[o2]=c*px-s*py+w.x;V[o2+1]=s*px+c*py+w.y;V[o2+2]=src[i+2]+w.z;
-        V[o2+3]=c*nx-s*ny;V[o2+4]=s*nx+c*ny;
-        if(d){if(d.mat!=null)V[o2+9]=d.mat;if(d.glow!=null)V[o2+11]=d.glow;if(d.x!=null)V[o2+12]=d.x;}
-        o2+=PLN_VS;
-      }
+      const d=q.dyn(st),mat=d.mat!=null?d.mat:-1,gl=d.glow!=null?Math.round(d.glow*64)/64:-1,x=d.x!=null?d.x:-1;
+      wk=mat+","+gl+","+x;if(wk===q.wk)continue;
+      for(let k=0,o3=o2;k<n;k++,o3+=PLN_VS){if(mat>=0)V[o3+9]=mat;if(gl>=0)V[o3+11]=gl;if(x>=0)V[o3+12]=x;}
     }
+    q.wk=wk;
+    q2.writeBuffer(B.geo.vb,o2*4,V,o2,n*PLN_VS);
   }
   /* в поле факела и фонарь, и сопло — в мире, с учётом стороны взгляда */
   const fx=face<0?-1:1,at=(w,lx,ly,lz)=>[pos[0]+fx*(w.c*lx-w.s*ly+w.x),pos[1]+(w.s*lx+w.c*ly+w.y),pos[2]+fx*(lz+w.z)];
   Q.lamp=at(W[2],.222,.40,0);Q.jet=at(W[1],-.31,.0,0);
   PLN_DRILL.tip=at(W[10],0,-.30-PLN_DRILL.len*Q.k.drill,0);   /* остриё коронки — для луча (21pic) */
-  GPU.dev.queue.writeBuffer(Q.geo.vb,0,V,0,Q.nv*PLN_VS);
-  plnRec(Q.a,0,pos,1,fx<0?Math.PI:0,1,1);
-  plnInstSet(Q.inst,Q.a,1);
-  F.batches.push({geo:Q.geo,inst:Q.inst,kind:PLN_KIND.body,to:PLN_TO.all});
+  /* кость — запись: место кости, повёрнутое взглядом (как в placeAt), и крен */
+  const yaw=fx<0?Math.PI:0,cy=Math.cos(yaw),sy=Math.sin(yaw),P0=Q.p0||(Q.p0=[0,0,0]);
+  Q.bones.forEach((B,k)=>{
+    const w=W[B.bone];
+    P0[0]=pos[0]+w.x*cy+w.z*sy;P0[1]=pos[1]+w.y;P0[2]=pos[2]+w.z*cy-w.x*sy;
+    plnRec(Q.ia,k,P0,-1,yaw,1,w.a);
+    F.batches.push({geo:B.geo,inst:B.inst,kind:PLN_KIND.body,to:PLN_TO.all});
+  });
+  plnInstSet(Q.ib1,Q.ia,Q.bones.length);
   /* налобник светит вперёд по взгляду на землю перед человеком (ночью и в тени затмения) */
   if(st.lamp>.02)F.lamps.push({p:[Q.lamp[0]+fx*1.0,Q.lamp[1]-.35,Q.lamp[2]-.3],r:8,c:[1,.86,.62],k:2.4*st.lamp});
   /* факел ранца освещает землю под ним */

@@ -285,8 +285,10 @@ function cave3Paint(F,X,Y,Z,ny){
    поэтому вершины на стыке те же и шва нет. Нормали копятся со всех рёбер, грани кладутся только
    со своих (основание ребра в пределах куска). Слой k = 0 лежит перед разрезом и закрыт (воздух):
    грань между ним и первым слоем — грань разреза. Возвращает вершины (по PLN_VS чисел), индексы
-   породы и разреза подряд, nRock — сколько индексов у породы */
-function cave3Chunk(F,ci,cj){
+   породы и разреза подряд, nRock — сколько индексов у породы. Генератор уступает по слоям (22.10:
+   кусок целиком — 23–45 мс кадра на грунте, в заготовке пещеры); cave3Chunk строит его разом */
+function cave3Chunk(F,ci,cj){return plnDrain(cave3ChunkGen(F,ci,cj));}
+function* cave3ChunkGen(F,ci,cj){
   const s=CAVE3_CH.s,v=CAVE3_CH.vox,X0=ci*s,Y0=cj*s,n0=Math.round(s/v),NI=n0+2,NJ=NI;
   const px=i=>X0+(i-1)*v,py=j=>Y0+(j-1)*v;
   /* глубина куска — по самой глубокой трубе в нём; пустоту ищем по каждой клетке сетки:
@@ -320,6 +322,7 @@ function cave3Chunk(F,ci,cj){
     for(let k=k0;k<=k1;k++){const z=zk(k);for(let j=j0;j<=j1;j++){
       let n=i0+sJ*j+sK*k;const y=py(j);
       for(let i=i0;i<=i1;i++,n++)if(V[n]!==V[n])V[n]=fill?d:cave3Den(F,px(i),y,z);}}
+    if(bi===BI-1)yield;
   }
   for(let n=0;n<sK;n++)V[n]=-Math.abs(V[n+sK]);
   const CI=NI-1,CJ=NJ-1,CK=NK-1,cell=new Int32Array(CI*CJ*CK).fill(-1);
@@ -343,6 +346,7 @@ function cave3Chunk(F,ci,cj){
       P[nv*3]=px(i)+ax/cnt*v;P[nv*3+1]=py(j)+ay/cnt*v;P[nv*3+2]=zk(k+az/cnt);
       cell[i+CI*(j+CJ*k)]=nv++;
     }
+    if(j===CJ-1)yield;
   }
   /* грани: по четырёхугольнику у каждого ребра, которое пересекает поверхность; лицом в воздух */
   const N=new Float32Array(nv*3),cutOf=new Int32Array(nv).fill(-1),cutP=[],IR=[],IC=[];
@@ -373,6 +377,7 @@ function cave3Chunk(F,ci,cj){
       if(j<CJ&&(V[n+sJ]>0)!==(a>0))quad(cid(i-1,j,k-1),cid(i,j,k-1),cid(i,j,k),cid(i-1,j,k),0,sg,0,false,m);
       if(k<CK&&(V[n+sK]>0)!==(a>0))quad(cid(i-1,j-1,k),cid(i,j-1,k),cid(i,j,k),cid(i-1,j,k),0,0,sg,k===0,m);
     }
+    if(j===NJ-1)yield;
   }
   /* краска: порода берёт пласт, мокрость и открытость воздуха перед собой; грань разреза —
      тёмный лист, в нормали путь к пустоте в плоскости разреза, в запасе — далеко ли она */
@@ -384,6 +389,7 @@ function cave3Chunk(F,ci,cj){
     const o=c*PLN_VS;
     out[o]=x;out[o+1]=y;out[o+2]=z;out[o+3]=nx;out[o+4]=ny;out[o+5]=nz;out[o+6]=ink[0];out[o+7]=ink[1];out[o+8]=ink[2];
     out[o+9]=PLN_MAT.rock;out[o+10]=0;out[o+11]=ink[3];out[o+12]=a*(.35+.65*b);
+    if((c&255)===255)yield;
   }
   for(let c=0;c<nc;c++){
     const p=cutP[c],x=P[p*3],y=P[p*3+1],z=P[p*3+2],zc=.08;
@@ -404,7 +410,7 @@ const CAVE3_MAT={cut:10,drip:11,crystal:12};
 /* ── кэш кусков: что видно — строится по бюджету, ближние к человеку первыми ── */
 function cave3Chunks(C,box,mx,my,first,lim0){
   const F=cave3Field(C),s=CAVE3_CH.s,Q=C.ch3||(C.ch3={m:new Map(),gen:-1,t:0});
-  if(Q.gen!==PLN_GPU.gen){for(const k of Q.m.values())plnGeoFree(k.geo);Q.m.clear();Q.gen=PLN_GPU.gen;}
+  if(Q.gen!==PLN_GPU.gen){for(const k of Q.m.values())plnGeoFree(k.geo);Q.m.clear();Q.gen=PLN_GPU.gen;Q.pend=null;}
   Q.t++;
   const i0=Math.floor(box[0]/s),i1=Math.floor(box[1]/s),j0=Math.floor(box[2]/s),j1=Math.floor(box[3]/s),want=[],list=[];
   const xs=CAVE_W/CAVE_PPM,yb=-CAVE_Y1/CAVE_PPM,yt=F.surfY+2;
@@ -416,10 +422,25 @@ function cave3Chunks(C,box,mx,my,first,lim0){
   want.sort((a,b)=>a[2]-b[2]);
   const t0=wallMs(),lim=first?CAVE3_CH.first:(lim0||CAVE3_CH.ms);
   let built=0;
-  for(const [i,j] of want){
-    if(built&&wallMs()-t0>lim)break;
-    const m=cave3Chunk(F,i,j),c={i,j,t:Q.t,nRock:m.nRock,geo:m.ni?plnGeo(m):null};
-    Q.m.set(i+","+j,c);if(c.geo)list.push(c);built++;
+  const put=(i,j,m)=>{const c={i,j,t:Q.t,nRock:m.nRock,geo:m.ni?plnGeo(m):null};Q.m.set(i+","+j,c);if(c.geo)list.push(c);built++;};
+  /* вход строит видимое разом; дальше кусок лепится по слоям в бюджет и доводится следующим кадром */
+  if(first){
+    if(Q.pend){const P=Q.pend;Q.pend=null;if(!Q.m.has(P.i+","+P.j))put(P.i,P.j,plnDrain(P.g));}
+    for(const [i,j] of want){
+      if(Q.m.has(i+","+j))continue;
+      if(built&&wallMs()-t0>lim)break;
+      put(i,j,cave3Chunk(F,i,j));
+    }
+  }else for(let w=0;;){
+    if(!Q.pend){
+      while(w<want.length&&Q.m.has(want[w][0]+","+want[w][1]))w++;
+      if(w>=want.length||wallMs()-t0>lim)break;
+      Q.pend={i:want[w][0],j:want[w][1],g:cave3ChunkGen(F,want[w][0],want[w][1])};w++;
+    }
+    const P=Q.pend;let r;
+    do r=P.g.next();while(!r.done&&wallMs()-t0<lim);
+    if(!r.done)break;
+    Q.pend=null;if(!Q.m.has(P.i+","+P.j))put(P.i,P.j,r.value);
   }
   /* лишнее — по давности */
   if(Q.m.size>CAVE3_CH.keep){
