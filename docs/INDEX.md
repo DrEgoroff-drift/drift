@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 644 · top-level symbols: 8749
+Files: 644 · top-level symbols: 8752
 
 ## SYMBOLS
 
@@ -1669,11 +1669,13 @@ PLN_GPU                      src/21pe-pln-gpu.js:27
 PLN_GUN                      src/21pifb-pln-marks-act-move.js:345
 PLN_HAND_S                   src/21pz-pln-frame.js:277
 PLN_HDR                      src/21pe-pln-gpu.js:23
+PLN_HEADLAMP                 src/21pha-pln-man.js:51
 PLN_HERB                     src/21pia-pln-herb.js:30
 PLN_HERB_MAKE                src/21pia-pln-herb.js:135-355
 PLN_ICO                      src/21pa-pln-mesh.js:40
 PLN_KIND                     src/21pe-pln-gpu.js:26
 PLN_KIT_N                    src/21pg-pln-flora.js:249
+PLN_LAMP_GREY                src/21pc-pln-wgsl-scene.js:14
 PLN_LAND                     src/21pf-pln-land.js:22
 PLN_LIFT                     src/21pifc-pln-marks-act-lift.js:12
 PLN_LIFT_GEO                 src/21piec-pln-marks-move.js:9
@@ -1684,10 +1686,10 @@ PLN_LPAD_DASH                src/21pza-pln-descent.js:122
 PLN_LPAD_SPOTS               src/21pza-pln-descent.js:113
 PLN_M                        src/21p-pln.js:14
 PLN_MAN                      src/21pha-pln-man.js:23
-PLN_MAN_BONES                src/21pha-pln-man.js:32-60
+PLN_MAN_BONES                src/21pha-pln-man.js:32-61
 PLN_MAN_FLAME                src/21pha-pln-man.js:50
-PLN_MAN_ID                   src/21pha-pln-man.js:254
-PLN_MAN_POSE                 src/21pha-pln-man.js:39-60
+PLN_MAN_ID                   src/21pha-pln-man.js:255
+PLN_MAN_POSE                 src/21pha-pln-man.js:39-61
 PLN_MAN_SIT                  src/21pha-pln-man.js:49
 PLN_MARK                     src/21pie-pln-marks.js:20
 PLN_MARK_COL                 src/21pie-pln-marks.js:33
@@ -1728,7 +1730,7 @@ PLN_VS                       src/21pa-pln-mesh.js:10
 PLN_WATER_BLEND              src/21pw-pln-water.js:231
 PLN_WFLORA                   src/21pfa-pln-worlds.js:178-223
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
-PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
+PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:19
 PLN_WGSL_WATER               src/21pw-pln-water.js:141
 PLN_WGSL_WATER_CAVE          src/21pw-pln-water.js:181
 PLN_WGSL_WATER_CORE          src/21pw-pln-water.js:13
@@ -6752,6 +6754,7 @@ plnInst                      src/21pe-pln-gpu.js:100-105
 plnInstFree                  src/21pe-pln-gpu.js:117
 plnInstSet                   src/21pe-pln-gpu.js:107-116
 plnKitTick                   src/21pg-pln-flora.js:250-253
+plnLampPool                  src/21pc-pln-wgsl-scene.js:15-18
 plnLand                      src/21pf-pln-land.js:555-566
 plnLandBare                  src/21pf-pln-land.js:256-259
 plnLandBatches               src/21pf-pln-land.js:543-545
@@ -6813,15 +6816,15 @@ plnM4mirrorY                 src/21p-pln.js:104
 plnM4move                    src/21p-pln.js:138-140
 plnM4mul                     src/21p-pln.js:86-91
 plnM4ortho                   src/21p-pln.js:92-97
-plnMan                       src/21pha-pln-man.js:214-227
-plnManBones                  src/21pha-pln-man.js:233-253
-plnManBuild                  src/21pha-pln-man.js:78-162
-plnManCss                    src/21pha-pln-man.js:53-60
-plnManFlame                  src/21pha-pln-man.js:197-211
-plnManFrame                  src/21pha-pln-man.js:261-301
-plnManPalette                src/21pha-pln-man.js:62-74
-plnManPose                   src/21pha-pln-man.js:165-194
-plnManState                  src/21pha-pln-man.js:255-258
+plnMan                       src/21pha-pln-man.js:215-228
+plnManBones                  src/21pha-pln-man.js:234-254
+plnManBuild                  src/21pha-pln-man.js:79-163
+plnManCss                    src/21pha-pln-man.js:54-61
+plnManFlame                  src/21pha-pln-man.js:198-212
+plnManFrame                  src/21pha-pln-man.js:262-303
+plnManPalette                src/21pha-pln-man.js:63-75
+plnManPose                   src/21pha-pln-man.js:166-195
+plnManState                  src/21pha-pln-man.js:256-259
 plnMarkH                     src/21pie-pln-marks.js:40
 plnMarkMesh                  src/21pie-pln-marks.js:58-103
 plnMarkMove                  src/21piec-pln-marks-move.js:10-289
@@ -9909,7 +9912,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pb-pln-wgsl-air.js · 24 KB
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
-## src/21pc-pln-wgsl-scene.js · 17 KB
+## src/21pc-pln-wgsl-scene.js · 18 KB
   · планета: шейдер тел, земли, воды и тени (M610):1
 
 ## src/21pd-pln-wgsl-post.js · 8 KB
@@ -9947,7 +9950,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ph-pln-cast.js · 3 KB
   · планета: состав в кадре — круг (M610), человек (M620), корабль (M621):1
 
-## src/21pha-pln-man.js · 20 KB
+## src/21pha-pln-man.js · 21 KB
   · планета: человек — риг (M620):1
 
 ## src/21phb-pln-ship.js · 22 KB
@@ -10581,7 +10584,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qe-bar-seat.js · 7 KB
   · бар собран (M853):1
 
-## tests/91qe-own.js · 15 KB
+## tests/91qe-own.js · 16 KB
 
 ## tests/91qe-rack.js · 4 KB
   · стойка уступает телу (M821):1

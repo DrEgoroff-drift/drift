@@ -1381,6 +1381,12 @@ and the «Вьюк» doubles a hand lap at once. It is the author's cut of the d
 start (M152e). If the start should be slower, this threshold is the one lever, not the dispatcher;
 one number.
 
+**The bottleneck at home: carbon.** Not a proposal, a fact every chain above meets: graphite starves
+in three of the ten dead-good chains (accum, hullsec, panel) because the probe's home makes no
+carbon (its worlds are fauna) and the bot does not haul it; carbon fibre runs only at a share on
+organics. Whatever the author picks from items 1–5, the home's carbon decides how deep a chain at
+home can go; the haul that would bring it costs what M915 measured (≈ 2.2k cr all-in).
+
 ### Don't touch — the measurement said no
 
 - **The dispatcher's pay.** Pay by effort was tried and reverted: it ignored jump fuel
