@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 617 · top-level symbols: 8657
+Files: 617 · top-level symbols: 8648
 
 ## SYMBOLS
 
@@ -1120,21 +1120,15 @@ HOME3_RW                     src/29rb-home-r3.js:17
 HOME3_TONE                   src/29rb-home-r3.js:20
 HOME3_WIN                    src/29rb-home-r3.js:24
 HOME_BAKING                  src/21f-home-out.js:56
-HOME_BK                      src/27e-ui-home.js:48
 HOME_COOL_MS                 src/16c-rescue.js:45
 HOME_DOCK_COOL               src/16c-rescue.js:47
-HOME_HIT                     src/27e-ui-home.js:33
 HOME_JUMP_BASE               src/16c-rescue.js:44
 HOME_LAMP                    src/21f-home-out.js:57
 HOME_MAN                     src/21f-home-out.js:55
 HOME_MATE                    src/12j-home.js:86
 HOME_OBK                     src/21fa-home-out-gpu.js:8
-HOME_ROOM_H                  src/27e-ui-home.js:14
-HOME_STEP_W                  src/27e-ui-home.js:20
 HOME_TAXI                    src/16c-rescue.js:46
 HOME_TIERS                   src/12j-home.js:10-19
-HOME_TXT                     src/27e-ui-home.js:36
-HOME_VIEW                    src/27e-ui-home.js:34
 HOTEL_BAKE                   src/17l-hotel.js:59
 HOTEL_CURT                   src/17l-hotel.js:48
 HOTEL_EL                     src/17l-hotel.js:82
@@ -1159,6 +1153,7 @@ HQ3_CAMS                     src/29r-rooms-r3.js:23
 HQ3_SCR                      src/29r-rooms-r3.js:21
 HQ3_X                        src/29r-rooms-r3.js:19
 HQ_ORDER                     src/27f-hq-room.js:7
+HST                          src/29rf-home-still.js:11
 HS_LT                        src/17c2-hull-gpu.js:147
 HS_SIDE                      src/17c2-hull-gpu.js:149
 HUD_BAND                     src/27z-telemetry.js:21
@@ -3945,7 +3940,6 @@ drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29rb-home-r3.js:453-458
 drawHomeOut                  src/21f-home-out.js:75-265
-drawHomeRoom                 src/27e-ui-home.js:49-77
 drawHotel                    src/17l-hotel.js:147-174
 drawHull                     src/03e-hull-draw.js:117-196
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -5187,13 +5181,10 @@ homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:153
 homeCool                     src/16c-rescue.js:55
-homeCrewFigure               src/27e-ui-home.js:696-709
 homeDock                     src/21f-home-out.js:272-299
 homeDoorX                    src/21f-home-out.js:327-331
-homeFigure                   src/27e-ui-home.js:629-638
 homeHas                      src/12j-home.js:24-28
 homeHereP                    src/21f-home-out.js:26-32
-homeHitAt                    src/27e-ui-home.js:37-43
 homeInit                     src/12j-home.js:20-23
 homeJumpCount                src/16c-rescue.js:54
 homeMateKind                 src/12j-home.js:93-98
@@ -5209,15 +5200,16 @@ homePlanet                   src/21f-home-out.js:18-24
 homeProgress                 src/12j-home.js:139-147
 homeRebuild                  src/12j-home.js:227-241
 homeRevive                   src/12j-home.js:154-174
-homeRoomBody                 src/27e-ui-home.js:78-623
-homeRoomW                    src/27e-ui-home.js:21-26
-homeSceneClick               src/27e-ui-home.js:644-692
-homeShade                    src/27e-ui-home.js:712-715
 homeShow                     src/12j-home.js:196-203
 homeShowBonus                src/12j-home.js:217-222
 homeSigns                    src/21f-home-out.js:348-381
 homeSmoke                    src/21f-home-out.js:269-271
 homeSpotX                    src/21f-home-out.js:34-54
+homeStill                    src/29rf-home-still.js:13-22
+homeStillAsp                 src/29rf-home-still.js:23
+homeStillCam                 src/29rf-home-still.js:31-37
+homeStillFlush               src/29rf-home-still.js:24-28
+homeStillPaint               src/29rf-home-still.js:38-64
 homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
 homeWash                     src/21f-home-out.js:300-325
@@ -5270,20 +5262,20 @@ housePlan                    src/12tb-settle-draw.js:61-70
 houseRGB                     src/17d-house-shapes.js:16
 houseWallMark                src/17d-house-shapes.js:72-94
 hq3Chair                     src/29r-rooms-r3.js:27
-hq3Layout                    src/29r-rooms-r3.js:29-38
-hq3Mesh                      src/29r-rooms-r3.js:40-102
-hq3Scene                     src/29r-rooms-r3.js:105-142
+hq3Duty                      src/29r-rooms-r3.js:42
+hq3Layout                    src/29r-rooms-r3.js:29-41
+hq3Mesh                      src/29r-rooms-r3.js:46-125
+hq3Scene                     src/29r-rooms-r3.js:128-168
 hq3Stand                     src/29r-rooms-r3.js:28
-hq3Tags                      src/29r-rooms-r3.js:227
+hq3Tags                      src/29r-rooms-r3.js:253
 hqAiOffer                    src/27c-ui-hq.js:440-460
 hqBtnTick                    src/27c-ui-hq.js:271-277
-hqFigure                     src/27f-hq-room.js:13-119
 hqJobCard                    src/27c-ui-hq.js:500-538
 hqMgrAt                      src/27f-hq-room.js:8
 hqRelicSlot                  src/27c-ui-hq.js:466-496
 hqRender                     src/27c-ui-hq.js:278-435
 hqRentOffer                  src/12f1-mgr-rent.js:59-77
-hqScene                      src/29r-rooms-r3.js:270
+hqScene                      src/29r-rooms-r3.js:296
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
@@ -7356,7 +7348,7 @@ relicUnequip                 src/12h-relic.js:87
 renderAlbum                  src/25g-postcard.js:680-704
 renderBarge                  src/12l-barge.js:712-803
 renderBaseLink               src/21a2-base-link.js:137-163
-renderBasesTab               src/26a-ui-station-home.js:4-333
+renderBasesTab               src/26a-ui-station-home.js:4-327
 renderBooks                  src/12ub-books.js:157-186
 renderCantina                src/27c-ui-hq.js:68-123
 renderCardBack               src/25i-post-back.js:88-178
@@ -7563,24 +7555,24 @@ roleSteer                    src/13c-roles.js:8
 roleThrust                   src/13c-roles.js:9
 rollCrewEvent                src/12b-crew-events.js:70-96
 rollWorld                    src/02a-worldmix.js:67-76
-room3Breath                  src/29r-rooms-r3.js:176
-room3Cams                    src/29r-rooms-r3.js:162
-room3Canvas                  src/29r-rooms-r3.js:145-153
-room3Close                   src/29r-rooms-r3.js:188-194
-room3Cost                    src/29r-rooms-r3.js:258
-room3Frame                   src/29r-rooms-r3.js:203-222
-room3GlideAt                 src/29r-rooms-r3.js:163-167
-room3Go                      src/29r-rooms-r3.js:170-174
-room3Loop                    src/29r-rooms-r3.js:195-202
-room3Moving                  src/29r-rooms-r3.js:168
-room3Night                   src/29r-rooms-r3.js:177
-room3Ok                      src/29r-rooms-r3.js:178
-room3Open                    src/29r-rooms-r3.js:179-186
-room3Over                    src/29r-rooms-r3.js:252-255
-room3PickHq                  src/29r-rooms-r3.js:261-267
-room3Place                   src/29r-rooms-r3.js:187
-room3Size                    src/29r-rooms-r3.js:154-161
-room3TagsDraw                src/29r-rooms-r3.js:236-250
+room3Breath                  src/29r-rooms-r3.js:202
+room3Cams                    src/29r-rooms-r3.js:188
+room3Canvas                  src/29r-rooms-r3.js:171-179
+room3Close                   src/29r-rooms-r3.js:214-220
+room3Cost                    src/29r-rooms-r3.js:284
+room3Frame                   src/29r-rooms-r3.js:229-248
+room3GlideAt                 src/29r-rooms-r3.js:189-193
+room3Go                      src/29r-rooms-r3.js:196-200
+room3Loop                    src/29r-rooms-r3.js:221-228
+room3Moving                  src/29r-rooms-r3.js:194
+room3Night                   src/29r-rooms-r3.js:203
+room3Ok                      src/29r-rooms-r3.js:204
+room3Open                    src/29r-rooms-r3.js:205-212
+room3Over                    src/29r-rooms-r3.js:278-281
+room3PickHq                  src/29r-rooms-r3.js:287-293
+room3Place                   src/29r-rooms-r3.js:213
+room3Size                    src/29r-rooms-r3.js:180-187
+room3TagsDraw                src/29r-rooms-r3.js:262-276
 roomToneTick                 src/09a-roomtone.js:79-99
 routeEarn                    src/12r-route.js:196-204
 routeFork                    src/12r-route.js:64-67
@@ -8375,7 +8367,7 @@ vegaAmbientTick              src/11w-vega.js:292-305
 vegaAtHome                   src/11w-vega.js:23
 vegaBeastShout               src/11w-vega.js:219-223
 vegaBoard                    src/11w-vega.js:145-157
-vegaBroken                   src/11w-vega.js:316
+vegaBroken                   src/11w-vega.js:306
 vegaCantinaBlock             src/11w-vega.js:283-289
 vegaDayTick                  src/11w-vega.js:66-119
 vegaDeviceBuy                src/11w-vega.js:32-39
@@ -8385,7 +8377,6 @@ vegaFleaBlock                src/11w-vega.js:255-267
 vegaHas                      src/11w-vega.js:21
 vegaHomeArrive               src/11w-vega.js:237-244
 vegaHomeBlock                src/11w-vega.js:269-281
-vegaHomeFigure               src/11w-vega.js:307-315
 vegaHullName                 src/11w-vega.js:24
 vegaJump                     src/11w-vega.js:212-216
 vegaLanded                   src/11w-vega.js:217
@@ -10167,7 +10158,7 @@ zoomTo                       src/15-input.js:358
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):355
   · настройки:741
 
-## src/26a-ui-station-home.js · 22 KB
+## src/26a-ui-station-home.js · 21 KB
   · станция: вкладка «дом и базы»:1
 
 ## src/26b-ui-station-work.js · 29 KB
@@ -10211,11 +10202,8 @@ zoomTo                       src/15-input.js:358
 ## src/27da-kino.js · 10 KB
   · кинопередвижка:1
 
-## src/27e-ui-home.js · 46 KB
-  · дом: помещение, а не список:1
-
-## src/27f-hq-room.js · 8 KB
-  · штаб: порядок доменов и фигура человека:1
+## src/27f-hq-room.js · 1 KB
+  · штаб: порядок доменов:1
 
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
@@ -10374,7 +10362,7 @@ zoomTo                       src/15-input.js:358
 ## src/29h-spa.js · 8 KB
   · санаторий: три дня, и ничего не происходит:1
 
-## src/29r-rooms-r3.js · 23 KB
+## src/29r-rooms-r3.js · 27 KB
   · комнаты игрока на движке (M850, docs/DESIGN-rooms.md):1
 
 ## src/29rb-home-r3.js · 38 KB
@@ -10391,6 +10379,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/29re-wander-r3.js · 27 KB
   · «Сорока» на движке (M851, docs/DESIGN-rooms.md §4):1
+
+## src/29rf-home-still.js · 5 KB
+  · дом в «ВЛАДЕНИИ»: снимок движка (M850b):1
 
 ## src/29rz-snap-over.js · 1 KB
   · дом на движке — в снимок кадра (Контроль, 15.10):1

@@ -84,8 +84,9 @@ spa, a jacket at home, the suit's underlayer in HQ); the live face reads the roo
 | **«Сорока»** (M851) | `wanderDock` | keep the corridor of cases and the slit window; the keeper gets the generator's body and a live face (a fixed gene, the kit `keep`), standing behind the cases | keep the room's light; the keeper's face takes a small key | the case under the cursor; the keeper when he speaks | the card's leader goes to **his head**; the road screen's (`27k`) ship becomes the 3D hull (`hullStudio`) and its sky soft |
 
 The old room painters (`drawHqRoom`, the 2D `drawHomeIn`, `hinFigure`, `drawWinter`, `winFigure`,
-`drawSpa`, `spaFolk`) are deleted (22.10). `hqFigure` stays in `27f` for the panels that still
-call it (`11w-vega`, `27e-ui-home`); `drawHomeRoom` (`27e`) is another screen. «Сорока»'s 2D painter
+`drawSpa`, `spaFolk`) are deleted (22.10). The station panel's 2D cut of the home (`27e-ui-home`,
+`drawHomeRoom` with `homeFigure`/`homeCrewFigure`) is deleted with `hqFigure` and `vegaHomeFigure`: the
+panel shows an engine still of the walkable home (`29rf`, M850b). «Сорока»'s 2D painter
 (`24c-mode-wanderer-draw`, with `wanKeeper`) is deleted too: the room is `29re-wander-r3` on the engine. `mgrFace(` loses its last caller (M802's gate closes).
 
 ## 5. What stays, what goes
@@ -111,6 +112,10 @@ call it (`11w-vega`, `27e-ui-home`); `drawHomeRoom` (`27e`) is another screen. �
   `lie`, the sleep glide. Gate: day 17 at full and low power (the balance seen, not read).
 - **M850d Spa** — the veranda, the sun by slot, `recline`, the board on its post. Gate: the
   three slots of one day.
+- **M850b The home in «ВЛАДЕНИЕ»** — the station panel shows the walkable home as an engine still
+  (`29rf homeStill`: the ground floor in one wide shot, the owner in the middle room, the folk in
+  their places; the canvas grows with the house). The progress line is text under it; the garage
+  wash, once only a tap on the picture, is a button. Without a GPU there is no canvas.
 - **M851 «Сорока» and the road** — the room is on the engine (`29re`: angled cases, the keeper
   behind the counter, the slit window); the road draws the engine hull and its lights as GPU shapes
   (`27l`); the keeper's lines hang at his head (anchor «keeper», `08bj`). Gate: the room and the road at 1920 and 390.
