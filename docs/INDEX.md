@@ -37,7 +37,7 @@ $sn                          src/27z-telemetry.js:13
 $sos                         src/16c-rescue.js:547
 $st                          src/26-ui-station.js:2
 $un                          src/27z-telemetry.js:72
-$vShip                       src/27z-telemetry.js:225
+$vShip                       src/27z-telemetry.js:230
 $vc                          src/27z-telemetry.js:70
 $vf                          src/27z-telemetry.js:69
 $vitals                      src/27z-telemetry.js:65
@@ -5495,8 +5495,8 @@ hqScene                      src/29r-rooms-r3.js:270
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:226-615
-hudFloorMeasure              src/27z-telemetry.js:175-223
+hud                          src/27z-telemetry.js:231-620
+hudFloorMeasure              src/27z-telemetry.js:180-228
 hudMsgPlace                  src/27z-telemetry.js:43-64
 hudNumDirty                  src/08-state.js:101
 hudRect                      src/08-state.js:127-133
@@ -6479,7 +6479,7 @@ p3tZero                      src/17c2d-parts-thumb.js:71-76
 packPart                     src/05-parts.js:465-472
 padCase                      src/27y-hud-words.js:31-40
 padNames                     src/27y-hud-words.js:10-23
-padWord                      src/27z-telemetry.js:155-159
+padWord                      src/27z-telemetry.js:160-164
 padsAuto                     src/15-input.js:69
 padsFadeIn                   src/15-input.js:77
 padsFadeOut                  src/15-input.js:76
@@ -8000,8 +8000,8 @@ seedWorlds                   tests/91qm-seeds.js:14-26
 sellCargo                    src/12-economy.js:181-209
 sellDroneYield               src/12-economy.js:210-218
 sellQuote                    src/12ab-hold.js:134-152
-setBig                       src/27z-telemetry.js:145-151
-setPair                      src/27z-telemetry.js:160-165
+setBig                       src/27z-telemetry.js:145-156
+setPair                      src/27z-telemetry.js:165-170
 setPct                       src/27z-telemetry.js:135-141
 setSt                        src/27z-telemetry.js:127
 setTx                        src/27z-telemetry.js:117-126
@@ -10562,7 +10562,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/27y-hud-words.js · 3 KB
 
-## src/27z-telemetry.js · 51 KB
+## src/27z-telemetry.js · 53 KB
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 70 KB
