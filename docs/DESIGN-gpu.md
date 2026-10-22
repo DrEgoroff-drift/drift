@@ -1339,7 +1339,7 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   the text changes, moved by `transform`, dropped from the DOM after 600 unused frames, laid over the snapshot.
   They no longer pass through the tone curve, as the HUD since 1a: an alpha-.6 label reads as authored in 2D, a
   touch dimmer than the toned one (station label 155 → 89 at its brightest pixel). The shuttle's body is a
-  sprite baked once per maker colour (`shuttleSprite`, 40×24) and turned by `gpuImage`: the pair at ×1.5 max|Δ|
+  sprite baked once per maker colour (`shuttleSprite`, 40×24; removed in M826, 0.499.19 — the hull is `bodyShuttle`) and turned by `gpuImage`: the pair at ×1.5 max|Δ|
   28 on its hairline. `gpuCanvasTex` became a true LRU (a hit moves to the back), so eight canvases in use no
   longer evict each other. Flight `#c` is now the hull (bake + bank underside + nav lights) and its flame only.
   1c fixes (Контроль): the dimness was the blur. A label canvas sat at a fractional pixel, and its CSS size was not
@@ -1460,7 +1460,7 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   light letter with a dark rim): on for fleet ships, finds and lane buoys (things); off for glows, the post's
   sign, the belly and every bake to come (hotel, billboard, neon), which take plain trilinear at `GPU_MIP_LOD`
   .785. The buoys are windows 1 and 3 of the fleet crop: without the mask −16 %, with it the numbers above.
-  **Station master (17c3).** `stationMaster` bakes `drawStationBody` at `sb` px per station unit into a
+  **Station master (17c3; removed in M826, 0.499.19 — `stLive` and the file are gone).** `stationMaster` bakes `drawStationBody` at `sb` px per station unit into a
   160-unit square (cap 4 masters, `gpuMipDrop` on evict) and `gpuStationDraw` lays it through `gpuLitSprite`
   at the hull LOD rule. Live pieces call `stLive(fn)`: while baking it records `fn` with the matrix in station
   units and skips it; in the frame `fn` runs with `ST_EM` set and pushes shapes — `stLamp`/`stLampRect` are
@@ -2305,7 +2305,7 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   recording JS) will cut both. Pictures vs the accepted h3: max|Δ| 5 at 760, 15 on the phone, edge energy
   7.36→7.38; far zoom equal but for a DOM pulse. Gate2d gains the hotel scene; GC_GLYPHS `raster`/`measure`
   are named holes (the text source of v2); mutants `hotel-bake-2d`, `hotel-frame-2d` die.
-- **Station (17c3) off 2D.** The body master is recorded into a `GcCtx` (160·sb square, ss 2 while
+- **Station (17c3) off 2D** (removed in M826, 0.499.19). The body master is recorded into a `GcCtx` (160·sb square, ss 2 while
   ≤512², else 1) with `ST_REC.split` cutting the op list at layer boundaries (trade: under and over the
   ring); each slice is replayed into its own bake, and a >1-layer master gets a union bake `U` (drawImage
   of the layers at ss 1) for the lit sprite's normal pass. The spinning parts (`stSpinCv`) are bakes
