@@ -142,6 +142,10 @@ function hangPlace(P,k,C){
     const D=HANG_DIR[di],pref=P.o.up?(di===2?-12:di===1||di===3?-4:D[2]):D[2];
     for(let d=r+C.g;d<C.maxD;d+=C.step){
       const R=hangRectAt(P,D[0],D[1],d,S.w,S.h);
+      /* запасной бок (o.spare): сбоку от вещи у пола или у шапки табличка съезжает вдоль неё в кадр — вещь
+         остаётся против таблички, не ниже и не выше её */
+      if(P.o.spare&&Math.abs(D[1])<.3){const o=R.y0<C.top?C.top-R.y0:R.y1>C.bot?C.bot-R.y1:0;
+        if(o&&P.y>=R.y0+o+6*k&&P.y<=R.y1+o-6*k){R.y0+=o;R.y1+=o;}}
       if(R.x0<8||R.x1>W-8||R.y0<C.top||R.y1>C.bot)continue;
       if(C.xMax&&!P.o.urg&&R.x1>C.xMax)continue;   /* тревога: спокойное — в левой трети */
       const nx=clamp(P.x,R.x0,R.x1),ny=clamp(P.y,R.y0,R.y1),L=Math.hypot(nx-P.x,ny-P.y);
@@ -173,8 +177,16 @@ function hangWrap(P,k,mw){
     const f=hangFont(out.length?1:0,P),fits=t=>hangLW(f,P,t)*k+20*k<=mw;
     if(i===P.o.verb)verb=out.length;
     if(fits(P.lines[i])){out.push(P.lines[i]);continue;}
-    const w=P.lines[i].split(" ");let cur="";
-    for(const x of w){const t=cur?cur+" "+x:x;if(fits(t)||!cur)cur=t;else{out.push(cur);cur=x;cut=true;}}
+    /* рвётся сперва по « · » — между частями смысла, и только часть шире строки — по словам: «ПРЫЖОК · 38
+       топлива» переносится «ПРЫЖОК» / «38 топлива», а не «ПРЫЖОК · 38» / «топлива» (карта на 390, M822c) */
+    let cur="";
+    for(const sg of P.lines[i].split(" · ")){
+      const t=cur?cur+" · "+sg:sg;
+      if(fits(t)){cur=t;continue;}
+      if(cur){out.push(cur);cur="";cut=true;}
+      if(fits(sg)){cur=sg;continue;}
+      for(const x of sg.split(" ")){const u=cur?cur+" "+x:x;if(fits(u)||!cur)cur=u;else{out.push(cur);cur=x;cut=true;}}
+    }
     if(cur)out.push(cur);
   }
   if(!cut)return null;
@@ -219,6 +231,12 @@ function hangLayout(Q,k,mb){
       if(Z){const l0=P.lines,v0=P.o.verb;P.lines=Z.lines;P.o=Object.assign({},P.o,{verb:Z.verb});
         best=hangPlace(P,k,C);if(!best){P.lines=l0;P.o.verb=v0;}}
     }
+    /* запасной бок (o.spare — табличка выбора на карте, M822c): у пола телефона справа борт, внизу пол, сверху и
+       сбоку середина кадра (M803, туда нельзя) — табличка не вставала вовсе, висела подсказка внизу. Тогда
+       строки уже: перенос до 85, 72, 60 % ширины, пока табличка не встанет в зазор между кромкой и серединой */
+    if(!best&&P.o.spare){const l0=P.lines,v0=P.o.verb,w0=hangSize(P,k).w;
+      for(const f of [.85,.72,.6]){const Z=hangWrap(P,k,Math.max(80*k,w0*f));if(!Z)continue;
+        P.lines=Z.lines;P.o=Object.assign({},P.o,{verb:Z.verb});best=hangPlace(P,k,C);if(best)break;P.lines=l0;P.o.verb=v0;}}
     if(best&&P.o.alt&&hangNamed(P.o.name,best.R)){
       const l0=P.lines,v0=P.o.verb;P.lines=P.o.alt;P.o=Object.assign({},P.o,{verb:P.o.altVerb});
       const b2=hangPlace(P,k,C);if(b2)best=b2;else{P.lines=l0;P.o.verb=v0;}
