@@ -115,7 +115,7 @@ call it (`11w-vega`, `27e-ui-home`); `drawHomeRoom` (`27e`) is another screen. �
   three slots of one day.
 - **M851 «Сорока» and the road** — the room is on the engine (`29re`: angled cases, the keeper
   behind the counter, the slit window); the road draws the engine hull and its lights as GPU shapes
-  (`27l`); left: the leader to his head. Gate: the room and the road at 1920 and 390.
+  (`27l`); the keeper's lines hang at his head (anchor «keeper», `08bj`). Gate: the room and the road at 1920 and 390.
 
 ## 7. Tests
 
