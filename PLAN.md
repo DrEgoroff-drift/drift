@@ -312,6 +312,14 @@ Check each against the code before building — some may already hold.
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
   names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
   functions, on touch only; the button family merge; `-Times` for the Node tier.
+- [ ] **`drawHull` (03e) stays as the flight's fallback path (Control, 22.10):** `hullGpuBake` (17c2) bakes it, and
+  `gpuLitSprite` draws that bake whenever the volume hull is off or not built yet (`H3D.on`, the one-mesh-a-frame
+  queue). It goes only when 17c2a has no fallback; until then every 2D census counts it as the bake, not a painter.
+- [ ] **The volume hull reads double up close (22.10, the road on a phone):** 17c2a lays the top-view bake on
+  the mesh from above, so the bake's inserts (the dish, the plate, the bar) and its outline land on whatever
+  surface is under them; where that is a wing, not the body, they show as a second outline, and the hull
+  reads see-through. Not the road's pass: the layer cap (1024) and a full-size bake change nothing, the
+  sprite path is clean. Fix in 17c2a: inserts outside the body silhouette become parts or are masked to it.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
   the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
