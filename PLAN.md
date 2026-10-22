@@ -92,8 +92,7 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     `hullStudio`), the ОПИСЬ pictures, the suit doll and the album; to fix on the shipyard: the price on a buy button you
     cannot afford is dark on dark — it must still read, contrast ≥ 3 (Контроль 26.09); next: the slipway sheet (26e2, needs a hull mask in 08bi),
     the home garage hull, faces); a bake at first sight
-    costs a hitch on the phone (P1, §1), so rank by that too; the raid
-    comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
+    costs a hitch on the phone (P1, §1), so rank by that too;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
   - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull. Moved off
     `drawHull` (0.476.0): the shipyard 26e2, the left trace 12as, `look`/h (28y `makerRead`) and the home room 27e.
@@ -105,9 +104,9 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
     (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),
     home outside (779 / 5), the base (104 / 2), the cave (58 / 2); then the road's own layer (hull, trail, glows,
-    jets, coins), the scoop, the raid. Labels drawn into the world layer (the surface HUD, the scoop, the base, the
+    jets, coins), the scoop. Labels drawn into the world layer (the surface HUD, the scoop, the base, the
     home) go onto `#ovl` with the 08bi primitives. Already 0 and 0: cinema, HQ, winter, spa, system, dock, cabin,
-    counter, belt, «Сорока». Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
+    counter, belt, «Сорока», the raid (22.10, `91zzzw9m`). Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
     the first census read 0 on `#c` at 2–5 uploads a frame), is checked against `#c` uploads, and turns red on an
     injected call. The base's GPU bake (the fleet's zone, a850203f; main draws the base in 2D) goes in tiles: at
     2560×1440 its 4078×2092 layer with 4× MSAA and a stencil is 198 MB for a moment, 277 MB with the pool (131 MB on

@@ -458,6 +458,9 @@ function drawRaid(){
   /* тела-спрайты и тени на полу копятся в метках ниже; проход — после них */
   const FS=[],OC=[[S.x,S.z,11]];
   let AST=null;   /* ходок на видеокарте — после стен (G15): см. ниже */
+  /* метки, полоски, выстрелы и красный удар — фигурами набора поверх кадра (проход gpuNext);
+     #c в рейде не трогается вовсе: копия полного 2D-кадра на видеокарту ушла (22.10) */
+  const OV=[],OVA=[];
   /* ── метка не проходит сквозь стену (хвост M180) ──
      Маячки, трафареты и полоски здоровья рисуются поверх всей геометрии, без
      теста глубины: на кадре пиратской базы два маячка горели по тёмной стене
@@ -523,27 +526,17 @@ function drawRaid(){
       const on=Math.sin(G.t*.14)>0;
       /* размеры маячка — в единицах мира, чтобы он оставался лампочкой на
          крышке, а не рос в фонарь при подходе */
-      ctx.fillStyle=on?"#7fe6d8":"rgba(127,230,216,.35)";
-      ctx.beginPath();ctx.arc(m.p.x,m.p.y,Math.max(1.5,2.6*ppu),0,TAU);ctx.fill();
-      if(on){
-        const gr=Math.max(6,16*ppu);
-        const gg=ctx.createRadialGradient(m.p.x,m.p.y,0,m.p.x,m.p.y,gr);
-        gg.addColorStop(0,"rgba(127,230,216,.30)");gg.addColorStop(1,"rgba(127,230,216,0)");
-        ctx.fillStyle=gg;ctx.beginPath();ctx.arc(m.p.x,m.p.y,gr,0,TAU);ctx.fill();
-      }
+      OV.push([1,m.p.x,m.p.y,Math.max(1.5,2.6*ppu),0,0,.8,127,230,216,on?1:.35]);
+      if(on){const gr=Math.max(6,16*ppu);
+        OVA.push([1,m.p.x,m.p.y,gr*.15,0,0,gr*.85,127,230,216,.3]);}
     }else if(m.kind==="pick"){
       /* сам кофр стоит в мире; здесь только трафарет на крышке — маленький,
          без дыхания и без заливки: тара с маркировкой, а не парящая иконка */
-      const P=m.o,C=PICKUPS[P.kind];
-      ctx.save();ctx.translate(m.p.x,m.p.y);
-      ctx.scale(Math.max(.5,ppu*1.1),Math.max(.5,ppu*1.1));
-      ctx.strokeStyle=C.col;ctx.lineWidth=2;
-      if(P.kind==="medkit"){ctx.beginPath();ctx.moveTo(-4,0);ctx.lineTo(4,0);
-        ctx.moveTo(0,-4);ctx.lineTo(0,4);ctx.stroke();}
-      else if(P.kind==="armor"){ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(5,-1);
-        ctx.lineTo(0,5);ctx.lineTo(-5,-1);ctx.closePath();ctx.stroke();}
-      else{ctx.beginPath();ctx.rect(-3,-4,6,8);ctx.stroke();}
-      ctx.restore();
+      const P=m.o,C=PICKUPS[P.kind],k=Math.max(.5,ppu*1.1),c=hex2rgb(C.col),x=m.p.x,y=m.p.y;
+      const seg=(a,b,d,e)=>OV.push([2,x+a*k,y+b*k,x+d*k,y+e*k,k,.6,c[0],c[1],c[2],1]);
+      if(P.kind==="medkit"){seg(-4,0,4,0);seg(0,-4,0,4);}
+      else if(P.kind==="armor"){seg(0,-5,5,-1);seg(5,-1,0,5);seg(0,5,-5,-1);seg(-5,-1,0,-5);}
+      else{seg(-3,-4,3,-4);seg(3,-4,3,4);seg(3,4,-3,4);seg(-3,4,-3,-4);}
     }else if(m.kind==="foe"){
       const f=m.o,K=FOE_KINDS[f.kind]||FOE_KINDS.grunt;
       /* контактная тень на полу: без неё тело висит в воздухе на своей
@@ -568,36 +561,21 @@ function drawRaid(){
       /* полоска здоровья стоит над головой: середина тела плюс полроста */
       const w=Math.max(14,(f.baron?34:22)*ppu),hp=clamp(f.hp/f.hpMax,0,1);
       const by=m.p.y-Math.max(12,32*ppu),bh=f.baron?6:4;
-      ctx.fillStyle="rgba(0,0,0,.6)";ctx.fillRect(m.p.x-w/2,by,w,bh);
-      ctx.fillStyle=f.baron?"rgba(255,140,90,.98)":
-                   (f.boss?"rgba(255,90,70,.95)":"rgba(242,178,92,.9)");
-      ctx.fillRect(m.p.x-w/2,by,w*hp,bh);
-      if(f.baron){
-        ctx.fillStyle="rgba(255,180,120,.95)";ctx.font="9px ui-monospace,monospace";
-        ctx.textAlign="center";
-        ctx.fillText("БАРОН",m.p.x,by-6);
-      }
+      const bc=f.baron?[255,140,90,.98]:(f.boss?[255,90,70,.95]:[242,178,92,.9]),x0=m.p.x-w/2;
+      OV.push([0,x0,by,x0+w,by+bh,0,0,0,0,0,.6],[0,x0,by,x0+w*hp,by+bh,0,0,bc[0],bc[1],bc[2],bc[3]]);
+      if(f.baron){ctx.textBaseline="alphabetic";
+        domLabel("raidbaron",m.p.x,by-6,"БАРОН","9px ui-monospace,monospace","rgba(255,180,120,.95)","center");}
     }else{
       /* и у самого скафандра тень тоже: он ходит по тому же полу */
       const pm=proj(S.x,raidFloorAt(R,S.x,S.z)+1,S.z);
       const ao={phase:S.walkPhase,amp:keys.thrust||keys.brake?1:0,walk:false,air:false};
-      const gpu=GPU.on&&GPU.dev&&GPU.enc;
-      if(gpu){
-        /* с видеокартой и тень, и фигура ложатся после стен отсека: на #c они всегда
-           стояли поверх прохода, двойник в проходе до стен ушёл бы под них */
-        const sh=pm&&pm.y>m.p.y+2?lifeHere(pm.x,pm.y):null;
-        ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
-        AST={o:ao,h:lifeHere(0,0),sh,rx:Math.max(3,9.5*ppu),ry:Math.max(1.2,2.9*ppu)};ctx.restore();
-      }else if(pm&&pm.y>m.p.y+2){
-        ctx.fillStyle="rgba(0,0,0,.45)";
-        ctx.beginPath();ctx.ellipse(pm.x,pm.y,Math.max(3,9.5*ppu),Math.max(1.2,2.9*ppu),0,0,TAU);ctx.fill();
-      }
-      /* Метка стоит на середине роста, а спрайт нарисован вокруг своей
-         середины — доводка на +10*s больше не нужна и при честном масштабе
-         превратилась бы в полроста вниз. */
-      if(!gpu){ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
-        drawAstronaut(ao);
-        ctx.restore();}
+      /* тень и фигура ложатся после стен отсека (проход gpuNext): двойник в проходе
+         до стен ушёл бы под них. Метка стоит на середине роста, а фигура нарисована
+         вокруг своей середины. ctx здесь — только счётчик преобразования для lifeHere:
+         save/translate/scale #c не пачкают */
+      const sh=pm&&pm.y>m.p.y+2?lifeHere(pm.x,pm.y):null;
+      ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
+      AST={o:ao,h:lifeHere(0,0),sh,rx:Math.max(3,9.5*ppu),ry:Math.max(1.2,2.9*ppu)};ctx.restore();
     }
   }
   raidGpuDraw(polys,{cam,fwd,right,up,F,CY,px:S.x,py:S.y,pz:S.z,a:S.a},LP,FS,OC);
@@ -606,7 +584,7 @@ function drawRaid(){
       if(AST.sh)gpuImage(pass,poiShadowTex(),[{x:AST.sh.x,y:AST.sh.y,w:AST.rx*2.6*k,h:AST.ry*2.6*k,a:.7}]);
       /* риг карточкой (21phc, M801): спиной к камере, объектив наклонён на её угол к середине роста */
       if(!rigCardRaid(pass,h,AST.o,Math.atan2(78-RBODY*.5,back)))lifeAstroGpu(pass,h.x,h.y,Object.assign({},AST.o,{s:h.s}));
-    }else{ctx.save();ctx.setTransform(DPR*h.s,0,0,DPR*h.s,DPR*h.x,DPR*h.y);drawAstronaut(AST.o);ctx.restore();}}
+    }}
   /* ── воздух отсека ──
      Пыль вокруг человека: частицы привязаны к сетке мира, чтобы не «ехали» с
      камерой; в конусе фонаря они вспыхивают, вне его — едва. Сам луч в воздухе
@@ -635,14 +613,12 @@ function drawRaid(){
     const sy2=raidFloorAt(R,sh.x,sh.z)+40;
     const p=proj(sh.x,sy2,sh.z),q=proj(sh.x-sh.vx*2,sy2,sh.z-sh.vz*2);
     if(!p||!q)continue;
-    ctx.strokeStyle=sh.mine?"rgba(127,230,216,.95)":"rgba(255,120,90,.95)";
-    ctx.lineWidth=Math.max(1,2200/p.z*.06);
-    ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(p.x,p.y);ctx.stroke();
+    const c=sh.mine?[127,230,216]:[255,120,90];
+    OV.push([2,q.x,q.y,p.x,p.y,Math.max(1,2200/p.z*.06)/2,.6,c[0],c[1],c[2],.95]);
   }
   /* свет шлема и тьма по краям — в проходе видеокарты (24aa1) */
-  if(S.hurt>0){
-    ctx.fillStyle="rgba(255,50,40,"+(S.hurt/10*.28).toFixed(2)+")";ctx.fillRect(0,0,W,H);
-  }
+  if(S.hurt>0)OV.push([0,0,0,W,H,0,0,255,50,40,S.hurt/10*.28]);
+  {const P=gpuNext();if(P){if(OV.length)gpuShapes(P,OV);if(OVA.length)gpuShapes(P,OVA,{blend:"add"});}}
   /* приборы: скафандр — он же здоровье */
   /* полоса скафандра и заряды ушли из угла канвы: скафандр — в строке
      состояния, заряды и броня — в строке места (hud(), M178). Пэды больше
