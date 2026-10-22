@@ -426,6 +426,70 @@ What it says:
   добычу со станции, не прилетая») is the game's own answer to this and the probe does not
   play it.
 
+**The logist — M913, measured 22.10** (`ECO_LOGIST=1`; `ECO_SHOPS=0` keeps the base and drops the
+workshops). The logist on the base is the game's own answer to fetching its ore: «ЗАБРАТЬ» on the
+station's home tab (26a) puts the base's store into the hold from any station, no flight (5 s at a
+human's pace, against 30 s at the base's system and a trip back once the bot has moved on). He
+takes the first of the base's two places, so the base drills with one driller instead of a
+driller and an engineer. T3 at a human's pace, the tier alone; net cr/h and against 12 700:
+
+| T3, human | 3 h | 6 h | minutes per hour (6 h): mining · pauses · paper · workshops · base |
+|---|---|---|---|
+| no estate | 9 732 (−23 %) | 2 660 (−79 %) | 37 · 11 · 9 · — · — |
+| workshops + base | 5 208 (−59 %) | 6 534 (−49 %) | 33 · 15 · 5 · 3 · 2 |
+| workshops + base + logist | 11 873 (−7 %) | 9 132 (−28 %) | 35 · 11 · 8 · 4 · — |
+| base only | 12 213 (−4 %) | 11 291 (−11 %) | 38 · 14 · 5 · — · 1 |
+| **base only + logist** | 15 684 (+23 %) | **13 943 (+10 %)** | 36 · 10 · 12 · — · — |
+
+(The rest of each hour is flight: 2–3 minutes. Six hours without an estate fall to 2 660: the home
+worlds are worked out, the wages are not.)
+
+Read it: **the logist is worth 2.6–3.5 k cr/h to a base, and he closes the T3 gap only without
+workshops** — base and logist sit at +10 % (6 h) to +23 % (3 h), inside or at the edge of ±15 %;
+with the workshops kept, −7 % to −28 %. The minutes say why: the logist gives the hull back its
+paper (12 minutes an hour against 5), the workshops take 3–4 minutes an hour of hauls for nothing
+(their owner is M914 below). The run-to-run spread is wide (the dispatcher's take moves by 2–3×
+between runs), so read the order of the rows, which holds at 3 h and at 6 h, more than any one
+number. Nothing changed in the game.
+
+**An eater for ferro and plate — M914, measured 22.10** (`ECO_EATER=1`; the survey prints on every
+estate run). Industrial goods have no market; they turn into credits only in the player's own
+workshop that eats them (`bldSellInd`, at the shadow price `indPrice`). Who eats what, and where
+one may stand within three jumps of home (121 stations; a jump here is ≈ 3 cells):
+
+| good | shadow price | eaters (12ac) | may stand: home · 1 jump · 2 · 3 | with a site rung | nearest |
+|---|---|---|---|---|---|
+| ferro | 117 | thermocshop, reactorshop, beamyard | 1/1 · 14/15 · 36/36 · 69/69 | 0 of 121 | home, 0 fuel |
+| plate | 198 | slipway | 1/1 · 14/15 · 36/36 · 69/69 | 0 of 121 | home, 0 fuel |
+| resin / protein / spirit | 123 / 123 / 81 | fabricshop, filmshop / cannedshop | the same | 0 of 121 | home |
+
+An eater may stand anywhere the good is not already made (`bldRuleWhy` counts the player's own
+maker too, so not at 1,0 where the ferro and plate shops are) — home included, where the hull docks
+every lap. Placed there by the probe (no price, no ladder, like the other workshops), T3 at a
+human's pace with the logist:
+
+| T3, human, base + workshops + logist | 3 h net | 6 h net | industrial sold, cr/h | left without an eater (6 h) | hauls (6 h) |
+|---|---|---|---|---|---|
+| no eater | 11 873 (−7 %) | 9 132 (−28 %) | 0 | ferro 31, plate 17: 6 993 cr | 13 |
+| eater at home | 13 541 (+7 %) | 7 750 (−39 %) | 686 / 1 054 | thermoc 21, hullsec 1: 6 082 cr | 16 |
+| (base + logist, no workshops) | 15 684 (+23 %) | 13 943 (+10 %) | — | — | — |
+
+Read it:
+
+- **Geography is not the problem; the chain and the ladder are.** An eater may stand at home, so
+  ferro and plate sell with no trip at all. But the eater makes a good of its own (thermoc,
+  hullsec) that has no eater either: six hours leave 6 000 cr of thermoc where there were 7 000 of
+  ferro. Every link needs the next one, and the last link (a hull section, a reactor block) has no
+  buyer in this probe.
+- **A haul to the makers does not pay.** The makers may not stand at home (home makes their ore),
+  so each feeding is a jump: 440–540 cr of fuel for a round trip of one jump, carrying ~8.5 units
+  of ore and earning ~395 cr of industrial goods (6 h: 16 hauls, 6 300 cr).
+- **No station within three jumps has a site rung for this player** (`bldSitesAt` = 0 at all 121):
+  the probe never climbs the access ladder, and none of its workshops could be built in the game.
+  A T3 player holds the ★11 rung at least at home; the probe does not model the ladder.
+- Owner: the workshop chain (§3.1 workshops, 12ac families C–D) — the next link's buyer, or a market
+  for the last link. Questions for the author; nothing changed.
+
 **Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
 
 - **T0 +57 % at the bot's pace, −13 % / +9 % at a human's.** Closed by the pace table above:
@@ -1025,6 +1089,8 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) **done 22.10 (`28p-doors`)** | chapter N+1's door is a deed; the sixth is met on the watch |
 | M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) **done 22.10 (`28q-fork`)** | every order has both sides; a found notch gives one access line |
 | M912 | economy after the dispatcher **measured 22.10, §4.1b**: the first hour counts play (`28v-playhour`); the probe plays the dispatcher and a fresh save | at a human's pace T0, T1 within ±20 %, T2 at its edge; T3 in band only with the estate at the bot's pace |
+| M913 | the logist in the probe **measured 22.10, §4.1b**: T3 at a human's pace, without and with the logist, minutes by phase | base + logist +10 % (6 h); with workshops −7…−28 %: the workshops are the remaining gap |
+| M914 | an eater for ferro/plate **measured 22.10, §4.1b**: where one may stand within 3 jumps, at what shadow price, whether the haul pays | an eater may stand at home; the haul to the makers does not pay (~395 cr for 440–540 fuel); the eater's own good has no eater; no site rung within 3 jumps |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),
