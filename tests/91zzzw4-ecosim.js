@@ -1,32 +1,17 @@
-/* ══════════════ проба · экономика (M903) ══════════════
-   Экономика измеряется, а не обсуждается. Стенд гоняет настоящий круг игрока
-   под Node — планета → посадка → бурение до полного трюма → взлёт → станция →
-   стыковка → продажа → заправка → ремонт → отстыковка — столько кругов,
-   сколько влезает в заданные часы игры, на четырёх ярусах владения из
-   DESIGN-game §4.1 (T0 «Стриж», T1 «Вьюк» + рука + дрон, T2 «Обод» + три руки +
-   два дрона + два управляющих, T3 «Мамонт» + пять рук + четыре дрона + четыре
-   управляющих; цеха и база ярусов T2–T3 здесь не строятся — это сказано в
-   строке таблицы). Печатает по ярусу: кругов, минут на круг, валовый доход,
-   расход, чистый за час игры, давление U/G, и те же числа против оракула §4.1
-   с отклонением в процентах.
+/* ══════════════ проба · экономика (M903, M912) ══════════════
+   Экономика измеряется, а не обсуждается: настоящий круг игрока под Node (планета → посадка →
+   бурение до полного трюма → взлёт → стыковка → продажа, заправка, ремонт), а между кругами —
+   дела диспетчера настоящими шагами (прыжок, стыковка, посадка, кантина, груз; бой — нет,
+   это 91zzzw-fightsim). Ярусы владения DESIGN-game §4.1, против оракула в процентах; T2–T3 —
+   с цехами и базой (91zzzw4-ecosim-est), «T0 свежий» — свежая запись с покупками и хронологией
+   первого часа. Кредиты ловятся на самом G.credits (аксессор на время набора) и пишутся в
+   книжку под именем текущей фазы. Печать и суд нормы — 91zzzw4-ecosim-rep.
 
-   Каждое движение кредитов ловится на самом G.credits (аксессор на время
-   набора): кто бы ни платил и ни получал — продажа, дроны, жалованье, заправка,
-   ремонт — попадает в книжку под именем текущей фазы. Так не нужно знать все
-   сорок мест earn() и все вычеты.
-
-   Запуск: node test-node.js --only="проба · экономика"
-     ECO_HOURS=3  часов игры на ярус (по умолчанию 1)
-     ECO_TIERS=T0|T2  какие ярусы (регулярное выражение по имени)
-     ECO_DISP=0   без дел диспетчера — один круг добычи, как мерилось 14.10 (§4.1a)
-
-   Дела диспетчера (M912). С 22.10 на каждой стыковке полоса К ВАМ держит четыре бумаги (28m) —
-   это второй кран денег, и бот, что только копает, его не видит. Теперь после продажи бот берёт
-   с полосы всё, что исполнимо настоящими шагами: прыжок, стыковка, посадка, кантина, груз
-   (купленный у стойки, где он есть, — у той же стойки привоз не берут: цена приёмки съедает
-   плату). «Отбить» пирата бот не берёт — бой здесь не меряется (это 91zzzw-fightsim).
-   Ярус «T0 свежий» — свежая запись целиком: налёт копит настоящий clrTick, бумаги и кассы нет,
-   пока не налётан час; печатается хронология первого часа (§10.7). */
+   node test-node.js --only="проба · экономика", окружение:
+     ECO_HOURS часов на ярус (1) · ECO_TIERS регулярка имён · ECO_DISP=0 без дел ·
+     ECO_HUMAN=1 темп человека · ECO_EST=0 без хозяйства · ECO_DRONE=dear дрон на дорогой руде ·
+     ECO_LOGIST=1 логист на базе · ECO_SHOPS=0 база без цехов · ECO_EATER=1 едок промтовара ·
+     ECO_BUY=0 свежий без покупок · ECO_FRESH_H часы свежего · ECO_TRACE подробности */
 suite("проба · экономика",{tier:"probe"},()=>{
   const ENV=(globalThis.process&&globalThis.process.env)||{};
   const HOURS=Math.max(.1,+ENV.ECO_HOURS||1);
@@ -140,29 +125,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     return r;
   }
   /* норма участка (M905): суд этой сводки на копии участка — как есть и без вас (ни нужд, ни нарядов) */
-  function normNow(){
-    const W=watchSt();watchTick();
-    const L0=G.log.slice(),rec0=JSON.stringify(G.record||null);
-    const judge=c=>{const r=watchJudge(c);return r||{norm:null,tot:0,mine:0,ord:0};};
-    const a=judge(JSON.parse(JSON.stringify(W)));
-    const z=JSON.parse(JSON.stringify(W));z.fill={};z.ord=0;
-    const b=judge(z);
-    G.log=L0;G.record=JSON.parse(rec0);
-    return {n:W.n,with:a.norm,without:b.norm,tot:a.tot,btot:b.tot,mine:a.mine,ord:a.ord,win:(W.w1|0)-(W.w0|0)+1};
-  }
-  /* за долгий прогон сводка сменяется: суд каждой — последним замером перед сменой, итог — по нуждам всех */
-  function normFold(acc,s){
-    if(!s||s.with==null)return acc;
-    if(acc.cur&&acc.cur.n!==s.n)acc.done.push(acc.cur);
-    acc.cur=s;return acc;
-  }
-  function normSum(acc){
-    const L=acc.done.concat(acc.cur?[acc.cur]:[]);
-    if(!L.length)return null;
-    let t=0,g=0,bt=0,bg=0,mine=0,ord=0,win=0;
-    for(const s of L){t+=s.tot;g+=s.with*s.tot/100;bt+=s.btot;bg+=s.without*s.btot/100;mine+=s.mine;ord+=s.ord;win+=s.win;}
-    return {with:t?Math.round(100*g/t):100,without:bt?Math.round(100*bg/bt):100,tot:t,mine,ord,win,sv:L.length};
-  }
+  const normNow=ecoNormNow,normFold=ecoNormFold,normSum=ecoNormSum;   /* в 91zzzw4-ecosim-rep.js */
   /* главный приказ каждого домена — тот, без которого он не работает (12c MGR_RULES) */
   const MGR_MAIN={cmd:["repair"],keep:["sell","build"],fact:["run"],sci:[]};
   const MGR_ORDER=["fact","cmd","keep","sci"];
@@ -499,161 +462,10 @@ suite("проба · экономика",{tier:"probe"},()=>{
       }
     }finally{PHASE=PH;}
   }
-  /* ── хозяйство T2–T3 (M912, Контроль 22.10): цеха и база, на которых стоит оракул §4.1 ──
-     Цеха — постройки семей B–D (12ac) на своей станции и соседней, по три на станцию, без лестницы
-     площадок (★11/15/20) и без цены: ярус ими уже владеет, как дронами. Кормятся сами — продажей
-     сырья на этой станции (bldFeed в sellCargo); пай (промтовар) бот забирает на стыковке и сдаёт
-     в цех, который его ест (bldSellInd), где бы такой ни нашёлся; рынок промтовар не берёт.
-     База — foundBase на планете домашней системы и N модулей (8 у T2, 20 у T3); без людей на ней
-     (руки яруса заняты рейсами). Руду с неё бот забирает на каждой домашней стыковке и продаёт —
-     без отдельного рейса к базе (в темпе человека — полминуты). Содержания у цехов и базы в коде нет
-     (§3.1: 12 кр/мин на цех и 1.4 кр/мин на человека не построены) — проба его и не пишет */
-  const EST={on:false,shops:[],base:null,ind:{},indSold:0,indLeft:0,baseUnits:0,baseWorth:0,shopFed:{}};
-  /* раскладка базы — как её строил бы игрок, который смотрит на выработку: сперва жилые под людей,
-     дальше по клетке за ход то, что больше всего поднимает бур с учётом энергии и тепла
-     (реактор +60, бур +30, радиатор −80; за ±10 бур встаёт — 21a1a); панели и радиаторы только
-     в верхнем ряду (surfaceOnly). Ничего не поднимает — склад */
-  const BASE_TRY=["drill","reactor","radiator","solar","refinery","storage"];
-  function baseScore(B){const P=basePower(B),n=baseShift(clockNow());
-    return (P.drillEff||0)*Math.min(1,P.eff||0)*baseHeatMul(B,n);}
-  function baseLay(B,total,hab){
-    let n=1;
-    const free=()=>B.cells.map((c,i)=>c?-1:i).filter(i=>i>=0);
-    const put=(i,k)=>{B.cells[i]={k,hp:1};n++;};
-    for(let h=0;h<hab&&n<total;h++){const f=free().reverse()[0];if(f==null)break;put(f,"habitat");}
-    while(n<total){
-      let best=null,bs=baseScore(B);
-      for(const i of free())for(const k of BASE_TRY){
-        if(BUILD[k].surfaceOnly&&i>=BASE_COLS)continue;
-        B.cells[i]={k,hp:1};const sc=baseScore(B);B.cells[i]=null;
-        if(sc>bs+1e-9){bs=sc;best=[i,k];}
-      }
-      if(!best){const f=free()[0];if(f==null)break;put(f,"storage");continue;}
-      put(best[0],best[1]);
-    }
-    /* донастройка: замены по одной клетке, пока бур растёт (жадный ход упирается в тепло) */
-    for(let pass=0;pass<6;pass++){let imp=false,bs=baseScore(B);
-      for(let i=0;i<B.cells.length;i++){const old=B.cells[i];if(!old||old.k==="habitat"||i===Math.floor(BASE_COLS/2))continue;
-        for(const k of BASE_TRY){if(k===old.k||(BUILD[k].surfaceOnly&&i>=BASE_COLS))continue;
-          B.cells[i]={k,hp:1};const sc=baseScore(B);
-          if(sc>bs+1e-9){bs=sc;imp=true;}else B.cells[i]=old;
-          if(B.cells[i]!==old)break;}}
-      if(!imp)break;}
-    return n;
-  }
-  function estSetup(E){
-    Object.assign(EST,{on:true,baseTrips:0,hauls:0,fed:0,dead:{},shops:[],base:null,ind:{},indSold:0,indLeft:0,baseUnits:0,baseWorth:0,shopFed:{}});
-    const home=G.sys,near=[home];
-    for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){if(!dx&&!dy)continue;
-      const s=getSystem(home.sx+dx,home.sy+dy);if(s&&s.station)near.push(s);}
-    near.sort((a,b)=>Math.hypot(a.sx-home.sx,a.sy-home.sy)-Math.hypot(b.sx-home.sx,b.sy-home.sy));
-    /* игрок ставит цех на то, что сам возит: руды планет своей системы; лучше — цех, всё сырьё которого есть */
-    const ORE={};for(const q of (home.planets||[]))for(const k of (q.res||[]))ORE[k]=1;
-    const fit=id=>{const e=Object.keys(BLD[id].eats);return e.filter(k=>ORE[k]).length/e.length;};
-    const ids=Object.keys(BLD).filter(id=>bldIsShop(BLD[id])&&fit(id)>0).sort((a,b)=>fit(b)-fit(a)||(BLD[a].fam<BLD[b].fam?-1:BLD[a].fam>BLD[b].fam?1:0));
-    for(const S of near){
-      if(EST.shops.length>=E.shops)break;
-      let here=0;
-      for(const id of ids){
-        if(EST.shops.length>=E.shops||here>=3)break;
-        const def=BLD[id];
-        if(bldRuleWhy(S,def))continue;
-        if(EST.shops.some(x=>x.id===id))continue;
-        const H=holdOf(S.key);H.bld=H.bld||{};
-        H.bld[id]={lvl:1,t0:clockNow(),ready:clockNow(),my:{},got:{}};
-        EST.shops.push({key:S.key,id,eats:Object.keys(def.eats).join("+"),makes:Object.keys(def.makes).join("+")});here++;
-      }
-    }
-    if(E.base>0){
-      const p=(home.planets||[]).find(q=>q.parentIdx==null&&q.type!=="gas"&&q.res&&q.res.length);
-      if(p){
-        const c0=G.credits,a0=G.cargo.alloy|0;G.credits+=2500;G.cargo.alloy=a0+10;
-        try{foundBase(p);}catch(e){note("база: "+(e&&e.message));}
-        G.credits=c0;G.cargo.alloy=a0;
-        const B=baseAt(home.sx,home.sy,p.idx);
-        if(B){const n=baseLay(B,E.base,Math.ceil((E.crew|0)/2));
-          /* люди на базе: без них и без запаса воздуха база за сутки — развалина (21b0, RUIN_AFTER) */
-          /* мест в экипаже не хватит на рейсы и базу: игрок третьего яруса купил лицензию на флот (+3) */
-          G.tech.add("license");G.techLvl.license=2;
-          let hired=0;
-          for(const c of stationMercs(G.sys)){if(hired>=(E.crew|0))break;
-            const c0=G.credits;G.credits+=1e6;let ok=false;
-            try{ok=hireMerc(c);}finally{G.credits=c0;}
-            if(!ok)break;
-            if(assignToBase(G.crew[G.crew.length-1],B,hired%2?"engineer":"driller"))hired++;}
-          const P=basePower(B);
-          EST.base={B,sys:home.key,name:p.name,mods:n,crew:hired,lay:B.cells.map(c=>c?c.k.slice(0,3):"·").join(" "),heat:baseHeat(B,baseShift(clockNow())),pw:Math.round(P.prod||0)+"/"+Math.round(P.cons||P.load||0),drills:P.drills};}
-      }
-    }
-  }
-  function estDock(){
-    if(G.mode!=="dock"||!G.sys||!G.sys.station)return;
-    const PH=PHASE;
-    try{
-      /* база: доразрешить смены и забрать руду, если стоим в её системе */
-      if(EST.base&&G.sys.key===EST.base.sys){
-        try{baseResolveAll();}catch(e){note("база: "+(e&&e.message));}
-        const B=EST.base.B,before={};for(const k in G.cargo)before[k]=G.cargo[k]|0;
-        PHASE="база";
-        try{baseCollect(B);}catch(e){}
-        for(const k in G.cargo){const got=(G.cargo[k]|0)-(before[k]|0);if(got<=0)continue;EST.baseUnits+=got;
-          if(TRADE_KEYS.concat(FAR_KEYS).indexOf(k)>=0&&G.sys.station.prices[k]){EST.baseWorth+=sellCargo(G.sys,k,got)||0;}}
-        if(HUMAN)idle(30,"паузы");
-      }
-      /* цеха этой станции: забрать пай */
-      PHASE="цеха";
-      for(const s of EST.shops)if(s.key===G.sys.key){try{bldCollect(G.sys,s.id);}catch(e){note("цех: "+(e&&e.message));}}
-      /* промтовар — в цех, который его ест; не взяли — на склад (не трюм: бот возит руду) */
-      for(const k in G.cargo){const q=G.cargo[k]|0;if(q<=0||!RES[k]||!RES[k].ind)continue;
-        const v=bldSellInd(G.sys,k,q);EST.indSold+=v||0;
-        const left=G.cargo[k]|0;if(left>0){EST.ind[k]=(EST.ind[k]|0)+left;G.cargo[k]=0;}}
-      /* со склада — тоже в цех, когда стоим там, где его едят */
-      for(const k in EST.ind){const q=EST.ind[k]|0;if(q<=0)continue;
-        G.cargo[k]=(G.cargo[k]|0)+q;EST.ind[k]=0;const v=bldSellInd(G.sys,k,q);EST.indSold+=v||0;
-        const left=G.cargo[k]|0;G.cargo[k]=0;EST.ind[k]=left;}
-    }finally{PHASE=PH;}
-  }
-  /* рейс в цех: свои руды цехи на соседней станции едят только оттуда (дома их «и так делают»,
-     bldRuleWhy). Игрок возит, когда бункеру есть что взять — не меньше 15 ед; сдаёт там по цене рынка
-     (бункер берёт по обычной, с паем), забирает пай и возвращается. Бак и минуты — фазой «цеха» */
-  const HAUL_MIN=15;
-  function estHaul(){
-    const home=G.sys.key,PH=PHASE;
-    try{
-      /* база в другой системе (бот ушёл с выработанных планет): забрать руду, когда склад наполовину полон */
-      if(EST.base&&EST.base.sys!==home){const B=EST.base.B;
-        try{baseResolveAll();}catch(e){}
-        if(basePoolHeld(B)>=basePower(B).store*.5){PHASE="база";EST.baseTrips++;
-          if(!dockAt(EST.base.sys))note("база: рейс не вышел");
-          if(!dockAt(home)){note("база: домой не вернулся");return;}}}
-      for(const key of [...new Set(EST.shops.map(s=>s.key))]){
-        if(key===home)continue;
-        const S=sysOf(key);let n=0;const take={};
-        for(const s of EST.shops)if(s.key===key)for(const k in BLD[s.id].eats){
-          const q=Math.min(bldWant(S,k)-(take[k]|0),G.cargo[k]|0);if(q>0){take[k]=(take[k]|0)+q;n+=q;}}
-        if(n<HAUL_MIN)continue;
-        PHASE="цеха";
-        if(EST.dead[key]>=2)continue;
-        if(!dockAt(key)){note("цех: рейс до "+key+" не вышел");EST.dead[key]=(EST.dead[key]|0)+1;
-          if(!dockAt(home))note("цех: домой не вернулся");break;}
-        EST.hauls++;
-        for(const k in take){const q=Math.min(take[k],G.cargo[k]|0);if(q<=0)continue;
-          const v=sellCargo(G.sys,k,q),f=(sellCargo.last&&sellCargo.last.nB)|0;EST.fed+=f;
-          const b=BOOK.sold[k]||(BOOK.sold[k]=[0,0,{},0]);b[0]+=q;b[1]+=v||0;b[2][G.sys.key]=1;b[3]+=q*(G.sys.station.prices[k]||0);}
-        if(!dockAt(home)){note("цех: домой не вернулся");break;}
-      }
-    }finally{PHASE=PH;}
-  }
-  function estReport(){
-    if(!EST.on)return null;
-    let left=0;for(const k in EST.ind)left+=(EST.ind[k]|0)*indPrice(k);
-    const fed={};for(const s of EST.shops){const B=bldEntry(s.key,s.id);if(B)fed[s.id]=Math.round(Object.values(B.got||{}).reduce((a,b)=>a+b,0));}
-    return {shops:EST.shops.map(s=>s.id+"@"+s.key+" ("+s.eats+"→"+s.makes+")").join(", "),indSold:Math.round(EST.indSold),
-      indLeft:Math.round(left),indLeftQ:JSON.stringify(EST.ind),base:EST.base?EST.base.name+" · модулей "+EST.base.mods+" · буров "+EST.base.drills+" · энергия "+EST.base.pw+" · людей "+EST.base.crew+" · тепло "+EST.base.heat+" · ["+EST.base.lay+"]"+(EST.base.B.ruin?" · РАЗВАЛИНА":""):"—",
-      baseUnits:EST.baseUnits,baseWorth:Math.round(EST.baseWorth),hauls:EST.hauls,fed:EST.fed,baseTrips:EST.baseTrips,
-      dbg:EST.base?(()=>{const B=EST.base.B,P=basePower(B);return "t0 "+B.t0+" смена "+baseShift(clockNow())+" parked "+baseParked(B)+" wake "+B.wake+" eff "+P.eff+" drillEff "+P.drillEff+" store "+P.store+" лог "+JSON.stringify((B.log||[]).slice(-4));})()+" пул "+JSON.stringify(EST.base.B.pool)+" · людей сейчас "+baseStaff(EST.base.B).length+" · жизнь "+JSON.stringify(EST.base.B.life||{}):"",
-      hop:EST.shops.map(s=>{const B=bldEntry(s.key,s.id);return s.id+" бункер "+JSON.stringify(B&&B.my)+" пай "+JSON.stringify(B&&B.got);}).join("; ")};
-  }
+  /* хозяйство T2–T3 — в 91zzzw4-ecosim-est.js */
+  const {EST,estSetup,estDock,estHaul,estReport}=ecoEstate({note,idle,dockAt,sysOf,
+    get ph(){return PHASE;},set ph(v){PHASE=v;},get book(){return BOOK;},get human(){return HUMAN;},
+    logist:ENV.ECO_LOGIST==="1",shops:ENV.ECO_SHOPS!=="0",eater:ENV.ECO_EATER==="1"});
   /* ── ярус: корпус, модули, руки, дроны, управляющие ── */
   function setup(tier){
     resetWorld();
@@ -760,53 +572,6 @@ suite("проба · экономика",{tier:"probe"},()=>{
         earned:d.earned|0,trips:d.trips|0,down:d.down|0}))});
   }
   stepWorld=sw0;
-  console.log("экономика: "+HOURS+" ч игры на ярус · "+(ENV.ECO_EST==="0"?"цеха и база T2–T3 не строятся":"T2–T3 с цехами и базой")+" · оракул DESIGN-game §4.1"+(HUMAN?" · темп человека (круг ≥ 6 мин, паузы)":" · темп бота"));
-  console.log("| ярус | корпус | кругов | мин/круг | добыто | валовый/ч | расход/ч | чистый/ч | U/G | против §4.1 (в/р/ч) | откуда | куда |");
-  console.log("|---|---|---|---|---|---|---|---|---|---|---|---|");
-  for(const r of rows)console.log("| "+r.tier+" | "+r.hull+" | "+r.laps+" | "+r.minLap.toFixed(1)+" | "+r.mined+" | "+Math.round(r.gross)+" | "+Math.round(r.spend)+" | "+Math.round(r.net)+" | "+r.press.toFixed(2)+" | "+r.dG+"% / "+r.dU+"% / "+r.dN+"% | "+r.gsrc+" | "+r.ssrc+" |");
-  for(const r of rows)console.log("  "+r.tier+" топливо/ч: "+r.fuel+" · корпус/ч: "+r.hullLoss);
-  for(const r of rows)console.log("  "+r.tier+" мин на круг по фазам: "+r.time);
-  for(const r of rows)console.log("  "+r.tier+" продано (шт×кр): "+r.sold);
-  for(const r of rows)if(r.fails)console.log("  "+r.tier+" сбои: "+r.fails);
-  for(const r of rows)console.log("  "+r.tier+" диспетчер: "+r.disp);
-  for(const r of rows)if(r.est){const E=r.est;
-    console.log("  "+r.tier+" хозяйство: цеха "+(E.shops||"—")+" · рейсов в цех "+E.hauls+", в бункеры "+E.fed+" ед · промтовар сдан в цеха "+Math.round(E.indSold/r.hrs)+" кр/ч"+
-      " · не нашёл едока "+E.indLeft+" кр "+E.indLeftQ+" · база "+E.base+": рейсов за рудой "+E.baseTrips+", забрано "+E.baseUnits+" ед, продано на "+Math.round(E.baseWorth/r.hrs)+" кр/ч");
-    if(ENV.ECO_TRACE)console.log("    "+E.dbg+" · "+E.hop);}
-  for(const r of rows)if(r.drn&&r.drn.length){const PARTS=6*60,price=DRONES.miner.price;
-    console.log("  "+r.tier+" дроны (кр/ч за прогон · после запчастей 6 кр/мин · окупаемость "+price+" кр, ч): "+
-      r.drn.map(d=>{const g=Math.round(d.earned/r.hrs);return d.res+" "+g+" → "+(g-PARTS)+" · "+
-        (g>0?(price/g).toFixed(0):"∞")+" / "+(g>PARTS?(price/(g-PARTS)).toFixed(0):"∞")+" ч ("+d.trips+" рейсов)";}).join("; "));}
-  for(const r of rows)if(r.norm){const N=r.norm;
-    console.log("  "+r.tier+" норма участка: "+(N.with==null?"—":N.with+" %")+" · без вас "+(N.without==null?"—":N.without+" %")+
-      " · нужд "+N.tot+", закрыто вами "+N.mine+", нарядов "+N.ord+" · окон "+N.win+" · сводок "+N.sv);}
-  for(const r of rows)if(r.tl){const L=r.tl,f=v=>v==null?"—":v.toFixed(1);
-    console.log("  "+r.tier+" первый час (минуты игры): два адресных "+f(L.addr2)+" · срочное "+f(L.urg)+" · строка участка "+f(L.line)+
-      " · наряд "+f(L.long)+" · первый час прошёл "+f(L.hour1)+" · вахта кончилась "+f(L.fwEnd)+" · бумага стажёра "+f(L.paper)+
-      " · налёт к концу "+L.flown.toFixed(0)+" мин, игры "+L.play.toFixed(0)+" мин · касса взаимопомощи макс "+L.debt+
-      " · кредиты "+[2,6,10,30,60,90,120,180].filter(t=>L["cr"+t]!=null).map(t=>t+"′ "+L["cr"+t]).join(", ")+
-      " · бак кр/ед (цена/репутация/талоны) "+[2,10,60,120,180].filter(t=>L["fp"+t]!=null).map(t=>t+"′ "+L["fp"+t]).join(", "));}
-  /* что игрок успевает за первый час игры — таблица без утверждений (Контроль 22.10, M912) */
-  for(const r of rows)if(r.tl){const L=r.tl,f=v=>v==null?"не успел":v.toFixed(1)+"′";
-    const ev=[["первый выход из дока","undock"],["первая посадка","land"],["первая продажа","sell"],
-      ["первое дело закрыто","deed1"],["третье дело","deed3"],["пятое дело","deed5"],
-      ["касса ≥ первый трюм ("+modCost("hold",0)+")","c900"],["касса ≥ первый бур ("+modCost("drill",0)+")","c1250"],
-      ["касса ≥ два бура ("+2*modCost("drill",0)+")","c2k"],["касса ≥ наём руки ("+(HIRE_FEE<1e9?HIRE_FEE:"—")+")","hire"],
-      ["касса ≥ первый дрон ("+DRONES.miner.price+")","drone"],["оборот 3 000","turn3k"],["разнарядка на «Вьюк»","alloc"],["пересел на «Вьюк»","board"],
-      ["экзамен кооператива","coop"],["допуск II","clr2"],["первая победа в бою","kill"],
-      ["два адресных на стойке","addr2"],["первое срочное","urg"],["наряд на три станции","long"],
-      ["первый час прошёл","hour1"],["бумага стажёра","paper"]];
-    console.log("\n  "+r.tier+" · что игрок успевает за первый час игры (минута игры)");
-    console.log("  | веха | минута |\n  |---|---|");
-    for(const [ru,k] of ev)console.log("  | "+ru+" | "+f(L[k])+" |");
-    const H=L.h1;if(!H)continue;
-    const s=o=>Object.entries(o).filter(e=>Math.round(e[1])).map(([k,v])=>k+" "+Math.round(v)).join(", ")||"—";
-    console.log("  к 60′: касса "+H.cr+" (старт 600) · оборот "+H.turn+" · кругов "+H.laps+" · залежей "+H.mined+
-      " · дел "+H.deeds+" на "+Math.round(H.pay)+" кр "+JSON.stringify(H.took)+" · ушло по сроку "+H.lost+" · не взято "+H.poor+
-      " · прыжков "+H.jumps+" · станций "+H.docks+" · систем "+H.sys+" · допуск "+H.clr+" · побед "+H.kills+
-      " · норма "+(H.norm&&H.norm.with!=null?H.norm.with+" % (без вас "+H.norm.without+" %)":"—"));
-    console.log("  к 60′ валовый: "+s(H.gross)+" · расход: "+s(H.spend));
-    console.log("  покупки: "+(L.bought||"—")+" · на «Вьюке» с "+(L.board==null?"—":L.board.toFixed(1)+"′")+
-      " · вложено за прогон "+r.inv+" кр (не расход: U/G без него)");}
+  ecoPrint(rows,{hours:HOURS,human:HUMAN,env:ENV,hireFee:HIRE_FEE});
   ok(rows.length>=1&&rows.every(r=>r.hrs>0),"экономика прогнана: "+rows.length+" ярусов");
 });
