@@ -73,7 +73,7 @@ const ROAD_HALF={};
 function roadHullHalf(id){
   if(ROAD_HALF[id]!=null)return ROAD_HALF[id];
   const h=hullOf(id),m=h3dMesh(h,shipGear3d());let y=h.bw;
-  for(let i=0;i<(m.n-6)*12;i+=12)y=Math.max(y,Math.abs(m.v[i+1]));
+  for(let i=0;i<m.n*12;i+=12)if(m.v[i+11]!==-1)y=Math.max(y,Math.abs(m.v[i+1]));   /* плоскость краски (em −1) — не тело */
   return ROAD_HALF[id]=y;
 }
 function drawRoad(ts){

@@ -60,9 +60,9 @@ function p3tMesh(q){
 /* рамка w×h: центр и масштаб, чтобы часть с тумбой легла с полями (как hgUnits ангара, один курс) */
 function p3tFrame(m,w,h){
   const key=w+"x"+h;let F=m.FR.get(key);if(F)return F;
-  const C=P3T_CAM,V=m.v,N=(m.n-6)*12,cy=Math.cos(C.yaw),sy=Math.sin(C.yaw),ct=Math.cos(C.tilt),st=Math.sin(C.tilt),k=C.persp*(1-C.persp)/m.R;
+  const C=P3T_CAM,V=m.v,N=m.n*12,cy=Math.cos(C.yaw),sy=Math.sin(C.yaw),ct=Math.cos(C.tilt),st=Math.sin(C.tilt),k=C.persp*(1-C.persp)/m.R;
   let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
-  for(let i=0;i<N;i+=12){const px=V[i],py=V[i+1],pz=V[i+2],X=px*cy-py*sy,Y0=px*sy+py*cy,Y=Y0*ct-pz*st,Z=Y0*st+pz*ct,w1=1-k*Z,u=X/w1,v=Y/w1;
+  for(let i=0;i<N;i+=12){if(V[i+11]===-1)continue;const px=V[i],py=V[i+1],pz=V[i+2],X=px*cy-py*sy,Y0=px*sy+py*cy,Y=Y0*ct-pz*st,Z=Y0*st+pz*ct,w1=1-k*Z,u=X/w1,v=Y/w1;
     if(u<u0)u0=u;if(u>u1)u1=u;if(v<v0)v0=v;if(v>v1)v1=v;}
   const sc=Math.min(w*.9/Math.max(u1-u0,.1),h*.88/Math.max(v1-v0,.1));
   F={sc,x:w/2-(u0+u1)/2*sc,y:h/2-(v0+v1)/2*sc};m.FR.set(key,F);return F;

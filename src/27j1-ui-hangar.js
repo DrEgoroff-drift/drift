@@ -17,21 +17,21 @@ const HANGAR={tilt:.95,pp:.14,yaw:.14,sway:.1,per:19,spin:0,spinT:0,L:null,U:new
   v3:{yaw:0,tilt:0,persp:0,gear:null,aim:null,lz:.95,fill:.36,rim:.5}};
 const HANG_ACC="#ff6a2b",HANG_INK="#f1ebde",HANG_FONT="600 11px Bahnschrift,'DIN Alternate','Roboto Condensed','Arial Narrow',sans-serif";
 
-/* рамка в единицах (масштаб 1, центр 0) при курсах yaws: корпус с частями без плоскости краски (последние
-   шесть вершин, 17c2a h3dPack) и поворотный круг под ним. Круг — эллипс по длине и ширине корпуса на полу
+/* рамка в единицах (масштаб 1, центр 0) при курсах yaws: корпус с частями без плоскости краски (вершины
+   с меткой em −1, 17c2a h3dPack: с дырами «двойного корпуса» их не шесть, а сотни — рамка была квадратом краски) и поворотный круг под ним. Круг — эллипс по длине и ширине корпуса на полу
    ниже брюха; hv0/hv1 — верх и низ одного корпуса (колено выносок) */
 function hgUnits(m,tilt,pp,yaws){
   const key=tilt+"|"+pp+"|"+yaws.join(",");let c=HANGAR.U.get(m);if(c&&c.key===key)return c;
-  const V=m.v,N=Math.max(0,(m.n-6)*12),ct=Math.cos(tilt),st=Math.sin(tilt),k=pp*(1-pp)/m.R;
+  const V=m.v,N=m.n*12,ct=Math.cos(tilt),st=Math.sin(tilt),k=pp*(1-pp)/m.R;
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9,z0=1e9;
-  for(let i=0;i<N;i+=12){const px=V[i],py=V[i+1],pz=V[i+2];
+  for(let i=0;i<N;i+=12){if(V[i+11]===-1)continue;const px=V[i],py=V[i+1],pz=V[i+2];
     if(px<x0)x0=px;if(px>x1)x1=px;if(py<y0)y0=py;if(py>y1)y1=py;if(pz<z0)z0=pz;}
   if(!(x1>x0)){x0=-10;x1=10;y0=-4;y1=4;z0=-2;}
   const B=Math.max(-y0,y1)*1.3+.8,pad={cx:(x0+x1)/2,A:(x1-x0)/2*1.08,B,zf:z0-Math.max(1.2,B*.18)};
   let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9,hu0=1e9,hu1=-1e9,hv0=1e9,hv1=-1e9;
   const pr=(a,px,py,pz)=>{const cy=Math.cos(a),sy=Math.sin(a),X=px*cy-py*sy,Y0=px*sy+py*cy,Y=Y0*ct-pz*st,Z=Y0*st+pz*ct,w=1-k*Z;return [X/w,Y/w];};
   for(const a of yaws){const cy=Math.cos(a),sy=Math.sin(a);
-    for(let i=0;i<N;i+=12){const px=V[i],py=V[i+1],pz=V[i+2];
+    for(let i=0;i<N;i+=12){if(V[i+11]===-1)continue;const px=V[i],py=V[i+1],pz=V[i+2];
       const X=px*cy-py*sy,Y0=px*sy+py*cy,Y=Y0*ct-pz*st,Z=Y0*st+pz*ct,w=1-k*Z,u=X/w,v=Y/w;
       if(u<hu0)hu0=u;if(u>hu1)hu1=u;if(v<hv0)hv0=v;if(v>hv1)hv1=v;}
     for(let j=0;j<32;j++){const f=j/32*TAU,q=pr(a,pad.cx+pad.A*Math.cos(f),pad.B*Math.sin(f),pad.zf);

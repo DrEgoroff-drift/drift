@@ -243,7 +243,11 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
   {
     for(const id of SHIP_KEYS){const S={},f=hallYardFit(S,id,400,HALL_YARD_H),m=h3dMesh(hullOf(id),S.v3&&S.v3.gear),U=hgUnits(m,S.v3.tilt,S.v3.persp,[S.v3.yaw]);
       const lw=f[2]*Math.max(U.hu1-U.hu0,U.hv1-U.hv0);
-      ok(!!S.v3&&lw>=160&&f[2]*(U.hv1-U.hv0)<=HALL_YARD_H,"корпус «"+id+"» в карточке — объём, "+lw.toFixed(0)+" px по длинной стороне, в высоту места");}
+      ok(!!S.v3&&lw>=160&&f[2]*(U.hv1-U.hv0)<=HALL_YARD_H,"корпус «"+id+"» в карточке — объём, "+lw.toFixed(0)+" px по длинной стороне, в высоту места");
+      /* рамка — по телу, не по плоскости краски (em −1): с дырами «двойного корпуса» плоскость — сотни вершин,
+         «последние шесть» брали её в рамку, и корпус в карточке выходил втрое мельче (75 px из 320, 22.10) */
+      let r=0;for(let i=0;i<m.n*12;i+=12)if(m.v[i+11]!==-1)r=Math.max(r,Math.hypot(m.v[i],m.v[i+1],m.v[i+2]));
+      ok(U.hu1-U.hu0<=2.4*r,"рамка «"+id+"» по телу: "+(U.hu1-U.hu0).toFixed(1)+" ≤ 2.4·"+r.toFixed(1));}
     const S0={};hallYardFit(S0,SHIP_KEYS[0],120,64);ok(S0.v3===null,"в малом месте — вид сверху, как раньше");}
 
   /* наезд: от двери к месту, к концу — ровно цель */
