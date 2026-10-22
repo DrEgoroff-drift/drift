@@ -228,115 +228,6 @@ function updateCaveDeco(C,dt){
 }
 
 /* ── рисование ── */
-/* Порядок жёсткий: тело породы → натёки → вода → темнота → свет. Свет после
-   темноты, иначе фонарь гасит сам себя, а грот в глубине не видно вовсе. */
-function caveTip(t,sx,sy){
-  ctx.beginPath();
-  const dir=t.up?1:-1, lean=t.lean*t.L;
-  ctx.moveTo(sx-t.w,sy);
-  ctx.quadraticCurveTo(sx-t.w*.35+lean*.5,sy+t.L*.6*dir,sx+lean,sy+t.L*dir);
-  ctx.quadraticCurveTo(sx+t.w*.35+lean*.5,sy+t.L*.6*dir,sx+t.w,sy);
-  ctx.closePath();
-}
-function drawCaveSolid(C,camx,camy){
-  const D=C.deco;if(!D)return;
-  ctx.save();
-  for(const t of D.tips){
-    const sx=t.x-camx;if(sx<-40||sx>W+40)continue;
-    const sy=t.y0-camy;
-    ctx.fillStyle=D.rock;
-    if(t.col){
-      /* колонна: две встречные иглы, сросшиеся посередине */
-      const mid=sy+t.L*.5;
-      ctx.beginPath();
-      ctx.moveTo(sx-t.w,sy);
-      ctx.quadraticCurveTo(sx-t.w*.3,mid,sx-t.w*.75,sy+t.L);
-      ctx.lineTo(sx+t.w*.75,sy+t.L);
-      ctx.quadraticCurveTo(sx+t.w*.3,mid,sx+t.w,sy);
-      ctx.closePath();ctx.fill();
-      ctx.strokeStyle=D.wet;ctx.lineWidth=1;ctx.stroke();
-      continue;
-    }
-    caveTip(t,sx,sy);
-    ctx.fill();
-    /* мокрая грань с одной стороны — по ней натёк и читается объёмом */
-    ctx.strokeStyle=D.wet;ctx.lineWidth=1;ctx.stroke();
-  }
-  for(const c of D.curtains){
-    const sx=c.x0-camx;if(sx<-c.w-40||sx>W+40)continue;
-    ctx.fillStyle=D.rock;
-    ctx.beginPath();
-    const y0=caveCeil(C,c.x0)-camy;
-    ctx.moveTo(sx,y0-2);
-    for(let u=0;u<=1.0001;u+=.125){
-      const wx=c.x0+c.w*u;
-      const yy=caveCeil(C,wx)-camy+c.d*(.35+.65*fbm1(wx*.03,c.seed,2));
-      ctx.lineTo(wx-camx,yy);
-    }
-    for(let u=1;u>=0;u-=.25)ctx.lineTo(c.x0+c.w*u-camx,caveCeil(C,c.x0+c.w*u)-camy-2);
-    ctx.closePath();ctx.fill();
-    ctx.strokeStyle=D.wet;ctx.lineWidth=1;ctx.stroke();
-  }
-  /* лишайник (M262): выращенный контур, прижатый к поверхности. Тело блёклое,
-     кайма чуть ярче, сердцевина — тот же контур, сжатый: три прохода дают
-     лопастную розетку, а не пятно */
-  for(const l of D.lichens||[]){
-    const sx=l.x-camx;if(sx<-30||sx>W+30)continue;
-    const sy=l.y-camy;if(sy<-30||sy>H+30)continue;
-    const P=l.pts;
-    const trace=()=>{ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);
-      for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]);ctx.closePath();};
-    ctx.save();ctx.translate(sx,sy);ctx.scale(1,l.up?.55:.45);
-    trace();
-    ctx.fillStyle="rgba("+l.col.join(",")+",.28)";ctx.fill();
-    ctx.strokeStyle="rgba("+l.col.join(",")+",.45)";ctx.lineWidth=.9;ctx.stroke();
-    ctx.scale(.55,.55);
-    trace();
-    ctx.fillStyle="rgba("+l.col.join(",")+",.20)";ctx.fill();
-    ctx.restore();
-  }
-  ctx.restore();
-}
-function drawCaveWater(C,camx,camy){
-  const Z=caveZones(C);
-  for(const z of Z){
-    const p=cavePool(C,z);if(!p)continue;
-    const x0=Math.max(z.x0,camx-20),x1=Math.min(z.x1,camx+W+20);
-    if(x1<=x0)continue;
-    const sy=p.y-camy;
-    if(sy<-20||sy>H+40)continue;
-    const P=new Path2D();
-    P.moveTo(x0-camx,sy);
-    for(let x=x0;x<=x1;x+=14)P.lineTo(x-camx,sy+Math.sin(x*.06+G.t*.02)*.9);
-    P.lineTo(x1-camx,sy);
-    for(let x=x1;x>=x0;x-=14)P.lineTo(x-camx,Math.max(sy,caveFloor(C,x)-camy));
-    P.closePath();
-    ctx.fillStyle="rgba(30,90,120,.42)";ctx.fill(P);
-    /* отражённая полоса по самой кромке: вода без блика читается как провал */
-    ctx.strokeStyle="rgba(150,220,240,.22)";ctx.lineWidth=1.2;
-    ctx.beginPath();
-    for(let x=x0;x<=x1;x+=14){
-      const yy=sy+Math.sin(x*.06+G.t*.02)*.9;
-      if(x===x0)ctx.moveTo(x-camx,yy);else ctx.lineTo(x-camx,yy);
-    }
-    ctx.stroke();
-  }
-}
-function drawCaveGlow(C,camx,camy,px,py){
-  const D=C.deco;if(!D)return;
-  /* грани кристаллов с ореолом, жилы, пыль, конус фонаря, пятно у ног и капли — слой
-     сложения main на видеокарте (22c caveMainAdd): 2D «lighter» на переднем слое ложится
-     поверх сцены с прозрачностью, а не прибавляется. Здесь остался всплеск */
-  if(D.splash){
-    const s=D.splash, sx=s.x-camx;
-    const k=1-s.t/26;
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    ctx.strokeStyle="rgba(170,215,235,"+(.34*(1-k)).toFixed(3)+")";
-    ctx.lineWidth=1;
-    ctx.beginPath();ctx.ellipse(sx,s.y-camy,2+k*9,1+k*3,0,0,TAU);ctx.stroke();
-    ctx.restore();
-  }
-}
 
 /* ══════════════ свой свет пещеры (M248) ══════════════
    У пещеры не было ни одного источника, кроме фонаря на шлеме: отсюда и
@@ -346,43 +237,11 @@ function drawCaveGlow(C,camx,camy,px,py){
    пещеру кто-то проходил до тебя.
    Всё сеяно от C.seed и ничего не сохраняется: место одно и то же при каждом
    спуске, но в сейве его нет. */
-function caveMossSpots(C){
-  if(C.moss)return C.moss;
-  const r=rng(C.seed^0x3055), out=[];
-  for(let i=0;i<16;i++){
-    const low=r()<.4;
-    const x=low?340+r()*(CAVE_W-560):160+r()*(CAVE_W-320);
-    const y=low?caveLowY(C,x):caveGalY(C,x);
-    /* мох садится на СВОД и на стены, а не на пол: ему нужна сырость сверху */
-    out.push({x,y:y-(6+r()*22),n:3+Math.floor(r()*5),ph:r()*TAU,
-              rr:10+r()*16,col:r()<.5?[120,200,180]:[150,190,230]});
-  }
-  return C.moss=out;
-}
 function caveLampSpot(C){
   if(C.lamp!==undefined)return C.lamp;
   const r=rng(C.seed^0x1A77);
   const x=CAVE_W*(.35+r()*.4);
   return C.lamp={x,y:caveFloor(C,x),ph:r()*TAU};
-}
-function drawCaveOwnLight(C,camx,camy){
-  /* мох — холодное пятно, медленно дышит — светит слоем сложения main (22c caveMainAdd) */
-  /* чужой фонарь: он тёплый, и он тут не сам по себе — кто-то его поставил */
-  const L=caveLampSpot(C);
-  const lx=L.x-camx, ly=L.y-camy;
-  if(lx>-80&&lx<W+80&&ly>-80&&ly<H+80){
-    const pu=.78+.22*Math.sin(G.t*.011+L.ph);
-    /* свет лампы — зарево main сложением в поле видеокарты (22c ownAdd): тени от
-       породы честные и мягкие; маска, печённая раз на пещеру, не нужна */
-    /* сама вещь: корпус, дужка и стекло — вещь, а не пятно */
-    ctx.fillStyle="rgba(46,52,60,.95)";
-    ctx.fillRect(lx-3.4,ly-9,6.8,7.5);
-    ctx.strokeStyle="rgba(70,78,88,.95)";ctx.lineWidth=1.2;
-    ctx.beginPath();ctx.arc(lx,ly-9.5,3.2,Math.PI,TAU);ctx.stroke();
-    ctx.fillStyle="rgba(255,226,170,"+(.75*pu).toFixed(2)+")";
-    ctx.fillRect(lx-2.2,ly-7.6,4.4,4.4);
-    groundShadow(lx,ly+1,7,2.2);
-  }
 }
 /* ── дифференциальный рост (M262): inconvergent, differential mesh ──
    Контур из восьми точек; на каждом шаге длинные рёбра делятся, близкие
@@ -421,4 +280,18 @@ function growLichen(r,R,iters){
     }
   }
   return pts;
+}
+/* мох пещеры: места пятен (2D-свет пещеры 22-mode-cave спрашивает их под typeof) */
+function caveMossSpots(C){
+  if(C.moss)return C.moss;
+  const r=rng(C.seed^0x3055), out=[];
+  for(let i=0;i<16;i++){
+    const low=r()<.4;
+    const x=low?340+r()*(CAVE_W-560):160+r()*(CAVE_W-320);
+    const y=low?caveLowY(C,x):caveGalY(C,x);
+    /* мох садится на СВОД и на стены, а не на пол: ему нужна сырость сверху */
+    out.push({x,y:y-(6+r()*22),n:3+Math.floor(r()*5),ph:r()*TAU,
+              rr:10+r()*16,col:r()<.5?[120,200,180]:[150,190,230]});
+  }
+  return C.moss=out;
 }

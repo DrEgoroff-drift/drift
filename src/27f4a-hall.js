@@ -201,6 +201,8 @@ const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,n:0,cl:nu
 function hallPrepStep(){
   const sys=G.sys,S=sys&&sys.station,P=HALL_PRE;
   if(G.mode!=="system"||!S||HALL.open||!GPU.ok||!GPU.dev)return;
+  /* конвейеры комнаты (r3.*) строит поздний прогрев (08b0): раньше него подготовка собрала бы их сама, в кадре */
+  if(typeof GPU_PIPES!=="undefined"&&!(GPU_PIPES.late&&GPU_PIPES.late.done))return;
   const st=S.stype||"trade",key=st+"|"+sys.key;
   if(P.key!==key){P.key=key;P.L=null;P.i=0;P.up=false;P.done=false;P.cl=null;P.ci=0;P.cdone=false;P.tg=false;if(P.room){r3Drop(P.room);P.room=null;}hallRelease();}
   if(P.done){if(!P.cdone)hallCantPrep(S,sys);return;}
