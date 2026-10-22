@@ -180,14 +180,36 @@ suite("проба · экономика",{tier:"probe"},()=>{
     TL.debt=Math.max(TL.debt,billDebt());
     for(const t of [2,6,10,30,60,90,120,180])if(TL["cr"+t]==null&&m>=t)TL["cr"+t]=Math.round(G.credits);
     TL.flown=G.flownMs/60000;TL.play=(G.playMs||0)/60000;
+    /* что игрок успевает за первый час (Контроль 22.10): первый раз — минута, к 60′ — срез */
+    if(G.mode==="dock"&&G.sys)CNT.docks.add(G.sys.key);
+    if(G.sys)CNT.sys.add(G.sys.key);
+    const cr=G.credits,H=G.home||{};
+    mark("undock",G.mode!=="dock");
+    mark("land",G.mode==="surface");
+    mark("sell",(BOOK.gross.sell||0)>0);
+    mark("deed1",DSTAT.done>=1);mark("deed3",DSTAT.done>=3);mark("deed5",DSTAT.done>=5);
+    mark("c900",cr>=modCost("hold",0));mark("c1250",cr>=modCost("drill",0));mark("c2k",cr>=2*modCost("drill",0));
+    mark("hire",cr>=HIRE_FEE);mark("drone",cr>=dronePrice());
+    mark("turn3k",(H.turn|0)>=3000);mark("alloc",!!H.alloc);
+    mark("coop",!!coopHas());
+    mark("clr2",(G.clearance|0)>=2);mark("kill",(G.kills|0)>=1);
+    if(TL.h1==null&&m>=60)TL.h1={gross:Object.assign({},BOOK.gross),spend:Object.assign({},BOOK.spend),
+      deeds:DSTAT.done,pay:DSTAT.pay,took:Object.assign({},DSTAT.took),lost:dispSt().lost,poor:DSTAT.poor.size,
+      laps:CNT.laps,mined:CNT.mined,jumps:JUMPS,docks:CNT.docks.size,sys:CNT.sys.size,cr:Math.round(cr),
+      clr:G.clearance|0,kills:G.kills|0,turn:Math.round(H.turn|0),norm:normNow()};
   }
   /* ── дела диспетчера (M912): ходить по шагам бумаги теми же целями бота ── */
   const DSTAT={done:0,pay:0,frames:0,skip:{},took:{},poor:new Set()},NET=new Map();
   const FUEL_KEEP=30,JUMP_F=8*60;
+  /* счётчики первого часа: круги и добыча — из цикла яруса, станции и системы — из сэмплера */
+  const CNT={laps:0,mined:0,docks:new Set(),sys:new Set()};
+  let HIRE_FEE=1e9;
   /* по карману ли бумага: прыжки туда-обратно по цене бака и груз по цене стойки; запас — на бак */
   function dispAfford(it){
-    let hops=0,goods=0,lands=0,a=G.sys.key;
+    let hops=0,goods=0,lands=0,opp=0,a=G.sys.key;
     for(const L of it.legs.slice(it.leg)){hops+=dispHop(a,L.key);a=L.key;if(L.do==="land")lands++;
+      /* своя руда в трюме — не даром: её можно сдать здесь же; отданная по бумаге — упущенная продажа */
+      if(L.do==="cargo"){const own=Math.min(G.cargo[L.k]|0,L.qty);if(own>0)opp+=own*((G.sys&&G.sys.station&&marketFor(G.sys)[L.k])||0);}
       if(L.do==="cargo"&&(G.cargo[L.k]|0)<L.qty){const S=shopFor(L.k,L.key);if(!S)return false;
         hops+=2*dispHop(G.sys.key,S.key);goods+=(L.qty-(G.cargo[L.k]|0))*buyPriceFor(S,L.k);
         if(L.qty-(G.cargo[L.k]|0)>stat().cargoMax-held())return false;}}
@@ -197,7 +219,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     const fuel=(hops*mapJumpCost(1.2)+lands*12)*fuelPriceHere();
     if(G.credits<goods+fuel+150)return false;
     /* живой игрок не берёт бумагу себе в убыток: плата должна окупить груз и бак */
-    NET.set(it.id,it.pay-goods-fuel);
+    NET.set(it.id,it.pay-goods-fuel-opp);
     return NET.get(it.id)>=60;
   }
   function sysOf(key){const p=String(key).split(",");return getSystem(p[0]|0,p[1]|0);}
@@ -224,6 +246,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       if(G.fuel<cost+keep){note("дела: бак "+Math.round(G.fuel)+" на прыжок "+cost);return false;}
       const j=T.bot("jump",{sx,sy});
       if(!j.ok){if(G.mode==="map")G.mode="system";note("дела: прыжок — "+j.why);return false;}
+      JUMPS++;
       /* бот прыгает за кадр, игрок — картой: открыть, найти сектор, нажать; восемь секунд на прыжок */
       for(let i=0;i<JUMP_F;i++){stepWorld(1);G.t+=1;}}
     return G.sx===tx&&G.sy===ty;
@@ -239,7 +262,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     if(!r.ok&&/до станции/.test(r.why)){const S=G.sys.station,sh=G.ship,dx=S.x-sh.x,dy=S.y-sh.y,d=Math.hypot(dx,dy)||1;
       sh.x=S.x-dx/d*80;sh.y=S.y-dy/d*80;sh.vx=S.vx||0;sh.vy=S.vy||0;G.ap=null;G.orbit=null;r=botH("dock");}
     if(!r.ok){note("дела: dock — "+r.why);return false;}
-    refuelHere();
+    refuelHere();CNT.docks.add(G.sys.key);
     return true;
   }
   /* сесть на планету системы и подняться: шаг «land» ловит enterSurface */
@@ -444,7 +467,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
     TL=null;
     if(tier.fresh){
       /* свежая запись: касса и налёт как у нового игрока; первая стойка — до первого круга (§10.7) */
-      fwSt();TL={debt:0};
+      fwSt();TL={debt:0};CNT.laps=CNT.mined=0;CNT.docks.clear();CNT.sys.clear();
+      try{const c=genMerc(4242);HIRE_FEE=c?mercFee(c):1e9;}catch(e){}
       if(T.bot("station").ok)T.bot("dock");
       if(G.mode==="dock"){refuelHere();dispPlay();}
       return;
@@ -498,7 +522,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       while(G.t-t0<HRS*HOUR&&bad<6){
         const L=lap(tier);
         if(!L){bad++;if(G.mode!=="system"){try{if(G.mode==="dock")closeStation();}catch(e){}G.mode="system";}continue;}
-        laps++;lapF+=L.frames;mined+=L.mined;
+        laps++;lapF+=L.frames;mined+=L.mined;CNT.laps=laps;CNT.mined=mined;
         try{normFold(NACC,normNow());}catch(e){note("норма: "+(e&&e.message));}
       }
     }catch(e){note("стенд: "+(e&&e.message));}
@@ -546,5 +570,25 @@ suite("проба · экономика",{tier:"probe"},()=>{
       " · наряд "+f(L.long)+" · первый час прошёл "+f(L.hour1)+" · вахта кончилась "+f(L.fwEnd)+" · бумага стажёра "+f(L.paper)+
       " · налёт к концу "+L.flown.toFixed(0)+" мин, игры "+L.play.toFixed(0)+" мин · касса взаимопомощи макс "+L.debt+
       " · кредиты "+[2,6,10,30,60,90,120,180].filter(t=>L["cr"+t]!=null).map(t=>t+"′ "+L["cr"+t]).join(", "));}
+  /* что игрок успевает за первый час игры — таблица без утверждений (Контроль 22.10, M912) */
+  for(const r of rows)if(r.tl){const L=r.tl,f=v=>v==null?"не успел":v.toFixed(1)+"′";
+    const ev=[["первый выход из дока","undock"],["первая посадка","land"],["первая продажа","sell"],
+      ["первое дело закрыто","deed1"],["третье дело","deed3"],["пятое дело","deed5"],
+      ["касса ≥ первый трюм ("+modCost("hold",0)+")","c900"],["касса ≥ первый бур ("+modCost("drill",0)+")","c1250"],
+      ["касса ≥ два бура ("+2*modCost("drill",0)+")","c2k"],["касса ≥ наём руки ("+(HIRE_FEE<1e9?HIRE_FEE:"—")+")","hire"],
+      ["касса ≥ первый дрон ("+DRONES.miner.price+")","drone"],["оборот 3 000","turn3k"],["разнарядка на «Вьюк»","alloc"],
+      ["экзамен кооператива","coop"],["допуск II","clr2"],["первая победа в бою","kill"],
+      ["два адресных на стойке","addr2"],["первое срочное","urg"],["наряд на три станции","long"],
+      ["первый час прошёл","hour1"],["бумага стажёра","paper"]];
+    console.log("\n  "+r.tier+" · что игрок успевает за первый час игры (минута игры)");
+    console.log("  | веха | минута |\n  |---|---|");
+    for(const [ru,k] of ev)console.log("  | "+ru+" | "+f(L[k])+" |");
+    const H=L.h1;if(!H)continue;
+    const s=o=>Object.entries(o).filter(e=>Math.round(e[1])).map(([k,v])=>k+" "+Math.round(v)).join(", ")||"—";
+    console.log("  к 60′: касса "+H.cr+" (старт 600) · оборот "+H.turn+" · кругов "+H.laps+" · залежей "+H.mined+
+      " · дел "+H.deeds+" на "+Math.round(H.pay)+" кр "+JSON.stringify(H.took)+" · ушло по сроку "+H.lost+" · не взято "+H.poor+
+      " · прыжков "+H.jumps+" · станций "+H.docks+" · систем "+H.sys+" · допуск "+H.clr+" · побед "+H.kills+
+      " · норма "+(H.norm&&H.norm.with!=null?H.norm.with+" % (без вас "+H.norm.without+" %)":"—"));
+    console.log("  к 60′ валовый: "+s(H.gross)+" · расход: "+s(H.spend));}
   ok(rows.length>=1&&rows.every(r=>r.hrs>0),"экономика прогнана: "+rows.length+" ярусов");
 });
