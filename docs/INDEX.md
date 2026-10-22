@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 642 · top-level symbols: 8739
+Files: 645 · top-level symbols: 8763
 
 ## SYMBOLS
 
@@ -425,7 +425,7 @@ CULT_SER_RU                  src/12b3-fx-cult.js:182
 CUN                          src/22-mode-cave.js:22-32
 CUT_RANGE                    src/24-mode-belt.js:170
 CVS_RECT                     src/08-state.js:92
-CV_LVL                       src/08c-gpu-kit.js:72
+CV_LVL                       src/08c-gpu-kit.js:74
 DEAL_KINDS                   src/27g-deals.js:17-137
 DECO_BEND                    src/21bc-deco-gpu.js:9
 DECO_BK                      src/21bc-deco-gpu.js:7
@@ -718,7 +718,7 @@ GAL_STAR_RED                 src/17z3-map-gpu.js:164
 GAL_STAR_SCREEN              src/17z1-galaxy.js:82
 GAL_VER                      src/17z1-galaxy.js:18
 GAL_WGSL                     src/17z3-map-gpu.js:25
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-272
+GATE2D                       tests/91zzzzzzy3-gate2d.js:39-284
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GAUGE_MID                    src/28l-gauge.js:23
@@ -812,10 +812,11 @@ GLAZE_PASS                   src/18a1-glaze.js:126
 GLOB                         src/25f-globus.js:44
 GLOB_STEP                    src/25f-globus.js:43
 GLOW_CACHE                   src/16a0-glow.js:23
-GLOW_LAMP                    src/11i-glow.js:50
+GLOW_LAMP                    src/11i-glow.js:48
 GLOW_SP                      src/16a0-glow.js:22
-GLOW_TIERS                   src/11i-glow.js:128
+GLOW_TIERS                   src/11i-glow.js:80
 GLT_H                        src/08b-gpu.js:470
+GLW                          src/21piic-pln-glow.js:11
 GNB                          src/16gb-gpu-nebula.js:17
 GNB_AGE                      src/16gc-gpu-nebfade.js:10
 GNB_EMI                      src/16gba-gpu-nebula-comp.js:52
@@ -861,32 +862,32 @@ GPS                          src/17gb-gpu-planet-strip.js:97
 GPS_BLEND                    src/17gb-gpu-planet-strip.js:10
 GPS_WGSL                     src/17gb-gpu-planet-strip.js:47
 GPU                          src/08b-gpu.js:8
-GPU_BLEND                    src/08c-gpu-kit.js:12-24
-GPU_CVTEX_CAP                src/08c-gpu-kit.js:68
+GPU_BLEND                    src/08c-gpu-kit.js:12-26
+GPU_CVTEX_CAP                src/08c-gpu-kit.js:70
 GPU_DROP_WHY                 tests/90-harness.js:105
 GPU_FLD                      src/08b0-gpu-pipe.js:33
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:365
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:367
 GPU_FRONT_LIKE               src/08b-gpu.js:533
-GPU_IMG_WGSL                 src/08c-gpu-kit.js:193
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:195
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
-GPU_KIT_WGSL                 src/08c-gpu-kit.js:167
+GPU_KIT_WGSL                 src/08c-gpu-kit.js:169
 GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:107
 GPU_LATE_KEYS                src/08b0-gpu-pipe.js:94-127
 GPU_LIT_DK                   src/17c-system-draw.js:23
 GPU_LIT_SH                   src/17c-system-draw.js:21
-GPU_MIP                      src/08c-gpu-kit.js:98
-GPU_MIP_LOD                  src/08c-gpu-kit.js:192
+GPU_MIP                      src/08c-gpu-kit.js:100
+GPU_MIP_LOD                  src/08c-gpu-kit.js:194
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-68
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-69
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:50
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:42-63
 GPU_PL_WGSL                  src/08b-gpu.js:485
 GPU_POST_WGSL                src/08b-gpu.js:80
-GPU_SCR                      src/08c-gpu-kit.js:174
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:264
+GPU_SCR                      src/08c-gpu-kit.js:176
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:266
 GPU_SNAP_OVER                src/08b-gpu.js:29
 GPU_TONE_FILM                src/08b-gpu.js:521
-GPU_WGSL_COMMON              src/08c-gpu-kit.js:136
+GPU_WGSL_COMMON              src/08c-gpu-kit.js:138
 GRADE_U                      src/19c-light.js:263
 GRADE_WGSL                   src/19c-light.js:253
 GREEN_BEDS                   src/21g-greenhouse.js:27
@@ -946,7 +947,7 @@ H3D_CARGO                    src/17c2a-hull3d.js:22
 H3D_L                        src/17c2a-hull3d.js:16
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
-H3D_PIR                      src/17c2a-hull3d.js:494
+H3D_PIR                      src/17c2a-hull3d.js:507
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
 H3D_WGSL                     src/17c2a-hull3d.js:262
@@ -1518,9 +1519,9 @@ OVR                          src/08bi-gpu-ovl.js:323
 OV_CV                        src/08bi-gpu-ovl.js:304
 OV_EYE                       src/08bi-gpu-ovl.js:300
 OWN                          src/21pig-pln-own.js:26
-OWN_GREEN                    src/21pig-pln-own.js:300
-OWN_GREEN_SP                 src/21pig-pln-own.js:301
-OWN_GREEN_WIDE               src/21pig-pln-own.js:322
+OWN_GREEN                    src/21pig-pln-own.js:302
+OWN_GREEN_SP                 src/21pig-pln-own.js:303
+OWN_GREEN_WIDE               src/21pig-pln-own.js:324
 OWN_WASH                     src/21pig-pln-own.js:31
 OWN_WIN                      src/21pig-pln-own.js:32
 P3                           src/17c2b-parts3d.js:18
@@ -1669,11 +1670,13 @@ PLN_GPU                      src/21pe-pln-gpu.js:27
 PLN_GUN                      src/21pifb-pln-marks-act-move.js:345
 PLN_HAND_S                   src/21pz-pln-frame.js:277
 PLN_HDR                      src/21pe-pln-gpu.js:23
+PLN_HEADLAMP                 src/21pha-pln-man.js:51
 PLN_HERB                     src/21pia-pln-herb.js:30
 PLN_HERB_MAKE                src/21pia-pln-herb.js:135-355
 PLN_ICO                      src/21pa-pln-mesh.js:40
 PLN_KIND                     src/21pe-pln-gpu.js:26
 PLN_KIT_N                    src/21pg-pln-flora.js:249
+PLN_LAMP_GREY                src/21pc-pln-wgsl-scene.js:14
 PLN_LAND                     src/21pf-pln-land.js:22
 PLN_LIFT                     src/21pifc-pln-marks-act-lift.js:12
 PLN_LIFT_GEO                 src/21piec-pln-marks-move.js:9
@@ -1684,10 +1687,10 @@ PLN_LPAD_DASH                src/21pza-pln-descent.js:122
 PLN_LPAD_SPOTS               src/21pza-pln-descent.js:113
 PLN_M                        src/21p-pln.js:14
 PLN_MAN                      src/21pha-pln-man.js:23
-PLN_MAN_BONES                src/21pha-pln-man.js:32-60
+PLN_MAN_BONES                src/21pha-pln-man.js:32-61
 PLN_MAN_FLAME                src/21pha-pln-man.js:50
-PLN_MAN_ID                   src/21pha-pln-man.js:254
-PLN_MAN_POSE                 src/21pha-pln-man.js:39-60
+PLN_MAN_ID                   src/21pha-pln-man.js:255
+PLN_MAN_POSE                 src/21pha-pln-man.js:39-61
 PLN_MAN_SIT                  src/21pha-pln-man.js:49
 PLN_MARK                     src/21pie-pln-marks.js:20
 PLN_MARK_COL                 src/21pie-pln-marks.js:33
@@ -1701,13 +1704,13 @@ PLN_OLD_HUD2                 src/21pzb-pln-words.js:102
 PLN_OLD_LANDING              src/21pza-pln-descent.js:221
 PLN_OLD_ULAND                src/21pza-pln-descent.js:212
 PLN_OVER                     src/21pj-pln-over.js:16
-PLN_OWN_GATE_R               src/21pig-pln-own.js:556
-PLN_OWN_OLD_AT               src/21pig-pln-own.js:661
-PLN_OWN_OLD_DIG              src/21pig-pln-own.js:608
-PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:586
-PLN_OWN_OLD_HINT             src/21pig-pln-own.js:654
-PLN_OWN_OLD_UPD              src/21pig-pln-own.js:631
-PLN_OWN_UPD                  src/21pig-pln-own.js:585
+PLN_OWN_GATE_R               src/21pig-pln-own.js:567
+PLN_OWN_OLD_AT               src/21pig-pln-own.js:672
+PLN_OWN_OLD_DIG              src/21pig-pln-own.js:619
+PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:597
+PLN_OWN_OLD_HINT             src/21pig-pln-own.js:665
+PLN_OWN_OLD_UPD              src/21pig-pln-own.js:642
+PLN_OWN_UPD                  src/21pig-pln-own.js:596
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:41-65
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
@@ -1728,7 +1731,7 @@ PLN_VS                       src/21pa-pln-mesh.js:10
 PLN_WATER_BLEND              src/21pw-pln-water.js:231
 PLN_WFLORA                   src/21pfa-pln-worlds.js:178-223
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
-PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
+PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:19
 PLN_WGSL_WATER               src/21pw-pln-water.js:141
 PLN_WGSL_WATER_CAVE          src/21pw-pln-water.js:181
 PLN_WGSL_WATER_CORE          src/21pw-pln-water.js:13
@@ -1855,11 +1858,12 @@ RAIL_ARM_RU                  src/18e-rail-net.js:25
 RAIL_BUFFET                  src/18f-rail-station.js:20
 RAIL_CAR_ROLL                src/18gb-rail-car.js:12
 RAIL_COL                     src/18e-rail-net.js:219
+RAIL_CORE_LIGHT              src/18gb-rail-car.js:15
 RAIL_CREAM                   src/18gb-rail-car.js:13
 RAIL_DECL                    src/18h-rail-powers.js:14
 RAIL_DOCK                    src/18f-rail-station.js:22
 RAIL_EXPRESS_MUL             src/18h-rail-powers.js:13
-RAIL_FLAP_PREV               src/18f-rail-station.js:125
+RAIL_FLAP_PREV               src/18f-rail-station.js:114
 RAIL_FORK                    src/18e-rail-net.js:22
 RAIL_FX_U                    src/18ga-rail-gpu.js:55
 RAIL_FX_WGSL                 src/18ga-rail-gpu.js:18
@@ -2024,6 +2028,9 @@ ROOM3                        src/29r-rooms-r3.js:13
 ROOM3_M                      src/29r-rooms-r3.js:15
 ROUTE_MAX                    src/12r-route.js:29
 RPG_IDS                      src/27f1-room-gpu.js:37
+RRING_R                      src/18fa-rail-ring.js:11
+RRING_STEEL                  src/18fa-rail-ring.js:12
+RRING_WOOD                   src/18fa-rail-ring.js:13
 RTONE                        src/09a-roomtone.js:22
 RUIN_AFTER                   src/21b0-base-ruin.js:18
 RUIN_FIX                     src/21b0-base-ruin.js:22
@@ -2104,7 +2111,7 @@ SEC_SPY                      src/12b2-fx-sec.js:25
 SEC_SPY_CACHE                src/12b2-fx-sec.js:88
 SEC_SPY_MAX                  src/12b2-fx-sec.js:26
 SEED_KNOWN                   tests/91qm-seeds.js:13
-SET                          src/21pii-pln-settle.js:24
+SET                          src/21pii-pln-settle.js:26
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -2116,7 +2123,9 @@ SETTLE_STEP                  src/12t-settle.js:22
 SETTLE_STOCK                 src/12t-settle.js:23
 SETTLE_WAIT                  src/12t-settle.js:25
 SETTLE_WORD                  src/12t-settle.js:256
+SET_SPILL                    src/21pii-pln-settle.js:24
 SET_V                        src/21pii-pln-settle.js:23
+SET_WIN                      src/21pii-pln-settle.js:25
 SFX                          src/09-audio.js:118-333
 SG_FREE                      src/27f2-room3d.js:80
 SHARD_H                      tests/90-harness.js:32
@@ -2236,7 +2245,7 @@ SUITE_TIERS                  tests/90-harness.js:89
 SUITE_WINS                   tests/90-harness.js:90
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
-SURF_BASE                    src/21e-surface-draw.js:159
+SURF_BASE                    src/21e-surface-draw.js:162
 SURF_HOR                     src/19c-light.js:202
 SURF_LAW                     src/21pzd-surf-laws.js:11-15
 SURF_LAW_GEN                 src/21pzd-surf-laws.js:45
@@ -2295,6 +2304,7 @@ TEST_TIMES                   tests/99-run.js:18
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 TIER_RU                      src/05-parts.js:86
+TINB                         src/21piia-pln-tin.js:16
 TIN_BIN                      src/12ta-tin.js:31
 TIN_CAP                      src/12ta-tin.js:28
 TIN_EAT                      src/12ta-tin.js:29
@@ -2304,13 +2314,9 @@ TIN_MADE                     src/12ta-tin.js:46
 TIN_MAKE                     src/12ta-tin.js:30
 TIN_ON                       src/12ta-tin.js:35
 TIN_UNIT                     src/12ta-tin.js:38-44
+TIN_V                        src/21piia-pln-tin.js:15
 TOLD_LAG                     src/11aj-told.js:32
 TOPO_FMT                     src/12al1-toponym.js:6-13
-TRACE_BODY                   src/21q-trace-body.js:16
-TRACE_BODY_AT                src/21q-trace-body.js:144
-TRACE_BODY_SZ                src/21q-trace-body.js:18
-TRACE_BODY_THINGS            src/21q-trace-body.js:124
-TRACE_BODY_Z                 src/21q-trace-body.js:17
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32-45
 TRACK_LIFE                   src/21-mode-surface.js:6
@@ -2323,6 +2329,7 @@ TRAIL_LIFE                   src/16-flight.js:296
 TRAIL_TINT                   src/16-flight.js:256
 TRAINEE_LINES                src/11ac-trainee.js:14-18
 TRAINEE_NAMES                src/11ac-trainee.js:13
+TRC                          src/21piib-pln-trace.js:13
 TYPES                        src/02-world.js:168-191
 UIK                          src/08-state.js:20
 UI_BOOT                      tests/90-harness.js:220
@@ -2364,7 +2371,7 @@ VOL_DOCS                     src/12al5-vol.js:16-25
 VOL_FAST                     src/12al5-vol.js:26
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16-20
-VSINK                        src/08c-gpu-kit.js:343
+VSINK                        src/08c-gpu-kit.js:345
 W                            src/08-state.js:7
 W3                           src/08cd-gpu-mat.js:33
 WAKE                         src/16-flight.js:292
@@ -2421,7 +2428,7 @@ WATCH_OLD_ORDER              src/28j-watch.js:232
 WATCH_OLD_SNAP               src/28j-watch.js:276
 WATCH_R                      src/28j-watch.js:26
 WATCH_RELIEF                 src/28j-watch.js:33
-WATER_MIN_SPAN               src/21e-surface-draw.js:177
+WATER_MIN_SPAN               src/21e-surface-draw.js:180
 WEAR_BASE                    src/21a9-base-laws.js:72
 WEAR_FULL                    src/12s-wear.js:16
 WEAR_RATE                    src/12s-wear.js:18
@@ -2575,7 +2582,7 @@ b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeAt                       src/20ab-poi-gpu.js:148-153
 bakeIdle                     tests/90-harness.js:438-445
-bakeKeep                     src/08c-gpu-kit.js:76-81
+bakeKeep                     src/08c-gpu-kit.js:78-83
 bakePut                      src/20ab-poi-gpu.js:155
 bakeRect                     src/20ab-poi-gpu.js:154
 bakeStand                    src/20ab-poi-gpu.js:157
@@ -4032,12 +4039,12 @@ drawStation                  src/17c-system-draw.js:192-209
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21pz-pln-frame.js:440-459
-drawSurfaceHud               src/21e-surface-draw.js:39-142
+drawSurfaceHud               src/21e-surface-draw.js:42-145
 drawSurvey                   src/12w-survey.js:63-83
 drawSysHud                   src/17-mode-system.js:748-1080
 drawSysLane                  src/17g-sys-lane.js:112-138
 drawSysLaneShips             src/17g-sys-lane.js:168-196
-drawSysRail                  src/18f-rail-station.js:72-80
+drawSysRail                  src/18f-rail-station.js:61-69
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawSystem                   src/17-mode-system.js:554-736
 drawTapes                    src/12s1-tape.js:51-66
@@ -4401,6 +4408,7 @@ galaxyAt                     src/17z1-galaxy.js:30-60
 galaxyCell                   src/17z1-galaxy.js:72-77
 galaxyGpu                    src/17z3-map-gpu.js:139-159
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
+gate2dRail                   tests/91zzzzzzy3-gate2d.js:28-38
 gaugeAdd                     src/28l-gauge.js:42-48
 gaugeAll                     src/28l-gauge.js:28
 gaugeCasc                    src/28l-gauge.js:29
@@ -4594,21 +4602,19 @@ globusDraw                   src/25f-globus.js:113-138
 globusPaint                  src/25f-globus.js:81-111
 globusTick                   src/25f-globus.js:70-77
 glowBlit                     src/16a0-glow.js:38
-glowCaveX                    src/11i-glow.js:146-149
+glowCaveX                    src/11i-glow.js:98-101
 glowCone                     src/17e-station-body.js:55-59
 glowCorePlanet               src/11i-glow.js:33-37
 glowDepthAt                  src/11i-glow.js:24-29
 glowDepthHere                src/11i-glow.js:30
-glowDrawPad                  src/11i-glow.js:51-67
-glowDrawPatches              src/11i-glow.js:88-116
 glowDressFlora               src/11i-glow.js:42-45
-glowFlash                    src/11i-glow.js:137-144
-glowGroundLine               src/11i-glow.js:117-122
+glowFlash                    src/11i-glow.js:89-96
+glowGroundLine               src/11i-glow.js:69-74
 glowIsCore                   src/11i-glow.js:38
-glowPatches                  src/11i-glow.js:78-87
-glowScan                     src/11i-glow.js:69-73
+glowPatches                  src/11i-glow.js:59-68
+glowScan                     src/11i-glow.js:50-54
 glowSprite                   src/16a0-glow.js:24-36
-glowTier                     src/11i-glow.js:129-135
+glowTier                     src/11i-glow.js:81-87
 glyphEl                      src/12t-settle.js:79-90
 glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
@@ -4657,7 +4663,7 @@ gpsBake                      src/17gb-gpu-planet-strip.js:106-122
 gpsDesc                      src/17gb-gpu-planet-strip.js:98
 gpsPipe                      src/17gb-gpu-planet-strip.js:100-104
 gpuAfterWarm                 src/08b0-gpu-pipe.js:80-84
-gpuArena                     src/08c-gpu-kit.js:156-166
+gpuArena                     src/08c-gpu-kit.js:158-168
 gpuBake                      src/08ca-gpu-canvas.js:529-534
 gpuBakeDrop                  src/08ca-gpu-canvas.js:544
 gpuBakeLive                  src/08ca-gpu-canvas.js:547
@@ -4665,41 +4671,41 @@ gpuBakeRedo                  src/08ca-gpu-canvas.js:561
 gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
 gpuBaked                     src/08ca-gpu-canvas.js:538-543
 gpuBargeBody                 src/12l-barge.js:550-557
-gpuBind                      src/08c-gpu-kit.js:40-46
+gpuBind                      src/08c-gpu-kit.js:42-48
 gpuBloom                     src/08b-gpu.js:674-679
 gpuBooms                     src/13z-gpu-combat.js:149-167
-gpuBuf                       src/08c-gpu-kit.js:31-36
+gpuBuf                       src/08c-gpu-kit.js:33-38
 gpuBursts                    src/13z-gpu-combat.js:277-297
-gpuCanvasTex                 src/08c-gpu-kit.js:49-64
+gpuCanvasTex                 src/08c-gpu-kit.js:51-66
 gpuClouds                    src/19cc-gpu-air.js:118-165
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:444-454
-gpuCvLevel                   src/08c-gpu-kit.js:82-93
+gpuCvLevel                   src/08c-gpu-kit.js:84-95
 gpuDrones                    src/16ga-gpu-trail.js:159-203
 gpuDrop                      src/08b2-gpu-loss.js:16-23
 gpuExhaust                   src/16ga-gpu-trail.js:287-313
 gpuFail                      src/08b2-gpu-loss.js:26-30
-gpuField                     src/08c-gpu-kit.js:387-414
-gpuFieldBaked                src/08c-gpu-kit.js:422-432
-gpuFieldLayout               src/08c-gpu-kit.js:380-386
+gpuField                     src/08c-gpu-kit.js:389-416
+gpuFieldBaked                src/08c-gpu-kit.js:424-434
+gpuFieldLayout               src/08c-gpu-kit.js:382-388
 gpuFrame                     src/08b-gpu.js:552-565
-gpuFrontClean                src/08c-gpu-kit.js:128-133
+gpuFrontClean                src/08c-gpu-kit.js:130-135
 gpuFrontCopy                 src/08b-gpu.js:602-604
-gpuFrontHook                 src/08c-gpu-kit.js:117-126
+gpuFrontHook                 src/08c-gpu-kit.js:119-128
 gpuHaze                      src/08b-gpu.js:467
 gpuHudDpr                    src/08bh-gpu-hud.js:7
 gpuHueFor                    src/08b-gpu.js:524
-gpuImage                     src/08c-gpu-kit.js:238-251
-gpuImgBind                   src/08c-gpu-kit.js:231-237
-gpuImgLayout                 src/08c-gpu-kit.js:223-230
-gpuKitU                      src/08c-gpu-kit.js:176-181
+gpuImage                     src/08c-gpu-kit.js:240-253
+gpuImgBind                   src/08c-gpu-kit.js:233-239
+gpuImgLayout                 src/08c-gpu-kit.js:225-232
+gpuKitU                      src/08c-gpu-kit.js:178-183
 gpuLight                     src/08b-gpu.js:469
 gpuLitSprite                 src/17c-system-draw.js:176-191
 gpuLtWrite                   src/08b-gpu.js:473-480
 gpuManual                    src/08b-gpu.js:643-648
-gpuMipDrop                   src/08c-gpu-kit.js:112
-gpuMipSmp                    src/08c-gpu-kit.js:113
-gpuMipTex                    src/08c-gpu-kit.js:99-111
+gpuMipDrop                   src/08c-gpu-kit.js:114
+gpuMipSmp                    src/08c-gpu-kit.js:115
+gpuMipTex                    src/08c-gpu-kit.js:101-113
 gpuMoon                      src/17ga-gpu-planets.js:441-447
 gpuNebulaComp                src/16gba-gpu-nebula-comp.js:277-287
 gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:220-274
@@ -4711,8 +4717,8 @@ gpuOrbMoon                   src/17gab1-gpu-orb-draw.js:107-113
 gpuOvFrontView               src/08bi-gpu-ovl.js:284
 gpuOver                      src/08b-gpu.js:605-625
 gpuPass                      src/08b-gpu.js:455-458
-gpuPipe                      src/08c-gpu-kit.js:20-24
-gpuPipeDesc                  src/08c-gpu-kit.js:25-30
+gpuPipe                      src/08c-gpu-kit.js:22-26
+gpuPipeDesc                  src/08c-gpu-kit.js:27-32
 gpuPipeRecipe                src/08b0-gpu-pipe.js:55-63
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
 gpuPipes                     src/08b-gpu.js:370-391
@@ -4723,16 +4729,16 @@ gpuPirateBody                src/12i-pirate-hull.js:425-436
 gpuPirateLive                src/12i-pirate-hull.js:443-489
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
 gpuPresent                   src/08b-gpu.js:681-694
-gpuQuad                      src/08c-gpu-kit.js:318-322
+gpuQuad                      src/08c-gpu-kit.js:320-324
 gpuResize                    src/08b-gpu.js:400-442
 gpuScene                     src/08b-gpu.js:569-582
 gpuScene3D                   src/08b-gpu.js:586-594
-gpuScr                       src/08c-gpu-kit.js:175
+gpuScr                       src/08c-gpu-kit.js:177
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
-gpuShapes                    src/08c-gpu-kit.js:349-360
+gpuShapes                    src/08c-gpu-kit.js:351-362
 gpuShock                     src/08b-gpu.js:468
-gpuShpAt                     src/08c-gpu-kit.js:326-339
+gpuShpAt                     src/08c-gpu-kit.js:328-341
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:324-415
 gpuSnapshot                  src/08b-gpu.js:22-26
@@ -4851,23 +4857,23 @@ gunsInGroup                  src/05c-arms.js:233-236
 h01                          src/01-core.js:28
 h3dBargeMesh                 src/17c2f-body-barge.js:58-66
 h3dBargeWreck                src/17c2f-body-barge.js:68-90
-h3dCls                       src/17c2a-hull3d.js:378-388
-h3dDesc                      src/17c2a-hull3d.js:360-368
-h3dDev                       src/17c2a-hull3d.js:370-376
-h3dDraw                      src/17c2a-hull3d.js:392-404
+h3dCls                       src/17c2a-hull3d.js:387-397
+h3dDesc                      src/17c2a-hull3d.js:369-377
+h3dDev                       src/17c2a-hull3d.js:379-385
+h3dDraw                      src/17c2a-hull3d.js:401-413
 h3dEar                       src/17c2a-hull3d.js:245-260
 h3dKit                       src/17c2a-hull3d.js:27-90
 h3dMesh                      src/17c2a-hull3d.js:132-243
 h3dPack                      src/17c2a-hull3d.js:92-100
 h3dParts                     src/17c2b-parts3d.js:158-353
-h3dPirMesh                   src/17c2a-hull3d.js:495-551
-h3dPirate                    src/17c2a-hull3d.js:553-556
+h3dPirMesh                   src/17c2a-hull3d.js:508-564
+h3dPirate                    src/17c2a-hull3d.js:566-569
 h3dPlaneHoles                src/17c2a-hull3d.js:107-129
-h3dRun                       src/17c2a-hull3d.js:413-475
+h3dRun                       src/17c2a-hull3d.js:423-488
 h3dStationMesh               src/17c2g-body-station.js:97-129
 h3dStockGear                 src/17c2b-parts3d.js:374-383
-h3dStudioPt                  src/17c2a-hull3d.js:407-411
-h3dStudioRT                  src/17c2a-hull3d.js:478-488
+h3dStudioPt                  src/17c2a-hull3d.js:416-420
+h3dStudioRT                  src/17c2a-hull3d.js:491-501
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60
@@ -6712,14 +6718,21 @@ plnGeoFree                   src/21pe-pln-gpu.js:97
 plnGlide                     src/21pz-pln-frame.js:262-270
 plnGlintDir                  src/21pw-pln-water.js:316-319
 plnGlintHour                 src/21pw-pln-water.js:315
-plnGlobals                   src/21pe-pln-gpu.js:308-331
+plnGlobals                   src/21pe-pln-gpu.js:311-334
+plnGlwDash                   src/21piic-pln-glow.js:22-26
+plnGlwFrame                  src/21piic-pln-glow.js:81-94
+plnGlwFree                   src/21piic-pln-glow.js:60-65
+plnGlwMesh                   src/21piic-pln-glow.js:32-59
+plnGlwRing                   src/21piic-pln-glow.js:27-30
+plnGlwStep                   src/21piic-pln-glow.js:66-79
+plnGlwStrip                  src/21piic-pln-glow.js:16-21
 plnGpuDev                    src/21pe-pln-gpu.js:151-177
-plnGpuFrame                  src/21pe-pln-gpu.js:355-411
-plnGpuPipes                  src/21pe-pln-gpu.js:224-230
-plnGpuReady                  src/21pe-pln-gpu.js:299-303
-plnGpuSize                   src/21pe-pln-gpu.js:239-298
+plnGpuFrame                  src/21pe-pln-gpu.js:358-416
+plnGpuPipes                  src/21pe-pln-gpu.js:227-233
+plnGpuReady                  src/21pe-pln-gpu.js:302-306
+plnGpuSize                   src/21pe-pln-gpu.js:242-301
 plnGpuTier                   src/21pe-pln-gpu.js:179-190
-plnGpuWrite                  src/21pe-pln-gpu.js:332-349
+plnGpuWrite                  src/21pe-pln-gpu.js:335-352
 plnGunLaid                   src/21pifb-pln-marks-act-move.js:281
 plnHandAge                   src/21pz-pln-frame.js:278-288
 plnHandWin                   src/21pz-pln-frame.js:290-293
@@ -6750,6 +6763,7 @@ plnInst                      src/21pe-pln-gpu.js:100-105
 plnInstFree                  src/21pe-pln-gpu.js:117
 plnInstSet                   src/21pe-pln-gpu.js:107-116
 plnKitTick                   src/21pg-pln-flora.js:250-253
+plnLampPool                  src/21pc-pln-wgsl-scene.js:15-18
 plnLand                      src/21pf-pln-land.js:555-566
 plnLandBare                  src/21pf-pln-land.js:256-259
 plnLandBatches               src/21pf-pln-land.js:543-545
@@ -6811,15 +6825,15 @@ plnM4mirrorY                 src/21p-pln.js:104
 plnM4move                    src/21p-pln.js:138-140
 plnM4mul                     src/21p-pln.js:86-91
 plnM4ortho                   src/21p-pln.js:92-97
-plnMan                       src/21pha-pln-man.js:214-227
-plnManBones                  src/21pha-pln-man.js:233-253
-plnManBuild                  src/21pha-pln-man.js:78-162
-plnManCss                    src/21pha-pln-man.js:53-60
-plnManFlame                  src/21pha-pln-man.js:197-211
-plnManFrame                  src/21pha-pln-man.js:261-301
-plnManPalette                src/21pha-pln-man.js:62-74
-plnManPose                   src/21pha-pln-man.js:165-194
-plnManState                  src/21pha-pln-man.js:255-258
+plnMan                       src/21pha-pln-man.js:215-228
+plnManBones                  src/21pha-pln-man.js:234-254
+plnManBuild                  src/21pha-pln-man.js:79-163
+plnManCss                    src/21pha-pln-man.js:54-61
+plnManFlame                  src/21pha-pln-man.js:198-212
+plnManFrame                  src/21pha-pln-man.js:262-303
+plnManPalette                src/21pha-pln-man.js:63-75
+plnManPose                   src/21pha-pln-man.js:166-195
+plnManState                  src/21pha-pln-man.js:256-259
 plnMarkH                     src/21pie-pln-marks.js:40
 plnMarkMesh                  src/21pie-pln-marks.js:58-103
 plnMarkMove                  src/21piec-pln-marks-move.js:10-289
@@ -6845,39 +6859,39 @@ plnMul                       src/21p-pln.js:36
 plnNoise                     src/21p-pln.js:60-67
 plnNorm                      src/21p-pln.js:40
 plnObsSky                    src/21pifa-pln-marks-act-stone.js:233-248
-plnOver                      src/21pj-pln-over.js:50-128
+plnOver                      src/21pj-pln-over.js:47-125
 plnOverAt                    src/21pj-pln-over.js:19-22
-plnOverOld                   src/21pj-pln-over.js:30-47
+plnOverOld                   src/21pj-pln-over.js:30-44
 plnOverPlate                 src/21pj-pln-over.js:23-28
-plnOwnAtGate                 src/21pig-pln-own.js:557
+plnOwnAtGate                 src/21pig-pln-own.js:568
 plnOwnBaseAt                 src/21pig-pln-own.js:96-111
 plnOwnBaseMesh               src/21pig-pln-own.js:122-261
 plnOwnBaseX                  src/21pig-pln-own.js:67-92
 plnOwnBattOf                 src/21pig-pln-own.js:113-118
-plnOwnFlat                   src/21pig-pln-own.js:286-294
-plnOwnFrame                  src/21pig-pln-own.js:468-526
-plnOwnFree                   src/21pig-pln-own.js:429-434
-plnOwnGateC                  src/21pig-pln-own.js:570
-plnOwnGateHide               src/21pig-pln-own.js:617-625
-plnOwnGateNote               src/21pig-pln-own.js:573-579
-plnOwnGateShow               src/21pig-pln-own.js:626-630
-plnOwnGateX                  src/21pig-pln-own.js:551-555
-plnOwnGreenBuild             src/21pig-pln-own.js:323-337
-plnOwnGreenSp                src/21pig-pln-own.js:302-318
+plnOwnFlat                   src/21pig-pln-own.js:286-296
+plnOwnFrame                  src/21pig-pln-own.js:473-534
+plnOwnFree                   src/21pig-pln-own.js:431-436
+plnOwnGateC                  src/21pig-pln-own.js:581
+plnOwnGateHide               src/21pig-pln-own.js:628-636
+plnOwnGateNote               src/21pig-pln-own.js:584-590
+plnOwnGateShow               src/21pig-pln-own.js:637-641
+plnOwnGateX                  src/21pig-pln-own.js:562-566
+plnOwnGreenBuild             src/21pig-pln-own.js:325-339
+plnOwnGreenSp                src/21pig-pln-own.js:304-320
 plnOwnHomeAt                 src/21pig-pln-own.js:264-282
-plnOwnHomeMesh               src/21pig-pln-own.js:338-426
-plnOwnInYard                 src/21pig-pln-own.js:593-596
-plnOwnItem                   src/21pig-pln-own.js:435-442
+plnOwnHomeMesh               src/21pig-pln-own.js:340-428
+plnOwnInYard                 src/21pig-pln-own.js:604-607
+plnOwnItem                   src/21pig-pln-own.js:437-444
 plnOwnKit                    src/21pig-pln-own.js:42-61
-plnOwnMark                   src/21pig-pln-own.js:559
-plnOwnOcc                    src/21pig-pln-own.js:529-538
-plnOwnPads                   src/21pig-pln-own.js:540-548
+plnOwnMark                   src/21pig-pln-own.js:570
+plnOwnOcc                    src/21pig-pln-own.js:537-546
+plnOwnPads                   src/21pig-pln-own.js:548-559
 plnOwnPennHere               src/21pig-pln-own.js:119-121
 plnOwnSteel                  src/21pig-pln-own.js:35-40
-plnOwnStep                   src/21pig-pln-own.js:444-466
-plnOwnUnder                  src/21pig-pln-own.js:597-600
-plnOwnWordsAt                src/21pig-pln-own.js:561-566
-plnOwnYardPrompt             src/21pig-pln-own.js:601-607
+plnOwnStep                   src/21pig-pln-own.js:446-471
+plnOwnUnder                  src/21pig-pln-own.js:608-611
+plnOwnWordsAt                src/21pig-pln-own.js:572-577
+plnOwnYardPrompt             src/21pig-pln-own.js:612-618
 plnPadBulb                   src/21pza-pln-descent.js:120
 plnPadFrame                  src/21pza-pln-descent.js:134-164
 plnPadGeo                    src/21pza-pln-descent.js:83-105
@@ -6886,8 +6900,8 @@ plnPadLift                   src/21pza-pln-descent.js:129-133
 plnPadSpots                  src/21pza-pln-descent.js:107-112
 plnPadTop                    src/21pza-pln-descent.js:124-127
 plnPalSet                    src/21pfa-pln-worlds.js:57-66
-plnPipeDescs                 src/21pe-pln-gpu.js:194-219
-plnPipeKey                   src/21pe-pln-gpu.js:221
+plnPipeDescs                 src/21pe-pln-gpu.js:194-222
+plnPipeKey                   src/21pe-pln-gpu.js:224
 plnPlantBatches              src/21pga-pln-plant.js:578-595
 plnPlantBodies               src/21pga-pln-plant.js:135-367
 plnPlantBucket               src/21pga-pln-plant.js:45
@@ -6921,25 +6935,26 @@ plnRingDepPut                src/21pifb-pln-marks-act-move.js:141-148
 plnRotX                      src/21p-pln.js:43
 plnRotY                      src/21p-pln.js:41
 plnRotZ                      src/21p-pln.js:42
-plnSetAt                     src/21pii-pln-settle.js:46-65
-plnSetCraft                  src/21pii-pln-settle.js:252-334
-plnSetFig                    src/21pii-pln-settle.js:109-124
-plnSetFlat                   src/21pii-pln-settle.js:67-70
-plnSetFrame                  src/21pii-pln-settle.js:449-483
-plnSetFree                   src/21pii-pln-settle.js:427-432
-plnSetHouse                  src/21pii-pln-settle.js:129-249
-plnSetLay                    src/21pii-pln-settle.js:30-43
-plnSetMark                   src/21pii-pln-settle.js:408-418
-plnSetMesh                   src/21pii-pln-settle.js:337-405
-plnSetMott                   src/21pii-pln-settle.js:97-100
-plnSetPad                    src/21pii-pln-settle.js:71-78
-plnSetPal                    src/21pii-pln-settle.js:92-95
-plnSetPuff                   src/21pii-pln-settle.js:421-426
-plnSetRec                    src/21pii-pln-settle.js:27
-plnSetRoofTone               src/21pii-pln-settle.js:104-106
-plnSetState                  src/21pii-pln-settle.js:80-89
-plnSetStep                   src/21pii-pln-settle.js:434-447
-plnSetWallTone               src/21pii-pln-settle.js:101-103
+plnSetAt                     src/21pii-pln-settle.js:48-67
+plnSetCraft                  src/21pii-pln-settle.js:261-343
+plnSetFig                    src/21pii-pln-settle.js:115-130
+plnSetFlat                   src/21pii-pln-settle.js:69-72
+plnSetFrame                  src/21pii-pln-settle.js:477-502
+plnSetFree                   src/21pii-pln-settle.js:455-460
+plnSetHouse                  src/21pii-pln-settle.js:135-258
+plnSetLay                    src/21pii-pln-settle.js:32-45
+plnSetMark                   src/21pii-pln-settle.js:419-429
+plnSetMesh                   src/21pii-pln-settle.js:346-416
+plnSetMott                   src/21pii-pln-settle.js:103-106
+plnSetPad                    src/21pii-pln-settle.js:73-80
+plnSetPal                    src/21pii-pln-settle.js:94-101
+plnSetPuff                   src/21pii-pln-settle.js:449-454
+plnSetRec                    src/21pii-pln-settle.js:29
+plnSetRoofTone               src/21pii-pln-settle.js:110-112
+plnSetSmoke                  src/21pii-pln-settle.js:436-447
+plnSetState                  src/21pii-pln-settle.js:82-91
+plnSetStep                   src/21pii-pln-settle.js:462-475
+plnSetWallTone               src/21pii-pln-settle.js:107-109
 plnShip                      src/21phb-pln-ship.js:248-261
 plnShipDims                  src/21phb-pln-ship.js:36-57
 plnShipFrame                 src/21phb-pln-ship.js:274-317
@@ -6978,8 +6993,23 @@ plnThingsDeposits            src/21pi-pln-things.js:333-373
 plnThingsDrop                src/21pi-pln-things.js:419-428
 plnThingsFrame               src/21pi-pln-things.js:398-418
 plnThingsSrc                 src/21pga-pln-plant.js:100-104
+plnTinAt                     src/21piia-pln-tin.js:21-32
+plnTinFlat                   src/21piia-pln-tin.js:34-37
+plnTinFrame                  src/21piia-pln-tin.js:173-193
+plnTinFree                   src/21piia-pln-tin.js:152-157
+plnTinMesh                   src/21piia-pln-tin.js:58-151
+plnTinPad                    src/21piia-pln-tin.js:38-42
+plnTinPal                    src/21piia-pln-tin.js:53-57
+plnTinState                  src/21piia-pln-tin.js:44-49
+plnTinStep                   src/21piia-pln-tin.js:158-171
 plnTrackMesh                 src/21pid-pln-tracks.js:10-16
 plnTracksFrame               src/21pid-pln-tracks.js:17-37
+plnTrcAt                     src/21piib-pln-trace.js:34-39
+plnTrcFrame                  src/21piib-pln-trace.js:99-107
+plnTrcFree                   src/21piib-pln-trace.js:79-83
+plnTrcMesh                   src/21piib-pln-trace.js:40-78
+plnTrcStep                   src/21piib-pln-trace.js:84-98
+plnTrcStrokes                src/21piib-pln-trace.js:16-33
 plnTreeAxis                  src/21pgb-pln-trees.js:55-58
 plnTreeBark                  src/21pgb-pln-trees.js:47
 plnTreeCol                   src/21pgb-pln-trees.js:113-135
@@ -7291,35 +7321,34 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:239-246
+railBuffet                   src/18f-rail-station.js:228-235
 railBuildLines               src/18e-rail-net.js:55-101
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:224-238
-railCarDraw                  src/18gb-rail-car.js:63-72
-railCarLights                src/18gb-rail-car.js:56-61
-railCarMesh                  src/18gb-rail-car.js:16-54
+railBuy                      src/18f-rail-station.js:213-227
+railCarDraw                  src/18gb-rail-car.js:67-76
+railCarLights                src/18gb-rail-car.js:60-65
+railCarMesh                  src/18gb-rail-car.js:18-58
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:25-31
 railCut                      src/18h-rail-powers.js:22
 railDeclare                  src/18h-rail-powers.js:33-43
-railDestinations             src/18f-rail-station.js:140-157
+railDestinations             src/18f-rail-station.js:129-146
 railDestinationsVia          src/18k-rail-scheme.js:17-41
-railDocked                   src/18f-rail-station.js:114-121
+railDocked                   src/18f-rail-station.js:103-110
 railExit                     src/18g-rail-ride.js:100-112
 railExpressDraw              src/18h-rail-powers.js:72-81
-railFare                     src/18f-rail-station.js:158-169
-railFlap                     src/18f-rail-station.js:126-131
-railFmt                      src/18f-rail-station.js:136
+railFare                     src/18f-rail-station.js:147-158
+railFlap                     src/18f-rail-station.js:115-120
+railFmt                      src/18f-rail-station.js:125
 railFrontShut                src/18h-rail-powers.js:18
 railFx                       src/18ga-rail-gpu.js:58-66
-railGpu                      src/18f-rail-station.js:45-71
-railHaltShapes               src/18f-rail-station.js:34-41
-railHeadingIn                src/18f-rail-station.js:82-86
+railGpu                      src/18f-rail-station.js:35-60
+railHeadingIn                src/18f-rail-station.js:71-75
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:45-48
-railInteract                 src/18f-rail-station.js:88-113
-railInterval                 src/18f-rail-station.js:133
+railInteract                 src/18f-rail-station.js:77-102
+railInterval                 src/18f-rail-station.js:122
 railKrai                     src/18k-rail-scheme.js:115-120
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:76-81
@@ -7346,6 +7375,9 @@ railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRect                     src/08-state.js:150-156
 railRideStart                src/18g-rail-ride.js:22-32
+railRingBody                 src/18fa-rail-ring.js:68-77
+railRingLights               src/18fa-rail-ring.js:80-90
+railRingMesh                 src/18fa-rail-ring.js:16-66
 railSchemeClose              src/18k-rail-scheme.js:105
 railSchemeDraw               src/18k-rail-scheme.js:140-260
 railSchemeOpen               src/18k-rail-scheme.js:51-71
@@ -7361,18 +7393,18 @@ railSpurLine                 src/18e-rail-net.js:160-169
 railSpurSig                  src/18e-rail-net.js:153-159
 railStation                  src/18e-rail-net.js:197-202
 railStep                     src/18e-rail-net.js:43
-railStopName                 src/18f-rail-station.js:137
-railStopShapes               src/18gb-rail-car.js:75-86
+railStopName                 src/18f-rail-station.js:126
+railStopShapes               src/18gb-rail-car.js:79-90
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:248-253
+railTick                     src/18f-rail-station.js:237-242
 railTrainPos                 src/18g-rail-ride.js:38-50
 railUAt                      src/18e-rail-net.js:105-110
 railVisited                  src/18k-rail-scheme.js:110-114
-railWaitNow                  src/18f-rail-station.js:135
-railWinClose                 src/18f-rail-station.js:171
-railWinOpen                  src/18f-rail-station.js:170
-railWinRender                src/18f-rail-station.js:177-223
-railWinShow                  src/18f-rail-station.js:172-176
+railWaitNow                  src/18f-rail-station.js:124
+railWinClose                 src/18f-rail-station.js:160
+railWinOpen                  src/18f-rail-station.js:159
+railWinRender                src/18f-rail-station.js:166-212
+railWinShow                  src/18f-rail-station.js:161-165
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -8232,10 +8264,11 @@ sunSpot                      src/19c-light.js:203-208
 supportCall                  src/05b1-warranty.js:20-27
 supportQueue                 src/05b1-warranty.js:29-34
 supportTick                  src/05b1-warranty.js:35-44
+surfChipPx                   src/21e-surface-draw.js:41
 surfGen                      src/21-mode-surface.js:12-172
 surfHudPen                   src/21e-surface-draw.js:23-38
 surfNight                    src/06a-celest.js:43-50
-surfScale                    src/21e-surface-draw.js:221
+surfScale                    src/21e-surface-draw.js:224
 surfaceHint                  src/21e-surface-draw.js:4-20
 surveyColor                  src/12w-survey.js:58
 surveyLegs                   src/12w-survey.js:48-56
@@ -8326,7 +8359,6 @@ tinAskOf                     src/12ta-tin.js:97-106
 tinAt                        src/12ta-tin.js:58
 tinCanLive                   src/12ta-tin.js:63-68
 tinClosed                    src/12k-letters.js:45
-tinDraw                      src/12ta-tin.js:253-385
 tinEntries                   src/12ta-tin.js:215-224
 tinFeed                      src/12ta-tin.js:134-152
 tinHereRec                   src/12ta-tin.js:59
@@ -8364,18 +8396,10 @@ towShare                     src/03f-hull-role.js:87-89
 traceAll                     src/11ag-trace.js:48
 traceAsk                     src/11ag-trace.js:88-103
 traceBigRes                  src/11ag-trace.js:141-148
-traceBodyBag                 src/21q-trace-body.js:89-95
-traceBodyCarve               src/21q-trace-body.js:72-87
-traceBodyDrop                src/21q-trace-body.js:118-122
-traceBodyFace                src/21q-trace-body.js:41-50
-traceBodyMesh                src/21q-trace-body.js:97-117
-traceBodySlab                src/21q-trace-body.js:52-70
-traceBodyStrokes             src/21q-trace-body.js:21-39
 traceBusy                    src/11ag-trace.js:80
 traceCall                    src/11ag-trace.js:81-86
 traceCanLeave                src/11ag-trace.js:149-153
-traceDraw                    src/11ag-trace.js:184
-traceDrawMark                src/11ag-trace.js:175-181
+traceDrawMark                src/11ag-trace.js:176-182
 traceHand                    src/11ag-trace.js:69
 traceHashOf                  src/11ag-trace.js:63-67
 traceHere                    src/11ag-trace.js:109-112
@@ -8516,8 +8540,8 @@ voteMonth                    src/12at-vote.js:21
 voteQuestion                 src/12at-vote.js:23-28
 voteTally                    src/12at-vote.js:32-42
 voteWinner                   src/12at-vote.js:43-50
-vsinkCol                     src/08c-gpu-kit.js:344
-vsinkDisc                    src/08c-gpu-kit.js:345-348
+vsinkCol                     src/08c-gpu-kit.js:346
+vsinkDisc                    src/08c-gpu-kit.js:347-350
 wakeBurst                    src/16-flight.js:297
 wakeLanes                    src/16-flight.js:357
 wakeStep                     src/16-flight.js:326-354
@@ -8645,10 +8669,10 @@ watchSeed                    src/28j-watch.js:48
 watchSt                      src/28j-watch.js:34-47
 watchStations                src/28j-watch.js:59-67
 watchTick                    src/28j-watch.js:84-97
-waterAlga                    src/21e-surface-draw.js:210-214
-waterAlgae                   src/21e-surface-draw.js:203-209
-waterDeepAt                  src/21e-surface-draw.js:216-220
-waterOf                      src/21e-surface-draw.js:178-198
+waterAlga                    src/21e-surface-draw.js:213-217
+waterAlgae                   src/21e-surface-draw.js:206-212
+waterDeepAt                  src/21e-surface-draw.js:219-223
+waterOf                      src/21e-surface-draw.js:181-201
 waveBlock                    src/12pa-beacon.js:146-175
 wcBlots                      src/16a-space.js:141-207
 wcDeform                     src/16a-space.js:128-140
@@ -9029,7 +9053,7 @@ zoomTo                       src/15-input.js:358
 ## src/11h-hours.js · 8 KB
   · расхождение времён: уезд, где часам не верят:1
 
-## src/11i-glow.js · 10 KB
+## src/11i-glow.js · 7 KB
   · свет, который помнит: уезд вокруг Подглядки:1
 
 ## src/11j-grove.js · 8 KB
@@ -9317,7 +9341,7 @@ zoomTo                       src/15-input.js:358
 ## src/12t-settle.js · 23 KB
   · посёлок: вы даёте, решают они:1
 
-## src/12ta-tin.js · 23 KB
+## src/12ta-tin.js · 14 KB
   · Жестянка: смена, которую некому снять:1
 
 ## src/12tb-grok.js · 22 KB
@@ -9515,7 +9539,7 @@ zoomTo                       src/15-input.js:358
 ## src/17c2-hull-gpu.js · 19 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 47 KB
+## src/17c2a-hull3d.js · 49 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c2b-parts3d.js · 33 KB
@@ -9651,8 +9675,10 @@ zoomTo                       src/15-input.js:358
 ## src/18e-rail-net.js · 16 KB
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 20 KB
+## src/18f-rail-station.js · 19 KB
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
+
+## src/18fa-rail-ring.js · 7 KB
 
 ## src/18g-rail-ride.js · 12 KB
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
@@ -9660,7 +9686,7 @@ zoomTo                       src/15-input.js:358
 ## src/18ga-rail-gpu.js · 6 KB
   · поездка: свет видеокартой (G12):1
 
-## src/18gb-rail-car.js · 8 KB
+## src/18gb-rail-car.js · 9 KB
 
 ## src/18h-rail-powers.js · 6 KB
   · шесть железных дорог (M474, DESIGN-metro §6):1
@@ -9863,7 +9889,7 @@ zoomTo                       src/15-input.js:358
 ## src/21d-battery.js · 4 KB
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 16 KB
+## src/21e-surface-draw.js · 17 KB
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21e2-surface-gpu.js · 10 KB
@@ -9899,7 +9925,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pb-pln-wgsl-air.js · 24 KB
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
-## src/21pc-pln-wgsl-scene.js · 17 KB
+## src/21pc-pln-wgsl-scene.js · 18 KB
   · планета: шейдер тел, земли, воды и тени (M610):1
 
 ## src/21pd-pln-wgsl-post.js · 8 KB
@@ -9937,7 +9963,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ph-pln-cast.js · 3 KB
   · планета: состав в кадре — круг (M610), человек (M620), корабль (M621):1
 
-## src/21pha-pln-man.js · 20 KB
+## src/21pha-pln-man.js · 21 KB
   · планета: человек — риг (M620):1
 
 ## src/21phb-pln-ship.js · 22 KB
@@ -9998,7 +10024,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pifc-pln-marks-act-lift.js · 13 KB
   · космический лифт (§4.3, M627b проход 5):1
 
-## src/21pig-pln-own.js · 50 KB
+## src/21pig-pln-own.js · 51 KB
   · планета: свои вещи телами — база, дом, двор (M628a):1
 
 ## src/21pigz-cave-room.js · 3 KB
@@ -10007,8 +10033,17 @@ zoomTo                       src/15-input.js:358
 ## src/21pih-dep-room.js · 3 KB
   · залежи не под стеной и не под ориентиром (0.493.5):1
 
-## src/21pii-pln-settle.js · 36 KB
+## src/21pii-pln-settle.js · 38 KB
   · планета: посёлок телами (plnOverOld, пункт 1, 22.10):1
+
+## src/21piia-pln-tin.js · 15 KB
+  · планета: Жестянка телами (plnOverOld, пункт 1, 22.10):1
+
+## src/21piib-pln-trace.js · 7 KB
+  · планета: чужой след телами (plnOverOld, пункт 3, 22.10):1
+
+## src/21piic-pln-glow.js · 7 KB
+  · планета: свет, который помнит, — телами (plnOverOld, пункт 4, 22.10):1
 
 ## src/21pj-pln-over.js · 8 KB
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
@@ -10033,9 +10068,6 @@ zoomTo                       src/15-input.js:358
 
 ## src/21pzd-surf-laws.js · 5 KB
   · законы поверхности: вещи не стоят друг на друге (22.10):1
-
-## src/21q-trace-body.js · 10 KB
-  · чужой след телом: плита со знаком и груз у неё (M631, замысел M171 — 11ag):1
 
 ## src/22-mode-cave.js · 27 KB
   · пещера: поле породы в двух измерениях:1
@@ -10559,13 +10591,13 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd2-relay.js · 3 KB
   · мачта телом (M827 · 11apa):1
 
-## tests/91qd3-rail.js · 3 KB
-  · поездка на движке (M828 · 18gb):1
+## tests/91qd3-rail.js · 4 KB
+  · поездка на движке (M828 · 18gb), кольцо станции телом (M806 · 18fa):1
 
 ## tests/91qe-bar-seat.js · 7 KB
   · бар собран (M853):1
 
-## tests/91qe-own.js · 13 KB
+## tests/91qe-own.js · 16 KB
 
 ## tests/91qe-rack.js · 4 KB
   · стойка уступает телу (M821):1

@@ -539,6 +539,19 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   the system frame with the rail ring and the arrival flash; a `ctx.fillRect` mutation turns both
   red. Cost A/B/A in the pane with `GPU.ok`: B never dearer (1600: 5.5/4.0/8.1 ms,
   390: 6.7/4.1/7.3 — the frame no longer pastes `#c`).
+  *M806 The rail ring station as a body (22.10):* the stop of `18f` in the system frame is one `h3dKit`
+  mesh per kind (`18fa-rail-ring.js`), drawn top-down like the station it stands by and lit by the same
+  star. The ring is a torus with a dark belt below it, four clamps off the lane axis and twelve lamps in
+  the lane owner's colour that chase round the rim (slowly always, fast when a train is due). The
+  vestibule is a block on a dark plinth with an overhanging roof plate, a ridge, two vents and four
+  skylights, joined to the rim by a docking arm; the metro adds a red light on the roof. The halt is a
+  platform of three boards, a bench and a lantern on a pole that really lights the boards (`gpuLight`),
+  with a gangway to the rim. Below the body threshold stay the membrane (a soft shadow, not a lid),
+  the vortex and the glissade lights. The label moves to the side away from the vestibule (on the
+  metro frame it sat on the roof). `railHaltShapes` is gone. Gates: `91qd3-rail` builds the three
+  kinds (12 lane lamps, own light, the red light only on the metro); `91zzzzzzy3-gate2d` runs the
+  vestibule and the halt with a live GPU, 0 ctx. Cost A/B/A, whole system frame with the ring in view
+  (GPU timestamps, whole frame A1/B/A2 with GPU.tsOk and PLN.on: 1600 3.05/3.10/3.03 ms, the rail segment 0.002 to 0.054; 390 0.51/0.51/0.50. The ride car and bus now take the core's light (h3dRun lc, RAIL_CORE_LIGHT); the bus roof is greyer with two hatches, it burnt out to a white slab).
 - **M823 The nebula far from the star**: inner structure and a depth ramp, no straight streaks
   (the look near the star is the author's and stays). **M824 Belt**: rocks clustered round the
   actor, haze instead of the band. **M825 The orbs' second pass**: crystal, ice, jungle, rocky,
