@@ -63,8 +63,33 @@ requestAnimationFrame(tick);})();
 </script>"""
 
 
+TREE_SAID = set()
+
+
+def tree_ver(root, html):
+    """первой строкой — какую сборку меряем. 22.10 Контроль намерил «копии #c» на закоммиченном drift.html
+    (0.499.1: в main артефакт всегда старый — хук 10 МБ, сайт собирает сам) и разослал ложные задачи"""
+    if root in TREE_SAID: return
+    TREE_SAID.add(root)
+    m = re.search(r'VER="([0-9.]+)"', html)
+    hp = os.path.join(root, "drift.html")
+    ht, src = os.path.getmtime(hp), os.path.join(root, "src")
+    new = [f for f in os.listdir(src) if os.path.getmtime(os.path.join(src, f)) > ht] if os.path.isdir(src) else []
+    print("сборка: drift.html VER=%s (%s)" % (m.group(1) if m else "?", root))
+    core = os.path.join(src, "01-core.js")
+    sv = re.search(r'VER="([0-9.]+)"', open(core, encoding="utf-8").read()) if os.path.isfile(core) else None
+    # mtime не ловит чекаут: git пишет и старый артефакт, и src одним махом — сверка VER ловит
+    if sv and m and sv.group(1) != m.group(1):
+        print("!! drift.html VER=%s, а src/01-core.js VER=%s — сборка не та, пересобери build.ps1" % (m.group(1), sv.group(1)))
+    if new:
+        print("!! drift.html СТАРШЕ src/: новее него %d файлов (%s) — пересобери build.ps1, иначе меряешь старую игру" % (
+            len(new), ", ".join(sorted(new)[:4])))
+    sys.stdout.flush()
+
+
 def page(tail, root):
     html = open(os.path.join(root, "drift.html"), encoding="utf-8").read()
+    tree_ver(root, html)
     s = html.find("<script")
     html = html[:s] + "<script>var DRIFT_SEED=7;</script>" + html[s:]
     cut = html.rfind("</body>")
@@ -374,13 +399,18 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
         half = a.secs / 2
         # ресурсы хода: главный поток (CDP), процессы браузера (процесс видеокарты), мс видеокарты на кадр
         ws.call("Performance.enable")
+        shot.ev(ws, "(__J.pm=__J.pm||[]).push(Math.round(performance.now()-__J.t0));0")
         res0, p0, w0 = metrics(ws), procs(a), time.time()
-        shot.ev(ws, "__J.gpu=null;if(typeof g11GpuMs==='function')g11GpuMs(%.1f).then(function(o){__J.gpu=o;});" % max(2, half - 1))
+        shot.ev(ws, "(__J.pm=__J.pm||[]).push(Math.round(performance.now()-__J.t0));0")
+        gsec = a.gpu_secs if a.gpu_secs else max(2, half - 1)
+        shot.ev(ws, "__J.gpu=null;__J.gs=performance.now()-__J.t0;if(typeof g11GpuMs==='function')g11GpuMs(%.1f).then(function(o){__J.gpu=o;});" % gsec)
         # в копе шаг вбок с верхней клетки выводит из устья на грунт — там идём вниз, потом вбок по глубине
         k1, k2 = WALK.get(sc, ("ArrowRight", "ArrowLeft"))
         key(ws, k1, True); time.sleep(half); key(ws, k1, False)
         key(ws, k2, True); time.sleep(half)
+        shot.ev(ws, "(__J.pm=__J.pm||[]).push(Math.round(performance.now()-__J.t0));0")
         res1, p1, w1 = metrics(ws), procs(a), time.time()
+        shot.ev(ws, "(__J.pm=__J.pm||[]).push(Math.round(performance.now()-__J.t0));0")
         gms = shot.ev(ws, "JSON.stringify(__J.gpu)")
         # скачок времени посреди хода: главный поток встал на три секунды (ноутбук уснул, ОС подвисла,
         # долгий мусор) — мир не должен догонять их одним кадром (телепорт), падать или терять героя.
@@ -395,6 +425,19 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
         if not isinstance(st, str):
             bad.append(("кадры · " + sc, "запись не прочиталась: %s" % st)); return
         d = json.loads(st)
+        # конец окна пробы видеокарты (g11GpuMs гасит метки времени): через ~0,3 с поток встаёт на 0,1–3,7 с
+        # без скрипта (22.10: стоп уезжал вслед за окном — 9,3 с при окне 7 с, 5,3 с при 3 с). Кадр игрока меток не
+        # включает никогда — это цена пробы, а не игры: окно вырезается из законов и печатается отдельно
+        gs = shot.ev(ws, "__J.gs||0")
+        if gs and gpu:
+            ge = gs + gsec * 1000
+            cut = lambda t: ge - 50 <= t <= ge + 800
+            pf = [f["d"] for f in d["f"] if cut(f["t"])]
+            d["f"] = [f for f in d["f"] if not cut(f["t"])]
+            for k in ("lt", "la"): d[k] = [x for x in d.get(k) or [] if not cut(x[0])]
+            if pf and max(pf) > 50: print("%-8s проба видеокарты: кадр %.0f мс на %.1f с, за 0,3 с после конца окна меток — цена замера, не игры" % (sc, max(pf), ge / 1000))
+        st100 = [(round(f["t"]), round(f["d"])) for f in d["f"] if f["d"] > 100]
+        if st100: print("%-8s стопы > 100 мс (t, мс): %s · окно меток %s · опрос процессов %s" % (sc, st100, shot.ev(ws, "__J.gs|0"), shot.ev(ws, "JSON.stringify(__J.pm||[])")))
         shot.ev(ws, "__J.f=[];__J.q=[];__J.lt=[];__J.pp=[];__J.la=[];0")   # запись прочитана — своя память не в счёт
         d["hu"] = (hu0, heap_gc(ws))
         if not gpu: bad.append(("кадры · " + sc, "видеокарты нет — замер на 2D не годится"))
@@ -601,6 +644,7 @@ def main():
     ap.add_argument("--w", type=int, default=1280)
     ap.add_argument("--h", type=int, default=800)
     ap.add_argument("--secs", type=float, default=16)
+    ap.add_argument("--gpu-secs", type=float, default=0, help="окно замера мс видеокарты, с (0 — полхода минус секунда)")
     ap.add_argument("--port", type=int, default=0, help="0 = a free port (sessions share this script)")
     ap.add_argument("--cpu", default="surface,cave", help="scenes walked again with the CPU throttled ×4 (empty = none)")
     ap.add_argument("--root", default=ROOT, help="the checkout whose drift.html and stand scenes are measured")
