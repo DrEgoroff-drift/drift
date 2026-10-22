@@ -292,9 +292,10 @@ Check each against the code before building — some may already hold.
   11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl` into
   hashed state.
 - [ ] **Watch:** «прогоны: двенадцать путей» flickered once under load.
-- [ ] **The vision flickers on real time (22.10):** the DPR pair (one window at 1 and 3) catches the game mid-motion. Settled in `geoSettle`: the base section lens and the man walking to his cell; the landing assembled over frames (`plnWarmStep`). Still open: after «карта» › «Назад» the system cues («Нейэль I · 760», «Звезда…») sit 5–12 px apart between the two runs, 2 of 16 runs — find what the system view eases on the real clock after the map closes, or make the DPR check skip cues anchored to moving bodies.
+- [ ] **The vision flickers on real time (22.10):** the DPR pair (one window at 1 and 3) catches the game mid-motion. Settled in `geoSettle`: the base section lens and the man walking to his cell; the landing assembled over frames (`plnWarmStep`). Still open: after «карта» › «Назад» the system cues («Нейэль I · 760», «Звезда…») sit 5–12 px apart between the two runs, 2 of 16 runs — find what the system view eases on the real clock after the map closes, or make the DPR check skip cues anchored to moving bodies. Seen again 22.10 evening in scene «заход», 2 of 6 runs while neighbours' Chromes loaded the machine (`plnWarmStep` budgets by `wallMs`).
 - [ ] **Nets owed:** `TEST_T0` at local noon; not caught yet — the .55 auto-brake, the money-printing
   counter, idle drones; a per-suite dirty-page check after `fn()`.
+- [ ] **Dead code in `23-mode-dig` (22.10):** `drawDigFauna` and the canvas impulse ring there are dead — the mine draws by the engine, `23c0-dig-hooks` turns a call into a loud error; they go when the author lifts the ban on editing `23-mode-dig`.
 - [ ] **Refactor queue, each a commit:** `detStuck`'s key law (fires only on a diff of exactly 0 — soften
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
   names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
