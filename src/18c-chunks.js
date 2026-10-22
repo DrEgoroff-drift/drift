@@ -120,56 +120,13 @@ function screenLayer(key,paint){
   return cn;
 }
 
-/* ── тайлы в двух измерениях ──
-   Ломоть по X годится для полосы; пещера (22) тянется и вниз, и тайл у неё
-   квадратный. Тот же договор: paint(g,wx0,wy0) красит мир в квадрате
-   [wx0,wx0+TILE)×[wy0,wy0+TILE) в координатах тайла. Держим столько, чтобы
-   хватило на экран 1920 с запасом; старые вытесняются по порядку. */
-const TILE=512, TILE_KEEP=20;
-function tileAt(store,kx,ky,paint){
-  const k=kx+","+ky;
-  let cn=store.map.get(k);
-  if(cn)return cn;
-  cn=mkCanvas(TILE,TILE);
-  withCtx(cn,TILE,TILE,kx*TILE,ky*TILE,paint);
-  tileSpan(cn);
-  store.map.set(k,cn);store.order.push(k);
-  while(store.order.length>TILE_KEEP)store.map.delete(store.order.shift());
-  return cn;
-}
-/* Занятые строки плитки — читаются раз, при выпечке (0.456, замер на ноуте автора):
-   дальние хребты поверхности лежат внизу кадра, а плитки неба над ними прозрачны
-   целиком — и каждый кадр всё равно ложились во весь экран, два экрана заливки
-   впустую на двух слоях. Пустую плитку не кладём, у частичной кладём только
-   полосу, где что-то есть: картинка та же до пикселя */
-function tileSpan(cn){
-  cn.__y0=0;cn.__y1=cn.height;
-  let d;try{d=cn.getContext("2d").getImageData(0,0,cn.width,cn.height).data;}catch(e){return;}
-  const w4=cn.width*4;let y0=-1,y1=-1;
-  for(let y=0;y<cn.height&&y0<0;y++){const o=y*w4;for(let i=3;i<w4;i+=4)if(d[o+i]){y0=y;break;}}
-  if(y0<0){cn.__y0=cn.__y1=0;return;}
-  for(let y=cn.height-1;y>=y0&&y1<0;y--){const o=y*w4;for(let i=3;i<w4;i+=4)if(d[o+i]){y1=y+1;break;}}
-  cn.__y0=Math.max(0,y0-2);cn.__y1=Math.min(cn.height,y1+2);   /* запас на сглаживание края */
-}
-function drawTiles(store,camx,camy,paint){
-  const kx0=Math.floor(camx/TILE),kx1=Math.floor((camx+W)/TILE);
-  const ky0=Math.floor(camy/TILE),ky1=Math.floor((camy+H)/TILE);
-  for(let ky=ky0;ky<=ky1;ky++)for(let kx=kx0;kx<=kx1;kx++){
-    const cn=tileAt(store,kx,ky,paint);
-    const y0=cn.__y0|0,y1=cn.__y1==null?cn.height:cn.__y1;
-    if(y1<=y0)continue;
-    if(y0===0&&y1===cn.height){ctx.drawImage(cn,kx*TILE-camx,ky*TILE-camy,TILE,TILE);continue;}
-    const k=TILE/cn.height;
-    ctx.drawImage(cn,0,y0,cn.width,y1-y0,kx*TILE-camx,ky*TILE-camy+y0*k,TILE,(y1-y0)*k);
-  }
-}
 
 /* ── то же на видеокарте (флот GPU, кит): выпечки GPU-холста вместо 2D-холстов ──
    Договор рисовальщика тот же: paint(g,wx0,wy0) рисует в глобальный ctx (на время выпечки это
    GcCtx), W и H — размер ломтя, плотность — DPR·SCK, как у mkCanvas. Выпечка переживает потерю
    устройства: gpuImage печёт её заново тем же draw, поэтому draw сам ставит W, H и матрицу.
    Кладётся не в ctx, а в проход (gpuScene/gpuOver) через gpuImage; место — из текущей матрицы
-   ctx (withScale, сдвиги), поворот не поддержан. Старые screenLayer/drawChunks/drawTiles
+   ctx (withScale, сдвиги), поворот не поддержан. Старые screenLayer/drawChunks
    остаются для тех, кто ещё рисует 2D-холстом. */
 /* положить выпечку в проход: x,y,w,h — в координатах текущего ctx (как у drawImage) */
 /* ломти по X: хранилище как у chunkStore; сменился ключ — старые выпечки сдаются */
