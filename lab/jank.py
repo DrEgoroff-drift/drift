@@ -314,6 +314,21 @@ def regress(sc, row, out, ver):
     except OSError: pass
 
 
+def heap_gc(ws):
+    try: ws.call("HeapProfiler.collectGarbage"); return ws.call("Runtime.getHeapUsage")["usedSize"]
+    except Exception: return None
+
+
+def mem_law(sc, d, out):
+    """закон «память растёт» — по куче после сборки: нижняя кромка performance.memory только подозревает"""
+    h0, h1 = d.get("hu") or (None, None)
+    if h0 is None or h1 is None: return
+    sus = [x for x in out if x[0] == "кадры · " + sc and x[1].startswith("память растёт")]
+    for x in sus: out.remove(x)
+    if h1 - h0 > 6e6: out.append(("кадры · " + sc, "память растёт: +%.1f МБ живого после сборки (%.1f → %.1f)" % ((h1 - h0) / 1e6, h0 / 1e6, h1 / 1e6)))
+    elif sus: print("%-8s память: пила мусора без роста — живого %+.1f МБ после сборки (%.1f → %.1f)" % (sc, (h1 - h0) / 1e6, h0 / 1e6, h1 / 1e6))
+
+
 def run_scene(a, pg, sc, bad, plant=None, cpu=1):
     """одна сцена в своей вкладке: поднять, дождаться ровного режима, записать вход и ход, рассудить"""
     req = urllib.request.Request("http://127.0.0.1:%d/json/new?about:blank" % a.port, method="PUT")
@@ -346,6 +361,9 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
             # слабый процессор (CDP: каждая задача потока в cpu раз дольше) — телефон послабее S23
             ws.call("Emulation.setCPUThrottlingRate", rate=cpu); tag = "%s×cpu%d" % (sc, cpu)
         if plant: shot.ev(ws, plant)
+        # куча после сборки — до записи и после: performance.memory считает и мусор, что сборщик ещё не
+        # убрал (система на .12: 63 → 147 МБ по нижней кромке, а живого +2 МБ — заготовка зала сорит)
+        hu0 = heap_gc(ws)
         shot.ev(ws, "__J.t0=performance.now();__J.on=true;")
         time.sleep(ENTRY_MS / 1000)
         half = a.secs / 2
@@ -372,6 +390,8 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
         if not isinstance(st, str):
             bad.append(("кадры · " + sc, "запись не прочиталась: %s" % st)); return
         d = json.loads(st)
+        shot.ev(ws, "__J.f=[];__J.q=[];__J.lt=[];__J.pp=[];__J.la=[];0")   # запись прочитана — своя память не в счёт
+        d["hu"] = (hu0, heap_gc(ws))
         if not gpu: bad.append(("кадры · " + sc, "видеокарты нет — замер на 2D не годится"))
         if d["crash"]: bad.append(("кадры · " + sc, "СБОЙ на экране"))
         for e in d["errs"]: bad.append(("кадры · " + sc, "ошибка страницы: " + re.sub(r"\s+", " ", e)[:160]))
@@ -389,8 +409,9 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
             RUN_MAX, LONG, ENTRY_MAX = RUN_MAX * cpu, LONG * cpu, ENTRY_MAX * cpu
             try: judge(tag, d["f"], bad, d.get("pz"))
             finally: RUN_MAX, LONG, ENTRY_MAX = keep
+            mem_law(tag, d, bad)
             return
-        judge(sc, d["f"], bad, d.get("pz"))
+        judge(sc, d["f"], bad, d.get("pz")); mem_law(sc, d, bad)
         # очередь видеокарты на кадр хода (после входа): отправки, загрузки буферов и текстур
         R = [f for f in d["f"] if f["t"] >= ENTRY_MS]
         if R and d.get("q"):
