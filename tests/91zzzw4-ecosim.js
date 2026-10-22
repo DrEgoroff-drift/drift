@@ -191,7 +191,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     mark("c900",cr>=modCost("hold",0));mark("c1250",cr>=modCost("drill",0));mark("c2k",cr>=2*modCost("drill",0));
     mark("hire",cr>=HIRE_FEE);mark("drone",cr>=dronePrice());
     mark("turn3k",(H.turn|0)>=3000);mark("alloc",!!H.alloc);
-    mark("coop",typeof coopHas==="function"&&coopHas());
+    mark("coop",!!coopHas());
     mark("clr2",(G.clearance|0)>=2);mark("kill",(G.kills|0)>=1);
     if(TL.h1==null&&m>=60)TL.h1={gross:Object.assign({},BOOK.gross),spend:Object.assign({},BOOK.spend),
       deeds:DSTAT.done,pay:DSTAT.pay,took:Object.assign({},DSTAT.took),lost:dispSt().lost,poor:DSTAT.poor.size,
