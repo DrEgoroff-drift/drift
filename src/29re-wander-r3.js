@@ -16,7 +16,7 @@
       лице. Последний час — вспышка спички у его руки, один раз.
    5. 2D-«Сороки» нет (22.10, автор: «2D не должно быть»): художник 24c-mode-wanderer-draw удалён. Без видеокарты
       кадра нет — плашка «нет WebGPU» (08b2); сбой кадра называет страж (28-loop). */
-const WAN3={cn:null,tags:null,mesh:null,mkey:"",err:0,frames:0,stat:null,vp:null,sz:null,meas:null,cam:null,t:0};
+const WAN3={cn:null,tags:null,mesh:null,mkey:"",err:0,frames:0,S:null,vp:null,sz:null,meas:null,cam:null,t:0};
 /* «Сорока» говорит у хранителя: строка say() встаёт табличкой у якоря «keeper» (08bj HANG_MSG_AT), его кладёт wan3Frame */
 HANG_MSG_AT.wanderer="keeper";
 const WAN3_L=-1.5,WAN3_R=1.5,WAN3_H=2.6,WAN3_F=3.4,WAN3_B=-10.6;
@@ -258,7 +258,7 @@ function wan3Frame(){
   U[43]=t;U[44]=1;U[47]=1;
   const oq=r3Proj(cam.vp,cam.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   U.set([1,sz.ch/sz.cw,HALL_SHARP,1],52);
-  WAN3.frames++;WAN3.stat=hallLimits(Sc);WAN3.vp=cam.vp;WAN3.sz=sz;
+  WAN3.frames++;WAN3.S=Sc;WAN3.vp=cam.vp;WAN3.sz=sz;
   WAN3.meas={man:+hallManK(cam,0,WAN3_KZ,sz.ch).toFixed(3),cur,n:lots.length};
   /* пульт «Сороки» (26d) внизу: таблички кончаются над ним */
   const pw=document.getElementById("wanwin"),pr=pw&&pw.classList.contains("open")?pw.getBoundingClientRect():null;
