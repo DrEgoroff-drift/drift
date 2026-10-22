@@ -106,3 +106,63 @@ TEST_SUITES.push(()=>suite("база в разрезе: объективы, до
     eq(bad.join(","),"","вещи не стоят на линии хода");
   }finally{SECT.b=b0;SECT.lens=l0;PLN.cam=cam0;}
 }));
+
+/* меню стройки лентой на слое (M632, DESIGN-base-scene §9): 2D-холст не трогает; ячейка на вид, выбранная
+   целиком в кадре; ячейки и стрелки ≥ 44 px; тап ставит S.pick; телефон лёжа — лента не на человеке */
+TEST_SUITES.push(()=>suite("база в разрезе: меню стройки — лента на слое, цели пальца, тап, человек открыт (M632)",{tier:"browser"},()=>{
+  const Q=SECT_MENU,keep={dom:Q.dom,hudK:Q.hudK,x:Q.x,t:Q.t,hit:Q.hit,top:Q.top,lay:Q.lay},m0=G.mode,b0=G.base,live0=SECT.live;
+  const C2=["fill","stroke","fillRect","strokeRect","drawImage","fillText","strokeText","putImageData"],own={};
+  let n2=0;
+  for(const k of C2){own[k]=Object.prototype.hasOwnProperty.call(ctx,k)?ctx[k]:undefined;const o=ctx[k];ctx[k]=function(){n2++;return o.apply(this,arguments);};}
+  try{
+    const {B}=sectBaseFix(4),S={B,cur:1,row:1,x:cellX(1),y:cellY(1),menu:true,pmenu:false,walkPhase:0,pick:8};
+    /* окно: низ пультов, низ шапки, правый борт — как публикует вёрстка; человек — где скажет pj */
+    const run=(w,h,dom,ym)=>sectWith(w,h,()=>{
+      Q.hudK=sectMenuKey();Q.dom=dom;Q.x=null;Q.t=0;
+      const mx=sectX(S.x),my=sectY(S.y)-SECT_M.ch/2,pj=v=>[W/2+(v[0]-mx)*30,ym-(v[1]-my)*30];
+      const T={uq:[],ur:[],gd:[]};ovInto(T,1,()=>sectOvMenu(S,B,pj));
+      return {h:Q.hit,top:Q.top,man:[ym-63,ym+3],q:T.uq.length};
+    });
+    const fits=(R,w,tag)=>{
+      ok(R.q>0,tag+": лента легла на слой");
+      eq(R.h.cells.length,R.h.nv,tag+": ячейка на каждый показанный род ("+R.h.nv+")");
+      const on=R.h.cells.find(c=>c.i===S.pick);
+      ok(on&&on.x0>=0&&on.x1<=w,tag+": выбранная целиком в кадре");
+      ok(R.h.cw>=44&&R.h.ch>=44&&R.h.aw>=44,tag+": ячейка "+R.h.cw.toFixed(0)+"×"+R.h.ch.toFixed(0)+", стрелка "+R.h.aw.toFixed(0)+" — цели ≥ 44");
+    };
+    const pc=run(1920,1080,{floor:1000,top:120,rail:{l:1830,r:1900,t:660,b:800}},560);
+    fits(pc,1920,"ПК 1920");
+    eq(pc.h.nv,9,"ПК 1920: девять ячеек");
+    ok(!pc.top,"ПК: лента над пультами");
+    const ph=run(390,844,{floor:1640/2,top:170,rail:{l:300,r:380,t:720,b:780}},680);
+    fits(ph,390,"телефон 390");
+    ok(ph.h.cells.every(c=>c.x1<=300-12+.5),"телефон 390: лента обходит правый борт");
+    const ls=run(568,320,{floor:220,top:60,rail:{l:430,r:560,t:70,b:130}},215);
+    fits(ls,568,"телефон лёжа 568×320");
+    ok(ls.top,"телефон лёжа: человек на месте ленты — лента под шапкой");
+    ok(ls.h.y1+6<=ls.man[0]||ls.h.y0-6>=ls.man[1],"телефон лёжа: лента не на человеке ("+ls.h.y0.toFixed(0)+".."+ls.h.y1.toFixed(0)+" при человеке "+ls.man.map(v=>v.toFixed(0)).join("..")+")");
+    eq(n2,0,"меню не рисует на 2D-холсте");
+
+    /* имена: строки в ширину ячейки, переносом — без обрезки */
+    const L=Q.lay,wide=[];
+    for(const k of BUILD_KEYS)for(const s of L.lines[k])if(L.wid(s,+/(\d+)px/.exec(L.font)[1])>L.lim+.5)wide.push(s);
+    eq(wide.join(","),"","имена родов влезают в ячейку");
+
+    /* тап: по ячейке — выбор, по стрелке — страница */
+    G.mode="base";G.base=S;SECT.live=true;
+    sectWith(390,844,()=>{
+      Q.hudK=sectMenuKey();Q.dom={floor:820,top:170,rail:null};Q.x=null;
+      const mx=sectX(S.x),my=sectY(S.y)-SECT_M.ch/2;
+      ovInto({uq:[],ur:[],gd:[]},1,()=>sectOvMenu(S,B,v=>[W/2+(v[0]-mx)*30,300-(v[1]-my)*30]));
+      const c=cvsRect(),cx=x=>c.left+x*c.width/W,cy=y=>c.top+y*c.height/H,h=Q.hit,y=(h.y0+h.y1)/2;
+      const t=h.cells.find(q=>q.i!==S.pick);
+      tap(cx((t.x0+t.x1)/2),cy(y));
+      eq(S.pick,t.i,"тап по ячейке ставит S.pick");
+      const p0=S.pick;
+      if(h.next){tap(cx((h.next[0]+h.next[1])/2),cy(y));eq(S.pick,Math.min(h.n-1,p0+h.nv),"тап по ▶ листает страницу");}
+    });
+  }finally{
+    for(const k of C2){if(own[k]===undefined)delete ctx[k];else ctx[k]=own[k];}
+    Object.assign(Q,keep);G.mode=m0;G.base=b0;SECT.live=live0;
+  }
+}));

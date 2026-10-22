@@ -224,16 +224,20 @@ The new strip:
 
 - a row of cells centred on the picked one, sliding as `S.pick` moves (eased 150 ms, never a
   jump); arrows at the ends while cells are hidden on that side;
-- a cell is 84 × 60 CSS px on the PC (9 shown, 776 px) and 64 × 56 on the phone (5 shown at 390,
-  with the 16 px gutters) — every cell is a tap target ≥ 44 px; in the `uiK` measure;
-- in a cell: the kind's name in two lines of 10 px (no cutting), the price from `baseCost` (this
+- a cell is 84 × 60 CSS px on the PC (9 shown, 776 px) and 56 × 56 on the phone (3 shown at 390 —
+  the strip steps round the right rail) — every cell and both arrows are tap targets ≥ 44 px; in the
+  `uiK` measure. One name size for the whole strip (11 down to 9 px); a word that does not fit is
+  hyphenated near its middle at a vowel, and when some kind needs three lines (the fridge on the
+  phone) every cell grows by a line, so the strip keeps one height;
+- in a cell: the kind's name (no cutting), the price from `baseCost` (this
   base's estimate) — «1800 кр · 6 спл»; a kind that cannot be built here is dimmed with its
   reason in one short word under the price (наука / фирма / сверху), read from the same fields
   `21a` reads (`needTech`, `firm`, `surfaceOnly`);
 - the picked cell in the amber frame of the board, the others on the board's dark plate;
 - the strip's bottom sits 12 px over the top of the bottom controls (`PADS_RECT`,
-  `CONSOLE_RECT` — the layout the canvas publishes), never over the man: the near lens puts
-  him in the middle third;
+  `CONSOLE_RECT` — the layout the canvas publishes), never over the man: where it would lie on
+  him (the phone on its side, 568 × 320) it moves under the HUD in place of the board, and
+  `#msg`, which sits there, keeps quiet (`body.basehush`) — the same line stays in the ЭФИР strip;
 - a tap on a cell picks it (`S.pick=i` — the same field the arrows set); building stays on the
   ДЕЙСТВИЕ button, which already says the verb. The tap is taken in `21ae` on the layer's own
   pointer listener only while `G.mode==="base"&&S.menu` and only inside a cell; `15-input` is not

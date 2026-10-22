@@ -376,32 +376,21 @@ function wreckInteract(sh){
   return true;
 }
 function drawWrecksSystem(zx,zy,Z){
-  const list=wrecksHere();if(!list)return;
+  const list=wrecksHere(),pass=gpuScene();if(!list||!pass)return;
+  const SH=[];
   for(const w of list){
     const x=zx(w.x),y=zy(w.y);
     if(x<-60||x>W+60||y<-60||y>H+60)continue;
-    /* тёмный переломленный корпус: тело, обвод, тусклый аварийный маяк */
-    if(!(bodyBargeWreck(w,x,y,shipScaleAt(Z)*.8))){   /* тело остова (M820, 17c2f) */
-    ctx.save();ctx.translate(x,y);
-    const s=clamp(Z,.5,1.4);ctx.scale(s,s);ctx.rotate((w.seed%628)/100);
-    ctx.fillStyle="rgba(24,26,32,.96)";ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.8;
-    ctx.beginPath();
-    ctx.moveTo(-34,-6);ctx.lineTo(-6,-11);ctx.lineTo(30,-7);ctx.lineTo(34,3);
-    ctx.lineTo(-4,7);ctx.lineTo(-30,6);ctx.closePath();ctx.fill();ctx.stroke();
-    for(let i=0;i<5;i++){ctx.strokeStyle="rgba(0,0,0,.4)";
-      ctx.beginPath();ctx.moveTo(-24+i*12,-9);ctx.lineTo(-24+i*12,6);ctx.stroke();}
-    /* отломанная секция рядом */
-    ctx.fillStyle="rgba(20,22,28,.95)";
-    ctx.beginPath();ctx.moveTo(40,4);ctx.lineTo(52,-2);ctx.lineTo(50,8);ctx.closePath();ctx.fill();
-    ctx.restore();}
+    /* тёмный переломленный корпус — тело остова (M820, 17c2f); 2D-кисть ушла (M826, второй проход).
+       Тусклый аварийный маяк — фигурой в проходе, «ОСТОВ БАРЖИ» — подписью */
+    bodyBargeWreck(w,x,y,shipScaleAt(Z)*.8);
     if(!w.seen){
       const bl=Math.pow(Math.max(0,Math.sin(G.t*.05+w.seed)),8);
-      if(bl>.02){ctx.fillStyle="rgba(255,110,90,"+(.9*bl).toFixed(2)+")";
-        ctx.beginPath();ctx.arc(x,y-10,2.2,0,TAU);ctx.fill();}
-      ctx.fillStyle="rgba(255,150,120,.7)";ctx.font="8px ui-monospace,monospace";
-      ctx.textAlign="center";ctx.fillText("ОСТОВ БАРЖИ",x,y+22);
+      if(bl>.02)SH.push([1,x,y-10,2.2,0,0,0,255,110,90,.9*bl]);
+      domLabel("wk"+(w.seed>>>0),x,y+22,"ОСТОВ БАРЖИ","8px ui-monospace,monospace","rgba(255,150,120,.7)","center");
     }
   }
+  if(SH.length)gpuShapes(pass,SH);
 }
 
 /* ══════════════ корпус баржи ══════════════
@@ -566,7 +555,7 @@ function gpuBargeBody(b,x,y,s){
   return gpuLitSprite(art.cn,x,y,R,s,b.a,lx,ly,-1,0,lod);   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой баржи с видеокарты (ступень 1): огни и зевы — фигурами в проходе сцены,
-   то же, что drawBarge кладёт поверх выпечки; x,y — экран, s — масштаб, a — поворот */
+   поверх выпечки; x,y — экран, s — масштаб, a — поворот */
 function bargeLiveGpu(pass,b,x,y,s,a){
   const art=bargeArtOf(b),c=Math.cos(a),n=Math.sin(a),T=(u,v)=>[x+s*(u*c-v*n),y+s*(u*n+v*c)],SH=[];
   for(const li of art.lights){const [px,py]=T(li.x,li.y);
@@ -578,73 +567,31 @@ function bargeLiveGpu(pass,b,x,y,s,a){
       [1,px,py,r*.55,0,0,r*.27,255,150,80,.4],[1,px,py,r*.1,0,0,r*.45,255,214,158,.85]);}
   if(SH.length)gpuShapes(pass,SH);
 }
-function drawBarge(b,lit){
-  const art=bargeArtOf(b);
-  /* живой слой: ходовые огни и рубка мигают — печь их нельзя */
-  for(const li of art.lights){
-    if(li.c==="nav"){
-      ctx.fillStyle=li.g?"rgba(120,240,150,":"rgba(255,90,80,";
-      const on=Math.sin(G.t*.08+(li.g?1.6:0))>0?.95:.25;
-      ctx.fillStyle+=on+")";
-      ctx.beginPath();ctx.arc(li.x,li.y,1.6,0,TAU);ctx.fill();
-    }else if(li.c==="win"){
-      ctx.fillStyle=(Math.sin(G.t*.05)>-.3)?"rgba(255,228,170,.9)":"rgba(255,228,170,.45)";
-      ctx.beginPath();ctx.arc(li.x,li.y,1.5,0,TAU);ctx.fill();
-    }
-  }
-  /* выхлоп тихоходных движков: тёмный раструб с горящим зевом, а не факел.
-     Раньше здесь были налегающие полупрозрачные круги — на корме они сходились
-     мыльными пузырями. Теперь у каждого сопла тёмное кольцо и компактное
-     свечение в горловине, кольца не налегают. */
-  for(const li of art.lights){
-    if(li.c!=="eng")continue;
-    const ex=li.x-1;
-    ctx.fillStyle="rgba(10,12,16,.95)";
-    ctx.beginPath();ctx.arc(ex,li.y,li.r,0,TAU);ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=.8;ctx.stroke();
-    const fg=ctx.createRadialGradient(ex,li.y,0,ex,li.y,li.r);
-    fg.addColorStop(0,"rgba(255,214,158,.9)");fg.addColorStop(.55,"rgba(255,150,80,.4)");
-    fg.addColorStop(1,"rgba(255,120,60,0)");
-    ctx.fillStyle=fg;ctx.beginPath();ctx.arc(ex,li.y,li.r*.82,0,TAU);ctx.fill();
-  }
-}
 function drawBarges(zx,zy,Z){
   const pass=gpuScene(),SH=[];
   for(const b of G.barges){
     const x=zx(b.x),y=zy(b.y);
     if(x>-80&&x<W+80&&y>-80&&y<H+80){
       const s=shipScaleAt(Z)*.8;   /* один потолок с кораблём (16c, п. 2) */
-      /* тело (M820, 17c2f): сетка со своими огнями; без него — выпечка и живой слой, как было */
+      /* тело (M820, 17c2f): сетка со своими огнями; без него — выпечка и живой слой фигурами.
+         Без прохода сцены баржи нет: 2D-кисть ушла (M826, второй проход) */
       const bd=bodyBarge(b,x,y,s),lit=bd||gpuBargeBody(b,x,y,s);
-      if(pass&&lit){
+      if(!pass)continue;
+      if(lit){
         /* с видеокарты (ступень 1): огни — фигурами, полоса — прямоугольниками, имя — подписью */
         if(!bd)bargeLiveGpu(pass,b,x,y,s,b.a);
         const hp=clamp(b.hp/b.hullMax,0,1);
         if(hp<.999)SH.push([0,x-24,y-30,x+24,y-27,0,0,255,255,255,.14],[0,x-24,y-30,x-24+48*hp,y-27,0,0,143,208,138,1]);
-        ctx.textAlign="center";
         /* тревога висит табличкой у баржи (M826, 08bj), позывной молчит: он — её первая строка; корпус
            и полоса прочности — не подставка для неё */
         const sos=typeof CUE_AT!=="undefined"&&CUE_AT&&CUE_AT.obj===b;
         if(sos){const n=ovNd();hangBlock((x-32*s)*n,(y-33)*n,(x+32*s)*n,(y+20*s)*n);}
         if(!(sos&&hangCueHung()))domLabel("bg"+domLabelId(b),x,y+30,"БАРЖА «"+b.capName.toUpperCase()+"»","8px ui-monospace,monospace","rgba(143,208,138,.8)","center");
-        continue;}
-      ctx.save();ctx.translate(x,y);ctx.rotate(b.a);ctx.scale(s,s);
-      drawBarge(b,lit);
-      ctx.restore();
-      const hp=clamp(b.hp/b.hullMax,0,1);
-      if(hp<.999){
-        ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-24,y-30,48,3);
-        ctx.fillStyle="#8fd08a";ctx.fillRect(x-24,y-30,48*hp,3);
       }
-      ctx.fillStyle="rgba(143,208,138,.8)";ctx.font="8px ui-monospace,monospace";
-      ctx.textAlign="center";
-      ctx.fillText("БАРЖА «"+b.capName.toUpperCase()+"»",x,y+30);
-    }else if(G.tech.has("radar")){
+    }else if(pass&&G.tech.has("radar")){
       const ang=Math.atan2(b.y-G.ship.y,b.x-G.ship.x);
       const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-32),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-32);
-      if(pass){SH.push([1,mx,my,3,0,0,0,143,208,138,.8]);continue;}
-      ctx.fillStyle="rgba(143,208,138,.8)";
-      ctx.beginPath();ctx.arc(mx,my,3,0,TAU);ctx.fill();
+      SH.push([1,mx,my,3,0,0,0,143,208,138,.8]);
     }
   }
   if(SH.length)gpuShapes(pass,SH);

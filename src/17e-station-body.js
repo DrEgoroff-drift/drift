@@ -18,7 +18,7 @@ function drawMooredBarge(zx,zy,Z){
   const sys=G.sys;if(!sys||!sys.station)return;
   if(typeof bldHas!=="function"||!bldHas(sys.sx,sys.sy,"prichal"))return;
   const c=(G.crew||[]).find(c=>c.order&&c.order.kind==="barge"&&c.barge&&c.barge.legs.indexOf(sys.key)>=0);
-  if(!c||typeof drawBarge!=="function")return;
+  if(!c||typeof bargeLiveGpu!=="function")return;
   const st=sys.station;
   const b=drawMooredBarge.b||(drawMooredBarge.b={});
   b.seed=hashi(sys.seed,0xB0A7,1);b.x=st.x+96;b.y=st.y+58;b.a=-.55;

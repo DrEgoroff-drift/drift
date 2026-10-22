@@ -529,7 +529,7 @@ function haulGpu(pass,T,b,art,sS,sB,x,y,sx,sy,zx,zy){
   if(D.length)gpuShapes(pass,D);
 }
 function drawHaul(zx,zy,Z){
-  const T=G.haul;if(!T||typeof drawBarge!=="function")return;
+  const T=G.haul;if(!T||typeof bargeLiveGpu!=="function")return;
   const b=haulBarge(),art=bargeArtOf(b);
   const sS=shipScaleAt(Z),sB=sS*HAUL_BARGE_K;
   const x=zx(T.bx),y=zy(T.by),sx=zx(G.ship.x),sy=zy(G.ship.y);
