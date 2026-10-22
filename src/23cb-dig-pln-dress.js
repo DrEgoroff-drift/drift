@@ -313,14 +313,14 @@ function dig3DressFrame(F,Fd,D,Mm,x0,x1,y0,y1,Lt){
   /* клеть: где она стоит (Mm.cy — пол клети в px мира, Mm.gy — в метры, как у человека) */
   if(!M.cg||M.cg.gen!==PLN_GPU.gen){M.cg=dig3CageMesh();M.rp=dig3RopeMesh();}
   const cy=Mm.gy(Mm.cy),cx=DIG3_CM*.5,zc=(.3+1.95)/2;
-  plnRec(M.cg.a,0,[cx,cy,0],1,0,1,0);plnInstSet(M.cg.inst,M.cg.a,1);
+  plnRec(M.cg.a,0,[cx,cy,0],1,0,1,0);dig3InstPut(M.cg.inst,M.cg.a,1);
   F.draw.push({geo:M.cg.geo,inst:M.cg.inst,lamp:true,sun:true,refl:false});
   /* руда в вагонетке: горка поднимается над бортом по мере груза, пустая клеть — горки нет */
   const fill=typeof mineCageW==="function"?clamp(mineCageW(D)/MINE_CAGE_CAP,0,1):0;
   let ht=0;
   if(fill>0){
     if(!M.hp||M.hp.gen!==PLN_GPU.gen)M.hp=dig3HeapMesh();
-    plnRec(M.hp.a,0,[cx,cy-(1-Math.sqrt(fill))*.3,0],1,0,1,0,dig3HeapTint(D.cage));plnInstSet(M.hp.inst,M.hp.a,1);
+    plnRec(M.hp.a,0,[cx,cy-(1-Math.sqrt(fill))*.3,0],1,0,1,0,dig3HeapTint(D.cage));dig3InstPut(M.hp.inst,M.hp.a,1);
     F.draw.push({geo:M.hp.geo,inst:M.hp.inst,lamp:true,sun:true,refl:false});ht=M.hp.geo.n/3;
   }
   /* канат: с обода шкива к серьге (копра ещё нет — прямо вверх на его высоту) */
