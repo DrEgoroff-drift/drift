@@ -75,23 +75,6 @@ const GATE2D=[
    painters:["chipDom","domLabel","ovText","ovAtlas","ovFlush"],warm:30,
    place(){return gate2dChips();},
    probe:["chipDom","domLabel"]},
-  /* станция (17c3): мастер тела двумя слоями (торговая: под кольцом и над ним) и вращающееся
-     кольцо — выпечки GPU-холста; мастера и кольца сбрасываем, чтобы выпечка шла под записью */
-  {name:"станция (17c3): мастер слоями, кольцо, огни",
-   painters:["drawStation","stationMaster","stMasterJob","prebake","drawStationBody","stSpinCv","gpuStationDraw","stEmFlush","gpuLitSprite"],
-   /* мастер живёт на пути ?body=0 (M820: станция — тело 17c2g); его печи сторожим там */
-   done(){if(this.b0!=null){BODY.on=this.b0;this.b0=null;}},
-   place(first){
-     if(first){this.b0=BODY.on;BODY.on=false;}
-     for(let r=0;r<=14;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
-       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);
-       if(!s.station||(s.station.stype||"trade")!=="trade")continue;
-       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const S=s.station;
-       if(S.orbit!=null){S.x=Math.cos(S.ang)*S.orbit;S.y=Math.sin(S.ang)*S.orbit;}
-       if(first){for(const k of [...PB.keys()])prebakeDrop(k);for(const M of ST_MASTER.values())stMasterDrop(M);ST_MASTER.clear();for(const q of ST_SPIN.values())gpuBakeDrop(q);ST_SPIN.clear();}
-       G.ship.x=S.x;G.ship.y=S.y+80;G.ship.vx=G.ship.vy=0;G.zoom=1.5;G.zoomT=null;return {S};}
-     return null;},
-   probe:["drawStation","stationMaster"]},
   /* жест хозяина и пост у входа (17h): держава меняется каждые 15 кадров, возраст — внутри
      её жеста (прожектор «gt», линия «or»); доску поста сбрасываем, чтобы выпечка шла под записью */
   {name:"жест и пост (17h): корабли флота, дрон, прожектор, линия досмотра, доска",

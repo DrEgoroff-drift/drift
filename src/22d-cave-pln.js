@@ -308,13 +308,12 @@ function cave3Over(){
     if(x>-40&&x<W+40&&y>-40&&y<H+40){
       const k=Math.sin(G.t*.08)>0?.9:.4;
       if(LP){const h=lifeHere(x,y-6);gpuShapes(LP,[[1,h.x,h.y,4*h.s,0,0,1.2*h.s,255,225,140,k]],{blend:"over"});}
-      else{ctx.fillStyle="rgba(255,225,140,"+k+")";ctx.beginPath();ctx.arc(x,y-6,4,0,TAU);ctx.fill();}
     }
   }
 }
 
-/* ── переключатель ── */
-const CAVE3_OLD_DRAW=drawCave;
+/* ── переключатель ──
+   2D-рисовалки пещеры больше нет (22-mode-cave): кадр не собрался — в нём одни приборы */
 drawCave=function(){
   let ok=false;
   if(CAVE3.on&&CAVE3.bad<3&&G.cave&&G.cave.g){
@@ -328,12 +327,11 @@ drawCave=function(){
     }
   }
   /* свечение у нового вида своё; движку оставлено только зерно */
-  BLOOM_K.cave=ok?0:CAVE3_BLOOM;
+  BLOOM_K.cave=0;
   CAVE3.live=ok;
-  if(!ok){CAVE3.c=null;CAVE3_OLD_DRAW();return;}
+  if(!ok){CAVE3.c=null;return;}
   withScale(G.viewK,cave3Over);
 };
-const CAVE3_BLOOM=BLOOM_K.cave;
 /* клавиша карты в пещере: дальний объектив туда и обратно (раньше она здесь молчала) */
 const CAVE3_OLD_NAV=navAction;
 navAction=function(){

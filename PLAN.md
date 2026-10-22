@@ -22,10 +22,6 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 game's logic — the shift, the bill, the dispatcher, loss, the three rails, combat — is
 `docs/DESIGN-game.md` (M900+; queue in its §10.8, the author's forks in §10.9). Where a stage below
 and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M911 are built (`28m-dispatch`, `28n-access`, `28o-firstwatch`, `28p-doors`, `28q-fork`, unreleased); the §10.8 queue is closed.
-Left open from M910 (story doors), each its own small item:
-- **M910b · rivals at your landmarks.** The six rivals leave traces at landmarks you marked.
-- **M910c · a face gone from the hall.** A keeper you failed is missing from the cantina crowd.
-- ~~the `bill` deed~~ dropped: there is no stranger's bill in the game.
 
 Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
 bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
@@ -312,6 +308,8 @@ Check each against the code before building — some may already hold.
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
   names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
   functions, on touch only; the button family merge; `-Times` for the Node tier.
+- [ ] **The tether crosses the name (22.10):** the veteran's tether line is drawn through his own name
+  plate (`13-pirates` labels against the tether pass) — route the line under the plate or break it there; not touched.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
   the nightly visual tour as well — every zone framed against the reference, a morning page «what changed

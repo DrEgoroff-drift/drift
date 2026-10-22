@@ -240,12 +240,11 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     ok(a&&b&&Math.abs(b[0]-a[0])<=3,"переплёт окна "+(a&&b?Math.abs(b[0]-a[0]).toFixed(1):"—")+" px ≤ 3");}
 
   /* M812: в месте карточки (≥120 px) корпус — объём ангара, длинная сторона не меньше 160 px; в малом — прежний вид сверху */
-  {const wo=H3D.on;H3D.on=true;
+  {
     for(const id of SHIP_KEYS){const S={},f=hallYardFit(S,id,400,HALL_YARD_H),m=h3dMesh(hullOf(id),S.v3&&S.v3.gear),U=hgUnits(m,S.v3.tilt,S.v3.persp,[S.v3.yaw]);
       const lw=f[2]*Math.max(U.hu1-U.hu0,U.hv1-U.hv0);
       ok(!!S.v3&&lw>=160&&f[2]*(U.hv1-U.hv0)<=HALL_YARD_H,"корпус «"+id+"» в карточке — объём, "+lw.toFixed(0)+" px по длинной стороне, в высоту места");}
-    const S0={};hallYardFit(S0,SHIP_KEYS[0],120,64);ok(S0.v3===null,"в малом месте — вид сверху, как раньше");
-    H3D.on=wo;}
+    const S0={};hallYardFit(S0,SHIP_KEYS[0],120,64);ok(S0.v3===null,"в малом месте — вид сверху, как раньше");}
 
   /* наезд: от двери к месту, к концу — ровно цель */
   hallGo("board",true);

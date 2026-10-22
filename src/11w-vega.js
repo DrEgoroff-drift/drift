@@ -303,14 +303,4 @@ function vegaAmbientTick(){
     if(L.length)peopleLine("Я карты читала: на "+L[0].sys.station.name+" нет "+L[0].need.ru+". Это "+L[0].d+" "+pl3(L[0].d,"прыжок","прыжка","прыжков")+".","Вега");
   }
 }
-/* фигура дома: в жилой части, косынка; обиженная — спиной */
-function vegaHomeFigure(c,x,fy){
-  const V=G.vega;if(!V||!V.stage||V.aboard)return;
-  const k=62/89;
-  c.save();c.translate(x,fy);c.scale(k,k);
-  hqFigure(c,0,0,[120,84,140],G.t*.02,null,0,null,0);
-  c.restore();
-  c.fillStyle="#b8323a";c.beginPath();c.moveTo(x-6,fy-56);c.quadraticCurveTo(x,fy-64,x+6,fy-56);c.lineTo(x+5,fy-52);c.lineTo(x-5,fy-52);c.closePath();c.fill();
-  if(V.parrot2){c.fillStyle="#3fa06a";c.beginPath();c.ellipse(x+12,fy-40,3,4.5,.3,0,TAU);c.fill();c.fillStyle="#e0b040";c.fillRect(x+14,fy-41,2.5,1.5);}
-}
 function vegaBroken(what){const V=G.vega;return !!(V&&V.broken&&V.broken.indexOf(what)>=0);}

@@ -2,11 +2,10 @@
 /* Каждая станция ST_TYPES собирается сеткой в пределах h3d; каждый класс ГЛАВТРАССЫ находит корпус;
    у баржи 3–6 рам по вместимости; ?body=0 возвращает прежние вызовы; полоса — только у раненого и
    взятого в захват, не у целого, не у своего борта державы. Сетки строятся без видеокарты. */
-TEST_SUITES.push(()=>suite("тела: станции, флот, баржа, выключатель, полоса",()=>{
+TEST_SUITES.push(()=>suite("тела: станции, флот, баржа, полоса",()=>{
   resetWorld();
-  const on0=BODY.on,marks0=G.marks;
+  const marks0=G.marks;
   try{
-    BODY.on=true;
     /* ── станции: каждый тип, два завода ── */
     for(const t of ST_TYPES)for(const by of ["gt","co"]){
       const m=h3dStationMesh({by},t.id,by,hashi(7,t.id.length,by.charCodeAt(0)));
@@ -41,15 +40,5 @@ TEST_SUITES.push(()=>suite("тела: станции, флот, баржа, вы
     eq(bodyBar({hull:30,hullMax:50}),true,"пират ниже 70 % — полоса");
     G.marks=[pir];eq(bodyBar(pir),true,"взятый в захват — полоса");
     eq(bodyBar({hull:50,hullMax:50,rogue:1}),true,"ренегат — полоса, как была");
-    /* ── выключатель: прежние вызовы ── */
-    BODY.on=false;G.marks=[];
-    eq(bodyBar(pir),true,"?body=0: полоса по прежнему правилу");
-    eq(bodyBarge({seed:1,cap:90,x:0,y:0,a:0},0,0,1),false,"?body=0: баржа — прежняя выпечка");
-    eq(bodyBargeWreck({seed:1,x:0,y:0},0,0,1),false,"?body=0: остов — прежний");
-    eq(bodyStation({by:"gt"},0,0,1,"trade"),false,"?body=0: станция — прежний мастер");
-    eq(bodyShuttle(0,0,0,1,[35,43,54],0,0),false,"?body=0: челнок — прежний спрайт");
-    eq(bodyFleet({k:"post",seed:1,by:"gt"},0,0,0,1,1),false,"?body=0: борт линии — прежний");
-    eq(bodyPower({pw:"gt",shipId:"x"},0,0,1,0,0),false,"?body=0: борт державы — сварной, как был");
-    eq(bodyPirFlame({}),null,"?body=0: факел пирата прежний");
-  }finally{BODY.on=on0;G.marks=marks0;}
+  }finally{G.marks=marks0;}
 }));
