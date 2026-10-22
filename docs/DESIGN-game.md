@@ -1125,6 +1125,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M915 | workshops: three levers in numbers **measured 22.10, §11**: (а) a buyer for the next link, (б) a market for the last link, (в) the maker at home — cr/h at T3 and the code each costs | (а)+(в) is the pair (five workshops −3.8k → −0.2k cr/h at 6 h); no lever makes workshops a T3 income; 10 of 49 industrial goods have no consumer in the code; (в) is 1–3 lines, (а) ~40 |
 | M916 | «no sites» checked **measured 22.10, §4.1b**: the probe's ladder or the game's | the probe's timing, not a bug: home climbs to ★11–13 in three hours at T3 (one site) and keeps it through a save; T0 stops at 10 on the drone gate; eaters need ★20–22 |
 | M917 | the ten dead industrial goods **measured 22.10, §11**: who eats each by meaning, and what an eater gives a chain with (а)+(в) | nine of ten are base modules by name, hullsec the hull; a chain with an eater pays 0.4–13k cr/h, mostly through its internal links (shadow price at every link); none fits three sites and the ★20–25 tiers at T3 |
+| M918 | the probe M912–M917 summed up for the author **written 22.10, §12**: proposals ranked by return per line, and what the measurements say to leave alone | (в) maker at home (1–3 lines) and (а) buyer of tier-1 goods (~40 lines) first: workshops −3.8k → −0.2k cr/h; prompt collisions; dead goods as base prices (~10 lines + a key each), late game; drone parts, internal-link pay and the allotment threshold disputed |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),
@@ -1303,6 +1304,103 @@ after that is one key in `BUILD` (`21a:23-82`). Ship modules cost credits only (
 `11-log.js:157-160`), so selsyn/gyro/supercon need the same generalisation on the ОСНАСТКА buy path.
 Hullsec as repair is a second rate in `baseRepairShip` next to `HULL_PER_ALLOY` (`21b1:116`). All of
 these files are outside this worker's list (21a, 11-log); the numbers above change no price.
+
+## 12. Summary of the probe M912–M917 — for the author (M918, 22.10)
+
+One page over §4.1b and §11: what the probe says to change in the game, ranked from the best return
+per line of code to the most disputable, then what it says to leave alone. Every number is from
+those sections (T3 at a human's pace with the base and the logist unless named; cr/h; 3 h · 6 h).
+Nothing here is built; prices and balance are the author's.
+
+### Proposals, ranked
+
+**1. Let a workshop eat what its own system makes, at home — lever (в).** Today `bldRuleWhy`
+(`src/12ad-site.js:141-146`, reason at `12ac-bld.js:14-15`, «иначе не нужен маршрут») refuses any
+workshop that eats the system's own ore, so every feeding is a jump that costs ≈ 2.2k cr all-in
+(fuel 440–540 plus the minutes' wages) against ~395 cr of goods. And the ladder gives a T3 player
+after three hours exactly one site, at home (M916), so in the game as it is the one site a T3 player
+has cannot hold anything that eats what they carry. With (в): the five-workshop line −3.8k → −2.2k
+(+1.5k cr/h), one alloy shop at home +0.1k · −0.7k. Alone it strands output (12.1k cr after 6 h),
+which is why item 2 follows. Cost: 1–3 lines (the home system, or a rung; ★29 «Полдень» lifts the
+rule already at `:142`), plus the test that reads the rule (`tests/91zzzw9f-access.js:66`).
+
+**2. A buyer for tier-1 industrial goods where they are not made — lever (а), together with (в).**
+Ferro, plate, roll, resin… have no market; they become credits only in the player's own eater
+(`bldSellInd`, `12ad-site.js:271-279`). A station list per type that buys them at the shadow price,
+with a per-shift cap, turns the stranded stock into money. The pair is the measured best: five
+workshops −3.8k → −0.2k cr/h (6 h), one at home −0.7k → 0, nothing left without a buyer. Where:
+the button goes on the existing row «ПРОМЫШЛЕННОЕ · РЫНОК НЕ БЕРЁТ»
+(`26e-ui-station-trade.js:258-269`); the list keyed by `stype` in a new module (the station roll at
+`06-galaxy.js:164` must keep its random stream); the cap reuses `appetiteEat`/`sellQuote`
+(`12ab-hold.js:108-152`) once `marketFor`'s decay (`12-economy.js:16-17`) walks industrial keys.
+About 40 lines in three or four files, no save field. Even with it, workshops at T3 stay a sink for
+ore the player carries anyway (+0.9–1.2k cr/h at best against the base's 7.8k), not an income.
+
+**3. Three prompt collisions the bot steps around.** Not money; certain and small. The Жестянка's
+«НАРЯД НЕ ЗАКРЫТ · НУЖЕН …» (`21-mode-surface.js:502`) takes ДЕЙСТВИЕ from any deposit within 56
+of it, and its grammar reads «НУЖЕН ЛЕТУЧИЕ ГАЗЫ»; swimming takes the same key on water worlds;
+«ВОЙТИ В ПОЯС ВОРОН» takes the landing prompt near a belt. A player standing by a deposit near the
+Жестянка cannot dig it. Cost: a distance or priority check each, a few lines, in files this worker
+may not edit (21-mode-surface, the belt prompt).
+
+**4. Base modules priced in the dead goods — one generalisation, then one key each.** Ten
+industrial goods have no consumer in the code (thermo; selsyn, gyro, supercon, reactorb, accum;
+hullsec, shell, launchf, panel), and nine of them name a base module (§11, M917: reactorb → reactor,
+panel → solar, shell → habitat…); hullsec is the hull (repair rate beside `HULL_PER_ALLOY`,
+`21b1-base-pay.js:116`). A chain with such an eater pays 0.4k (thermo) to 13.3k (shell) cr/h in the
+probe. But none of these chains fits a T3 player: four to eight workshops against at most three
+sites (`bldSitesAt`, `12ad-site.js:100-103`), the C and D links behind ★20–25. At T3 it is thermo,
++0.4k; the rest is the late game's reason to build a chain. Cost: `canPay`/`payCost`
+(`21a-mode-base.js:99-100`) taking any key of `cost` from the hold, and the price text at `:459`,
+`:471` — about 10 lines; then one key per `BUILD` entry (`21a:23-82`). Ship modules (selsyn, gyro,
+supercon) need the same on the ОСНАСТКА path (`modCost`, `11-log.js:157-160`), credits-only today.
+
+**5. A market for the last link — lever (б), only on top of 1 and 2.** Tier 2–3 goods sold
+anywhere is lever (а)'s list made longer. On the M914 eater chain alone it adds +1.1k and leaves
+the line at −3.8k; on top of (а)+(в) with an eater the line turns positive, −0.2k → +0.9k cr/h
+(6 h). Cost: a few rows in item 2's table. Behind 4 because a consumer by meaning is worth more to
+the world than a counter that takes everything.
+
+**6. The drone's parts line, 6 cr/min (§3.1) — disputed.** Measured, not built: it does nothing for
+the band (2–3 % of a T1 row; T1 is in band at a human's pace), but it chooses for the player — iron
+480 → 120 cr/h (payback 19 → 75 h), ice 280 → −80 (never), titan ~1.25k → ~0.9k, isotopes
+~1.5k → ~1.1k. The honest reason to build it is that decision, not the money. Cost: a cost tick in
+the drone loop next to `droneMayMine` (`12-economy.js:303`) and a line on the drone's card, ~10–15
+lines and no save field if it is charged as it accrues.
+
+**7. Internal links paid at the shadow price — a question, not a fix.** A chain at one station
+pays at every link: feeding a workshop its industrial input pays `indPrice` and the share of output
+comes back on top (`bldSellInd`). So a chain's line is two to three times what its eater pays —
+shell: 13.3k cr/h, of which the eater 6.6k. That is DESIGN-holding §6 («если ты возишь, то тебе
+производят»), and deep chains multiply it. If the author wants the eater to be the chain's money,
+the internal sale pays a fraction; a few lines in `bldSellInd`. Late game only (item 4).
+
+**8. The «Вьюк» allotment at turnover 3 000 — the most disputed.** T0 lasts 8–12 minutes of play,
+not the oracle's two hours: the allotment (`12j`, `H.turn>=3000` at line 69) comes at 8.3 minutes,
+and the «Вьюк» doubles a hand lap at once. It is the author's cut of the dullest stretch of the
+start (M152e). If the start should be slower, this threshold is the one lever, not the dispatcher;
+one number.
+
+### Don't touch — the measurement said no
+
+- **The dispatcher's pay.** Pay by effort was tried and reverted: it ignored jump fuel
+  (130–250 cr), made urgent paper lose money and took nothing off the T0/T1 excess. Net ≈ 220 cr/min,
+  urgent ≈ ×2 stand.
+- **T0 and T1 levers.** At a human's pace T0 is −13 % / +9 %, T1 +12 % / −2 % of the oracle (with /
+  without paper): the excess was the bot's 4-minute lap.
+- **The logist.** Worth +2.6–3.5k cr/h to a base; base + logist is +23 % · +10 % at T3, the only
+  estate inside ±15 %.
+- **Wages as the T3 lever.** T3's gap was the missing base (bot pace −43 % → +10 % with it) and the
+  hull's fetching minutes (the logist), not the commander's and keeper's pay.
+- **(а) alone.** +1.2k cr/h at ×1; the five-workshop line breaks even only at ×3.2 the shadow
+  price.
+- **(б) alone, or an eater alone.** (б): +1.1k, line still −3.8k. An eater at home without (а)+(в):
+  −3.8k → −4.9k (it adds hauls).
+- **The access ladder.** Not a bug: home climbs to ★11–13 in three hours at T3 and the rung
+  survives a save round (13 / 28 points before and after); T0 stops at 10 on the drone gate by
+  design.
+- **More drills on the base.** Five drills sat at heat 330 and drilled nothing (`baseHeatMul` 0); the
+  best layout is four drills at heat 88 (×0.6). A base of 20 is a base of four drills.
 
 ---
 
