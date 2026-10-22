@@ -718,7 +718,7 @@ GAL_STAR_RED                 src/17z3-map-gpu.js:164
 GAL_STAR_SCREEN              src/17z1-galaxy.js:82
 GAL_VER                      src/17z1-galaxy.js:18
 GAL_WGSL                     src/17z3-map-gpu.js:25
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-242
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-265
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GAUGE_MID                    src/28l-gauge.js:23
@@ -877,7 +877,7 @@ GPU_LIT_SH                   src/17c-system-draw.js:21
 GPU_MIP                      src/08c-gpu-kit.js:98
 GPU_MIP_LOD                  src/08c-gpu-kit.js:192
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-67
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-68
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:50
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:42-63
 GPU_PL_WGSL                  src/08b-gpu.js:485
@@ -10556,7 +10556,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd2-relay.js · 3 KB
   · мачта телом (M827 · 11apa):1
 
-## tests/91qd3-rail.js · 4 KB
+## tests/91qd3-rail.js · 3 KB
   · поездка на движке (M828 · 18gb):1
 
 ## tests/91qe-own.js · 13 KB
@@ -10698,7 +10698,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzw-travel.js · 8 KB
   · вечер не по времени, а по дороге (M359):1
 
-## tests/91zzzzzzy3-gate2d.js · 25 KB
+## tests/91zzzzzzy3-gate2d.js · 27 KB
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 12 KB

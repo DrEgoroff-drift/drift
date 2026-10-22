@@ -239,6 +239,29 @@ const GATE2D=[
      this.i++;return {};},
    done(){albumOpen=-1;albumBack=false;albumClose();tableToggle(false);G.album=[];G.smenaAt={};},
    probe:["albumPut"]},
+  /* поездка (M828): линия, остановки, вагон телом и свет — одним проходом поверх; имена и строки — подписями.
+     Ехать не даём: перегон длиной в вечность, полпути. С десятого кадра (до конца разгона) — ПАЗик маршрутки */
+  {name:"поездка (18g, 18gb): вагон и ПАЗик телами, остановки, подписи",
+   painters:["drawRail","railLineGpu","railStopShapes","railCarDraw","railCarLights","railFx"],
+   place(first){
+     if(first){const l=railNet().lines.find(q=>q.stops.length>4);if(!l)return null;
+       G.sx=l.stops[1].sx;G.sy=l.stops[1].sy;G.sys=getSystem(G.sx,G.sy);
+       railRideStart({l,i0:1,dir:1,k:3});RAIL_RIDE.dur=1e6;RAIL_RIDE.t=4.5e5;this.i=0;return {};}
+     if(++this.i===10&&RAIL_RIDE)RAIL_RIDE.bus=true;
+     return {};},
+   done(){RAIL_RIDE=null;G.mode="system";},
+   warm:30,probe:["railCarDraw","railStopShapes"]},
+  /* кольцо станции рельса в системе и вспышка выхода из поезда (M828): запасной 2D-ветки нет */
+  {name:"кольцо рельса и вспышка выхода (18f, 18g): без 2D",
+   painters:["drawSysRail","railGpu","railHaltShapes","drawRailArrive","railFx"],
+   place(){
+     for(let r=0;r<=20;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const R=railHere();if(!R)continue;
+       G.ship.x=R.x+40;G.ship.y=R.y+30;G.ship.vx=G.ship.vy=0;G.zoom=1;G.zoomT=null;RAIL_ARRIVE=G.t-6;return {R};}
+     return null;},
+   done(){RAIL_ARRIVE=-1e9;},
+   warm:30,probe:["railGpu","drawRailArrive"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

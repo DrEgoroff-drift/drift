@@ -534,9 +534,11 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   the hint are overlay labels. Removed: `drawRail`'s 2D (14 paint calls a ride frame), `railFlash`
   (the arrival flash in the system frame now goes through `railFx` without the headlight cone),
   the no-GPU branch of `drawSysRail` and `railHaltCtx`. Suite `91qd3-rail`: car and bus build inside
-  h3d with lamps; the ride frame (car and bus) and the system frame with the rail ring and the
-  arrival flash paint nothing on `ctx` at 1600 and 390. Cost A/B/A in the pane: B never dearer
-  (1600: 5.5/4.0/8.1 ms, 390: 6.7/4.1/7.3 — the frame no longer pastes `#c`).
+  h3d with lamps, every stop of the route is built and one is passed. The "0 ctx" gate is in
+  `91zzzzzzy3-gate2d` with a live GPU (`GPU.ok` checked in the test): the ride (car, then bus) and
+  the system frame with the rail ring and the arrival flash; a `ctx.fillRect` mutation turns both
+  red. Cost A/B/A in the pane with `GPU.ok`: B never dearer (1600: 5.5/4.0/8.1 ms,
+  390: 6.7/4.1/7.3 — the frame no longer pastes `#c`).
 - **M823 The nebula far from the star**: inner structure and a depth ramp, no straight streaks
   (the look near the star is the author's and stays). **M824 Belt**: rocks clustered round the
   actor, haze instead of the band. **M825 The orbs' second pass**: crystal, ice, jungle, rocky,
