@@ -455,7 +455,9 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     var dif = 0.;
     if (thick == 0.) {
       dif = max(mu0, 0.)*1.6/(max(mu0, 0.) + mu + .2)*smoothstep(-.02, .06, m0g) + .02*max(mu0, 0.);
-      dif = mix(dif, max(mu0, 0.), .35);
+      /* СР · Визуал 22.10: лунный закон у лимба давал 1.3 против .73 в центре — на малом шаре (луна) белый контур
+         вместо лимба; потолок 1 и мягкое затемнение к краю: терминатор остаётся, неона нет */
+      dif = min(mix(dif, max(mu0, 0.), .5), 1.)*(.45 + .55*nz);
     } else {
       /* газовый гигант (СР · Визуал 22.10): толстый воздух оборачивал свет почти на всю сферу — диск читался плоской
          монетой без терминатора; обёртку гиганта держим в пределах .5 и даём терминатору крутизну */
@@ -479,7 +481,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     sc *= mix(vec3f(1.), vec3f(1.25, .85, .62), warmT*.6);
     let H = normalize(Lo + Vo);
     let sp = pow(max(dot(n, H), 0.), 2./(sf.rough*sf.rough*sf.rough + .002))*sf.spec*smoothstep(.0, .1, mu0);
-    sc += sun*sp*(.04 + .5*pow(1. - mu, 5.))*select(1., 3., sf.rough < .32);
+    sc += sun*sp*(.04 + .5*pow(1. - mu, 5.)*nz)*select(1., 3., sf.rough < .32);   /* френель у лимба ×nz: касательный блик рисовал белую дугу по краю луны (СР · Визуал) */
     let night = 1. - smoothstep(-.12, .12, m0g);
     sc += sf.emit*(.05 + .95*night) + sf.glow*(.3 + .7*night);
     if (sf.cloud > 0.) {
@@ -540,7 +542,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     let litA = smoothstep(-.12, .4, dot(n2, L));
     let warm = (1.-smoothstep(-.1,.35, dot(n2, L)))*litA;
     let tint = mix(air, air*vec3f(1.6, .75, .45), warm);
-    lin += tint*exp(-h*2.2)*smoothstep(1. - 2.*px, 1., len)*litA*sun*.9;
+    lin += tint*exp(-h*2.2)*smoothstep(1. - 2.*px, 1., len)*litA*sun*select(.9, .35, k == 3);   /* у гиганта сливочный воздух давал белый обод по лимбу (СР · Визуал) */
   }
   var acc = vec4f(tmap(lin), cov);
   if (v4.w > 0.) {
