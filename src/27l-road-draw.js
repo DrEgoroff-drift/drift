@@ -209,7 +209,7 @@ function drawRoad(ts){
   {
     /* цвет к соплу — акцент, добела раскалён только срез; спад пологий, пик низкий (M168k, проходы 2–3) */
     const RT={core:T.core,mid:mixc(T.edge,T.mid,.42),edge:T.edge};
-    const col=u=>u>.96?mixc(RT.mid,RT.core,(u-.96)/.04):mixc(RT.edge,RT.mid,Math.pow(u/.96,1.5));
+    const col=u=>u>.96?mixc(RT.mid,RT.core,(u-.96)/.04*.55):mixc(RT.edge,RT.mid,Math.pow(u/.96,1.5));
     const alp=u=>(u*.075+u*u*.12+Math.pow(u,5)*.13)*(1+burn*.55);
     /* повадка от хода: на выдохе лента расходится облаком, на форсаже — копьё */
     const wid=(p,u)=>p.r*(1.25+burn*.40+(1-u)*(3.6-burn*2.3));
@@ -230,23 +230,20 @@ function drawRoad(ts){
         for(const a of lanes){const p=a[i],d=(p.x-M[i].x)*nx+(p.y-M[i].y)*ny,w=wid(p,M[i].u);l=Math.max(l,d+w);r=Math.max(r,w-d);}
         Object.assign(M[i],{nx,ny,l,r});
       }
-      /* полоса из четырёхугольников; стыки жёсткие (без шва), кромки сглажены; хвост (старшие пять точек)
-         гаснет всегда — у молодой ленты, пока срок не дотёк, конец иначе обрублен */
-      const lay=(k,cf,af)=>{for(let i=0;i+1<n;i++){const P=M[i],Q=M[i+1];
-        /* звено делится на четыре: цвет и альфа идут ровно, без ступеней на редких точках */
-        const at=f=>{const g=(x,y)=>x+(y-x)*f,x=g(P.x,Q.x),y=g(P.y,Q.y),nx=g(P.nx,Q.nx),ny=g(P.ny,Q.ny),l=g(P.l,Q.l)*k,r=g(P.r,Q.r)*k;
-          return {L:[x+nx*l,y+ny*l],R:[x-nx*r,y-ny*r],u:g(P.u,Q.u),y,j:i+f};};
-        let A=at(0);
-        for(let q=1;q<=4;q++){const B=at(q/4),u=(A.u+B.u)/2,a=af(u)*fade((A.y+B.y)/2)*Math.min(1,(A.j+B.j+1)/10);
-          if(a>=.002)gpuQuad(FX,A.L,B.L,B.R,A.R,cf(u).concat(a),2|8);A=B;}}};
-      /* у газа нет контура: ореол — три слоя шире тела, кромка тает ступенями мельче пикселя света;
-         тело и сердцевина в нём; раскалённая нить — только на разгоне */
-      for(const [k,m] of [[1.95,.09],[1.65,.10],[1.35,.11],[1,.62],[.72,.38]])lay(k,col,u=>alp(u)*m);
-      if(burn>.04)lay(.36-burn*.12,u=>mixc(T.mid,T.core,clamp(u*1.2-.2,0,1)),u=>(u*u*u*.30+Math.pow(u,5)*.26)*burn);
-      /* выход из сопла: ядро с ореолом у каждого сопла — шов между корпусом и лентой */
+      /* газ — поле, а не лента (СР · Визуал 22.10): по оси в каждой точке мягкий диск с перьевой кромкой шире тела;
+         соседние диски перекрываются и складываются в ровную трубу с гауссовым сечением — ни швов на стыках,
+         ни ступеней ореола (пять слоёв жёстких четырёхугольников читались бумажными полосами). Доля диска
+         делится на число перекрытий, чтобы сумма держала прежнюю яркость; хвост (первые точки) гаснет всегда */
+      const stp=Math.max(1,H*ROAD_TRAIL_STEP);
+      for(let i=0;i<n;i++){const P=M[i],u=P.u,w=Math.max(1.5,(P.l+P.r)*.5),f=fade(P.y)*Math.min(1,(i+1)/6);
+        const ov=Math.max(1,w*1.5/stp),a=alp(u)*f*.85/ov;
+        if(a>=.0015)disc(P.x,P.y,w*.32,w*1.25,col(u),a);
+        /* раскалённая нить — только на разгоне и только у сопла: узкий горячий сердечник в теле газа */
+        if(burn>.04&&u>.55){const k=(u-.55)/.45;disc(P.x,P.y,w*.1,w*.42,mixc(T.mid,T.core,k),k*k*burn*.55/ov);}}
+      /* выход из сопла: малое горячее ядро у среза — шов между корпусом и газом, не шар шире корпуса */
       for(const ln of lanes){const e1=ln[ln.length-1];if(e1.life<=e1.max-.06)continue;
-        const rr2=Math.max(2,e1.r*1.7),f=fade(e1.y);
-        disc(e1.x,e1.y,rr2*.5,rr2*4,RT.mid,(.24+burn*.12)*f);disc(e1.x,e1.y,rr2,1,T.core,(.55+burn*.25)*f);}
+        const rr2=Math.max(2,e1.r*.95),f=fade(e1.y);
+        disc(e1.x,e1.y,rr2*.45,rr2*2.2,RT.mid,(.14+burn*.08)*f);disc(e1.x,e1.y,rr2*.5,rr2*.7,mixc(RT.mid,T.core,.6),(.34+burn*.18)*f);}
     }
   }
   /* ── маневровые крупным планом (M168i) ──
