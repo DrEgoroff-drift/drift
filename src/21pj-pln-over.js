@@ -1,7 +1,7 @@
 /* ══════════════ планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611) ══════════════
-   Кадр нового вида — тела в объёме. Поверх него, тем же 2D, что рисует
+   Кадр нового вида — тела в объёме. Поверх него, слоем интерфейса движка (08bi), что рисует
    приборы, ложится то, что телом не бывает: подписи вещей, полоса добычи, пыль
-   из-под ног, ближняя погода. Спасательный круг — тело (21ph); луч бура и следы
+   из-под ног. Спасательный круг — тело (21ph); луч бура и следы
    с M624 тоже тела (21pic, 21pid). Подписи — в пикселях окна, не в мерке объектива.
 
    И то, что ещё НЕ перерисовано: находки, свои постройки, дом, посёлок,
@@ -21,14 +21,14 @@ function plnOverAt(C,p){
   return [(C.ex+(p[0]-C.ex)*k)*PLN_M-C.vx,PLN.y0-(C.ey+(p[1]-C.ey)*k)*PLN_M-C.vy];
 }
 function plnOverPlate(txt,x,y,plate,ink,u){
-  const tw=ctx.measureText(txt).width,s=u||1;
-  ctx.fillStyle=plate;ctx.fillRect(x-tw/2-5*s,y-10*s,tw+10*s,14*s);
-  ctx.fillStyle=ink;ctx.fillText(txt,x,y);
+  const f=(8*u).toFixed(2)+"px ui-monospace,monospace";
+  ctx.font=f;const tw=ctx.measureText(txt).width;
+  ovRect(x-tw/2-5*u,y-10*u,x+tw/2+5*u,y+4*u,plate,1);
+  ovText(OVL.uq,x,y,txt,f,ink,"center","alphabetic",1,1);
 }
 /* то, что ещё не перерисовано: старые рисовалки в том же порядке, что клал старый кадр */
 function plnOverOld(tr,camx,camy,p){
   if(!tr.mat)tr.mat=planetMat(p);
-  if(!PLN_MARK.on)drawPOI(tr,camx,camy,p);
   /* база и дом — тела движка (21pig, M628a); наклейки — только со старым видом ?own=0 */
   if(!OWN.on){
     drawBuilt(tr,camx,camy,p);
@@ -45,30 +45,34 @@ function plnOverOld(tr,camx,camy,p){
   if(typeof lightsDrawReveal==="function")lightsDrawReveal(tr,camx,camy,p);
   peepGhosts(camx,camy);
 }
+/* старые рисовалки — в мерке игры (withScale), всё своё — слоем интерфейса движка (08bi) в пикселях окна:
+   2D-кисть на #c будит копию всего холста в кадр (front2, 08b), а подписям она не нужна */
 function plnOver(){
   const S=G.surf,tr=S.tr,p=S.p,C=PLN.cam,L=PLN_LAND.cur,M=PLN_M,O=PLN_OVER;
   if(!C||!L)return;
-  const camx=C.vx,camy=C.vy,at=q=>plnOverAt(C,q),gy=(x,z)=>plnLandRibAt(L,x,z);
-  if(O.old){
+  const camx=C.vx,camy=C.vy,gy=(x,z)=>plnLandRibAt(L,x,z);
+  if(O.old)withScale(G.viewK,()=>{
     ctx.save();
     try{plnOverOld(tr,camx,camy,p);}
     catch(e){O.old=false;O.err=String((e&&e.stack)||e).slice(0,400);plnLog("старые рисовалки: "+O.err);}
     ctx.restore();
-  }
+  });
+  /* мерка игры → пиксели окна: кадр стоит в ней с увеличением G.viewK (как 21pzb) */
+  const kk=G.viewK>1?G.viewK:1,at=q=>{const r=plnOverAt(C,q);return [r[0]*kk,r[1]*kk];};
   /* пыль из-под ног: на самой линии ходьбы (следы — тела, 21pid) */
   if(S.dust)for(const dp of S.dust){
     const age=(G.t-dp.t)/46;
     if(age>=1)continue;
     const dx=dp.x-camx;
-    if(dx<-20||dx>W+20)continue;
+    if(dx<-20||dx>W/kk+20)continue;
     const dy=groundAt(tr,dp.x)-camy;
-    ctx.fillStyle="rgba(214,198,172,"+((1-age)*.22).toFixed(3)+")";
-    ctx.beginPath();ctx.ellipse(dx-dp.f*age*5,dy-1-age*4,1.5+age*4.5,1+age*2.6,0,0,TAU);ctx.fill();
+    ovEll((dx-dp.f*age*5)*kk,(dy-1-age*4)*kk,(1.5+age*4.5)*kk,(1+age*2.6)*kk,0,"rgb(214,198,172)",(1-age)*.22);
   }
   /* подписи в пикселях окна: в мерке объектива при ближнем они вырастали вдвое (M624);
      это интерфейс, и он идёт по линейке кадра UIK — иначе на 2560 кегль 8.5 px (M800) */
-  const u=surfScale()/(G.viewK||1)*UIK;
-  ctx.font=(8*u).toFixed(2)+"px ui-monospace,monospace";ctx.textAlign="center";
+  /* кегль — как клал прежний 2D: surfScale() там мерила окно уже в мерке объектива (W/k, H/k) */
+  const u=clamp(Math.min(H/kk/SURF_BASE,W/kk/SURF_WIDE),1,SURF_KMAX)/(G.viewK||1)*UIK*kk;
+  const font=(8*u).toFixed(2)+"px ui-monospace,monospace";
   const PLATE="rgba(5,7,12,.72)",INK="rgba(176,196,208,.95)";
   if(S.cave&&isFinite(S.cave.x)){
     const x=S.cave.x/M,q=at([x,gy(x,PLN_THINGS.caveZ)+2.1*PLN_THINGS.caveQ+1.5,PLN_THINGS.caveZ]);
@@ -85,10 +89,11 @@ function plnOver(){
     if(!b.scanned||b.caught)continue;
     const x=b.x/M,z=plnBeastZ(b),q=at([x,gy(x,z)+plnBeastR(b)*2.6+(b.alien&&b.hover?b.hover:0)/M,z]);
     if(q[0]<-50||q[0]>W+50)continue;
-    ctx.fillStyle="rgba(127,230,216,.85)";ctx.fillText("ИЗУЧЕН",q[0],q[1]);
+    ovText(OVL.uq,q[0],q[1],"ИЗУЧЕН",font,"rgba(127,230,216,.85)","center","alphabetic",1,1);
   }
   /* подписи залежей рядом с человеком: ближняя стоит на своём месте, соседняя, если легла на неё, поднимается */
   const tags=[];
+  ctx.font=font;
   for(const d of S.deposits||[]){
     if(!(d.left>0)||!(Math.abs(d.x-S.x)<70))continue;
     const x=d.x/M,z=plnThingDepZ(d),q=at([x,gy(x,z)+1.75,z]),txt=RES[d.res].ru.toUpperCase()+" "+d.left;
@@ -108,15 +113,11 @@ function plnOver(){
     plnOverPlate(t.txt,t.x,t.y,"rgba(5,7,12,.62)",t.col,u);
   }
   for(const d of S.deposits||[]){
-    if(!(d.left>0))continue;
-    const x=d.x/M,z=plnThingDepZ(d),g=gy(x,z),col=RES[d.res].col;
-    if(S.mining===d){
-      /* полоса добычи — под подписью, не на поясе человека */
-      const q=at([x,g+1.75,z]),bw=36*u,bh=4*u,by=q[1]+6*u;
-      ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(q[0]-bw/2,by,bw,bh);
-      ctx.fillStyle=col;ctx.fillRect(q[0]-bw/2,by,bw*clamp(d.prog,0,1),bh);
-    }
+    if(!(d.left>0)||S.mining!==d)continue;
+    /* полоса добычи — под подписью, не на поясе человека */
+    const x=d.x/M,z=plnThingDepZ(d),q=at([x,gy(x,z)+1.75,z]),bw=36*u,bh=4*u,by=q[1]+6*u;
+    ovRect(q[0]-bw/2,by,q[0]+bw/2,by+bh,"rgba(0,0,0,.5)",1);
+    ovRect(q[0]-bw/2,by,q[0]-bw/2+bw*clamp(d.prog,0,1),by+bh,RES[d.res].col,1);
   }
-  /* луч бура — тело (21pic); осадки — карточки в воздухе сцены (21pk), старый слой — только если они выключены */
-  if(!PLN_WX.on)drawWeather(p,camx,camy,"near");
+  /* луч бура — тело (21pic); осадки — карточки в воздухе сцены (21pk) */
 }

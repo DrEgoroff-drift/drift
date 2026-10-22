@@ -28,9 +28,17 @@ function nameLike(w,t,at){
   for(let i=0;i<t.length&&at+i<a.length;i++)if(t[i]!==t[i].toLowerCase())a[at+i]=a[at+i].toUpperCase();
   return a.join("");
 }
+/* hud() зовёт padCase каждый кадр с тем же словом (кнопка действия, ЦЕЛЬ): 17 мкс разбора на вызов — 6 мс за 5 с.
+   Ответ зависит от строки и словаря имён рядом — кэш по строке, сброс со словарём (M826, перф) */
+const PADCASE=new Map();let PADCASE_K=null;
 function padCase(s){
-  const m=padNames();
-  return String(s).split(" ").map((w,i)=>{
+  const m=padNames(),k=String(s);
+  if(PADCASE_K!==PADNAME_K){PADCASE.clear();PADCASE_K=PADNAME_K;}
+  let r=PADCASE.get(k);if(r!==undefined)return r;
+  r=padCaseRaw(k,m);if(PADCASE.size>256)PADCASE.clear();PADCASE.set(k,r);return r;
+}
+function padCaseRaw(s,m){
+  return s.split(" ").map((w,i)=>{
     const lead=(/^[«"(]+/.exec(w)||[""])[0].length,core=w.slice(lead).replace(/[»")·,.:!?]+$/,"").toUpperCase();
     if(/^[IVXLC]+$/.test(core)||/^\d/.test(core))return w;   // номер луны, число
     /* основа короче трёх букв — только целым словом: «Ио» не ловит «ИОН» */

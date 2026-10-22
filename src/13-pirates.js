@@ -436,7 +436,7 @@ function drawCombat(zx,zy,Z){
       const marked=G.marks&&G.marks.includes(p);
       /* полоса — только раненому ниже 70 % и взятому в захват (M820, bodyBar 17c2e); имя — как было */
       const bar=bodyBar(p);
-      if(!(p.aware||marked||p.rogue||(BODY.on&&bar)))continue;
+      if(!(p.aware||marked||p.rogue||bar))continue;
       const w=p.rogue?54:(marked&&G.marks[0]===p?42:34),hp=clamp(p.hull/p.hullMax,0,1);
       /* полоска встаёт ВЫШЕ скобки захвата (M360a): на 26 px верхняя грань
          скобки ложилась ровно на неё, и корпус цели было не видно */

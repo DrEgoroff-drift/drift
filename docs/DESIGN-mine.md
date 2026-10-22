@@ -33,16 +33,23 @@ biters were a 2D brush unrelated to the planet's beasts.
   of the old mine in the body: a trough wider at the top, a steel rim with rivets, a rib across the
   end, two wheels with flanges on the cage's own rail; the ore heap rises over the rim with the load,
   tinted by the heaviest ore.
-- **Ore shows in the section** (22.10, reworked the same day). An ore body reads from the drift's
-  distance as a field of grain: faceted nuggets of the ore's colour scattered over the whole lens,
-  denser and larger towards its heart (`23cb dig3OreBodies`, `DIG3_ORE`; instances of three nugget
-  shapes — a merged mesh cost 11–22 ms per dressing rebuild, instances 1.5–3.9), sunk into the sheet so only
-  a cap shows (grain in the rock, not gravel in front of it), and on the back wall of a working the
-  body crosses. Under them the sheet's paint darkens towards the ore's colour (`23ca`). The tone is
-  three quarters ore, a quarter the cave's mineral band, so iron is not ice. Grain stops half a metre
-  off a working. Only bodies within seven cells of a working (twelve under the shaft's bottom) are
-  built. The first try — short seams in the cave's vein language — read as sticks up close and as
-  nothing from the drift.
+- **Ore shows in the section** (22.10, reworked twice the same day). An ore body is a lens in the
+  sheet: one weight (`23ca dig3OreW` — 1 at the heart, falling to 0 at a lumpy edge) paints the sheet
+  darker and towards the ore's colour, and places the grain — no grain outside the patch. Grain is
+  faceted nuggets of the ore's colour, instances of three shapes (`23cb dig3OreBodies`, `DIG3_ORE`; a
+  merged mesh cost 11–22 ms per dressing rebuild, instances 1.5–3.9), denser and larger towards the
+  heart. Near a working (`bare`, 1.3 m) the rock is broken and a cap shows out of the sheet; farther
+  the rock is whole — a quarter of the grain is kept, sunk to a glint. On the back wall of a working
+  the body crosses. The tone is three quarters ore, a quarter the cave's mineral band, so iron is not
+  ice. Only bodies within seven cells of a working (twelve under the shaft's bottom) are built. Two
+  earlier tries — short seams in the cave's vein language, then grain over the whole lens — read as
+  sticks up close and as gravel strewn on the page.
+- **Sheet plates** (22.10, `23ca dig3Plate`, `DIG3_PLATE`): the section sheet splits along the beds
+  (the shader's strata, a slight tilt) into plates 1.8–5 m long, each with its own tone, a tone ramp
+  as on a slanted facet, and its own tilt of the normal — the drift lamps' light in the lip's wash
+  (`DIG3_WASH`, a couple of metres past the 6 cm rim, fading) falls on the near plates unevenly. A bed's seam is darker than
+  a plate's crack; three thin laminae per bed. The plate tone multiplies the sheet's colour; it reads
+  through the lens blur as horizontal bands, not as tiles.
 - **Lens** (22.10, `DIG3_LENS`): the working is the hero — the man is about a tenth of the frame's
   height on PC and a fifth on the phone, the drift about a third (PC). The section's lip
   (`DIG3_LIP`) is scaled to that lens: the cave shader burns half a metre off the void, which at the
@@ -54,8 +61,12 @@ biters were a 2D brush unrelated to the planet's beasts.
 - **No 2D** (22.10, the author: get rid of 2D). The mine's frame is the engine's only: the old flat
   frame (`23a`, `23aa`) is no longer a fallback — before the pipelines are ready the frame is empty,
   a failed frame is named «СБОЙ · … · шахта» and retried next frame, `?dig=0` is gone. The impulse
-  is a glowing ring in the scene (`23ce dig3ZapFrame`, in front of the sheet, to the stun radius)
-  with a cold flash on the rock; the drill's progress bar is the engine's shapes, no canvas branch.
+  is a wave in the scene (`23ce dig3ZapFrame`, `DIG3_ZAP`): a glowing ring in front of the sheet runs
+  out from the man over 0.4 s on its own clock (the view's frame step `DIG3.dt`; a new impulse is when
+  `D.zapT` rises — the mode's counter is shorter than the wave), eases out to half the stun radius
+  (to the nearer timber sets, not the stun's edge), thinner and dimmer with distance (four tube
+  thicknesses — an instance's scale would fatten it); the cold flash on the rock is stronger than the
+  ring and dies faster; the drill's progress bar is the engine's shapes, no canvas branch.
   The flat mine's modules are deleted (`23a-dig-draw`, `23aa-dig-rock`, `23ac-dig-mid-gpu`,
   `23b-dig-gpu`, and their warm-up pipelines `fld.dig.*`). What outlived them — the mine's record
   (`mineKey/SpotX/Deep/Load/Save`) and the land line with its turf (`digSurfY`, `digSoilCols`,
@@ -105,7 +116,7 @@ drawn by the planet's book of bodies (`plnBeastMesh`: six walk frames, stand, gr
 stunned). Scale .55 of the surface size — a rodent's measure. In a drift a body walks the floor
 behind the man's plane; over a void it clings to the back wall; fliers hover under the roof. In
 rock the body is not drawn — two glowing eyes ride the cut sheet and blink (dimmer when stunned).
-The impulse stays a ring over the frame (`dig3ZapRing`).
+The impulse is a wave in the scene (§2 «No 2D»).
 
 ## 5. The mouth stands on level ground
 
@@ -135,6 +146,12 @@ spot within 90 px of the man (`mineLaySpot`); with none near, the prompt says «
 | level 1, gallery | 2.0 / 3.6 | 4.45 / 5.01 | 2.9 / 15.0 | 1.40 / 1.52 |
 | level 1, at the face | 3.2 / 33.8 (max 712) | 4.36 / 6.74 | 1.7 / 4.2 | 1.36 / 1.48 |
 | 72 m, cage | 1.9 / 4.7 | 0.79 / 0.86 | 1.4 / 3.3 | 0.46 / 0.48 |
+
+Phone again, 22.10 evening (after the picture pass: lens, ore instances, sheet plates, impulse wave),
+same tool, JS / GPU p50 / p99: surface 2.2 / 3.8 · 0.92 / 0.94; collar 2.8 / 4.6 · 1.20 / 1.31;
+level 1, gallery 1.4 / 3.2 · 0.42 / 0.44 (the closer lens keeps the ground out of the window, so no
+planet frame); at the face 2.3 / 4.3 · 1.24 / 1.39; 72 m 1.5 / 6.5 · 0.42 / 0.44. One gallery run
+showed a 437 ms gap while neighbours' Chromes loaded the machine; two reruns: max gap 16.8 ms.
 
 Down to the first level the planet frame over the cut is most of the GPU bill; below the window's
 reach of the ground the mine costs under a millisecond. Ore bodies (§2) add up to a few hundred nuggets per scene,

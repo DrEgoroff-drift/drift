@@ -14,53 +14,6 @@
    2. Формы не меняют геометрию станции и посёлка — они навешаны поверх. */
 
 function houseRGB(H){return hex2rgb(H.col);}
-/* на станции: после корпуса типа, в тех же координатах (масштаб уже стоит) */
-function houseMark(H,V,off){
-  if(!H)return;
-  const c=H.col;
-  /* Знак — ВЕЩЬ на борту, а не чертёж поверх (M328). До этого четыре знака
-     были контурами чистым цветом дома в 1.6 px размером с полкорпуса: мачта
-     «Вестового» стояла в факеле, скоба «Ковша» лежала на конвейере полкорпусом
-     бирюзы. Теперь один язык на всех: место — левое плечо корпуса (−20a,−14),
-     рост — с иллюминатор; слои по своду: тёмное тело → кромка цветом дома →
-     одна светлая точка. Форма семьи сохранена: баки, ковш, тарелка, лонжероны. */
-  ctx.save();
-  if(off)ctx.translate(off.x||0,off.y||0);
-  const bx=-20*V.a, by=-14, body="rgba(18,24,32,.92)", dim=rgba(houseRGB(H),.6);
-  ctx.lineWidth=1.1;ctx.lineJoin="round";
-  if(H.id==="lask"){
-    /* два бака на полке: мягкое */
-    ctx.strokeStyle=dim;ctx.beginPath();ctx.moveTo(bx-6,by);ctx.lineTo(bx+6,by);ctx.stroke();
-    for(const sx of [-1,1]){
-      ctx.fillStyle=body;ctx.beginPath();ctx.arc(bx+sx*3.2,by-3.4,3,0,TAU);ctx.fill();
-      ctx.strokeStyle=c;ctx.stroke();
-    }
-    ctx.fillStyle=c;ctx.beginPath();ctx.arc(bx-3.2,by-4.4,.7,0,TAU);ctx.fill();
-  }else if(H.id==="kova"){
-    /* ковш на кронштейне: угловатое */
-    ctx.strokeStyle=dim;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by-4);ctx.stroke();
-    ctx.fillStyle=body;
-    ctx.beginPath();ctx.moveTo(bx-4.5,by-10);ctx.lineTo(bx-3,by-4);ctx.lineTo(bx+3,by-4);ctx.lineTo(bx+4.5,by-10);ctx.closePath();ctx.fill();
-    ctx.strokeStyle=c;ctx.stroke();
-    ctx.fillStyle=c;ctx.fillRect(bx-3,by-5.2,6,.9);
-  }else if(H.id==="vest"){
-    /* тарелка на стойке: тонкое */
-    ctx.strokeStyle=dim;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by-5);ctx.stroke();
-    ctx.fillStyle=body;
-    ctx.beginPath();ctx.arc(bx,by-8.4,3.4,Math.PI*.08,Math.PI*.92);ctx.closePath();ctx.fill();
-    ctx.strokeStyle=c;ctx.beginPath();ctx.arc(bx,by-8.4,3.4,Math.PI*.08,Math.PI*.92);ctx.stroke();
-    stLive(()=>stLamp(bx,by-8.6,.8,houseRGB(H),(Math.sin(G.t*.07)>0)?1:.25));
-  }else if(H.id==="kryl"){
-    /* два скошенных лонжерона: размах */
-    ctx.fillStyle=body;
-    for(const sx of [-1,1]){
-      ctx.beginPath();ctx.moveTo(bx,by-4);ctx.lineTo(bx+sx*7,by-9);ctx.lineTo(bx+sx*7,by-6.6);ctx.lineTo(bx,by-2.2);ctx.closePath();ctx.fill();
-      ctx.strokeStyle=c;ctx.stroke();
-    }
-    ctx.fillStyle=c;ctx.beginPath();ctx.arc(bx,by-3.2,.9,0,TAU);ctx.fill();
-  }
-  ctx.restore();
-}
 /* в посёлке: тот же знак на стене самого крупного двора, в его масштабе */
 /* Знак на стене — ТАБЛИЧКА у двери, а не линия по штукатурке (M326). До этого
    контур в один пиксель чистой бирюзы лежал посреди стены рядом с дверью и

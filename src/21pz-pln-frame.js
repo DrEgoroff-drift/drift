@@ -15,7 +15,7 @@
    Свет по часу — пять картин суток и переход между ними по высоте светила,
    тела неба от мира, облака и воздух от его погоды (M612). Цвета земли пока
    одни, землеподобные: пустыня и лёд — M613. */
-const PLN_FRAME={blobs:new Float32Array(260),bloom:BLOOM_K.surface,
+const PLN_FRAME={blobs:new Float32Array(260),
   clouds:[[.318,.050,.115,21],[-.300,.058,.085,22],[-.078,.060,.034,23],[.150,.118,.030,24],[-.090,.235,.095,25],[.195,.400,.060,26]],
   bands:[190,345,1250,3000],
   thru:[1.2,1.1,.4,0],waterA:[.10,.30,.30,0],waterB:[.02,.10,.17,0]};
@@ -435,9 +435,9 @@ function plnSurface(S,o){
   return plnGpuFrame(F);
 }
 
-/* ── переключатель ── */
-const PLN_OLD_SURFACE=drawSurface;
-drawSurface=function(){
+/* ── переключатель ──
+   2D-рисовалки поверхности больше нет (21-mode-surface): кадр не собрался — мира в нём нет, приборы есть */
+function drawSurface(){
   let ok=false;
   if(PLN.on&&PLN.bad<3&&G.surf&&G.surf.tr&&G.surf.p){
     try{
@@ -446,15 +446,14 @@ drawSurface=function(){
       if(ok)PLN.bad=0;
     }catch(e){
       PLN.bad++;PLN.err=String((e&&e.stack)||e).slice(0,600);plnLog("кадр: "+PLN.err);
-      /* кадр мог упасть с открытым проходом: кодировщик берём новый, старой рисовалке — чистый лист */
+      /* кадр мог упасть с открытым проходом: кодировщик берём новый — приборам чистый лист */
       if(GPU.on&&GPU.dev){GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.scene3D=false;}
     }
   }
   /* свечение у нового вида своё; движку оставлено только зерно */
-  BLOOM_K.surface=ok?0:PLN_FRAME.bloom;
+  BLOOM_K.surface=0;
   PLN_FRAME.live=ok;
-  if(!ok){PLN_OLD_SURFACE();return;}
-  withScale(G.viewK,plnOver);
+  if(ok)plnOver();
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
   withScale(U,()=>drawSurfaceHud(G.viewX,G.viewY,G.viewK/U));
 };

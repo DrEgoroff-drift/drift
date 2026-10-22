@@ -11,7 +11,7 @@
    4. 2D-рубки нет (22.10, автор: «2D не должно быть»): drawHqRoom удалён вместе с ?room=0; без видеокарты
       рубки нет — плашка «нет WebGPU» (08b2), как во всей игре. */
 const ROOM3={open:null,host:null,cn:null,raf:0,last:0,from:null,to:null,g0:0,gd:600,place:"all",
-  L:null,mesh:null,rkey:"",err:0,frames:0,stat:null,vp:null,sz:null,night:null};
+  L:null,mesh:null,rkey:"",err:0,frames:0,S:null,vp:null,sz:null,night:null};
 const ROOM3_M=new Float32Array(R3_MAXI*R3_PART*16),ROOM3_OT=new Float32Array(R3_MAXI*R3_PART*4);
 
 /* ── ШТАБ: рубка за конторой (DESIGN-rooms §4) ── */
@@ -32,16 +32,24 @@ function hq3Layout(){
     if(!m)continue;const on=m.id===hqSel;if(on)L.sel=i;
     const at=on?hq3Stand(i):hq3Chair(i);
     L.people.push({m,i,pose:on?"hips":"chair",x:at.x,z:at.z,yaw:at.yaw,on});}
+  /* дежурный у голо-стола (M850a, проход): человек-мерило рубки — без него пустой штаб читался коробкой без
+     размера. Свой ген, не управляющий: не выбирается, табличек не носит */
+  L.people.push({m:hq3Duty(),i:-1,pose:"stand",x:1.3,z:-.5,yaw:-.75,on:false,duty:1});   /* за столом справа: лицо — в свете голограммы */
   for(const P of L.people)P.mesh=cpMesh(P.m,P.pose,1);
   L.rkey="hq|"+L.occ.join("")+"|"+L.sel+"|"+(L.st||"-");
   return L;
 }
+function hq3Duty(){let s=hashi(0x5A7B,0xD0,0x7E11)>>>0;
+  for(let i=0;i<12;i++){const g=cpGene({seed:s,loy:60,traits:[]});if(g&&!g.ai)break;s=(Math.imul(s,1103515245)+12345)>>>0;}
+  return {seed:s,loy:60,traits:[],jac:[64,72,86]};}
 /* сетка рубки: кости, четыре пульта с креслами, голо-стол, окно в док, дверь, карта на стене */
 function hq3Mesh(L){
   const K=r3Kit(),P=R3P,{L:X0,R:X1,B,F,hc}=HQ3,W=HQ3.win;
-  const wall=[96,104,118];
-  const Mw=K.mt(wall,.25,6,P.wall),Mw2=K.mt(mixc(wall,[10,12,16],.4),.3,6,P.wall);
-  const Mf=K.mt([96,98,102],.18,5,P.floor),Mst=K.mt([44,48,56],.45,9,P.brushed),Mdk=K.mt([30,33,38],.5,9,P.brushed);
+  /* стены — тёплые панели в серый, не синева: синим в рубке светит только голограмма; низ — тёмная обшивка.
+     Пол — тёмный паркет конторы: у плитки 08 «мокрые пятна», и голограмма бликовала в них лужами у самого объектива */
+  const wall=[128,122,112];
+  const Mw=K.mt(wall,.22,6,P.wall),Mw2=K.mt([58,56,54],.3,7,P.brushed);
+  const Mf=K.mt([86,66,50],.14,7,P.wood),Mst=K.mt([44,48,56],.45,9,P.brushed),Mdk=K.mt([30,33,38],.5,9,P.brushed);
   const Fr=K.mt([112,122,136],.7,11,P.brushed),Mtr=K.mt(mixc(wall,[24,26,30],.5),.4,8,P.brushed);
   K.part=0;
   K.quad([X0,0,B],[X1,0,B],[X1,0,F],[X0,0,F],Mf,[0,1,0]);
@@ -51,9 +59,21 @@ function hq3Mesh(L){
   K.quad([X1,0,F],[X0,0,F],[X0,hc,F],[X1,hc,F],Mw,[0,0,-1]);
   K.quad([X0,hc,B],[X1,hc,B],[X1,hc,F],[X0,hc,F],K.mt([86,92,100],.2,4,P.ceil),[0,-1,0]);
   for(let x=X0+.9;x<X1;x+=1.8)K.box([x,hc-.08,(B+F)/2],[.06,.08,(F-B)/2],Mst,.01);
+  /* швы панелей: стойки по задней стене между пультами и по бокам — стена получает шаг и масштаб */
+  for(const x of [-4.8,-2.4,2.4,4.8])K.box([x,(1+hc)/2,B+.03],[.035,(hc-1)/2,.03],Mtr,.006);
+  for(let z=B+1.2;z<F;z+=1.8)for(const sx of [X0+.03,X1-.03])K.box([sx,(1+hc)/2,z],[.03,(hc-1)/2,.035],Mtr,.006);
+  /* ковёр под голо-столом: глушит отражение колец на полу и собирает центр комнаты */
+  K.box([0,.006,.45],[1.7,.006,1.45],K.mt([62,48,40],.04,3,P.cloth),.004);
+  K.box([0,.0125,.45],[1.6,.0005,1.35],K.mt([92,66,46],.04,3,P.cloth),0);
+  K.box([0,.013,.45],[1.5,.0004,1.25],K.mt([56,44,38],.04,3,P.cloth),0);
   K.box([(X0+X1)/2,1.0,B+.02],[(X1-X0)/2,.025,.02],Mtr,.008);K.box([(X0+X1)/2,.05,B+.015],[(X1-X0)/2,.05,.015],Mtr,.006);
   /* короб кабелей под потолком вдоль задней стены — от пульта к пульту */
   K.box([(X0+X1)/2,hc-.32,B+.16],[(X1-X0)/2,.07,.12],Mdk,.012);
+  /* под коробом — тёплая светящаяся полоса: верх задней стены не проваливается в черноту, у рубки есть потолочный край */
+  K.box([(X0+X1)/2,hc-.395,B+.22],[(X1-X0)/2-.1,.006,.035],K.mt([255,214,160],.2,4,0,.55,true),0);
+  /* потолочные светильники между рёбрами: матовые панели, светят тускло — комната читается освещённой и ночью */
+  for(let x=X0+1.8;x<X1-.5;x+=1.8)for(const z of [B+2.2,B+5.2])
+    {K.box([x,hc-.012,z],[.42,.01,.42],Mst,.004);K.box([x,hc-.024,z],[.36,.003,.36],K.mt([236,214,180],.2,4,0,.1,true),0);}
   /* окно в док: проём узора window, рама и переплёт на три части */
   {const z=B,fw=.012;K.quad([W[0],W[2],z+.01],[W[1],W[2],z+.01],[W[1],W[3],z+.01],[W[0],W[3],z+.01],K.mt([3,3,3],.2,70,P.window,0,true),[0,0,1]);
     K.box([(W[0]+W[1])/2,W[2]-.03,z+.08],[(W[1]-W[0])/2+.06,.03,.09],Fr,.01);
@@ -65,11 +85,14 @@ function hq3Mesh(L){
     K.push([x,.9,B+.62],0,-.32);K.box([0,0,0],[.86,.02,.2],K.mt([38,42,48],.5,9,P.brushed),.008);
     for(let k=0;k<12;k++)K.box([-.6+k*.11,.024,.02],[.04,.006,.03],K.mt(on?mixc(sc,[30,30,30],.5):[40,44,50],.3,6,0,on?.25:0),.002);K.pop();
     K.box([x,1.48,B+.16],[.82,.36,.05],Mdk,.012);
-    const Ms=K.mt(on?mixc(sc,[10,14,20],.8):[10,12,16],.2,40,P.screen,on?(sel?.55:.35):.04,true);
+    /* пустой пульт не мёртв: дежурный экран — тусклая заливка цвета домена, свет на стол даёт лампа экрана */
+    const Ms=K.mt(on?mixc(sc,[10,14,20],.8):mixc(sc,[12,14,18],.86),.2,40,P.screen,on?(sel?.55:.35):.14,true);
     K.quad([x-.76,1.16,B+.215],[x+.76,1.16,B+.215],[x+.76,1.8,B+.215],[x-.76,1.8,B+.215],Ms,[0,0,1]);
     /* развёртка на экране: столбики дела домена — ровные, пустой экран без них */
     if(on)for(let k=0;k<7;k++){const h=.08+.32*((((i*7+k)*2654435761)>>>0)%100)/100;
       K.box([x-.6+k*.2,1.2+h/2,B+.222],[.035,h/2,.004],K.mt(mixc(sc,[40,40,40],.25),.2,4,0,sel?.8:.5,true),0);}
+    else{K.box([x,1.48,B+.221],[.5,.004,.002],K.mt(sc,.2,4,0,.35,true),0);   /* ровная линия ожидания и метка домена */
+      K.ell([x,1.62,B+.222],[.035,.035,.003],K.mt(sc,.2,4,0,.45,true),4,10);}
     /* плашка домена над экраном: тёмная, у занятого — тонкая полоса акцента */
     hallShade(K,on&&L.sel===i?x-Math.sign(x)*.35:x,hc-.3,B+1.25,on?[255,206,150]:[40,40,44],hc,!on);
     K.box([x,1.92,B+.18],[.36,.05,.012],Mdk,.006);
@@ -123,20 +146,23 @@ function hq3Scene(L,cam,t){
   /* смена: днём окно дока — вторая заливка сверху, ночью окно гаснет до звёзд, комнату держат лампы доменов и голо-стол */
   const nk=room3Night(),day=1-nk;
   lights.push({p:[0,1.15,.75],range:7.5,c:r3Sc(cold,3.4*(1+.2*nk)),spot:1,d:[0,.12,-.99],cosO:Math.cos(1.05),cosI:Math.cos(.45),shadow:1,vol:.12,key:1});
-  HQ3_X.forEach((x,i)=>{if(!L.occ[i])return;const sel=L.sel===i;
-    const lx=sel?x-Math.sign(x)*.35:x;lights.push({p:[lx,hc-.3,B+1.25],range:4.6,c:r3Sc(warm,(sel?7.5:2.4)*(1+.3*nk)),spot:1,d:sel?[0,-.96,.28]:[0,-1,-.12],cosO:Math.cos(.66),cosI:Math.cos(.3),shadow:sel?1:0,vol:sel?.1:.04});
-    bulbs.push([x,hc-.3,B+1.05,sel?.9:.4]);});
-  HQ3_X.forEach((x,i)=>{if(!L.occ[i])return;lights.push({p:[x,1.0,B+1.0],range:2.8,c:r3Sc(r3Lin(mixc(HQ3_SCR[HQ_ORDER[i]],[255,190,130],.4)),L.sel===i?1.1:.7),vol:0});});
+  /* лампа над каждым пультом — и над пустым: тёплое пятно на столе даёт рубке тёплый ключ против холода голограммы */
+  HQ3_X.forEach((x,i)=>{const on=L.occ[i],sel=L.sel===i;
+    const lx=sel?x-Math.sign(x)*.35:x;lights.push({p:[lx,hc-.3,B+1.25],range:4.6,c:r3Sc(warm,(sel?7.5:on?2.6:1.5)*(1+.3*nk)),spot:1,d:sel?[0,-.96,.28]:[0,-1,-.12],cosO:Math.cos(.66),cosI:Math.cos(.3),shadow:sel?1:0,vol:sel?.1:.04});
+    bulbs.push([x,hc-.3,B+1.05,sel?.9:on?.4:.28]);});
+  HQ3_X.forEach((x,i)=>{const on=L.occ[i];lights.push({p:[x,1.3,B+.75],range:2.6,c:r3Sc(r3Lin(mixc(HQ3_SCR[HQ_ORDER[i]],[255,190,130],.4)),L.sel===i?1.1:on?.7:.35),vol:0});});
   /* голо-стол светит и вниз: пятно холода на полу вокруг тумбы — передний план держит форму */
   lights.push({p:[0,1.3,.2],range:4.2,c:r3Sc(cold,1.6),vol:0});
   const W=HQ3.win;lights.push({p:[0,W[3]-.1,B+.3],range:7+3*nk,c:r3Sc(r3Lin(mixc([170,192,226],[60,84,150],nk)),4.2*day+.45*nk),spot:1,
     d:[0,-.8+.4*nk,.6+.3*nk],cosO:Math.cos(.8+.5*nk),cosI:Math.cos(.35+.4*nk),vol:.06*day});
-  lights.push({p:[HQ3.R-.3,2.2,2.2],range:2.6,c:r3Sc(warm,.9),vol:0});
+  /* полоса под коробом моет верх задней стены тёплым — заменила боковой огонь справа; выше кромки окна,
+     чтобы её отражение в стекле не вставало звездой посреди дока */
+  lights.push({p:[0,hc-.12,B+.55],range:6.5,c:r3Sc(warm,1.7+.5*nk),vol:0});
   /* рассеянный ночью не падает в черноту: синее небо дока, value стен ≥ .08 */
-  const sky=r3Lin(mixc([60,70,88],[40,52,86],nk)),gnd=r3Lin(mixc([70,64,58],[52,56,70],nk)),fog=r3Lin(mixc([34,42,58],[22,30,52],nk));
+  const sky=r3Lin(mixc([72,72,76],[44,52,78],nk)),gnd=r3Lin(mixc([78,68,58],[56,56,66],nk)),fog=r3Lin(mixc([40,40,46],[24,30,48],nk));
   const kind=L.st&&typeof hallT==="function"?hallT(L.st).win:5;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
-    sky:[...sky,2.0-1.25*nk],gnd:[...gnd,.075-.03*nk],fog:[...r3Sc(fog,.25),.04],acc:[...r3Lin([255,170,90]),1],
+    sky:[...sky,2.4-.9*nk],gnd:[...gnd,.075-.03*nk],fog:[...r3Sc(fog,.25),.04],acc:[...r3Lin([255,170,90]),1],
     win:[W[0],W[2],W[1],W[3]],win2:[B,kind,7,.7*(.38+.62*day)],sgn:[0,0,0,0],sgn2:[B,0,0,0],
     flm:[0,0,1,0],flm2:[B,0,0,0],tsg:null,tfl:null,M,ot:OT};
 }
@@ -216,7 +242,7 @@ function room3Frame(){
   U[43]=t;U[44]=1;U[47]=1;
   const oq=r3Proj(cam.vp,c0.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL_SHARP,1],52);
-  ROOM3.frames++;ROOM3.stat=hallLimits(S);ROOM3.vp=cam.vp;ROOM3.sz=sz;
+  ROOM3.frames++;ROOM3.S=S;ROOM3.vp=cam.vp;ROOM3.sz=sz;
   room3TagsDraw(hq3Tags(L,c0.tgt[0]),cam,sz);
   return r3Frame(cn,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
 }
@@ -261,7 +287,7 @@ function room3Cost(sec){return ROOM3.open?hallCost(sec,()=>room3Frame(),ROOM3.cn
 function room3PickHq(x,y){
   const L=ROOM3.L,sz=ROOM3.sz,vp=ROOM3.vp;if(!L||!sz||!vp)return null;
   let best=null,bd=70*((typeof UIK==="number"&&UIK>0)?UIK:1);
-  for(const P of L.people){const q=r3Proj(vp,[P.x,P.pose==="chair"?1.15:1.5,P.z],sz.cw,sz.ch);if(!q)continue;
+  for(const P of L.people){if(P.duty)continue;const q=r3Proj(vp,[P.x,P.pose==="chair"?1.15:1.5,P.z],sz.cw,sz.ch);if(!q)continue;
     if(q[0]>sz.rw)continue;const d=Math.hypot(q[0]-x,q[1]-y);if(d<bd){bd=d;best=P.m.id;}}
   return best;
 }

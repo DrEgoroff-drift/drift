@@ -16,7 +16,7 @@
    6. 2D-зимовки нет (22.10, автор: «2D не должно быть»): старый художник 29g удалён вместе с ?room=0 и ?win3=0.
       Без видеокарты кадра нет — игрок видит плашку «нет WebGPU» (08b2), как во всей игре; сбой кадра называет
       страж (28-loop), а не запасной путь. */
-const WIN3={cn:null,tags:null,mesh:null,mkey:"",t0:0,err:0,frames:0,stat:null,vp:null,sz:null,meas:null,hit:[],sl:0,storm:null};
+const WIN3={cn:null,tags:null,mesh:null,mkey:"",t0:0,err:0,frames:0,S:null,vp:null,sz:null,meas:null,hit:[],sl:0,storm:null};
 const WIN3_L=-3.6,WIN3_R=3.6,WIN3_B=-1.8,WIN3_F=1.8,WIN3_H=2.6;
 const WIN3_M=new Float32Array(R3_MAXI*R3_PART*16),WIN3_OT=new Float32Array(R3_MAXI*R3_PART*4);
 /* где что стоит: панель на задней стене слева, печь у левой стены, трубы, календарь, стол с лампой, койка под окном */
@@ -234,7 +234,7 @@ function win3Frame(){
   U[43]=t;U[44]=1;U[47]=1;
   const oq=r3Proj(cam.vp,cam.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   U.set([1,sz.ch/sz.cw,HALL_SHARP,1],52);
-  WIN3.frames++;WIN3.stat=hallLimits(S);WIN3.vp=cam.vp;WIN3.sz=sz;
+  WIN3.frames++;WIN3.S=S;WIN3.vp=cam.vp;WIN3.sz=sz;
   const m=WIN3.man;WIN3.meas={man:m?+hallManK(cam,m[0],m[1],sz.ch).toFixed(3):0,light:win3Val(W,"light"),heat:win3Val(W,"heat"),sleep:+win3SleepPh().toFixed(2)};
   WIN3.hit=win3Hits(W,cam,sz);
   room3TagsDraw(win3Tags(W,sz),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.wide?sz.cw-200*UIK:sz.cw-170,yr:sz.ch-(sz.wide?150:230)},WIN3.tags,win3SleepPh()>0);
