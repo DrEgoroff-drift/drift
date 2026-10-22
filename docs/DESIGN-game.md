@@ -521,6 +521,77 @@ Read it:
   the system; the slipway (eats plate) needs ★22, 65 points. Home at T3 holds 28 after three hours.
   M914's «eater at home» is a late-game picture, not a T3 one.
 
+**The second hour: T0 → T1 at a human's pace — M919, measured 22.10** (`ECO_TIERS=свеж ECO_HUMAN=1
+ECO_FRESH_H=3`; the fresh-save row of M912, now with ten-minute slices; `ECO_T1` adds the T1 kit).
+T1 in §4.1 is the «Вьюк» with one hand and one drone. What the game asks for each: the hand needs a
+cooperative (`hireMerc`, `12a-crew.js:219`; the stamp needs turnover 12 000 and a 1 500 fee,
+`coopRegister`, `12aj-coop.js:27,47`), a seat (`crewCap`) and a free hull (the Стриж, left
+behind when the player boards the «Вьюк»); the drone needs 9 000 cr and a yard or factory station
+(`droneShopHas`, `12-economy.js:245`), which the probe flies to (the nearest within four sectors)
+and back. The player keeps 900 cr for fuel and repairs, buys one thing per dock, and puts the drone
+on the first deposit of the next landing. Three players, one world:
+
+- **modules only** — the M912 row unchanged (hold, drill, hold, drill, engine, hold, drill);
+- **modules, then T1** (`ECO_T1=1`) — the five modules first, then cooperative → drone → hand
+  (the hold-3 and drill-3 purchases keep running beside them);
+- **T1 first** (`ECO_T1=2`) — after the first hold and drill, cooperative → drone → hand, the
+  modules wait.
+
+| | modules only | modules, then T1 | T1 first |
+|---|---|---|---|
+| cooperative / drone / hand | — | 64.8′ / 144.6′ / 153.0′ | 55.1′ / 65.5′ / 75.6′ |
+| net, hour 1 · 2 · 3 | 15 336 · 16 405 · 12 073 | 15 336 · 13 637 · 11 944 | 15 348 · **7 192** · 5 980 |
+| invested, hour 1 · 2 · 3 | 9 031 · 13 801 · 0 | 9 031 · 15 301 · 9 231 | 3 650 · 18 262 · 900 |
+| three-hour row, net cr/h | 14 915 | 13 138 | 9 532 |
+| waited for (minutes of play) | cash for a module 72 | cash for the drone 71, for a module 49 | cash for a module 113, turnover for the cooperative 23 |
+
+(«T1 first» lost its uninsured «Вьюк» in a fight on a dispatcher leg at 82′ — «сбит в бою · не
+застрахован · выдан «Стриж» по разнарядке» — with the modules on it; hours two and three are a Стриж
+with 66 units of hold. The runs are deterministic; the fight is the world's, not the order's.)
+
+The second hour minute by minute, «modules, then T1» (each row is the ten minutes up to it; time
+in minutes of play):
+
+| up to | cash | invested | gross | net | walk · drill · fly · pauses · paper · fetching the drone | waiting for | kit |
+|---|---|---|---|---|---|---|---|
+| 60′ | 6 870 | 3 660 | 6 630 | 6 024 | 5.3 · 1.0 · 0.3 · 2.6 · 0.8 · 0 | a module, at the next dock | «Вьюк», hold 2, drill 2 |
+| 70′ | 6 865 | 2 400 | 3 806 | 2 395 | 6.7 · 0.7 · 0.3 · 1.4 · 1.0 · 0 | — (cooperative 1 500, engine 900) | + engine, cooperative |
+| 80′ | 3 634 | 6 039 | 3 433 | 2 808 | 8.0 · 0.4 · 0.5 · 1.0 · 0 · 0 | cash for the drone | hold 3 |
+| 90′ | 6 369 | 0 | 4 639 | 2 735 | 5.0 · 1.1 · 0.7 · 2.6 · 0.7 · 0 | cash for the drone | |
+| 100′ | 1 751 | 6 862 | 2 574 | 2 244 | 4.5 · 0.9 · 0.4 · 4.2 · 0 · 0 | cash for the drone | drill 3 |
+| 110′ | 3 187 | 0 | 2 058 | 1 436 | 5.6 · 0.5 · 0.6 · 3.3 · 0 · 0 | cash for the drone | |
+| 120′ | 5 206 | 0 | 2 175 | 2 019 | 7.2 · 0.6 · 0.3 · 1.8 · 0 · 0 | cash for the drone | |
+| 140′ | 9 389 | 0 | 3 855 | 2 143 | 5.4 · 0.4 · 0.3 · 1.1 · 2.8 · 0 | cash for the drone | |
+| 150′ | 1 301 | 9 000 | 1 710 | 912 | 6.5 · 0.6 · 0.3 · 1.4 · 0 · 1.2 | — (drone, at the yard 3,-1) | + drone |
+| 160′ | 2 977 | 231 | 2 789 | 1 907 | 5.2 · 0.6 · 0.2 · 1.5 · 0.8 · 1.8 | — (hand, on the Стриж) | + hand: T1 at 161.7′ |
+
+The four walls, where each stands:
+
+| wall | when, and how big | §12 item that moves it |
+|---|---|---|
+| **cash** | the first wall and the longest: a module at a time to 64.8′ (72 minutes of waiting in the modules-only row), then the drone's 9 000 + 900 waits 71 minutes (to 144.6′) because hold 3 and drill 3 (12.9 k) go first; «T1 first» has the drone at 65.5′ | none. The levers are the drone's price (`DRONES.miner`) and the buying order, which is the player's |
+| **walking** | the biggest time: 29–38 of every 60 minutes are walking to deposits (48–63 %), drilling 3–6, flight 2–3, the human's pauses 9–16, paper 2–6; it is the same in all three rows and all three hours | none (item 3 touches one prompt near the Жестянка). The lever measured in §4.1a (M904–M905) is the deposit type and layout, not the dispatcher |
+| **the cooperative's turnover** | 12 000 sold comes at about 55′; only «T1 first» meets it as a wall (23 minutes waiting) | none |
+| **the hold** | not a wall after the «Вьюк»: the hold was full on 3 of 7 laps in hour 1 (on the Стриж, to 20.5′) and on 0 of 8 in hour 2; a lap ends at the probe's cap of 12 deposits a landing before the hold fills | none |
+| the ladder | not on the T1 path: the cooperative, the drone and the hand ask no rung. The home rung stays at 5 (19 points) for three hours, under the landing gate | none |
+
+Read it:
+
+- **T1's kit does not pay in its first hour at T0's place.** In «modules, then T1» the drone sits on
+  iron and brings 87 cr/h (−273 after the §3.1 parts line; payback 103 h), and over their first
+  half hour the background line («tick», drone and hand) takes in 0.7 k cr and pays out 1.0 k. In «T1 first», over 105 minutes, the drone
+  brings 215 cr/h and the hand earns about 1.2 k/h against wages of ~2.2 k/h. The modules-only player
+  ends three hours with the most money (21 547 cr in hand, 14 915 cr/h). So the second hour has no
+  hard wall. The player can buy T1 by 65′–145′, and buying it costs them money in that hour. The
+  oracle's T1 row (13 900, a drone on its dearest ore) assumes a placement this player does not
+  yet know.
+- **The real risk of the second hour is the uninsured hull.** One fight on a dispatcher leg took
+  the «Вьюк» and its modules at 82′ and halved the next two hours (7.2 k and 6.0 k cr/h against
+  16.4 k and 12.1 k). The probe skips paper that names a fight; this one met it on the way.
+- **None of the eight §12 items moves a T0→T1 wall.** §12 is the T2–T3 economy (workshops, base,
+  dead goods). The second hour's walls are the drone's price, the buying order and walking — none
+  of them a code bug; they are listed for the author, nothing changed.
+
 **Gaps that stay, each with an owner** — none has an honest lever in the dispatcher:
 
 - **T0 +57 % at the bot's pace, −13 % / +9 % at a human's.** Closed by the pace table above:
@@ -1126,6 +1197,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M916 | «no sites» checked **measured 22.10, §4.1b**: the probe's ladder or the game's | the probe's timing, not a bug: home climbs to ★11–13 in three hours at T3 (one site) and keeps it through a save; T0 stops at 10 on the drone gate; eaters need ★20–22 |
 | M917 | the ten dead industrial goods **measured 22.10, §11**: who eats each by meaning, and what an eater gives a chain with (а)+(в) | nine of ten are base modules by name, hullsec the hull; a chain with an eater pays 0.4–13k cr/h, mostly through its internal links (shadow price at every link); none fits three sites and the ★20–25 tiers at T3 |
 | M918 | the probe M912–M917 summed up for the author **written 22.10, §12**: proposals ranked by return per line, and what the measurements say to leave alone | (в) maker at home (1–3 lines) and (а) buyer of tier-1 goods (~40 lines) first: workshops −3.8k → −0.2k cr/h; prompt collisions; dead goods as base prices (~10 lines + a key each), late game; drone parts, internal-link pay and the allotment threshold disputed |
+| M919 | the second hour, T0 → T1 at a human's pace **measured 22.10, §4.1b**: ten-minute slices of the fresh save; three buying orders (modules only / modules then T1 / T1 first); where the first wall stands | cash is the wall (the drone waits 71 min behind hold 3 and drill 3; T1 assembled at 161.7′ or, T1 first, 82.6′), walking takes 48–63 % of play, the hold and the ladder are not walls; T1's kit loses money in its first hour; an uninsured «Вьюк» lost in a fight at 82′ halves hours two and three; no §12 item moves these walls |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),
