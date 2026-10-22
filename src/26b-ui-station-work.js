@@ -217,10 +217,22 @@ function stTabMods(){
       if(typeof rangeCanHere==="function"&&rangeCanHere()){
         const rr=el("div","row");
         rr.appendChild(el("div","nm","<s>стрельбище · списанная баржа у причала<br>минута наружу и обратно, числа честные</s>"));
-        const b=el("button","","ПРОВЕРИТЬ");
+        const b=el("button","act","ПРОВЕРИТЬ");   /* без класса кнопка была голой, браузерной */
         b.onclick=()=>{$st.classList.remove("open");rangeStart();};
         rr.appendChild(b);
         $body.appendChild(rr);
+        /* дуэль (28r, M902c): минута против пирата ранга за плату, отметка — строка пробы */
+        if(typeof duelNext==="function"){
+          const D=duelNext(),best=duelSt().best[D.rk];
+          const dr=el("div","row");
+          dr.appendChild(el("div","nm","<s>дуэль "+D.of+" · минута · "+DUEL_FEE+" кр<br>"+
+            (best>0?"лучшее — "+best+" с · ":"")+"отметка — "+D.mark+" с, корпус вернут</s>"));
+          const db=el("button","act","ДУЭЛЬ");
+          if((G.credits|0)<DUEL_FEE)db.disabled=true;
+          db.onclick=()=>{$st.classList.remove("open");duelStart(D.rk);};
+          dr.appendChild(db);
+          $body.appendChild(dr);
+        }
       }
     }
   }
