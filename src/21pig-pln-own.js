@@ -14,7 +14,7 @@
    Дом — на своём месте (homeSpotX), во дворе 19 × 13 м за низким забором (столбы 1.1 м через
    2.5 м, две проволоки, проход к крыльцу открыт): корпус 7 × 4 м с поясом рубочного стекла,
    крыльцо под фонарём, сводчатый гараж, решётчатая мачта 9 м с дышащим маяком; теплица — свод
-   из рёбер на дальней стороне двора, внутри грядки 21g зелёными телами и холодная лампа.
+   из рёбер на дальней стороне двора, внутри четыре гряды 21g, на каждой — тела своего вида (M204), и холодная лампа.
    Двор кончается до человека: передний забор стоит за линией хода и режет его по поясу.
 
    Вымпел (21h) у той базы, что держит его в этот квартал, — полотно на её мачте, по ветру.
@@ -285,6 +285,49 @@ function plnOwnFlat(L){
   const A=plnOwnHomeAt(L,tr,p);
   return A?[[A.x,A.z+.4,10.6,7.4,A.y-.06]]:null;
 }
+/* ── теплица: грядки читают вид (M204) ──
+   Имя вида — его паспорт: в нём форма (PLANT_FORM_K) и признак (plantTraitWord). Тело собирает тот же
+   генератор вида (20e speciesPlant) от потока по имени, форма и признак берутся из самого имени —
+   «грибной, светящийся» растёт грибом и светится, «колючий» несёт шипы. Анатомия — 21pia (plnHerbMesh),
+   краска — мира, где стоит теплица. Рост — доля greenGrow: всход, потом взрослое; старым в теплице не бывает */
+const OWN_GREEN={tx:6.6,tz:2,hl:3,rw:1.6,ky:2.3,bz:i=>2-3+.75+i*1.5};
+const OWN_GREEN_SP=new Map();
+function plnOwnGreenSp(name,p){
+  const key=name+"|"+((p&&p.type)||"");let sp=OWN_GREEN_SP.get(key);
+  if(sp)return sp;
+  let h=2166136261>>>0;
+  for(let i=0;i<name.length;i++){h^=name.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+  const r=rng(h),ws=name.split(","),tw=(ws[1]||"").trim();
+  let kind=PLANT_FORM_K.indexOf(ws[0].trim().split(" ").pop());
+  if(kind<0)kind=Math.floor(r()*PLANT_KINDS);
+  sp=speciesPlant(r,p&&p.T?p:{T:TYPES.terran,type:"terran"},{hueBias:r(),giantChance:0,scale:1},kind);
+  sp.name=name;
+  if(tw){sp.glow=tw==="светящийся";
+    if(!sp.glow){sp.spiny=tw==="колючий"&&plantStemForm(kind);
+      if(/^(цветущий|жёсткий|гибкий)$/.test(tw))sp.bloom=tw==="цветущий";
+      if(tw==="жёсткий")sp.wK=Math.max(sp.wK,2);else if(tw==="гибкий")sp.wK=Math.min(sp.wK,1.8);}}
+  OWN_GREEN_SP.set(key,sp);
+  return sp;
+}
+/* тела грядок записями: на гряду — один вид, три куста (ковровый — четыре, широкая крона — два), рост
+   вида ужат под свод. Гряды занимают по росту: низкий вид — к объективу, высокий — к стене, иначе
+   шляпки передней гряды закрывали остальные три */
+const OWN_GREEN_WIDE=[1,2,7,9];
+function plnOwnGreenBuild(A,beds,p,sd){
+  const {tx}=OWN_GREEN,a=new Float32Array(16*16),parts=[];let n=0;
+  const row=beds.slice(0,GREEN_BEDS).map((b,i)=>{if(!b.name||b.g<.02)return null;
+    const sp=plnOwnGreenSp(b.name,p);return {b,i,sp,hm:clamp(sp.h/PLN_M*.3,.35,1)*(.3+.7*b.g)};}).filter(Boolean);
+  row.sort((u,v)=>u.hm-v.hm||u.i-v.i);
+  row.forEach(({b,i,sp,hm},slot)=>{
+    const geo=plnGeo(plnHerbMesh(sp,i,b.g<.35?0:1)),first=n,z=OWN_GREEN.bz(slot+GREEN_BEDS-row.length);
+    const C=plnHerbTone(PLN_TINTS[PLN_HERB.tints[i%3]],sp.leaf),k=sp.kind===6?4:(OWN_GREEN_WIDE.indexOf(sp.kind)>=0?2:3);
+    for(let j=0;j<k;j++){const hh=hashi(sd,i*7+j,0x6EED),jt=1+(((hh>>>9)&255)/255-.5)*.2;
+      const pos=[A.x+tx+(j-(k-1)/2)*2.1/k,A.y+.33,A.z+z+((hh&255)/255-.5)*.18],yaw=((hh>>>3)&255)/255*TAU;
+      if(sp.kind===4)plnRec(a,n++,pos,hm*jt,yaw,1,n,[jt,jt,jt],0);
+      else plnRec(a,n++,pos,hm*jt,yaw,1,n,plnMul(C.under,jt),2,plnMul(C.top,jt));}
+    parts.push({geo,first,count:n-first});});
+  return n?{parts,inst:plnInst(a,n,n),n}:null;
+}
 function plnOwnHomeMesh(L,A,sd,beds,penn){
   const C=PLN_MARK_COL,P=PLN_PAL,m=plnMesh(1<<14),lm=plnMesh(1<<10),bm=plnMesh(256),gm=plnMesh(512),pm=plnMesh(256);
   const K=plnOwnKit(m,lm),dr=A.door;
@@ -340,15 +383,18 @@ function plnOwnHomeMesh(L,A,sd,beds,penn){
     plnCard(pm,[mx,fy-.4,mz],[mx,fy+.4,mz],[mx+1.5,fy+.26,mz],[mx+1.5,fy-.18,mz],[0,0,-1],col,PLN_MAT.leaf,[0,0,1,1],0,0);
     plnCard(pm,[mx+1.5,fy-.18,mz],[mx+1.5,fy+.26,mz],[mx,fy+.4,mz],[mx,fy-.4,mz],[0,0,1],col,PLN_MAT.leaf,[1,1,0,0],0,0);}
   /* теплица: рёбра свода на дальней стороне двора, внутри грядки 21g и холодная лампа */
-  const tx=6.6,tz=2,hl=3,rw=1.6;
+  /* свод 2.3 м в коньке (был 1.45 — лампа и прогоны висели над ним); прогоны лежат на рёбрах */
+  const {tx,tz,hl,rw,ky}=OWN_GREEN;
   for(let k=0;k<=6;k++){const z=tz-hl+k;
-    plnTube(m,{path:plnBez([tx-rw,0,z],[tx,2.9,z],[tx+rw,0,z],8),rad:k%6?.045:.075,sides:5,col:C.steelLt,mat:PLN_MAT.man});}
-  for(const s of [-1,0,1])K.rod([tx+s*rw*.8,s?1.35:2.16,tz-hl],[tx+s*rw*.8,s?1.35:2.16,tz+hl],.035,C.steelLt,{sides:4});
+    plnTube(m,{path:plnBez([tx-rw,0,z],[tx,ky*2,z],[tx+rw,0,z],8),rad:k%6?.045:.075,sides:5,col:C.steelLt,mat:PLN_MAT.man});}
+  for(const t of [.2,.5,.8]){const x=tx+rw*(2*t-1),y=4*t*(1-t)*ky;K.rod([x,y,tz-hl],[x,y,tz+hl],.035,C.steelLt,{sides:4});}
   K.box([tx,.12,tz],[rw,.12,hl],conc,{box:.25});
-  plnTube(gm,{path:[[tx,2.05,tz-hl+.4],[tx,2.05,tz+hl-.4]],rad:.05,sides:5,col:[.8,.92,1],mat:PLN_MAT.glow,glow:2.4,x:1,cap:true});
-  beds.forEach((b,i)=>{const z=tz-hl+.75+i*1.5,g=b.g;if(g<.02)return;
-    for(let j=0;j<4;j++){const sx=tx+(j-1.5)*.62,h=.15+.6*g;
-      plnBlob(m,{c:[sx,.24+h/2,z],r:[.18+.12*g,h/2,.22+.1*g],sub:1,bump:.3,seed:sd+i*7+j,col:plnMix3([.22,.45,.2],[.45,.6,.25],(j&1)*.5+.2*g),mat:PLN_MAT.leaf});}});
+  plnTube(gm,{path:[[tx,ky-.25,tz-hl+.4],[tx,ky-.25,tz+hl-.4]],rad:.05,sides:5,col:[.8,.92,1],mat:PLN_MAT.glow,glow:2.4,x:1,cap:true});
+  /* гряды — короба с тёмной землёй, все четыре: пустая читается незасеянной; тела видов — записями (plnOwnGreenBuild) */
+  const soil=(u,p2)=>plnMix3(P.soilDark,[.1,.08,.06],.5+.3*plnNoise(p2[0]*4,p2[2]*4,sd+21));
+  for(let i=0;i<GREEN_BEDS;i++){const z=OWN_GREEN.bz(i);
+    K.box([tx,.2,z],[1.3,.12,.56],conc,{box:.25});
+    K.box([tx,.31,z],[1.2,.04,.47],soil,{box:.3});}
   /* забор: столбы 1.1 м через 2.5 м, две проволоки, проход к крыльцу */
   const fx=9.3,fz=6.3,run=(a,b,gap)=>{const L2=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.round(L2/2.5);
     let prev=null;
@@ -359,7 +405,7 @@ function plnOwnHomeMesh(L,A,sd,beds,penn){
       if(prev)for(const h of [.45,.9])K.rod([prev[0],h,prev[1]],[x,h,z],.008,C.steelLt,{sides:3,cap:false});
       prev=[x,z];}};
   run([-fx,-fz],[fx,-fz],dr);run([-fx,-fz],[-fx,fz]);run([fx,-fz],[fx,fz]);run([-fx,fz],[fx,fz]);
-  return {body:m,light:lm,beacon:bm,grow:gm,penn:pm,occ,lampAt:{porch:[dr+.95,2.3,-2.75],grow:[tx,2,tz]},blots:[[0,1,4.2,.45],[5.8,1.2,2.4,.4]]};
+  return {body:m,light:lm,beacon:bm,grow:gm,penn:pm,occ,lampAt:{porch:[dr+.95,2.3,-2.75],grow:[tx,ky-.3,tz]},blots:[[0,1,4.2,.45],[5.8,1.2,2.4,.4]]};
 }
 
 /* ── сборка: раз на посадку и состав ── */
@@ -367,6 +413,7 @@ function plnOwnFree(it){
   if(!it)return;
   for(const k of ["geo","light","aux","beam","fx"])if(it[k])plnGeoFree(it[k]);
   if(it.inst)plnInstFree(it.inst);
+  if(it.green){for(const q of it.green.parts)plnGeoFree(q.geo);plnInstFree(it.green.inst);it.green=null;}
 }
 function plnOwnItem(kind,A,M,sd,key){
   const g=x=>x&&x.nv?plnGeo(plnMeshDone(x)):null;
@@ -391,9 +438,10 @@ function plnOwnStep(L,S,lim){
   if(made&&lim!=null&&wallMs()-t0>lim)return false;
   const H=(typeof homeHereP==="function"&&homeHereP(p))?plnOwnHomeAt(L,tr,p):null;
   if(H){
-    const beds=greenAll().beds.map(b=>({g:greenGrow(b)})),pn=plnOwnPennHere(p),key=beds.map(b=>Math.round(b.g*8)).join(",")+"|"+pn;
+    const beds=greenAll().beds.map(b=>({g:greenGrow(b),name:b.name})),pn=plnOwnPennHere(p),key=beds.map(b=>b.name+":"+Math.round(b.g*8)).join(",")+"|"+pn;
     if(!O.home||O.home.key!==key){plnOwnFree(O.home);
-      const sd=hashi(G.sx,G.sy,0x40E7);O.home=plnOwnItem("home",H,plnOwnHomeMesh(L,H,sd,beds,pn),sd,key);}
+      const sd=hashi(G.sx,G.sy,0x40E7);O.home=plnOwnItem("home",H,plnOwnHomeMesh(L,H,sd,beds,pn),sd,key);
+      O.home.green=plnOwnGreenBuild(H,beds,p,sd);}
     O.porch=(H.x+H.door)*PLN_M;
   }else{plnOwnFree(O.home);O.home=null;O.porch=null;}
   return true;
@@ -421,6 +469,7 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
     if(it.aux&&ak>.01)F.batches.push({geo:it.aux,inst:it.inst,first:2,count:1,kind:Bk,to:LIT});
     if(it.beam)F.batches.push({geo:it.beam,inst:it.inst,first:3,count:1,kind:Bk,to:LIT});
     if(it.fx)F.batches.push({geo:it.fx,inst:it.inst,first:4,count:1,kind:Bk,to:TO});
+    if(it.green)for(const q of it.green.parts)F.batches.push({geo:q.geo,inst:it.green.inst,first:q.first,count:q.count,kind:Bk,to:TO});
     /* лампы — ночью (§3): фонарь крыльца — ключ двора с тенью, лампа теплицы — второй свет двора без
        тени, фонарь пирса — ключ базы, свет над воротами; в кадр идут две, по старшинству */
     if(nk>.05){
