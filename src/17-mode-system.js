@@ -620,12 +620,7 @@ function drawSystem(){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;   /* диск — физический (16c, п. 2): зум делает планету большой, не корабль */
     sysOcPush(x,y,r,ox,oy);   /* тень на корабли — и от планеты за краем экрана */
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
-    if(p.ring===undefined){
-      const rr=rng(p.seed^0x21A9);
-      p.ring=(p.type==="gas"&&rr()<.62)
-        ? {i:1.34+rr()*.26,o:1.85+rr()*.7,tilt:.16+rr()*.26,n:3+Math.floor(rr()*4),s:p.seed}
-        : null;
-    }
+    if(p.ring===undefined)p.ring=planetRing(p);   /* бросок — 17gab1, его же спрашивает карта */
     gpuPlanet(p,x,y,r,planetLightsOn(sys,p,r));   /* шар, свет, воздух, облака, кольцо; огни ваших построек (M296) — городами (17ga) */
     if(typeof drawPlanetWorks==="function")drawPlanetWorks(sys,p,x,y,r);     /* отвал, купол, полоса (M306) */
     /* конец света виден с орбиты (хвост M114): у обречённой планеты рыжий
@@ -962,7 +957,10 @@ function drawSysHud(zx,zy,sh,sys,U){
       if(r){spot=r;usedVert=!onSide;usedDir=1;}
     }
     if(spot){rx=spot[0];ry=spot[1];}
-    placed.push({x:rx,y:ry,w:cw,h:ch});
+    /* занято не плашкой, а её зоной касания с запасом на зону соседки: зона растёт на (44−16)/2 вверх и
+       вниз и на 6 в стороны, значит соседней плашке ближе 28 по y и 12 по x не встать — шаг стопки ≥ 44,
+       надписи не лезут друг в друга, палец не берёт соседку (зрение: «наезд», «касание», 22.10) */
+    {const PY=Math.max(0,CHIP_TOUCH-ch);placed.push({x:rx-12,y:ry-PY,w:cw+24,h:ch+2*PY});}
     if(spot){
       if(!firstAnchor)firstAnchor={onSide:usedVert,x:rx,y:ry,cw,ch};
       stack={onSide:usedVert,dir:usedDir,x:rx,y:ry,cw,ch};
@@ -1048,9 +1046,12 @@ function drawSysHud(zx,zy,sh,sys,U){
       const lim=CHIP_SPEED*chipDt+1,half=CHIP_FADE/2,a0=dcA;
       if(st.jf){
         st.jf.t+=chipDt;
-        if(st.jf.t>=CHIP_FADE)st.jf=null;
+        if(st.jf.t>=CHIP_FADE){st.jf=null;st.px=rx;st.py=ry;}   /* скачок прожит: отсчёт — от нового места */
         else if(st.jf.t<half){rx=st.jf.x;ry=st.jf.y;dcA*=1-st.jf.t/half;}
-        else dcA*=(st.jf.t-half)/half;
+        /* загорается уже на новом месте: оно и есть точка отсчёта. Без этого первый же кадр второй
+           половины мерил новое место от старого, видел тот же скачок и тушил заново — фишка
+           навсегда застревала на старом месте плашкой на соседке и мигала (721, «карта › Назад», 22.10) */
+        else{if(!st.jf.lit){st.jf.lit=1;st.px=rx;st.py=ry;}dcA*=(st.jf.t-half)/half;}
       }
       /* и загораясь после уступки, фишка может уступить снова — тогда прячется заново */
       if((!st.jf||st.jf.t>=half)&&st.px!=null&&dcA>=.5&&Math.hypot(rx-st.px,ry-st.py)>lim){

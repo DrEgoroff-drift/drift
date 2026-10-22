@@ -190,10 +190,10 @@ function ovTextRot(Q,x,y,text,font,col,align,base,al,ang){
   ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,[c[0]*a,c[1]*a,c[2]*a,a],1,e.l,e.x,e.y,null);
 }
 /* подпись мира k (имя станции, планеты, борта): y — как у fillText при нынешнем ctx.textBaseline.
-   Без видеокарты — прямо на ctx, как раньше */
+   Без видеокарты мира нет и подписи не кладутся (M822b: прежде — прямо на ctx, 2D-запасной путь) */
 function domLabel(k,x,y,text,font,col,align,al){
   if(al==null)al=1;
-  if(!GPU.ok||!GPU.on){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align;ctx.globalAlpha=al;ctx.fillText(text,x,y);ctx.globalAlpha=1;return;}
+  if(!GPU.ok||!GPU.on)return;
   const n0=OVL.lq.length,r=ovText(OVL.lq,x,y,text,font,col,align,ctx.textBaseline,al,1);
   if(ovHushed(r.x0,r.y0,r.x1,r.y1)){OVL.lq.length=n0;return;}
   let e=OVL.lab.get(k);if(!e)OVL.lab.set(k,e={on:false});
