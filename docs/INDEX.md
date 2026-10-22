@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 644 · top-level symbols: 8752
+Files: 644 · top-level symbols: 8743
 
 ## SYMBOLS
 
@@ -718,7 +718,7 @@ GAL_STAR_RED                 src/17z3-map-gpu.js:164
 GAL_STAR_SCREEN              src/17z1-galaxy.js:82
 GAL_VER                      src/17z1-galaxy.js:18
 GAL_WGSL                     src/17z3-map-gpu.js:25
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-265
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-275
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GAUGE_MID                    src/28l-gauge.js:23
@@ -779,7 +779,7 @@ GEO                          tests/90b2-geom.js:27
 GEO_CC                       tests/90b2-geom.js:72
 GEO_CTL                      tests/90b2-geom.js:398
 GEO_DANGER                   tests/90b2-geom.js:31
-GEO_FAULT                    src/18b-geology.js:91
+GEO_FAULT                    src/18b-geology.js:85
 GEO_JUNK                     tests/90b2-geom.js:30
 GEO_KIND                     src/18b-geology.js:13-29
 GEO_SIDE                     tests/90b2-geom.js:29
@@ -806,9 +806,7 @@ GIANT_VISIT                  src/17o-giants.js:231-246
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
 GIFT_W                       src/11at-gift.js:27
-GLAZE_FLOOR                  src/18a1-glaze.js:70
-GLAZE_MASK                   src/18a1-glaze.js:134
-GLAZE_PASS                   src/18a1-glaze.js:126
+GLAZE_PASS                   src/18a1-glaze.js:32
 GLOB                         src/25f-globus.js:44
 GLOB_STEP                    src/25f-globus.js:43
 GLOW_CACHE                   src/16a0-glow.js:23
@@ -894,7 +892,7 @@ GREEN_BEDS                   src/21g-greenhouse.js:27
 GREEN_FULL                   src/21g-greenhouse.js:28
 GREEN_SP                     src/21g-greenhouse.js:72
 GREEN_VEGA                   src/21g-greenhouse.js:29
-GREY_K                       src/18a1-glaze.js:116
+GREY_K                       src/18a1-glaze.js:25
 GRIB_BOOM                    src/21ac1-base-banya.js:20
 GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
@@ -1669,13 +1667,11 @@ PLN_GPU                      src/21pe-pln-gpu.js:27
 PLN_GUN                      src/21pifb-pln-marks-act-move.js:345
 PLN_HAND_S                   src/21pz-pln-frame.js:277
 PLN_HDR                      src/21pe-pln-gpu.js:23
-PLN_HEADLAMP                 src/21pha-pln-man.js:51
 PLN_HERB                     src/21pia-pln-herb.js:30
 PLN_HERB_MAKE                src/21pia-pln-herb.js:135-355
 PLN_ICO                      src/21pa-pln-mesh.js:40
 PLN_KIND                     src/21pe-pln-gpu.js:26
 PLN_KIT_N                    src/21pg-pln-flora.js:249
-PLN_LAMP_GREY                src/21pc-pln-wgsl-scene.js:14
 PLN_LAND                     src/21pf-pln-land.js:22
 PLN_LIFT                     src/21pifc-pln-marks-act-lift.js:12
 PLN_LIFT_GEO                 src/21piec-pln-marks-move.js:9
@@ -1686,10 +1682,10 @@ PLN_LPAD_DASH                src/21pza-pln-descent.js:122
 PLN_LPAD_SPOTS               src/21pza-pln-descent.js:113
 PLN_M                        src/21p-pln.js:14
 PLN_MAN                      src/21pha-pln-man.js:23
-PLN_MAN_BONES                src/21pha-pln-man.js:32-61
+PLN_MAN_BONES                src/21pha-pln-man.js:32-60
 PLN_MAN_FLAME                src/21pha-pln-man.js:50
-PLN_MAN_ID                   src/21pha-pln-man.js:255
-PLN_MAN_POSE                 src/21pha-pln-man.js:39-61
+PLN_MAN_ID                   src/21pha-pln-man.js:254
+PLN_MAN_POSE                 src/21pha-pln-man.js:39-60
 PLN_MAN_SIT                  src/21pha-pln-man.js:49
 PLN_MARK                     src/21pie-pln-marks.js:20
 PLN_MARK_COL                 src/21pie-pln-marks.js:33
@@ -1730,7 +1726,7 @@ PLN_VS                       src/21pa-pln-mesh.js:10
 PLN_WATER_BLEND              src/21pw-pln-water.js:231
 PLN_WFLORA                   src/21pfa-pln-worlds.js:178-223
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
-PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:19
+PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
 PLN_WGSL_WATER               src/21pw-pln-water.js:141
 PLN_WGSL_WATER_CAVE          src/21pw-pln-water.js:181
 PLN_WGSL_WATER_CORE          src/21pw-pln-water.js:13
@@ -2224,7 +2220,6 @@ STORY_WHEN                   src/11c-stories.js:148-205
 STP_FADE                     src/26e2-stapel-draw.js:293
 STP_G                        src/26e2-stapel-draw.js:292
 STP_INK                      src/26e2-stapel-draw.js:191
-STRATA_K                     src/18a1-glaze.js:119
 STRIPS_MAX                   src/11b-speech.js:191
 STUN_TIME                    src/13a-guns.js:27
 ST_GROUPS                    src/26-ui-station.js:165-172
@@ -4032,7 +4027,7 @@ drawSpa                      src/29rd-spa-r3.js:234-237
 drawStars                    src/16-flight.js:40-79
 drawStation                  src/17c-system-draw.js:192-209
 drawStencils                 src/03d-hull-marks.js:1-90
-drawStrata                   src/18b-geology.js:103-249
+drawStrata                   src/18b-geology.js:100
 drawSurface                  src/21pz-pln-frame.js:440-459
 drawSurfaceHud               src/21e-surface-draw.js:42-145
 drawSurvey                   src/12w-survey.js:63-83
@@ -4257,7 +4252,7 @@ fgColors                     src/21b-surface-deco.js:270-275
 fgEach                       src/21b-surface-deco.js:292-323
 fightLens                    src/17p-cam-frame.js:42-60
 fightTarget                  src/17p-cam-frame.js:35-41
-fillMaterial                 src/18a-material.js:382-412
+fillMaterial                 src/18a-material.js:380
 findBucket                   src/17b-finds.js:18
 findInteract                 src/17b-finds.js:141-177
 findLandingNear              src/17b-finds.js:133-140
@@ -4505,8 +4500,8 @@ geoD                         tests/90b2-geom.js:35
 geoDom                       tests/90b2-geom.js:399-451
 geoEdge                      tests/90b2-geom.js:68
 geoExtra                     tests/90b2-geom.js:223-245
-geoFaultAt                   src/18b-geology.js:92-97
-geoFaultX                    src/18b-geology.js:99-102
+geoFaultAt                   src/18b-geology.js:86-91
+geoFaultX                    src/18b-geology.js:93-96
 geoFin                       tests/90b2-geom.js:58
 geoFontProbe                 tests/90b2-geom.js:1088-1097
 geoFrame                     tests/90b2-geom.js:325-328
@@ -4548,7 +4543,6 @@ geoSty                       tests/90b2-geom.js:367
 geoTable                     tests/90b2-geom.js:898
 geoText                      tests/90b2-geom.js:133-147
 geoWho                       tests/90b2-geom.js:388-397
-geoWob                       src/18b-geology.js:80-82
 geoWorld                     tests/90b3-geom-world.js:41-56
 geoWorldBox                  tests/90b3-geom-world.js:15-26
 geoWorldOne                  tests/90b3-geom-world.js:27-40
@@ -4586,11 +4580,9 @@ giantsAll                    src/17o-giants.js:23-53
 giftArrive                   src/11at-gift.js:43-63
 giftDue                      src/11at-gift.js:30-41
 glassOutline                 src/25-cockpit.js:55-91
-glazeChunk                   src/18a1-glaze.js:135-160
-glazeGround                  src/18a1-glaze.js:164-167
-glazeIsForm                  src/18a1-glaze.js:127
-glazeIsHue                   src/18a1-glaze.js:128
-glazeStops                   src/18a1-glaze.js:71-97
+glazeGround                  src/18a1-glaze.js:36
+glazeIsForm                  src/18a1-glaze.js:33
+glazeIsHue                   src/18a1-glaze.js:34
 globusAim                    src/25f-globus.js:49-68
 globusDraw                   src/25f-globus.js:113-138
 globusPaint                  src/25f-globus.js:81-111
@@ -4759,9 +4751,9 @@ greenSow                     src/21g-greenhouse.js:57-69
 greenSpecies                 src/21g-greenhouse.js:73-87
 greenSpeciesFields           src/21g-greenhouse.js:90-104
 greenWatered                 src/21g-greenhouse.js:36-38
-greyA                        src/18a1-glaze.js:106-109
-greyOf                       src/18a1-glaze.js:102-105
-greyStretch                  src/18a1-glaze.js:120
+greyA                        src/18a1-glaze.js:15-18
+greyOf                       src/18a1-glaze.js:11-14
+greyStretch                  src/18a1-glaze.js:26
 gribAvral                    src/21ac1-base-banya.js:79-96
 gribCut                      src/21ac1-base-banya.js:97-107
 gribEat                      src/21ac1-base-banya.js:70-77
@@ -5772,7 +5764,7 @@ loreWinOpen                  src/27h-ui-lore.js:17
 loyBar                       src/27c-ui-hq.js:17-23
 loyWord                      src/27c-ui-hq.js:13-16
 luckLine                     src/27b-ui-crew.js:15-25
-lum3                         src/18a1-glaze.js:101
+lum3                         src/18a1-glaze.js:10
 luxPal                       src/03c-hull-luxe.js:16-26
 maExplore                    tests/91qa-marks-act.js:173-191
 maLive                       tests/91qa-marks-act.js:7-10
@@ -6754,7 +6746,6 @@ plnInst                      src/21pe-pln-gpu.js:100-105
 plnInstFree                  src/21pe-pln-gpu.js:117
 plnInstSet                   src/21pe-pln-gpu.js:107-116
 plnKitTick                   src/21pg-pln-flora.js:250-253
-plnLampPool                  src/21pc-pln-wgsl-scene.js:15-18
 plnLand                      src/21pf-pln-land.js:555-566
 plnLandBare                  src/21pf-pln-land.js:256-259
 plnLandBatches               src/21pf-pln-land.js:543-545
@@ -6816,15 +6807,15 @@ plnM4mirrorY                 src/21p-pln.js:104
 plnM4move                    src/21p-pln.js:138-140
 plnM4mul                     src/21p-pln.js:86-91
 plnM4ortho                   src/21p-pln.js:92-97
-plnMan                       src/21pha-pln-man.js:215-228
-plnManBones                  src/21pha-pln-man.js:234-254
-plnManBuild                  src/21pha-pln-man.js:79-163
-plnManCss                    src/21pha-pln-man.js:54-61
-plnManFlame                  src/21pha-pln-man.js:198-212
-plnManFrame                  src/21pha-pln-man.js:262-303
-plnManPalette                src/21pha-pln-man.js:63-75
-plnManPose                   src/21pha-pln-man.js:166-195
-plnManState                  src/21pha-pln-man.js:256-259
+plnMan                       src/21pha-pln-man.js:214-227
+plnManBones                  src/21pha-pln-man.js:233-253
+plnManBuild                  src/21pha-pln-man.js:78-162
+plnManCss                    src/21pha-pln-man.js:53-60
+plnManFlame                  src/21pha-pln-man.js:197-211
+plnManFrame                  src/21pha-pln-man.js:261-301
+plnManPalette                src/21pha-pln-man.js:62-74
+plnManPose                   src/21pha-pln-man.js:165-194
+plnManState                  src/21pha-pln-man.js:255-258
 plnMarkH                     src/21pie-pln-marks.js:40
 plnMarkMesh                  src/21pie-pln-marks.js:58-103
 plnMarkMove                  src/21piec-pln-marks-move.js:10-289
@@ -9640,13 +9631,13 @@ zoomTo                       src/15-input.js:358
 ## src/18a-map-addr.js · 21 KB
   · карта говорит адресами (M347):1
 
-## src/18a-material.js · 31 KB
+## src/18a-material.js · 29 KB
   · материал грунта:1
 
-## src/18a1-glaze.js · 13 KB
-  · лессировка: форма в сером, свет одним слоем (P4, M422):1
+## src/18a1-glaze.js · 3 KB
+  · серое и лессировка (P4, M422):1
 
-## src/18b-geology.js · 16 KB
+## src/18b-geology.js · 7 KB
   · геология:1
 
 ## src/18b-map-hold.js · 16 KB
@@ -9912,7 +9903,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pb-pln-wgsl-air.js · 24 KB
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
-## src/21pc-pln-wgsl-scene.js · 18 KB
+## src/21pc-pln-wgsl-scene.js · 17 KB
   · планета: шейдер тел, земли, воды и тени (M610):1
 
 ## src/21pd-pln-wgsl-post.js · 8 KB
@@ -9950,7 +9941,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ph-pln-cast.js · 3 KB
   · планета: состав в кадре — круг (M610), человек (M620), корабль (M621):1
 
-## src/21pha-pln-man.js · 21 KB
+## src/21pha-pln-man.js · 20 KB
   · планета: человек — риг (M620):1
 
 ## src/21phb-pln-ship.js · 22 KB
@@ -10584,7 +10575,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qe-bar-seat.js · 7 KB
   · бар собран (M853):1
 
-## tests/91qe-own.js · 16 KB
+## tests/91qe-own.js · 15 KB
 
 ## tests/91qe-rack.js · 4 KB
   · стойка уступает телу (M821):1
@@ -10725,7 +10716,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzw-travel.js · 8 KB
   · вечер не по времени, а по дороге (M359):1
 
-## tests/91zzzzzzy3-gate2d.js · 27 KB
+## tests/91zzzzzzy3-gate2d.js · 28 KB
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 12 KB
