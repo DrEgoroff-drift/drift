@@ -93,8 +93,39 @@ function h3dPack(V,E,o){
   /* радиус — по объёму, не по углам плоскости краски: угол квадрата E на E·√2 раздувал слой в полтора раза,
      а краска живёт внутри круга E (за ним в выпечке пусто) */
   let r=0;for(let i=0;i<V.length;i+=12)r=Math.max(r,Math.hypot(V[i],V[i+1],V[i+2]));
-  for(const q of [[-E,-E],[E,-E],[E,E],[-E,-E],[E,E],[-E,E]])V.push(q[0],q[1],-.05,0,0,1,0,0,0,0,0,-1);
+  const pl=(x0,y0,x1,y1)=>{for(const q of [[x0,y0],[x1,y0],[x1,y1],[x0,y0],[x1,y1],[x0,y1]])V.push(q[0],q[1],-.05,0,0,1,0,0,0,0,0,-1);};
+  const ho=o&&o.holes;if(o)delete o.holes;
+  if(ho&&(ho.tri.length||ho.disc.length))h3dPlaneHoles(E,ho,pl);else pl(-E,-E,E,E);
   return Object.assign({v:new Float32Array(V),n:V.length/12,R:Math.max(E,r*1.02),E,buf:null,dev:null},o);
+}
+/* плоскость краски с дырами (22.10, «двойной корпус»): часть, построенная объёмом ВНЕ уровня плоскости
+   (пара икс-крыла с подъёмом, тарелка на штанге), уже несёт свою краску сверху — а плоская копия той же
+   краски под ней при наклоне камеры выглядывала из-под объёма вторым крылом и второй тарелкой. Под следом
+   такой части сверху (треугольники tri — по x,y, круги disc) плоскости нет. Сетка 256 на сторону, клетка
+   выбывает, если её задевает след, и ещё на клетку вокруг: кромка плоской копии — тёмная обводка кисти —
+   тоже уходит. Строки собираются в полосы: сотни четырёхугольников, а не десятки тысяч */
+function h3dPlaneHoles(E,ho,pl){
+  const G=256,c=2*E/G,M=new Uint8Array(G*G),ix=x=>Math.floor((x+E)/c);
+  const mark=(i,j)=>{for(let b=j-1;b<=j+1;b++)for(let a=i-1;a<=i+1;a++)if(a>=0&&b>=0&&a<G&&b<G)M[b*G+a]=1;};
+  for(const t of ho.tri){const [a,b,d]=t,x0=Math.max(0,ix(Math.min(a[0],b[0],d[0]))),x1=Math.min(G-1,ix(Math.max(a[0],b[0],d[0]))),
+      y0=Math.max(0,ix(Math.min(a[1],b[1],d[1]))),y1=Math.min(G-1,ix(Math.max(a[1],b[1],d[1])));
+    const ar=(b[0]-a[0])*(d[1]-a[1])-(b[1]-a[1])*(d[0]-a[0]);
+    for(let j=y0;j<=y1;j++)for(let i=x0;i<=x1;i++){
+      const px=-E+(i+.5)*c,py=-E+(j+.5)*c;
+      /* грань стоймя (борт крыла, кольцо трубы): сверху это отрезок — метятся клетки вдоль него, не вся рамка */
+      if(Math.abs(ar)<1e-6){const q=[a,b,d];let u=q[0],v=q[1],L=0;
+        for(let k=0;k<3;k++)for(let l=k+1;l<3;l++){const dd=Math.hypot(q[k][0]-q[l][0],q[k][1]-q[l][1]);if(dd>=L){L=dd;u=q[k];v=q[l];}}
+        const t=L>0?clamp(((px-u[0])*(v[0]-u[0])+(py-u[1])*(v[1]-u[1]))/(L*L),0,1):0;
+        if(Math.hypot(u[0]+(v[0]-u[0])*t-px,u[1]+(v[1]-u[1])*t-py)<=c*.71)mark(i,j);continue;}
+      const w0=((b[0]-a[0])*(py-a[1])-(b[1]-a[1])*(px-a[0]))/Math.hypot(b[0]-a[0],b[1]-a[1]),
+        w1=((d[0]-b[0])*(py-b[1])-(d[1]-b[1])*(px-b[0]))/Math.hypot(d[0]-b[0],d[1]-b[1]),
+        w2=((a[0]-d[0])*(py-d[1])-(a[1]-d[1])*(px-d[0]))/Math.hypot(a[0]-d[0],a[1]-d[1]);
+      if(w0*Math.sign(ar)>=-c*.71&&w1*Math.sign(ar)>=-c*.71&&w2*Math.sign(ar)>=-c*.71)mark(i,j);}}
+  for(const [x,y,r] of ho.disc)for(let j=Math.max(0,ix(y-r));j<=Math.min(G-1,ix(y+r));j++)
+    for(let i=Math.max(0,ix(x-r));i<=Math.min(G-1,ix(x+r));i++)
+      if(Math.hypot(-E+(i+.5)*c-x,-E+(j+.5)*c-y)<=r+c*.71)mark(i,j);
+  for(let j=0;j<G;j++){let i=0;while(i<G){if(M[j*G+i]){i++;continue;}let k=i;while(k<G&&!M[j*G+k])k++;
+    pl(-E+i*c,-E+j*c,-E+k*c,-E+(j+1)*c);i=k;}}
 }
 /* gear — что висит на подвесах (17c2b shipGear3d/h3dStockGear): части строятся в ту же сетку. Сеток на корпус
    несколько (своя оснастка меняется в ангаре) — последние четыре по подписи оснастки, старая отдаёт буфер */
@@ -103,7 +134,7 @@ function h3dMesh(h,gear){
   const sig=gear?gear.sig:"";let m=C4.get(sig);
   if(m){C4.delete(sig);C4.set(sig,m);return m;}
   const K=H3D_MK[h.by]||H3D_MK.gt,ne=K[0],kh=K[1];
-  const kit=h3dKit(),{V,C,ctr,face,loft,lathe,box,tube}=kit;
+  const kit=h3dKit(),{V,C,ctr,face,loft,lathe,box,prism,tube}=kit;
   const hgt=w=>Math.min(w*kh,1.6+w*.34),hb=w=>hgt(w)*.55;
   const deck=(x,y)=>{const w=profW(h.prof,x);if(Math.abs(y)>=w)return 0;return hgt(w)*Math.pow(1-Math.pow(Math.abs(y)/w,ne),1/ne);};
   const deckMax=(x0,x1,y0,y1)=>{let z=0;for(let i=0;i<=4;i++)for(let j=0;j<=4;j++)z=Math.max(z,deck(x0+(x1-x0)*i/4,y0+(y1-y0)*j/4));return z;};
@@ -124,7 +155,9 @@ function h3dMesh(h,gear){
   if(!h.yac)for(const e of h.eng){const bl=Math.max(3,e.r*2.4),br=e.r*1.05,x0=e.x-bl*.1;
     lathe(x0,e.y,0,[[-e.r*.5,br*1.12],[-e.r*.15,br*1.02],[0,br],[bl,br],[bl+.6,br*.8]],iron,.6,.7,0,14,[ember,0,1],null);}
   /* крылья: плита у оси корпуса, рёбра — тёмные; икс-крыло разводит пары вверх и вниз */
-  h.wings.forEach((W,wi)=>{for(const s of [1,-1]){
+  /* следы частей вне уровня плоскости краски — под ними плоскости нет (h3dPlaneHoles) */
+  const ho={tri:[],disc:[]},hole=v0=>{for(let i=v0;i+35<V.length;i+=36)ho.tri.push([[V[i],V[i+1]],[V[i+12],V[i+13]],[V[i+24],V[i+25]]]);};
+  h.wings.forEach((W,wi)=>{const v0=V.length;for(const s of [1,-1]){
     const ymin=Math.min(...W.map(p=>Math.abs(p[1]))),dh=h.form==="xwing"?(wi%2?-.16:.16):0,tw=.35;
     const P=W.map(([x,y])=>[x,y*s,(Math.abs(y)-ymin)*dh]);
     const tr=h3dEar(P);if(!tr)return;
@@ -134,7 +167,7 @@ function h3dMesh(h,gear){
     const cw=ctr(P);
     for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];
       face([[a[0],a[1],a[2]-tw],[b[0],b[1],b[2]-tw],[b[0],b[1],b[2]+tw],[a[0],a[1],a[2]+tw]],[cw[0],cw[1],(a[2]+b[2])/2],dark,2,.4,0);}
-  }});
+  }if(h.form==="xwing")hole(v0);});
   /* гондолы: бочка с округлым носом и горячим срезом */
   for(const n of h.nacs)for(const s of [1,-1]){const r=n.r,l=n.l;
     lathe(n.x,n.y*s,0,[[-l/2,r*.86],[-l/2+.35,r],[l/2-r*.9,r],[l/2-r*.35,r*.72],[l/2,r*.18]],iron,.7,.8,0,16,[ember,0,.6],null);}
@@ -161,7 +194,8 @@ function h3dMesh(h,gear){
     lathe(h.nose+b.l,0,0,S,C(h.lite),.6,.9,0,10,null,null);}
   /* тарелка (M712): на краске — плоский эллипс, в объёме читалась блином. Здесь чаша-параболоид на
      штанге от борта, смотрит вверх и наружу (к зрителю и прочь от корпуса), облучатель — на трёх ногах */
-  if(M.dish){const d=M.dish,R0=d.r,cx=d.x-d.boom*.4,cy=-h.bw-d.boom,cz=Math.max(1.2,hgt(h.bw)*.7)+R0*.2;
+  if(M.dish){const d=M.dish,R0=d.r,cx=d.x-d.boom*.4,cy=-h.bw-d.boom,cz=Math.max(1.2,hgt(h.bw)*.7)+R0*.2,v0=V.length;
+    ho.disc.push([cx,cy,R0]);   /* плоский эллипс кисти (03b) повёрнут иначе, чем чаша: его круг — целиком */
     const al=Math.hypot(.28,.44,.85),A=[.28/al,-.44/al,.85/al];
     let u=[A[1],-A[0],0];const ul=Math.hypot(u[0],u[1]);u=[u[0]/ul,u[1]/ul,0];
     const v=[A[1]*u[2]-A[2]*u[1],A[2]*u[0]-A[0]*u[2],A[0]*u[1]-A[1]*u[0]],dep=R0*.38,Q=[];
@@ -174,7 +208,8 @@ function h3dMesh(h,gear){
     const F=[cx+A[0]*dep*1.5,cy+A[1]*dep*1.5,cz+A[2]*dep*1.5],rl=Math.max(.12,R0*.035);
     for(let k=0;k<3;k++)tube([at(.92,k/3*TAU+.5),F],rl,iron,.8,.6,5);
     tube([[cx-A[0]*.6,cy-A[1]*.6,cz-A[2]*.6],[cx+A[0]*dep*.2,cy+A[1]*dep*.2,cz+A[2]*dep*.2]],Math.max(.3,R0*.12),iron,.8,.6,8);
-    tube([[d.x,-profW(h.prof,d.x)*.85,hb(profW(h.prof,d.x))*.2],[cx,cy,cz-.4]],Math.max(.22,R0*.07),iron,.8,.6,6);}
+    tube([[d.x,-profW(h.prof,d.x)*.85,hb(profW(h.prof,d.x))*.2],[cx,cy,cz-.4]],Math.max(.22,R0*.07),iron,.8,.6,6);
+    hole(v0);}
   /* радиаторы — тонкие плиты за бортом (стойки — на плоскости краски) */
   if(M.rad)for(const Rd of M.rad)for(const s of [1,-1]){const y0=Math.min(Rd.w*s,(Rd.w+Rd.th)*s),y1=Math.max(Rd.w*s,(Rd.w+Rd.th)*s);
     box(Rd.x-Rd.l/2,Rd.x+Rd.l/2,y0,y1,-.18,.18,0,C(h.radm),.9,.5);}
@@ -191,7 +226,17 @@ function h3dMesh(h,gear){
   /* части на подвесах и спонсоны фрегата (M722) — после корпуса: им нужна его палуба */
   const pr=(gear&&gear.list&&gear.list.length)||(M.guns&&M.guns.length)?h3dParts(kit,h,gear||{list:[]},deck):null;
   const st=[[tip,.3]].concat(h.prof).slice(0,16);
-  m=h3dPack(V,hullGpuE(h),{st,ne,kh,gl,rig:pr?pr.rigs:[],tops:pr?pr.tops:[]});
+  /* воротник стыковки (03b) — круг кисти у самого борта, у всех корпусов свешивается за борт: свес жил на
+     плоскости на полвысоты ниже палубы и при наклоне отходил от своего круга серпом. Здесь он шайба: верх —
+     на палубе, краска сверху та же (вид сверху прежний), под шайбой плоскости нет */
+  if(M.dock){const D2=M.dock,y=profW(h.prof,D2.x)*.86*D2.s,R=D2.r*1.15*1.1,Q=[];
+    for(let i=0;i<20;i++){const f=i/20*TAU;Q.push([D2.x+Math.cos(f)*R,y+Math.sin(f)*R]);}
+    prism(Q,-.3,deckMax(D2.x-R*.5,D2.x+R*.5,y-R*.5,y+R*.5)+.12,iron,.9,.6);
+    ho.disc.push([D2.x+.25,y+.25,R*1.02+.5]);}
+  /* рама шлюза (03b) — рамка у борта: где свешивается, свес — маской к телу (рама кончается кромкой палубы) */
+  if(M.lock&&M.lock.r>1){const L=M.lock,w=profW(h.prof,L.x),y=w*.72*L.s;
+    if(w*.72+L.r*1.05+.4>w)ho.disc.push([L.x+.2,y+.2,L.r*1.56+.4]);}
+  m=h3dPack(V,hullGpuE(h),{st,ne,kh,gl,rig:pr?pr.rigs:[],tops:pr?pr.tops:[],holes:ho});
   if(pr)m.R=Math.max(m.R,pr.R*1.02);
   if(C4.size>=4){const k0=C4.keys().next().value,o=C4.get(k0);if(o.buf)o.buf.destroy();C4.delete(k0);}
   C4.set(sig,m);return m;

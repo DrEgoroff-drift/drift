@@ -88,14 +88,19 @@ function dig3ZapFrame(F,D,gy){
   if(Q.gen!==PLN_GPU.gen){for(const g of Q.geo)plnGeoFree(g);if(Q.inst)plnInstFree(Q.inst);Q.geo=[];Q.inst=null;Q.gen=PLN_GPU.gen;}
   if(!Q.geo.length){
     const path=[];
-    for(let i=0;i<=Z.seg;i++){const a=i/Z.seg*TAU;path.push([Math.cos(a),Math.sin(a),0]);}
+    /* СР · Визуал 22.10: не циркульный круг — волна в слоистой породе: вдоль пластов идёт дальше (сплющена по y),
+       край рваный по плитам (две гармоники по углу), чтобы кольцо ломалось на плитах и крепи, а не плыло поверх */
+    for(let i=0;i<=Z.seg;i++){const a=i/Z.seg*TAU,j=1+.025*Math.sin(5*a+1.3)+.018*Math.sin(9*a+.4)+.012*Math.sin(17*a+2.1);
+      path.push([Math.cos(a)*j,Math.sin(a)*.72*j,0]);}
     Q.geo=Z.tube.map(r=>{const m=plnMesh(Z.seg*16);plnTube(m,{path,rad:r,sides:6,col:Z.col,mat:PLN_MAT.glow,glow:Z.glow});return plnGeo(plnMeshDone(m));});
     Q.inst=plnInst(new Float32Array(16),0,1);
   }
   const e=1-Math.pow(1-p,3),R=Z.reach*ZAP_R/DIG3_PPM*e,f=.6*Math.pow(1-p,2),fl=Math.pow(1-p,2);
   const x=(D.col*DIG_CELL+DIG_CELL/2)/DIG3_PPM,y=gy(D.row*DIG_CELL+DIG_CELL/2);
   const g=Q.geo[Math.min(Q.geo.length-1,Math.floor(p*Q.geo.length))];
-  plnRec(Q.a,0,[x,y,-.05],Math.max(1e-3,R),0,1,0,[f,f,f]);
+  /* кольцо в плоскости человека, не перед листом: порода и крепь режут его по-настоящему (глубина), на кромке
+     выработки оно обрывается — волна «в камне», а не поверх кадра */
+  plnRec(Q.a,0,[x,y,DIG3_Z-.12],Math.max(1e-3,R),0,1,0,[f,f,f]);
   plnInstSet(Q.inst,Q.a,1);
   F.draw.push({geo:g,inst:Q.inst,lamp:false,sun:false,refl:false});
   F.lights.unshift({p:[x,y,DIG3_Z+.4],r:1.5+R*Z.flashR,c:Z.light.map(v=>v*Z.lk*fl)});

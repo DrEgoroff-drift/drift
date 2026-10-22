@@ -21,7 +21,7 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 `docs/DESIGN-remake.md` (M800+, built by the three builder sessions, judged by the designer); the
 game's logic — the shift, the bill, the dispatcher, loss, the three rails, combat — is
 `docs/DESIGN-game.md` (M900+; queue in its §10.8, the author's forks in §10.9). Where a stage below
-and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M911 are built (`28m-dispatch`, `28n-access`, `28o-firstwatch`, `28p-doors`, `28q-fork`, unreleased); the §10.8 queue is closed.
+and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0), M907–M911 are done 22.10 (0.499.12–0.499.15: `28m-dispatch`, `28n-access`, `28o-firstwatch`, `28p-doors`, `28q-fork`; tests `91zzzw9e`–`9i`); the §10.8 queue is closed.
 
 Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
 bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
@@ -306,11 +306,6 @@ Check each against the code before building — some may already hold.
   functions, on touch only; the button family merge; `-Times` for the Node tier.
 - [ ] **The tether crosses the name (22.10):** the veteran's tether line is drawn through his own name
   plate (`13-pirates` labels against the tether pass) — route the line under the plate or break it there; not touched.
-- [ ] **The volume hull reads double up close (22.10, the road on a phone):** 17c2a lays the top-view bake on
-  the mesh from above, so the bake's inserts (the dish, the plate, the bar) and its outline land on whatever
-  surface is under them; where that is a wing, not the body, they show as a second outline, and the hull
-  reads see-through. Not the road's pass: the layer cap (1024) and a full-size bake change nothing, the
-  sprite path is clean. Fix in 17c2a: inserts outside the body silhouette become parts or are masked to it.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
   the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
@@ -319,6 +314,7 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
+- [ ] **The yard beds have no species (22.10, for planet):** the greenhouse beds in 21pig are one green body  sized by `greenGrow`; the 2D bed painter that drew the species (form, leaf and stem colour, bloom, curl) is  gone. `greenSpecies(name,p)` in 21g is pure data for that: the bodies should read it, or two beds of  different seed look the same (M204's rule «ФОРМА — ВИДОВАЯ»).
 - [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). The day is
   `CEL_DAY` of the sky calendar (`06a-celest`), copied in `21pifa` and `25m-probe`; a longer day moves
   the war chronicle's hashes and the need windows. Decide together with the chronicle, reshoot hashes.

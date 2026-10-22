@@ -68,7 +68,8 @@ function rigCardIssueTint(parts){
 /* состояние позы и доли поз уже на месте (сглаживание рига тогда ничего не двигает) */
 function rigCardState(pose,phase,lamp){
   const st={phase:phase||0,amp:0,on:true,jet:false,vy:0,swim:0,t:0,lamp:lamp||0,drill:false,low:false};
-  const K={air:0,jet:0,fall:0,drill:0};
+  /* все доли рига нулями — новая доля (sit, 22.10) без значения давала NaN во всех вершинах: карточка пустела */
+  const K={};for(const k in PLN_MAN.k)K[k]=0;
   if(pose==="walk")st.amp=1;
   else if(pose==="air"){st.on=false;K.air=1;}
   else if(pose==="jet"){st.on=false;st.jet=true;K.air=1;K.jet=1;}

@@ -23,7 +23,7 @@ DATA = os.environ["LAB_DATA"]; WEB = os.environ["LAB_WEB"]
 LOGS = os.path.join(DATA, "logs"); CFG = os.path.join(DATA, "launcher.json")
 os.makedirs(LOGS, exist_ok=True)
 CORES = os.cpu_count() or 4
-DEF = {"jobs": max(2, CORES // 4), "minutes": 60, "mode": "full", "ref": "lab-local", "steps": 60}
+DEF = {"jobs": max(2, CORES // 4), "minutes": 60, "groups": ["core", "vision", "light", "windows", "heavy", "tour", "frames", "hunt"], "ref": "lab-local", "steps": 60}
 LAST = [time.time()]
 PROC = [None]
 
@@ -36,6 +36,9 @@ def cfg_load():
     c = dict(DEF)
     try: c.update(json.load(open(CFG, encoding="utf-8-sig")))
     except Exception: pass
+    if "mode" in c:   # старый пульт: три режима
+        c["groups"] = {"quick": ["core", "vision", "light"], "hunt": ["hunt"]}.get(c["mode"], DEF["groups"])
+    c.pop("mode", None)
     return c
 
 def cfg_save(c):
@@ -84,8 +87,7 @@ def start(c):
     log = os.path.join(LOGS, "lab-" + time.strftime("%Y-%m-%d_%H-%M-%S") + ".log")
     cmd = [py_exe(), "-u", os.path.join(HERE, "lab-local.py"), "--jobs", str(int(c2["jobs"])), "--budget", str(int(c2["minutes"])),
            "--ref", str(c2["ref"]), "--steps", str(int(c2["steps"])), "--log", log]
-    if c2["mode"] == "quick": cmd.append("--quick")
-    if c2["mode"] == "hunt": cmd.append("--hunt-only")
+    cmd += ["--groups", ",".join(c2["groups"]) or "core"]
     with open(log, "a", encoding="utf-8") as f: f.write(time.strftime("%H:%M:%S ") + "пульт: запуск · " + " ".join(cmd[2:]) + "\n")
     err = open(log, "a", encoding="utf-8")   # то, что пишется до лога (сборка упала, аргументы), — туда же
     env = dict(os.environ, PYTHONIOENCODING="utf-8")
@@ -106,6 +108,82 @@ def stop(hard=False):
     except Exception: pass
     return {"ok": True}
 
+# ── версии: в ветке (голова ref), на сайте (play.html), в последнем прогоне — шапка не путает одно с другим ──
+_prod = [0, "?"]
+def vers(ref):
+    import re, urllib.request
+    r = LL.sh(["git", "-C", LL.REPO, "show", ref + ":src/01-core.js"])
+    m = re.search(r'VER\s*=\s*"([0-9.]+)"', r.stdout or "")
+    h = LL.sh(["git", "-C", LL.REPO, "log", "-1", "--format=%h", ref]).stdout.strip()
+    if time.time() - _prod[0] > 300:
+        _prod[0] = time.time()
+        try:
+            q = urllib.request.Request("https://drift-game.ru/play.html", headers={"Range": "bytes=0-400000"})
+            t = urllib.request.urlopen(q, timeout=15).read(400000).decode("utf-8", "replace")   # сервер Range не слушает — читаем голову сами
+            mm = re.search(r'VER="([0-9.]+)"', t); _prod[1] = mm.group(1) if mm else "?"
+        except Exception: _prod[1] = "нет связи"
+    return {"ref": ref, "branch": m.group(1) if m else "?", "head": h, "prod": _prod[1]}
+
+def _jl(p, d):
+    try: return json.load(open(p, encoding="utf-8"))
+    except Exception: return d
+
+def _last_session():
+    """последняя сессия по runs.jsonl: её id и какие виды прогонов в ней были"""
+    p = os.path.join(DATA, "runs.jsonl")
+    try:
+        with open(p, "rb") as f:
+            f.seek(0, 2); n = f.tell(); f.seek(max(0, n - 3000000)); tail = f.read().decode("utf-8", "replace")
+    except OSError: return "", set(), set()
+    rows = []
+    for l in tail.splitlines():
+        try: rows.append(json.loads(l))
+        except Exception: pass
+    if not rows: return "", set(), set()
+    s = rows[-1].get("s", ""); kinds, keys = set(), set()
+    for r in rows:
+        if r.get("s") == s:
+            kinds.add(r.get("kind")); keys.update(r.get("known") or []); keys.update(r.get("new") or [])
+    return s, kinds, keys
+
+def laws():
+    cat = _jl(os.path.join(HERE, "laws.json"), {}).get("laws", [])
+    errs = _jl(os.path.join(DATA, "errors.json"), {})
+    s, kinds, keys = _last_session()
+    # есть ли закон в той копии, что гоняла лаба (drift-labrun): иначе зелёный был бы враньём — его просто не гоняли
+    src = r"C:\Claude\drift-labrun"
+    blob = ""
+    for f in glob.glob(os.path.join(src, "tests", "*.js")):   # файлы, а не git: подложенные лабой законы не в индексе
+        try: blob += open(f, encoding="utf-8", errors="replace").read()
+        except OSError: pass
+    # законы живого кадра живут в самом jank.py — он гоняется из lab/, а не из копии
+    for f in ("jank.py",):
+        try: blob += open(os.path.join(HERE, f), encoding="utf-8", errors="replace").read()
+        except OSError: pass
+    alts = lambda L: L["match"].split("|")   # match может перечислять варианты через «|»
+    hit = lambda L, text: any(m in text for m in alts(L))
+    out = []
+    for L in cat:
+        units = set(L["unit"].split(","))
+        red = [errs[k] for k in keys if k in errs and hit(L, errs[k].get("suite", "") + " " + errs[k].get("msg", ""))]
+        here = hit(L, blob) or units <= {"frames", "tour", "hunt", "vision"} and L["match"] in ("кадры ·", "тур полёта", "охота:", "зрение ·")
+        st = "red" if red else ("absent" if not here else "green" if units & kinds else "idle")
+        out.append(dict(L, status=st, msg=red[0]["msg"] if red else "", n=len(red)))
+    return {"session": s, "laws": out}
+
+def errors_open():
+    errs = _jl(os.path.join(DATA, "errors.json"), {})
+    s, kinds, keys = _last_session()
+    out = []
+    for k, e in errs.items():
+        if e.get("status") not in ("open", None): continue
+        out.append({"key": k, "suite": e.get("suite"), "msg": e.get("msg"), "count": e.get("count", 0), "last": e.get("last"),
+                    "versions": list((e.get("versions") or {}).keys()), "now": k in keys,
+                    "sessions": len(e.get("sessions") or [e.get("session")])})
+    out.sort(key=lambda e: (not e["now"], e["last"] or ""), reverse=False)
+    out.sort(key=lambda e: e["now"], reverse=True)
+    return {"session": s, "errors": out}
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def send(self, code, body, ctype="application/json; charset=utf-8"):
@@ -122,6 +200,12 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, {"run": r, "cfg": cfg_load(), "sys": machine(), "now": time.time()})
         if u.path == "/api/branches":
             return self.send(200, {"branches": branches()})
+        if u.path == "/api/vers":
+            return self.send(200, vers(q.get("ref", [cfg_load()["ref"]])[0]))
+        if u.path == "/api/laws":
+            return self.send(200, laws())
+        if u.path == "/api/errors":
+            return self.send(200, errors_open())
         if u.path == "/api/log":
             p = log_path(run_state()); pos = int(q.get("from", ["0"])[0]); name = os.path.basename(p)
             if not p: return self.send(200, {"text": "", "next": 0, "name": ""})

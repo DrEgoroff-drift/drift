@@ -24,14 +24,19 @@ function homeStillAsp(n){return clamp((n*HOME3_RW+2)/4.6,1.5,3.2);}
 function homeStillFlush(){
   HST.t=0;const L=HST.q.splice(0);
   if(GPU.enc){HST.q.push(...L);HST.t=setTimeout(homeStillFlush,0);return;}   /* кадр ещё открыт — следующим таймером */
+  /* только у станции: панель могли закрыть до таймера, а снимок в полёте — компиляция конвейеров комнат посреди
+     полёта (сеть «конвейеры: после прогрева полёт не компилирует» ловила это изредка) */
+  if(G.mode!=="dock")return;
   for(const it of L)if(it[0].isConnected)homeStillPaint(it[0],it[1]);
 }
 /* камера общего плана: на три четверти справа, на высоте чуть выше роста — дом уходит вглубь кадра, ближняя
    комната крупно, дальние мельче; этаж целиком с полем в треть комнаты */
 function homeStillCam(n,asp){
   const X1=n*HOME3_RW,cx=X1/2,fy=.62,half=Math.tan(fy/2)*asp;
-  const d=Math.max(5.4,(X1/2+.6)/half*1.02);
-  const eye=[cx+.3*d,1.9+.07*d,HOME3_MZ+.95*d],tgt=[cx-.03*d,1.3,-1.0];
+  /* СР · Визуал 22.10: ближе и ниже — люди в треть кадра по высоте, а не мухи; дальний край дома уходит за кадр,
+     это общий план с ближней комнатой крупно, не чертёж фасада */
+  const d=Math.max(4.6,(X1/2+.6)/half*.8);
+  const eye=[cx+.34*d,1.6+.05*d,HOME3_MZ+.95*d],tgt=[cx-.02*d,1.25,-1.0];
   const P=r3Persp(fy,asp,.1,140);
   return {eye,tgt,fy,vp:r3Mul(P,r3Look(eye,tgt,[0,1,0]))};
 }
@@ -52,12 +57,14 @@ function homeStillPaint(cv,nd){
   G.hin={x:mid.x+mid.w*.5,vx:0,face:-1,walk:0,phase:0,cam:0,up:0,look:null,lookT:0,folk:hinFolkMake(),t0:G.t};
   HOME3.mesh=HST.mesh;
   try{
-    const asp=w/h,cam=homeStillCam(R.length,asp),t=wallMs()/1000,S=home3Scene(cam,t);
-    S.fog[3]*=.35;   /* дымка сцены рассчитана на 6 м до хозяина; общий план втрое дальше — иначе дом белеет */
+    const asp=w/h,cam=homeStillCam(R.length,asp),t=wallMs()/1000,S=home3Scene(cam,t,true);
+    S.gnd[3]*=.22;S.fog[3]*=.1;S.sky[3]*=.8;   /* плотность дымки — gnd.w (27f2): рассчитана на 6 м до хозяина, общий план в 25 м — молоко; небо чуть тише */
+    /* ключ снимка — солнце двора: ему тень (дом ложится на газон, люди — на пол), иначе кадр без ключа и без веса */
+    for(const l of S.lights)if(l.range===40){l.shadow=1;break;}
     const U=new Float32Array(60);
     S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,w/nd,h/nd),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],w/nd,h/nd);
       if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
-    U.set([...r3Lin([255,200,140]),1.0],24);U[43]=t;U[44]=1;U[47]=1;
+    U.set([...r3Lin([255,200,140]),1.0],24);U[43]=t;U[44]=0;U[47]=1;   /* зерно (v[11].x) в статичном снимке — шум по полю; гасим (СР · Визуал) */
     U.set([.5,.5,HALL_CA,1],48);U.set([1,h/w,HALL_SHARP,1],52);
     r3Frame(hc,S,(pl,Sv,Vv,Bv)=>rpgField(Rg,pl,"r3post",R3_POST_WGSL,U,[Sv,{view:R3.blank},Vv,Bv]),{cx,w,h});
   }finally{G.hin=hin0;HOME3.mesh=mesh0;}
