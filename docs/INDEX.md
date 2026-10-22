@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 632 · top-level symbols: 8893
+Files: 634 · top-level symbols: 8897
 
 ## SYMBOLS
 
@@ -807,6 +807,7 @@ GEO_JUNK                     tests/90b2-geom.js:30
 GEO_KIND                     src/18b-geology.js:13-29
 GEO_SIDE                     tests/90b2-geom.js:29
 GEO_TPL                      src/18b-geology.js:31-44
+GEO_WORLD                    tests/90b3-geom-world.js:9-13
 GEO_Z                        tests/90b2-geom.js:28
 GEST                         src/17h-sys-gesture.js:23
 GEST_POST                    src/17h-sys-gesture.js:21
@@ -1628,7 +1629,7 @@ PI                           src/21pb-pln-wgsl-air.js:54
 PI                           src/22dbw-cave-pln-wgsl.js:38
 PICKUPS                      src/24a-mode-raid.js:24-28
 PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-53
-PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:61-91
+PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:61-93
 PIRATE_COLS                  src/13-pirates.js:4
 PIRATE_LOADOUT               src/13d-loadout.js:23-28
 PIRATE_NAMES                 src/13-pirates.js:3
@@ -4617,7 +4618,7 @@ geoArea                      tests/90b2-geom.js:36
 geoAt                        src/18b-geology.js:73-77
 geoBoxy                      tests/90b2-geom.js:352-358
 geoBtns                      tests/90b2-geom.js:864
-geoCalm                      tests/90b2-geom.js:874-984
+geoCalm                      tests/90b2-geom.js:874-986
 geoClipPoly                  tests/90b2-geom.js:44
 geoCol                       tests/90b2-geom.js:73-84
 geoCompose                   tests/90b2-geom.js:679-704
@@ -4629,7 +4630,7 @@ geoExtra                     tests/90b2-geom.js:223-245
 geoFaultAt                   src/18b-geology.js:92-97
 geoFaultX                    src/18b-geology.js:99-102
 geoFin                       tests/90b2-geom.js:58
-geoFontProbe                 tests/90b2-geom.js:986-995
+geoFontProbe                 tests/90b2-geom.js:988-997
 geoFrame                     tests/90b2-geom.js:309-312
 geoFrame1                    tests/90b2-geom.js:313-329
 geoHang                      tests/90b2-geom.js:252
@@ -4656,7 +4657,7 @@ geoRec                       tests/90b2-geom.js:178-218
 geoRich                      tests/90b2-geom.js:824
 geoRoadFrame                 tests/90b2-geom.js:333-348
 geoRs                        tests/90b2-geom.js:69
-geoRun                       tests/90b2-geom.js:906-984
+geoRun                       tests/90b2-geom.js:906-986
 geoSat                       tests/90b2-geom.js:51
 geoScreens                   tests/90b2-geom.js:830-862
 geoSelf                      tests/90b2-geom.js:707-820
@@ -4670,6 +4671,9 @@ geoTable                     tests/90b2-geom.js:829
 geoText                      tests/90b2-geom.js:133-147
 geoWho                       tests/90b2-geom.js:369-378
 geoWob                       src/18b-geology.js:80-82
+geoWorld                     tests/90b3-geom-world.js:41-56
+geoWorldBox                  tests/90b3-geom-world.js:15-26
+geoWorldOne                  tests/90b3-geom-world.js:27-40
 geologyOf                    src/18b-geology.js:45-71
 gestAge                      src/17h-sys-gesture.js:44
 gestArrive                   src/17h-sys-gesture.js:32-40
@@ -10662,6 +10666,9 @@ zoomTo                       src/15-input.js:358
 ## tests/90b2-geom.js · 89 KB
   · Зрение: экран в числах и неравенствах (27.09.2026):1
 
+## tests/90b3-geom-world.js · 4 KB
+  · Зрение 2.0: мир (закон «масштаб»):1
+
 ## tests/90c-detect-laws.js · 23 KB
   · детекторы, часть вторая: законы (M443):1
   · сами детекторы: ctx → нарушения:91
@@ -10844,7 +10851,7 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzzzzy4-pipes.js · 12 KB
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
-  · прыжок между системами: группа привязок — своего конвейера (M800):93
+  · прыжок между системами: группа привязок — своего конвейера (M800):95
 
 ## tests/91zzzzzzy5-gpu-loss.js · 10 KB
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1
@@ -10858,8 +10865,10 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzzzza-walks.js · 11 KB
   · прогоны: пути игрока под детекторами (M444, DESIGN-tests §3.3):1
 
-## tests/91zzzzzzzzb-hunt.js · 8 KB
+## tests/91zzzzzzzzb-hunt.js · 13 KB
   · охота: случайная тропа ботом по зерну под всеми детекторами (лаборатория):1
+
+## tests/91zzzzzzzze-idle.js · 3 KB
 
 ## tests/91zzzzzzzzz-savenet.js · 4 KB
   · сеть сейва: каждое поле мира либо хранится, либо названо эфемерным (0.438.0):1
