@@ -806,6 +806,8 @@ body.inbelt .pads button[data-k=thrust]{font-size:14px}
 body.inbelt .pads button[data-k=act],
 body.inbelt .pads button[data-k=brake],
 body.inbelt .pads button[data-k=fire]{font-size:8px}
+/* узкий телефон: пэд меньше, «ИМПУЛЬС» на 9 px выходил из круга на 1,4 px (шахта, 320/360; зрение «вылет · круг», 22.10) */
+@media (max-width:380px){.pads button[data-k=fire]{font-size:8px}}
 /* в вагоне (M473): руля нет, остаётся одно ДЕЙСТВИЕ — ВЫЙТИ на остановке */
 body.inrail .pads button:not([data-k=act]){visibility:hidden;pointer-events:none}
 body.inrail .rail{opacity:.25;pointer-events:none}
@@ -2203,8 +2205,9 @@ body.onmap #msg{background:rgba(11,11,11,.45);-webkit-backdrop-filter:blur(8px);
   -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 0)}
 /* заряжено (D21, телефон 18.09): кольцо было волоском, а готовности не было видно
    вовсе — теперь над кнопкой имя системы, «долгое — ФОРСАЖ» */
-.pads button.abil-ok::after{content:attr(data-abil);position:absolute;left:50%;top:-15px;transform:translateX(-50%);
-  font:600 7px ui-monospace,monospace;letter-spacing:.14em;color:rgba(var(--c-acc),.85);white-space:nowrap;pointer-events:none}
+/* живой элемент, не ::after: подпись псевдоэлемента зрение не видит вовсе — моноширинная строка упиралась
+   в обвод круга на 390, и ни один закон этого не знал (22.10) */
+.pads button>.abil-hint{display:none;font-style:normal;pointer-events:none}
 /* ── ПРИЁМНИКИ: куда ведёт строка (P11) [design owed] ── */
 .rl-go{display:inline-block;margin-top:3px;font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#1f5f57}
 
@@ -2350,8 +2353,13 @@ body.onmap #msg{background:rgba(11,11,11,.45);-webkit-backdrop-filter:blur(8px);
 /* подсказка системы — вторая строка ВНУТРИ пэда (правка Контроля): подписью под
    пэдом она стояла в 4,5 px от нижней кромки, а погашенный пэд гасил и её — 2:1
    к фону. Внутри она дальше от кромки, чем сам пэд, и лежит на его плашке. */
-.pads button.abil-ok::after{position:static;transform:none;display:block;width:9ch;white-space:normal;text-align:center;
-  font:500 8px/9px ui-monospace,monospace;letter-spacing:0;color:var(--amber)}
+/* шрифт интерфейса, как у слова на кнопке; 40 px — две строки «Долгое ·» и «форсаж», вся стопка из трёх
+   строк ложится во внутренний круг 56-го пэда с запасом (хорда на 14 px от центра — 44) */
+.pads button.abil-ok>.abil-hint{display:block;width:40px;margin:0 auto;white-space:normal;text-align:center;
+  font:600 8px/9px var(--face);letter-spacing:0;color:var(--amber)}
+/* у пэда есть своё действие — подсказка уступает ему круг: глагол из двух слов и две строки подсказки
+   вчетвером забивали 56 px до обвода (390, «Торг без стыковки», 22.10). Без действия подсказка на месте */
+body.mobile .pads button.abil-ok:not(.off)>.abil-hint{display:none}
 /* пэд без действия, но с готовой системой — не погашен: .off снимал с него
    касания (pointer-events:none), и долгое нажатие не доходило — форсаж в
    открытом космосе был только на клавише V. Гаснет лишь слово «Действие». */
@@ -2563,7 +2571,7 @@ body:not(.mobile) .pads button[data-k=act].ready::before{animation:none;width:10
 body:not(.mobile) .pads button kbd{order:-1;font-size:10px;padding:4px 6px 3px}
 body:not(.mobile) .pads button[data-k=act] kbd{color:var(--amber);box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.5);background:rgba(var(--c-acc),.1)}
 body:not(.mobile) .pads button:is([data-k=act],[data-k=lock])>span{font-size:15px}
-body:not(.mobile) .pads button.abil-ok::after{font-family:var(--face);font-size:11px;line-height:13px;width:auto;text-align:left;color:var(--amber)}
+body:not(.mobile) .pads button.abil-ok>.abil-hint{font-size:11px;line-height:13px;width:auto;margin:0;text-align:left}
 body:not(.mobile) .pads button[data-k=lock]{color:var(--ink)}
 /* нет действия — глагол тихим кремом, а не тёмным суриком на чёрном: читается, но не зовёт */
 body:not(.mobile) .pads button[data-k=act].off{color:var(--ink2)}

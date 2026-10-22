@@ -516,6 +516,15 @@ function geoLaws(D,C,O,vp,where,opt){
         f.push([cut.ell?"срез…":"срез",cut.o.v,Object.assign({side:GEO_SIDE[cut.o.side],box:geoWho(cut.e)},tx)]);}
     else if(t.box){const o=geoOut(t.r,geoPad(t.box,sty(t.box)),th,tv);
       if(o)f.push(["вылет",o.v,Object.assign({side:GEO_SIDE[o.side],box:geoWho(t.box),r:geoRs(t.r)},tx)]);}
+    /* круглая рамка: строка ложится в прямоугольник рамки, а видна в круге — углы строк (ужатых до чернил)
+       меряем от эллипса рамки. Подпись «Долгое · форсаж» упиралась в обвод 56-го пэда на 390, а прямоугольник
+       молчал (22.10) */
+    if(t.box&&!scr&&!cut){const s=sty(t.box),rs=s.borderTopLeftRadius||"",P=geoPad(t.box,s),w=P.x1-P.x0,h=P.y1-P.y0;
+      if(w>0&&h>0&&(/%/.test(rs)?parseFloat(rs)>=45:parseFloat(rs)>=.45*Math.min(w,h))){
+        const cx=(P.x0+P.x1)/2,cy=(P.y0+P.y1)/2,ea=w/2,eb=h/2,e=.15*t.px;let worst=0;
+        for(const q of t.lines)for(const [x,y] of [[q.x0,q.y0+e],[q.x1,q.y0+e],[q.x0,q.y1-e],[q.x1,q.y1-e]]){
+          const d=Math.hypot((x-cx)/ea,(y-cy)/eb);if(d>1)worst=Math.max(worst,(d-1)*Math.min(ea,eb));}
+        if(worst>=1)f.push(["вылет",+worst.toFixed(1),Object.assign({side:"круг",box:geoWho(t.box),r:geoRs(t.r)},tx)]);}}
     /* край — по видимой части: строка под многоточием в рамке на экране за экран не торчит */
     if(!t.scr){const o=geoEdge(t.vis,V);if(o)f.push(["край",o.v,Object.assign({side:GEO_SIDE[o.side]},tx)]);}
     /* контраст: подложка — фоны предков снизу вверх до первого сплошного; картинка на пути — не знаем */
@@ -835,14 +844,16 @@ function geoSelf(vp){
    const pane=(l,o,s)=>'<div style="position:absolute;left:'+l+'px;top:4px;opacity:'+o+'"><div style="backdrop-filter:blur(12px);padding:4px 6px;border:1px solid #9cf"><div style="white-space:nowrap">'+s+'</div></div></div>';
    gl.innerHTML='<div style="position:absolute;left:12px;top:10px;white-space:nowrap">МИР ПОД СТЕКЛОМ</div>'+pane(4,.45,"СТЕКЛО ТИХОЕ")+
      '<div style="position:absolute;left:162px;top:10px;white-space:nowrap">ЧИСТО ПОД КРЫШКОЙ</div>'+pane(154,1,"ЧИСТО СТЕКЛО");
-   document.body.appendChild(gl);try{F=F.concat(geoLaws(geoDom(gl,vp),[],{lab:[],chip:[],ui:[],dock:[]},vp,"тест теста",{x:geoExtra(vp,gl)}).filter(f=>f.law==="наезд"));}finally{gl.remove();}
+   const rb=(l,al,s)=>'<button style="position:absolute;left:'+l+'px;top:30px;width:60px;height:60px;border-radius:50%;border:0;padding:4px 0;background:#234;color:#fff;font:12px monospace;display:flex;flex-direction:column;align-items:center;justify-content:'+al+'"><span>'+s+'</span></button>';
+   gl.style.height="100px";gl.innerHTML+=rb(4,"flex-start","КРУГОМ")+rb(154,"center","ЧИСТО");
+   document.body.appendChild(gl);try{F=F.concat(geoLaws(geoDom(gl,vp),[],{lab:[],chip:[],ui:[],dock:[]},vp,"тест теста",{x:geoExtra(vp,gl)}).filter(f=>f.law==="наезд"||f.law==="вылет"));}finally{gl.remove();}
   }
   const has=(law,re)=>F.some(f=>f.law===law&&re.test(f.who+" "+(f.with||"")+" "+(f.s||"")));
   const need=[["вылет",/ПРОВЕРКА ВЫЛЕТА/],["наезд",/НАЛОЖЕНИЕ/],["край",/КРАЙ ЭКРАНА/],["срез",/СРЕЗАННАЯ/],["невидим",/НЕВИДИМКА/],
     ["мусор",/NaN/],["накрыта",/ПОД ПЛАШКОЙ/],["вылет",/ПЛАШКА С ДЛИННЫМ/],["наезд",/СТРОКА ОДИН|СТРОКА ДВА/],["наезд",/КОСАЯ ЛИНИЯ|ПОПЕРЁК/],["мусор",/НЕ ЧИСЛО/],["сжатие",/СЖАТО/],
     ["поверх",/ЧУЖАЯ/],["сквозь",/ПОДЛОЖКА/],["поверх",/ПРИШЕЛЕЦ/],["накрыта",/ПОД ВИДЖЕТОМ/],["кегль",/МЕЛКО/],["вылет",/ХОЛСТ ВЫЛЕТ/]];
   if(vp.touch)need.push(["цель",/button/]);
-  need.push(["наезд",/МИР ПОД СТЕКЛОМ|СТЕКЛО ТИХОЕ/]);
+  need.push(["наезд",/МИР ПОД СТЕКЛОМ|СТЕКЛО ТИХОЕ/],["вылет",/КРУГОМ/]);
   /* «касание»: широкая плашка, край которой ближе к центру нижней соседки, — брак; пара врозь — чисто */
   {const z=(l,x0,y0,x1,y1,p)=>({l,x0,y0,x1,y1,p});
    F=F.concat(geoChipTouch([z("ФИШКА ШИРОКАЯ",0,0,200,44,[6,14,188,16]),z("ФИШКА СОСЕДКА",150,24,230,68,[156,38,68,16]),

@@ -135,18 +135,19 @@ function abilTick(){
   }
 }
 /* обод кнопки ДЕЙСТВИЕ: перезарядка — дуга, готово — ровный круг */
-let ABIL_BTN;
+let ABIL_BTN,ABIL_HINT;
 function abilPadRim(){
   /* кнопку ищем один раз: кадр не читает DOM (15d-domread) */
   if(ABIL_BTN===undefined)ABIL_BTN=(typeof document!=="undefined"&&document.querySelector)?document.querySelector('.pads button[data-k="act"]'):null;
   const b=ABIL_BTN;
   if(!b)return;
+  if(ABIL_HINT===undefined)ABIL_HINT=b.querySelector(".abil-hint");
   const f=abilReady01(),deg=Math.round(f*360);
   /* D21: кольцо толще и с яркой головкой у конца дуги; готово — имя над кнопкой */
   const v=f>=1?"":"conic-gradient(rgba(242,178,92,.75) "+Math.max(0,deg-8)+"deg, #ffd9a0 "+deg+"deg, transparent 0)";
   const ok=f>=1&&G.mode==="system",vk=v+(ok?"|ok":"");
   if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
-    b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="Долгое · "+abilOf().ru.toLowerCase();}   /* режим входит в ключ: в вагоне подписи нет */
+    b.classList.toggle("abil-ok",ok);if(ok&&ABIL_HINT)ABIL_HINT.textContent="Долгое · "+abilOf().ru.toLowerCase();}   /* режим входит в ключ: в вагоне подписи нет */
 }
 /* клин прожектора: радиальный градиент в секторе ±.35, вершина на корабле, ось — курс. Поле, а не
    выпечка: клин на экран шириной 1.2·max(W,H) печь MSAA ×4 вдвое крупнее DPR — на телефоне это
