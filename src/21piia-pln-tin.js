@@ -70,8 +70,12 @@ function plnTinMesh(A,st,p,sd){
      Конус выше плеча (низ 3.3 м): горлу нужно падать в барабан, а не тянуться к нему ── */
   const dw0=dw,dX=V.drum-dw0/2;
   {const hx=V.hop,hz=0,y0=3.3,y1=5.2,r0=.42,r1=1.75,rk=y=>r0+(r1-r0)*(y-y0)/(y1-y0);
-   for(const sx of [-1,1])for(const sz of [-1,1])K.rod([hx+sx*1.25,0,hz+sz*1.1],[hx+sx*.62,y0+.5,hz+sz*.62],.08,dark,{sides:6});
-   for(const sz of [-1,1])K.rod([hx-1.18,1.2,hz+sz*1.05],[hx+1.18,1.2,hz+sz*1.05],.05,dark,{sides:5});
+   /* ноги — в запястье человека (на 16 см воронка в две тонны висела на спицах), по бокам — подкос накрест */
+   const leg=(sx,sz,y)=>{const t=y/(y0+.5);return [hx+sx*lerp(1.25,.62,t),y,hz+sz*lerp(1.1,.62,t)];};
+   for(const sx of [-1,1])for(const sz of [-1,1])K.rod(leg(sx,sz,0),leg(sx,sz,y0+.5),.15,dark,{sides:8});
+   for(const sz of [-1,1]){K.rod(leg(-1,sz,1.2),leg(1,sz,1.2),.07,dark,{sides:6});
+     K.rod(leg(-1,sz,.25),leg(1,sz,2.9),.06,dark,{sides:5});}
+   for(const sx of [-1,1])K.rod(leg(sx,-1,.25),leg(sx,1,2.9),.06,dark,{sides:5});
    plnTube(m,{path:[[hx,y0,hz],[hx,y1,hz]],rad:t=>r0+(r1-r0)*t,sides:16,col:iron,mat:MAN,cap:false});
    plnTube(m,{path:[[hx,y1-.4,hz],[hx,y1-.36,hz]],rad:rk(y1-.4)-.05,sides:16,col:[.014,.013,.012],mat:MAN,cap:true});
    {const pth=[];for(let k=0;k<=24;k++){const a=k/24*TAU;pth.push([hx+Math.cos(a)*(r1+.04),y1,hz+Math.sin(a)*(r1+.04)]);}
@@ -147,7 +151,7 @@ function plnTinMesh(A,st,p,sd){
       plnTube(rm,{path:[[dx-dw/2+.05,yy,zz],[dx+dw/2-.05,yy,zz]],rad:.06,sides:4,col:plnMul(C.dark,.7),mat:MAN,cap:false});
       if(Math.cos(a)>-.2)plnBlob(rm,{c:[dx-dw/2+.25,dy+Math.cos(a)*(dr+.13),Math.sin(a)*(dr+.13)],r:[.07,.07,.07],sub:1,col:C.lite,mat:MAN});}
     ribs.push(rm);}
-  return {body:m,light:lm,plaf:pm,plafAt:[wl[0],wl[1]-.4,wl[2]-.4],ribs,smoke:[[cx,ctop+.4,cz,.85,10]],lamp:lp,blots:[[0,0,V.hx+.6,.4],[V.print,-.4,.8,.3]]};
+  return {body:m,light:lm,plaf:pm,plafAt:[wl[0],wl[1]-.4,wl[2]-.4],ribs,smoke:[[cx,ctop+.25,cz,.85,10]],lamp:lp,blots:[[0,0,V.hx+.6,.4],[V.print,-.4,.8,.3]]};
 }
 function plnTinFree(){
   const it=TINB.it;if(!it)return;
