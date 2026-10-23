@@ -408,7 +408,10 @@ function gpuResize(){
   const TB=GPUTextureUsage.TEXTURE_BINDING,RA=GPUTextureUsage.RENDER_ATTACHMENT,CD=GPUTextureUsage.COPY_DST;
   const mk=(w,h,f,us)=>GPU.dev.createTexture({size:[w,h],format:f,usage:us});
   GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),
-    scene:mk(bw,bh,"rgba16float",TB|RA),emit:mk(bw,bh,"rgba16float",TB|RA),lt:mk(16,3,"rgba16float",TB|CD)};
+    scene:mk(bw,bh,"rgba16float",TB|RA),emit:mk(bw,bh,"rgba16float",TB|RA),lt:mk(16,3,"rgba16float",TB|CD),
+    /* свечение, в которое за кадр никто не рисовал: 1×1 нулей (WebGPU сам их обнуляет) вместо
+       очистки полного кадра rgba16f — на ×2 у S23 это 9.3 МБ записи плитками каждый кадр (24.10) */
+    emit0:mk(1,1,"rgba16float",TB)};
   /* цели приборов нет (26.09, ревью №9): приборы — DOM-холст #hud, u.ui всегда 0. Кадровая rgba8
      стоила 2.6 МиБ на S23 и 31.6 на 4K; binding 6 (tUi) держит вид шума 64×64 — шейдер его не читает */
   /* лестница свечения (P1 25.09): одна текстура с мипами от четверти кадра вниз; уровень
@@ -424,15 +427,15 @@ function gpuResize(){
   GPU.scene3D=false;
   GPU.bw=bw;GPU.bh=bh;GPU.qw=qw;GPU.qh=qh;GPU.dpr=DPR;GPU.cw=W;GPU.ch=H;
   const S=GPU.S,T=GPU.T,nv=GPU.N.createView();
-  const bind=(bv,uv)=>GPU.dev.createBindGroup({layout:GPU.L,entries:[
+  const bind=(bv,uv,ev)=>GPU.dev.createBindGroup({layout:GPU.L,entries:[
     {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
     {binding:3,resource:T.scene.createView()},{binding:4,resource:T.front.createView()},
-    {binding:5,resource:bv},{binding:6,resource:nv},{binding:7,resource:nv},{binding:8,resource:T.emit.createView()},
+    {binding:5,resource:bv},{binding:6,resource:nv},{binding:7,resource:nv},{binding:8,resource:ev||T.emit.createView()},
     {binding:9,resource:uv||GPU.V.bloomU}]});
   /* MB[i] — вход прохода на уровень i+1; первому уровню свечение не нужно — на его месте шум;
      up — проход суммы верхних уровней пишет bloomU, поэтому у него на её месте шум */
   GPU.MB=GPU.MV.map(v=>bind(v));
-  GPU.B={down:bind(nv),fin:bind(GPU.V.bloom),up:bind(GPU.V.bloom,nv),
+  GPU.B={down:bind(nv),down0:bind(nv,null,T.emit0.createView()),fin:bind(GPU.V.bloom),up:bind(GPU.V.bloom,nv),
     /* сегмент рисует В сцену — значит, в привязках её быть не может: на её месте шум */
     comp:GPU.dev.createBindGroup({layout:GPU.L,entries:[
       {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
@@ -663,9 +666,7 @@ function gpuWorld(k,grain,vig,clip){
     if(GPU.kill.bloom)P.k=0;
     if(!GPU.noiseOk)gpuNoise();
     if(!GPU.kill.front)gpuFrontCopy("front2");
-    if(P.k>0){
-      if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
-      gpuBloom();}
+    if(P.k>0)gpuBloom();
     /* всё, что над миром, — одним проходом слоя #ovl (08bi): 2D-слоя приборов нет, ctx остаётся на #c */
     ovFlush();
   }catch(e){gpuFail(e,"сборка");}
@@ -673,7 +674,8 @@ function gpuWorld(k,grain,vig,clip){
 /* лестница свечения: колено в первый уровень, вниз по уровням, сумма верхних — одним проходом */
 function gpuBloom(){
   const V=GPU.MV,B=GPU.MB,n=V.length;
-  gpuPass(V[0],GPU.P.down,GPU.B.down,"bloomDown");
+  /* свечение читает только колено: пустое за кадр — привязка с 1×1 нулей, без прохода очистки */
+  gpuPass(V[0],GPU.P.down,GPU.emitOn?GPU.B.down:GPU.B.down0,"bloomDown");
   for(let i=1;i<n;i++)gpuPass(V[i],GPU.P.mipDn,B[i-1]);
   if(n>1)gpuPass(GPU.V.bloomU,GPU.P.up1,GPU.B.up,"bloomUp");
 }

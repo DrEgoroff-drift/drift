@@ -124,6 +124,19 @@ fn pillars(D:DQ,rw:f32,n:f32,pr:f32,gl:f32,sd:f32)->f32{
       if(rh-gp>.1){m=max(m,-caps(a+gp,dd+wh*.4*(h3-.5),g,g*.25,g*4.));}}
   }
   return m;}
+/* только поле (x у dustAt) — для отсчётов градиента и толщи: те же выражения в том же порядке, без
+   плотности и полости (24.10, S23 на ×2 — четыре-пять таких отсчётов на пиксель пересчёта) */
+fn dustM(p:vec2f,W:f32,H:f32,seed:f32)->f32{
+  let D=dpolar(p,W,H);let tr=D.tr;let s=D.s;
+  let o=vec2f(fract(seed*.37)*50.+7.,fract(seed*.71)*50.+3.);
+  let sd=fract(seed*.113)*97.;
+  let se=.76+(nzs(tr,D.q,vec2f(4.,1.),o+vec2f(21.,9.),2)-.5)*.2+(nzs(tr,D.q,vec2f(11.,2.5),o+vec2f(4.,13.),2)-.5)*.16;
+  let rw=dR(D,D.r0+se*(D.r1-D.r0));
+  let lu=(nzs(tr,D.q,vec2f(7.,1.8),o+vec2f(8.,8.),2)-.5)*.04+(nzs(tr,D.q,vec2f(14.,7.),o+vec2f(1.,3.),3)-.5)*.022
+    +(nzs(tr,D.q,vec2f(40.,18.),o+vec2f(6.,1.),2)-.5)*.01;
+  var m=D.r-rw+lu-(1.-smoothstep(.0,.2,s))*.04;
+  m=max(m,pillars(D,rw,14.,.5,.2,sd)+lu*.35);
+  return m;}
 /* x: поле в H (>0 — внутри тела), y: свечение полости, z: плотность толщи, w: s */
 fn dustAt(p:vec2f,W:f32,H:f32,seed:f32)->vec4f{
   let D=dpolar(p,W,H);let tr=D.tr;let s=D.s;
@@ -321,8 +334,8 @@ ${GNB_WC}
   C=C+mix(gc,sw,.3)*cvg*.3;dsum=dsum+cvg*.5;
   /* край — в пикселях: расстояние до порога по градиенту гладкого поля */
   let ex=1.5;
-  let fxp=dustAt(p+vec2f(ex,0.),W,H,seed).x;let fxm=dustAt(p-vec2f(ex,0.),W,H,seed).x;
-  let fyp=dustAt(p+vec2f(0.,ex),W,H,seed).x;let fym=dustAt(p-vec2f(0.,ex),W,H,seed).x;
+  let fxp=dustM(p+vec2f(ex,0.),W,H,seed);let fxm=dustM(p-vec2f(ex,0.),W,H,seed);
+  let fyp=dustM(p+vec2f(0.,ex),W,H,seed);let fym=dustM(p-vec2f(0.,ex),W,H,seed);
   let gD=vec2f(fxp-fxm,fyp-fym)/(2.*ex);
   /* крутизна — по модулям односторонних разностей: на стыке стены и столпа (max двух тел)
      центральная разность гаснет, расстояние уходило в минус бесконечность — по стыку
@@ -361,7 +374,7 @@ ${GNB_WC}
   let gas=smoothstep(.02,.3,dsum);
   /* тело толще 12 px, иначе кайма бусами; отсчёт лишь у кромки с каймой/корой */
   var tk=1.;
-  if(dpx>-40.&&dpx<80.&&(face>0.||gas<1.)){tk=smoothstep(.15,.6,(dustAt(p+gD/gl2*12.,W,H,seed).x-DD.x)/(12.*gl2));}
+  if(dpx>-40.&&dpx<80.&&(face>0.||gas<1.)){tk=smoothstep(.15,.6,(dustM(p+gD/gl2*12.,W,H,seed)-DD.x)/(12.*gl2));}
   let ion=edge*face*face*fw*brk*(.8+2.2*lit)*dk*gas*tk*(1.-.92*far);   /* фронт ионизации — у звезды */
   let ic=mix(gc*1.5,vec3f(1.,.95,.86),.3)*max(max(sc.r,max(sc.g,sc.b)),.7);
   /* внутри — бурый (тон 15–30°): отражённый свет, прожилки вдоль столпа, к сердцевине темнее */
