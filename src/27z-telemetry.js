@@ -33,6 +33,9 @@ let HUD_FLOOR=0, HUD_RAIL=0, HUD_RAILTOP=0;   /* верх правого бор�
    встаёт строка сообщения. HUD_LKEY — режим, классы тела и подписи ряда: при их смене полосы
    меряются заново */
 let HUD_MAPBAR=-1, HUD_LKEY="", HUD_MAPROW="";
+/* --mapbar двигает только строку сообщения (#msg), а запись в корень пересчитывает стиль всей страницы: посреди
+   hud её оплачивало первое же чтение (стили ряда пэдов, S23 4,5 мс в кадре прилёта) — она ждёт конца кадра hud */
+let HUD_MAPBAR_W=false;
 /* ── строка сообщения на карте (зрение 06.10.2026) ──
    По центру под верхом карты (--mapbar), пока под ней свободно. На низком окне до пульта места нет
    (780×360: от ряда до приёмника 28 px, а строк две) — тогда колонкой слева, под шапкой, шириной до
@@ -181,54 +184,65 @@ function setPair(el,key,a,b){
 /* пол HUD снят в начале этого кадра (28-loop frameBody); сброс вёрстки посреди кадра снимает флаг — hud перемерит */
 let HUD_PRE=false;
 {const f=rectsDirty;rectsDirty=function(){HUD_PRE=false;return f.apply(this,arguments);};}
+/* Чтения — заходом до записей (24.10, телефон). Запись переменной в корень (--padsh из padsFit, --hudband,
+   --railw) пересчитывает стиль всей страницы, и рамка, прочитанная сразу после неё, платит этот пересчёт: кадр
+   прилёта на S23 платил три таких подряд (getBoundingClientRect 11,5 мс на кадр, тестер, раунд 13). Теперь
+   сначала все рамки, потом все записи, а второй заход чтений — только если запись что-то сдвинула: полоса
+   двигает борт, классы пульта — пульт и подсказку, ширина борта — подсказку. Плашки сверху от этих записей
+   не зависят: их рамки из первого захода отдаются обёртке пещеры (HUD_VL, 22d) */
+let HUD_VL=null;
 function hudFloorMeasure(force,keep){
    if(!force&&!LAYOUT_DIRTY)return;
    if(!keep)LAYOUT_DIRTY=false;
+   const RS=document.documentElement.style,con=document.getElementById("console"),rail=document.querySelector(".rail");
    /* Верхнюю полосу меряем тем же заходом: состав строк задаёт таблица
       стилей (body.afoot прячет топливо и корпус, узкий экран кладёт шкалы в ряд),
       и второй источник правды однажды с ней разойдётся — поэтому мерим DOM, а не
       пересчитываем CSS в JS. Но мерим только после перемен в самих узлах. */
-   if($vitals&&$locusEl){
-     const vb=$vitals.getBoundingClientRect().bottom,lb=$locusEl.getBoundingClientRect().bottom;
-     const band=Math.max(vb,lb);
-     if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
-   }
+   const vr=$vitals&&$locusEl?$vitals.getBoundingClientRect():null,lr=vr?$locusEl.getBoundingClientRect():null;
+   HUD_VL=vr?[vr,lr]:null;
    /* место пульта связи (M720): слева внизу, по центру внизу или над плитами — по тому, где ряд
       пэдов оставил место, а не по составу ряда (на карте тормоз и тяга поднимали пульт в середину
       карты при свободном низе). Мерка ширины пульта от его места не зависит — петли нет */
-   const con=document.getElementById("console");
+   const cw=con&&$padsEl?con.getBoundingClientRect().width:0;
+   const bs=[];if(con&&$padsEl)for(const b of $padsEl.querySelectorAll("button")){const r=b.getBoundingClientRect();if(r.width>0&&r.height>0)bs.push(r);}
+   /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
+      подсказка и правый борт стоят position:fixed, а у таких offsetParent
+      всегда null — первая версия этой мерки поэтому не находила НИЧЕГО и
+      честно возвращала высоту экрана */
+   const floorOf=()=>{let fl=viewH();
+     for(const e of [$prompt,con,$padsEl]){
+       if(!e)continue;
+       if(e===$prompt&&!(e.textContent||"").trim())continue;
+       const r=e.getBoundingClientRect();
+       if(r.height>0&&r.width>0&&r.top>0)fl=Math.min(fl,r.top);
+     }
+     return fl;};
+   const railOf=()=>{const r=rail&&rail.getBoundingClientRect();return r&&r.width>0&&r.height>0?[Math.min(viewW(),r.left),r.top]:[viewW(),0];};
+   let fl=floorOf(),[rl,rt]=railOf(),moved=false;
+   /* записи — разом */
+   if(vr){
+     const band=Math.max(vr.bottom,lr.bottom);
+     if(band>0){if(HUD_BAND!==Math.round(band)){RS.setProperty("--hudband",Math.round(band)+"px");moved=true;}HUD_BAND=Math.round(band);}
+   }
    if(con&&$padsEl){
-     const cw=con.getBoundingClientRect().width,u=(typeof UIK==="number"&&UIK>0)?UIK:1,gap=12*u,WW=viewW();
-     const bs=[];for(const b of $padsEl.querySelectorAll("button")){const r=b.getBoundingClientRect();if(r.width>0&&r.height>0)bs.push(r);}
+     const u=(typeof UIK==="number"&&UIK>0)?UIK:1,gap=12*u,WW=viewW();
      const free=(x0,x1)=>!bs.some(r=>r.left<x1+gap&&r.right>x0-gap);
      /* три места по очереди: у левой кромки, сразу за левыми пэдами (A/D), по центру */
      let lx=16*u;for(const r of bs)if(r.right<WW/2)lx=Math.max(lx,r.right+gap);
      const xs=[16*u,lx];let x=-1;
      for(const c of xs)if(cw>0&&c+cw<WW/2+cw/2&&free(c,c+cw)){x=c;break;}
-     const mid=x<0&&cw>0&&free((WW-cw)/2,(WW+cw)/2);
-     if(x>=0){const v=Math.round(x/u)+"px";if(document.documentElement.style.getPropertyValue("--conx")!==v)document.documentElement.style.setProperty("--conx",v);}
-     document.body.classList.toggle("conleft",x>=0);
-     document.body.classList.toggle("conlow",x>=0||mid);
+     const mid=x<0&&cw>0&&free((WW-cw)/2,(WW+cw)/2),B=document.body.classList;
+     if(x>=0){const v=Math.round(x/u)+"px";if(RS.getPropertyValue("--conx")!==v){RS.setProperty("--conx",v);moved=true;}}
+     if(B.contains("conleft")!==(x>=0)){B.toggle("conleft",x>=0);moved=true;}
+     if(B.contains("conlow")!==(x>=0||mid)){B.toggle("conlow",x>=0||mid);moved=true;}
    }
-   let fl=viewH(),rl=viewW(),rt=0;
-   /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
-      подсказка и правый борт стоят position:fixed, а у таких offsetParent
-      всегда null — первая версия этой мерки поэтому не находила НИЧЕГО и
-      честно возвращала высоту экрана */
-   const under=[$prompt,document.getElementById("console"),$padsEl];
-   for(const e of under){
-     if(!e)continue;
-     if(e===$prompt&&!(e.textContent||"").trim())continue;
-     const r=e.getBoundingClientRect();
-     if(r.height>0&&r.width>0&&r.top>0)fl=Math.min(fl,r.top);
-   }
-   const rail=document.querySelector(".rail");
-   if(rail){
-     const r=rail.getBoundingClientRect();
-     if(r.width>0&&r.height>0){rl=Math.min(rl,r.left);rt=r.top;}
-   }
-   if(HUD_RAIL!==Math.round(rl))document.documentElement.style.setProperty("--railw",Math.max(0,viewW()-Math.round(rl))+"px");   /* ширина борта — для поля адреса (M347) */
-   HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);HUD_RAILTOP=Math.round(rt);
+   let rw=Math.round(rl);
+   if(HUD_RAIL!==rw){RS.setProperty("--railw",Math.max(0,viewW()-rw)+"px");moved=true;}   /* ширина борта — для поля адреса (M347) */
+   /* второй заход — по сдвинутому: борт мог уехать за полосой, его ширина пишется заново */
+   if(moved){fl=floorOf();[rl,rt]=railOf();
+     if(Math.round(rl)!==rw){rw=Math.round(rl);RS.setProperty("--railw",Math.max(0,viewW()-rw)+"px");}}
+   HUD_FLOOR=Math.round(fl);HUD_RAIL=rw;HUD_RAILTOP=Math.round(rt);
 }
 /* колпачки клавиш на пэдах: [элемент, действие] — собраны раз, чтения DOM в кадре нет */
 let $vShip=null,$padKeys=null;
@@ -459,7 +473,7 @@ function hud(){
     if(ly&&onMap&&typeof mapLayerRu==="function")setTx(ly,mapLayerRu());
     HUD_MAPROW=onMap?(mk?mk.textContent:"")+"|"+(ly?ly.textContent:""):"";
     const mb=onMap&&typeof MAP_TOP!=="undefined"&&MAP_TOP?Math.round(MAP_TOP.floor):0;
-    if(HUD_MAPBAR!==mb){HUD_MAPBAR=mb;document.documentElement.style.setProperty("--mapbar",mb+"px");}}
+    if(HUD_MAPBAR!==mb){HUD_MAPBAR=mb;HUD_MAPBAR_W=true;}}   /* пишется в конце hud, после чтений вёрстки */
   const wp=document.getElementById("wanwin");
   if(wp)setSt(wp,"display",G.mode==="wanderer"?"":"none");
   const pb=document.getElementById("pricesbtn");
@@ -656,6 +670,7 @@ function hud(){
      счётчик груза (зрение 06.10.2026). Меряем последним делом кадра, когда классы уже стоят */
   const lk=G.mode+"|"+document.body.className+"|"+HUD_MAPROW;
   if(lk!==HUD_LKEY){HUD_LKEY=lk;rectsDirty();hudFloorMeasure(true);}
+  if(HUD_MAPBAR_W){HUD_MAPBAR_W=false;document.documentElement.style.setProperty("--mapbar",HUD_MAPBAR+"px");}
 }
 
 /* ── кнопка маяка без лишних записей ──

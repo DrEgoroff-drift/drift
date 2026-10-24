@@ -489,7 +489,9 @@ hudFloorMeasure=function(force){
   const go=!!force||(typeof LAYOUT_DIRTY!=="undefined"&&LAYOUT_DIRTY);
   CAVE3_OLD_FLOOR.apply(this,arguments);
   if(!go||typeof $vitals==="undefined"||!$vitals||!$locusEl)return;
-  const a=$vitals.getBoundingClientRect(),b=$locusEl.getBoundingClientRect();
+  /* рамки плашек — из первого захода 27z, до её записей в корень: своё чтение здесь платило пересчёт стиля всей
+     страницы после --railw (S23, кадр прилёта) */
+  const [a,b]=HUD_VL||[$vitals.getBoundingClientRect(),$locusEl.getBoundingClientRect()];
   CAVE3_HUD.l=a.width>0?[a.right,a.bottom]:[0,0];
   CAVE3_HUD.r=b.width>0?[b.left,b.bottom]:[0,0];
 };
