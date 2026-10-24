@@ -22,14 +22,16 @@ TEST_SUITES.push(()=>suite("прилёт заранее: вещи у входа 
   const P0=GEST_POST_CV.get(t.by+"|"+post);
   ok(!!P0,"пост хозяина испечён до прыжка");
   ok(!!artGet(FLEET_ART,"fl"+(t.by==="gt"?"patrol":"tug")+g.seed+"!"+t.by),"корабль жеста испечён до прыжка");
-  const L=sysLane(getSystem(t.x,t.y)),ids=[...new Set(L.queue.map(bodyFleetHull))];
+  const L=sysLane(getSystem(t.x,t.y)),gid=bodyFleetHull({k:t.by==="gt"?"patrol":"tug",seed:g.seed,by:t.by});
+  const ids=[...new Set(L.queue.map(bodyFleetHull).concat(gid))];
   ok(ids.every(id=>{const C4=H3D.MG.get(hullOf(id));return !!(C4&&C4.has(h3dStockGear(id).sig));}),
-    "сетки корпусов очереди собраны до прыжка ("+ids.join(" ")+")");
-  /* прилёт: первые кадры не допекают ничего синхронно, пост — тот же */
-  const s0=PB_SYNC;
+    "сетки корпусов очереди и корабля жеста собраны до прыжка ("+ids.join(" ")+")");
+  /* прилёт: первые кадры не допекают ничего синхронно и не строят сеток, пост — тот же */
+  const s0=PB_SYNC,m0=H3D.mk;
   arriveSystem(t.x,t.y,{cost:0});
   for(let i=0;i<3;i++)drawWorld();
   eq(PB_SYNC-s0,0,"кадры прилёта ничего не допекают на глазах");
+  eq(H3D.mk-m0,0,"кадры прилёта не строят сеток корпусов");
   ok(GEST_POST_CV.get(t.by+"|"+post)===P0,"пост прилёта — испечённый заранее");
 }));
 /* 12ai1: борт полосы рисуется телом (или огоньком), мастер картинки ему не нужен — печётся шагом, на случай, когда
