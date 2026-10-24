@@ -264,7 +264,7 @@ function cave3Frame(){
   M.lens=Ls;
   /* куски породы, что видны: окно на глубине 10 м за разрезом и запас */
   const sp=(10-Ls.eye[2])/Ls.D,hw=Ls.w/2*sp,hh=Ls.Hf/2*sp,mid=(Ls.b+Ls.t)/2;
-  const list=cave3Chunks(C,[cx-hw-2,cx+hw+2,mid-hh-2,mid+hh+2],C.x/CAVE_PPM,floorY,first||CAVE3.rush);
+  const tc=wallMs(),list=cave3Chunks(C,[cx-hw-2,cx+hw+2,mid-hh-2,mid+hh+2],C.x/CAVE_PPM,floorY,first||CAVE3.rush);fbSpend(wallMs()-tc);
   /* человек: ноги — на полу картинки, но не дальше четверти метра от пола игры */
   const face=C.face<0?-1:1,mx=C.x/CAVE_PPM,gy=-C.y/CAVE_PPM;
   let my=gy;
@@ -325,7 +325,7 @@ function cave3Frame(){
   tris+=cave3AmberFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx);
   /* убранство залов (22dc): натёки, завесы, кристаллы, жилы на разрезе */
   const l0=F.lights.length;
-  tris+=cave3DressFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx,first||CAVE3.rush,mid);
+  const td=wallMs();tris+=cave3DressFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx,first||CAVE3.rush,mid);fbSpend(wallMs()-td);
   M.stat.ldress=F.lights.length-l0;
   /* озеро (22dd): гладь с зеркалом и тело воды в разрезе */
   tris+=cave3LakeFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx);

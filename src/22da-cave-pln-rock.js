@@ -425,7 +425,7 @@ function cave3Chunks(C,box,mx,my,first,lim0){
     if(c){c.t=Q.t;if(c.geo)list.push(c);}else want.push([i,j,Math.hypot((i+.5)*s-mx,(j+.5)*s-my)]);
   }
   want.sort((a,b)=>a[2]-b[2]);
-  const t0=wallMs(),lim=first?CAVE3_CH.first:(lim0||CAVE3_CH.ms);
+  const t0=wallMs(),lim=first?CAVE3_CH.first:(lim0||fbLeft(1,CAVE3_CH.ms));   /* общий счёт стройки кадра (17a0 FB) */
   let built=0;
   const put=(i,j,m)=>{const c={i,j,t:Q.t,nRock:m.nRock,geo:m.ni?plnGeo(m):null};Q.m.set(i+","+j,c);if(c.geo)list.push(c);built++;};
   /* вход строит видимое разом; дальше кусок лепится по слоям в бюджет и доводится следующим кадром */

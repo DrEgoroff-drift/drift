@@ -45,7 +45,7 @@ function pbOnScreen(x,y,w,h,m){const mx=W*(m||0),my=H*(m||0);return x<W+mx&&x+w>
    ходом (3 мс через кадр, 2 мс раз в четыре, 3 мс каждый кадр): в кадре, где сходились две, они складывались, и
    ни одна не знала, во что уже обошёлся кадр. Теперь их зовёт одно место — workPump, раз за кадр, по порядку
    важности, и все вместе они тратят не больше WORK_MS. Бюджет — то, что осталось кадру: прошлый кадр без
-   заготовок (FRAME_JS - WORK_T) вычитается из WORK_JS, так что на телефоне, где кадр и без них тяжёл,
+   заготовок и прочей стройки (FB, ниже) вычитается из WORK_JS, так что на телефоне, где кадр и без них тяжёл,
    заготовкам достаётся меньше, на ПК — полный. Часы свои у каждой машины: мс телефона — мс телефона.
    Работник: step(ms) — шагает, пока следующий шаг (судя по прошлому) влезает в ms, и отвечает, сделал ли
    что-то; when() — его режим. Шаг не делится, поэтому работник, кому бюджета не досталось, всё равно
@@ -53,10 +53,20 @@ function pbOnScreen(x,y,w,h,m){const mx=W*(m||0),my=H*(m||0);return x<W+mx&&x+w>
    WORK_MAX[имя] — самый долгий ход работника (мс), для ворот и замеров */
 const WORK=[],WORK_MS=3,WORK_LO=.5,WORK_JS=10,WORK_STARVE=20,WORK_MAX={};
 let WORK_F=0,WORK_T=0;
+/* счёт стройки кадра (24.10) — один на всех, кто строит в кадре: куски шахты и пещеры, убранство, земля и
+   посадки планеты, заготовки. Каждый жил своим бюджетом (8, 8, 5, 8, 3 мс) и не знал, что сосед уже взял:
+   в кадре пещеры они складывались до 20 мс поверх самого кадра. Теперь: FB.base — кадр без стройки (FRAME_JS
+   прошлых кадров минус их стройка, сглажено), FB.spent — стройка этого кадра; fbLeft(lo,hi,цель) — сколько
+   ещё влезает до цели (WORK_JS, у кого важность ниже — цель ниже), не меньше lo: шаг стройки не делится, и
+   кадр, где места нет, всё равно двигает её понемногу. Кто построил — записывает fbSpend(мс) */
+const FB={base:3,spent:0};
+function fbBegin(){if(FRAME_JS>0)FB.base+=(Math.max(0,FRAME_JS-FB.spent)-FB.base)*.1;FB.spent=0;}
+function fbLeft(lo,hi,goal){return Math.min(hi,Math.max(lo,(goal||WORK_JS)-FB.base-FB.spent));}
+function fbSpend(ms){if(ms>0)FB.spent+=ms;}
 function workAdd(name,prio,when,step){WORK.push({name,prio,when,step,f:0});WORK.sort((a,b)=>a.prio-b.prio);}
 function workPump(){
   WORK_F++;
-  const t0=wallMs();let left=Math.min(WORK_MS,Math.max(WORK_LO,WORK_JS-(FRAME_JS-WORK_T)));
+  const t0=wallMs();let left=fbLeft(WORK_LO,WORK_MS);
   for(const w of WORK){
     if(!w.when())continue;
     if(left<WORK_LO&&WORK_F-w.f<WORK_STARVE)continue;
@@ -64,5 +74,5 @@ function workPump(){
     left-=dt;
     if(go){w.f=WORK_F;if(!(WORK_MAX[w.name]>=dt))WORK_MAX[w.name]=dt;}
   }
-  WORK_T=wallMs()-t0;
+  WORK_T=wallMs()-t0;fbSpend(WORK_T);
 }

@@ -442,10 +442,10 @@ function cave3DressFrame(C,F,Fd,x0,x1,cx,first,cy){
     if(k){k.t=Q.t;vis.push(k);}else if(Q.by.has(b))want.push([b,Math.abs((b+.5)*s-cx)]);
   }
   want.sort((a,b)=>a[1]-b[1]);
-  const t0=wallMs(),lim=first?CAVE3_DR.first:CAVE3_DR.ms;
-  let built=0;
+  const t0=wallMs(),lim=first?CAVE3_DR.first:fbLeft(.5,CAVE3_DR.ms);   /* общий счёт стройки кадра (17a0 FB) */
+  let built=0,t=t0;
   for(const [b] of want){
-    if(built&&wallMs()-t0>lim)break;
+    const t1=wallMs();if(built&&t1-t0+(t1-t)>=lim)break;t=t1;   /* следующая полоса — если влезает, судя по прошлой */
     const k=cave3DressTake(Q,C,Fd,b);k.t=Q.t;Q.m.set(b,k);vis.push(k);built++;
   }
   if(Q.m.size>CAVE3_DR.keep){

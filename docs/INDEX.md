@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 661 · top-level symbols: 8892
+Files: 661 · top-level symbols: 8896
 
 ## SYMBOLS
 
@@ -637,6 +637,7 @@ FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
 FAUCET_FLOOR                 src/12ab-hold.js:154
 FAUNA_RES                    src/02-world.js:137
+FB                           src/17a0-prebake.js:62
 FG_MAN                       src/21b-surface-deco.js:268
 FIGHT_HOOKS                  src/28r-fight.js:127-155
 FIGHT_LENS                   src/17p-cam-frame.js:32
@@ -3546,9 +3547,9 @@ cppX                         src/27f5-portrait3d.js:96
 craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
-crashAt                      src/28-loop.js:630-644
-crashN                       src/28-loop.js:625
-crashSay                     src/28-loop.js:651-680
+crashAt                      src/28-loop.js:633-647
+crashN                       src/28-loop.js:628
+crashSay                     src/28-loop.js:654-683
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 crewAssignShip               src/12a-crew.js:252-260
@@ -3636,7 +3637,7 @@ cvs                          src/08-state.js:2
 cvsRect                      src/08-state.js:107-110
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:790-860
+dbg                          src/28-loop.js:793-863
 dcLensEq                     tests/91qc-descent.js:15-18
 dcWorld                      tests/91qc-descent.js:6-14
 dcol                         src/21b-surface-deco.js:155-160
@@ -4092,7 +4093,7 @@ drawStars                    src/16-flight.js:40-79
 drawStation                  src/17c-system-draw.js:192-209
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:100
-drawSurface                  src/21pz-pln-frame.js:440-459
+drawSurface                  src/21pz-pln-frame.js:439-458
 drawSurfaceHud               src/21e-surface-draw.js:42-145
 drawSurvey                   src/12w-survey.js:63-81
 drawSysHud                   src/17-mode-system.js:748-1093
@@ -4309,6 +4310,9 @@ farmTalk                     src/21ac2-base-farm.js:75-78
 farmWanted                   src/21ac2-base-farm.js:40-43
 faucetPrice                  src/12ab-hold.js:155-158
 faunaOf                      src/20e-species.js:268-284
+fbBegin                      src/17a0-prebake.js:63
+fbLeft                       src/17a0-prebake.js:64
+fbSpend                      src/17a0-prebake.js:65
 fbm1                         src/01-core.js:117
 fbm2                         src/01-core.js:124
 fbm3                         src/24ba-belt-gpu.js:32-36
@@ -4416,11 +4420,11 @@ forkSt                       src/28q-fork.js:19-22
 forkTick                     src/28q-fork.js:56-81
 forkWage                     src/28q-fork.js:48-55
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:684-732
+frame                        src/28-loop.js:687-735
 frameBody                    src/28-loop.js:477-483
-frameBodyIn                  src/28-loop.js:484-616
+frameBodyIn                  src/28-loop.js:484-619
 frameCapNow                  src/28-loop.js:264-268
-frameLastAt                  src/28-loop.js:683
+frameLastAt                  src/28-loop.js:686
 freeVoice                    src/09-audio.js:104-108
 fridgeFee                    src/21ac4-base-fridge.js:19
 fridgeFirmAt                 src/21ac4-base-fridge.js:15-18
@@ -7090,7 +7094,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:92
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:337-436
+plnSurface                   src/21pz-pln-frame.js:337-435
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -7281,7 +7285,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:752-779
+prof                         src/28-loop.js:755-782
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
@@ -8858,8 +8862,8 @@ winWall                      src/29f-winter.js:162-172
 windOf                       src/19c-light.js:42-48
 withCtx                      src/18c-chunks.js:48-55
 withScale                    src/18c-chunks.js:31-37
-workAdd                      src/17a0-prebake.js:56
-workPump                     src/17a0-prebake.js:57-68
+workAdd                      src/17a0-prebake.js:66
+workPump                     src/17a0-prebake.js:67-78
 worldCovered                 src/08-state.js:435
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
@@ -9664,7 +9668,7 @@ zoomTo                       src/15-input.js:358
 ## src/17a-station-mod.js · 6 KB
   · модули станции:1
 
-## src/17a0-prebake.js · 6 KB
+## src/17a0-prebake.js · 8 KB
   · печь заранее: общий планировщик (GPU-3, 25.09, DESIGN-gpu):1
   · заготовки наперёд: общий бюджет кадра (24.10):43
 
@@ -10582,9 +10586,9 @@ zoomTo                       src/15-input.js:358
   · авторазрешение:209
   · РОВНЫЙ ТАКТ (0.1b):358
   · развилка режимов — одна на всех (M238):414
-  · кадр, который не убивает игру (M234):617
-  · prof() — на что уходит кадр:740
-  · dbg() — что держит корабль:781
+  · кадр, который не убивает игру (M234):620
+  · prof() — на что уходит кадр:743
+  · dbg() — что держит корабль:784
 
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
