@@ -649,8 +649,11 @@ function gpuNext(){
    4,7 мс из 10 мс Dawn на кадр). Теперь он уходит той же отправкой, что кадр, первым буфером. null — пишет не
    кадр (свой энкодер холста ovPaint или панели 27i0, замена после сбоя режима): тогда писатель отправляет сам */
 function gpuPreEnc(){const d=GPU.dev;if(!GPU.enc||GPU.enc!==GPU.fenc)return null;if(!GPU.pre||GPU.preD!==d){GPU.pre=d.createCommandEncoder();GPU.preD=d;}return GPU.pre;}
+/* GPU.preF — замыкатели своих кодировщиков «до кадра» (атлас корпусов 17c2a держит в своём открытый проход, пока
+   кадр пишет): каждый закрывает своё и отдаёт буфер (или null), они уходят первыми той же отправкой */
 function gpuSubmitFrame(){
   const d=GPU.dev,b=[];
+  if(GPU.preF){const F=GPU.preF;GPU.preF=null;for(const f of F){const c=f(d);if(c)b.push(c);}}
   if(GPU.pre){if(GPU.preD===d)b.push(GPU.pre.finish());GPU.pre=null;}
   b.push(GPU.enc.finish());d.queue.submit(b);
 }

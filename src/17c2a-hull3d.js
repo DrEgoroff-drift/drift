@@ -12,7 +12,7 @@
    Рисуется в свой слой ×4 MSAA (слой текстуры-массива) отдельной отправкой до кадра — проход
    сцены не рвётся, — и ложится в сцену одной картинкой смешением "hull" (маска корпуса 08b). */
 /* cap — потолок стороны слоя: в полёте 512, ангар (M723) и крупная проба поднимают до 1024 на время рисования */
-const H3D={M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512};
+const H3D={M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512,atl:true,atlH:0,A:null};
 const H3D_L=4;   /* слоёв на кадр: свой корабль и трое рядом */
 const H3D_SIDES=[128,256,512,1024];   /* классы слоя: мелкий корпус не чистит и не сводит 512² ×4 (телефон — тайлы); 1024 — только витрина, два слоя */
 const H3D_LZ=.48,H3D_FILL=.30,H3D_KEY=1.6;   /* высота звезды над плоскостью; заливка; сила звезды */
@@ -379,12 +379,45 @@ function h3dDesc(){
 function h3dDev(){
   const d=GPU.dev;if(H3D.dev===d)return;
   H3D.dev=d;
-  H3D.K={};
+  H3D.K={};H3D.A=null;
   H3D.ub=d.createBuffer({size:528,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   /* формы корпусов кадра — свой буфер на каждый (H3D.ui — номер в кадре): их проходы уходят одной отправкой
      с кадром (gpuPreEnc, 08b), и общий буфер, переписанный до неё, отдал бы всем формы последнего */
   H3D.ubs=[];H3D.ui=0;
   H3D.U=new Float32Array(132);H3D.P=null;
+}
+/* атлас кадра (24.10, телефон): корпуса до 256 px — областями одного холста, одним проходом. Прежде каждый корпус
+   (и накладка пирата 17c2h) — свой проход ×4 цвет и глубина размером с класс: в бою с восемью пиратами 18 проходов,
+   1,13 млн точек очистки и сведения при 0,62 млн нужных, и плиточная видеокарта платит за каждый (тестер, S23:
+   hull3d ≈ 3 мс из 12 мс кадра). Картинка та же: у корпуса своя область n×n, начало кратно 4 (узор маски выборок
+   в fs берёт q.x+2q.y по модулю 4), поле в 4 px прозрачное — фильтр сцены соседа не берёт. Проход — в своём
+   кодировщике (GPU.preF, 08b): кодировщик «до кадра» в это время нужен крупным, своему кораблю. Высота растёт
+   шагом 256 до h2, если кадру не хватило; не влезший — прежним путём, классом. H3D.atl=false — прежний путь (A/B) */
+const H3D_ATL={max:256,w:1024,h:512,h2:1024,pad:4};
+function h3dAtlasAt(n){
+  if(!H3D.atl||n>H3D_ATL.max||!GPU.enc||GPU.enc!==GPU.fenc)return null;
+  const d=GPU.dev,U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT;let A=H3D.A;
+  if(A&&A.p&&A.f!==GPU.frameNo){A.p.end();A.p=null;A.enc=null;}   /* кадр сорвался до отправки — его проход бросаем */
+  const H=Math.max(H3D_ATL.h,H3D.atlH);
+  if(!A||A.dev!==d||(!A.p&&A.H<H)){
+    if(A&&A.dev===d){A.ms.destroy();A.md.destroy();A.res.destroy();}
+    const w=H3D_ATL.w,ms=d.createTexture({size:[w,H],format:"rgba16float",sampleCount:4,usage:RA}),
+      md=d.createTexture({size:[w,H],format:"depth24plus",sampleCount:4,usage:RA}),
+      res=d.createTexture({size:[w,H],format:"rgba16float",usage:RA|U.TEXTURE_BINDING});
+    A=H3D.A={dev:d,S:w,H,ms,md,res,msV:ms.createView(),mdV:md.createView(),img:{view:res.createView()},enc:null,p:null,f:-1,sh:[],top:0};
+  }
+  if(!A.p){
+    const enc=A.enc=d.createCommandEncoder();A.f=GPU.frameNo;A.sh=[];A.top=0;
+    A.p=enc.beginRenderPass({colorAttachments:[{view:A.msV,resolveTarget:A.img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
+      depthStencilAttachment:{view:A.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"},timestampWrites:gpuTs("hull3d")});
+    (GPU.preF||(GPU.preF=[])).push(dv=>{if(A.enc!==enc)return null;A.p.end();A.p=null;A.enc=null;return dv===A.dev?enc.finish():null;});
+  }
+  /* полки: область — в самую низкую полку, где хватает высоты и места; нет такой — новая полка снизу высотой,
+     округлённой до 64 (корпуса идут вперемешку, полка по первому оставляла бы по полке на каждого крупнее) */
+  const q=Math.ceil(n/4)*4+H3D_ATL.pad;let s=null;
+  for(const t of A.sh)if(t.h>=q&&t.x+q<=A.S&&(!s||t.h<s.h))s=t;
+  if(!s){const h=q>192?q:Math.ceil(q/64)*64;if(A.top+h>A.H){H3D.atlH=Math.min(H3D_ATL.h2,A.H+256);return null;}s={y:A.top,h,x:0};A.sh.push(s);A.top+=h;}
+  const r={x:s.x,y:s.y,A};s.x+=q;return r;
 }
 /* слои класса заводятся при первой нужде: ×4 цвет и глубина на проход, массив сведённых — на кадр */
 function h3dCls(n){
@@ -436,8 +469,8 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
      Студия рисует не в слой, а прямо в цель размером с рамку (h3dStudioRT): слой 1024 на 4K растягивал
      корпус почти втрое — мыло; цель рамки на телефоне ещё и меньше класса 1024 */
   const sv=V&&V.v3,pp=sv?sv.persp||0:0,Rb=m.R/(1-pp);
-  let K=null,side=0,n=0;
-  if(!V){n=Math.max(8,Math.min(H3D.cap,Math.ceil(2*Rb*sc*GPU.bw/W)));let si=H3D_SIDES.findIndex(v=>v>=n);
+  let K=null,side=0,n=0,At=null;
+  if(!V&&!(At=h3dAtlasAt(n=Math.max(8,Math.min(H3D.cap,Math.ceil(2*Rb*sc*GPU.bw/W)))))){let si=H3D_SIDES.findIndex(v=>v>=n);
     if(si<0)si=H3D_SIDES.length-1;
     /* слои класса кончились (конвой, свалка у станции) — корпус уходит в класс мельче (M713): чуть мягче,
        но в объёме, а не плоским спрайтом рядом с объёмными соседями */
@@ -480,20 +513,26 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
   if(!bg){bg=d.createBindGroup({layout:H3D.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:ub}},{binding:1,resource:gpuMipSmp()},
     {binding:2,resource:T.view},{binding:3,resource:mat.view},{binding:4,resource:lt}]});
     if(C)C.bg.set(ub,bg);}
-  /* полёт — в кодировщик «до кадра» (уходит с кадром); студия и рисунок вне кадра — в свой и отправляют сами */
-  const pe=V?null:gpuPreEnc(),L=V?0:K.slot++,R=V?h3dStudioRT(V):null,enc=pe||d.createCommandEncoder(),vw=V?V.bw:n,vh=V?V.bh:n,img=V?R.img:K.img[L];
-  const p=enc.beginRenderPass({colorAttachments:[{view:V?R.msV:K.msV,resolveTarget:img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
-    depthStencilAttachment:{view:V?R.mdV:K.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"},
-    timestampWrites:V?undefined:gpuTs("hull3d")});   /* проба g11GpuMs: корпуса кадра одной меткой */
-  p.setViewport(0,0,vw,vh,0,1);p.setScissorRect(0,0,vw,vh);
-  p.setPipeline(H3D.P);p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);p.draw(m.n);p.end();
-  if(!pe)d.queue.submit([enc.finish()]);
+  /* атлас — область в открытом проходе кадра; полёт классом — в кодировщик «до кадра» (уходит с кадром);
+     студия и рисунок вне кадра — в свой и отправляют сами */
+  let p,img,pe=null,enc=null,uv;
+  if(At){p=At.A.p;img=At.A.img;p.setViewport(At.x,At.y,n,n,0,1);p.setScissorRect(At.x,At.y,n,n);
+    uv={u0:At.x/At.A.S,v0:At.y/At.A.H,u1:(At.x+n)/At.A.S,v1:(At.y+n)/At.A.H};}
+  else{pe=V?null:gpuPreEnc();enc=pe||d.createCommandEncoder();
+    const R=V?h3dStudioRT(V):null,vw=V?V.bw:n,vh=V?V.bh:n;img=V?R.img:K.img[K.slot++];
+    p=enc.beginRenderPass({colorAttachments:[{view:V?R.msV:K.msV,resolveTarget:img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
+      depthStencilAttachment:{view:V?R.mdV:K.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"},
+      timestampWrites:V?undefined:gpuTs("hull3d")});   /* проба g11GpuMs: корпуса кадра одной меткой */
+    p.setViewport(0,0,vw,vh,0,1);p.setScissorRect(0,0,vw,vh);
+    uv={u1:n/side,v1:n/side};}
+  p.setPipeline(H3D.P);p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);p.draw(m.n);
+  if(!At){p.end();if(!pe)d.queue.submit([enc.finish()]);}
   const pass=V?V.pass:gpuScene();if(!pass)return false;
   if(V){const w=V.bw/V.nd,h=V.bh/V.nd;gpuImage(pass,img,[{x:w/2,y:h/2,w,h}],{blend:"hull"});}
   else{   /* обвод (M824): тот же слой чуть шире, фон под ним темнеет — тёмная кромка в 2–3 px вокруг силуэта;
              на светлой туманности корпус отделяется ей, на тёмной — контровым от звезды */
-    const hp=2*Rb*sc+8;gpuImage(pass,K.img[L],[{x,y,w:hp,h:hp,u1:n/side,v1:n/side,a:.85}],{blend:"shade"});
-    gpuImage(pass,K.img[L],[{x,y,w:2*Rb*sc,h:2*Rb*sc,u1:n/side,v1:n/side}],{blend:"hull"});}
+    const hp=2*Rb*sc+8;gpuImage(pass,img,[Object.assign({x,y,w:hp,h:hp,a:.85},uv)],{blend:"shade"});
+    gpuImage(pass,img,[Object.assign({x,y,w:2*Rb*sc,h:2*Rb*sc},uv)],{blend:"hull"});}
   return true;
 }
 /* цель студии (M723) — своя у держателя V, размером с его рамку: ×4 цвет и глубина, сведённая — картинкой
