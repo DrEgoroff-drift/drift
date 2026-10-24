@@ -413,12 +413,17 @@ function fleetShipGpu(f,art){
   const m=ctx.getTransform(),k=1/DPR;
   return fleetShipAt(f,art,m.a*k,m.b*k,m.c*k,m.d*k,m.e*k,m.f*k,ctx.globalAlpha);
 }
-/* то же без 2D: матрица (a…f) — в пикселях CSS; её дают те, кто знает место сам (полоса 17g) */
+/* то же без 2D: матрица (a…f) — в пикселях CSS; её дают те, кто знает место сам (полоса 17g).
+   art — мастер борта; null — «спроси сам»: телу (и огоньку) мастер не нужен, а прежде его пекли до тела, и прилёт к
+   людной станции допекал на глазах мастера всей очереди — 14–18 выпечек в кадр (ПК, 24.10). Теперь мастер такому
+   борту печётся шагом (17a0) — на случай, когда борт гаснет у дока и рисуется выпечкой; false — уже спрошен шагом */
 function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
-  const pass=gpuScene();if(!pass||!art||!art.cn)return false;
+  const pass=gpuScene();if(!pass)return false;
   const s=Math.hypot(ma,mb);
   /* борт линии телом (M820, 17c2e): корпус класса — hullGpuDraw, мельче 14 px — огонёк */
-  if(G.mode==="system"&&G.viewCX!==undefined&&bodyFleet(f,me,mf,Math.atan2(mb,ma),s,al))return true;
+  if(G.mode==="system"&&G.viewCX!==undefined&&bodyFleet(f,me,mf,Math.atan2(mb,ma),s,al)){if(art==null)fleetArtOf(f,true);return true;}
+  if(art==null)art=fleetArtOf(f,false);
+  if(!art||!art.cn)return false;
   const T=(lx,ly)=>[ma*lx+mc*ly+me,mb*lx+md*ly+mf],[x,y]=T(0,0),w=art.rad*2*s;
   const rot=Math.atan2(mb,ma);
   /* светом звезды (Ships a): свет корпуса (GST, −1) по своей выпечке — краска как есть,
@@ -447,4 +452,4 @@ function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
   return true;
 }
 /* корабль флота в текущей матрице ctx (флот, жесты, мирный флот): только проход сцены (25.09) — 2D-ветки нет */
-function drawFleetShip(f){fleetShipGpu(f,fleetArtOf(f));}
+function drawFleetShip(f){fleetShipGpu(f,null);}

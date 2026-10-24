@@ -144,7 +144,7 @@ function laneShip(f,x,y,a,al,Z){
      корабли с полом масштаба ложились в нём друг на друга кашей (снимок автора 19.09) */
   const s=Math.min(fleetScale(Z),Z*1.4)*.62,c=Math.cos(a)*s,q=Math.sin(a)*s;
   /* место и курс известны — матрица сразу в fleetShipAt, без 2D-стека (было 7 вызовов на борт) */
-  fleetShipAt(f,fleetArtOf(f,false),c,q,-q,c,x,y,al);
+  fleetShipAt(f,null,c,q,-q,c,x,y,al);
 }
 /* ── ажиотаж на подъезде (M504, дизайн-проход 23.09) ──
    После ЖИЛЫ сюда летят все: от входа по оси полосы тянется вереница

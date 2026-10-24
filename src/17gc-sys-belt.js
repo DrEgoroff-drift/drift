@@ -64,6 +64,10 @@ function sbeltChip(m,seed){
     v[0]*=k;v[1]*=k;v[2]*=k;}
   return m;
 }
+/* камень пояса k из двенадцати: восемь глыб, четыре скола. Первый кадр системы строил все двенадцать на глазах
+   (ПК 5,8 мс, 24.10) — прилёт заранее (17h1) строит их по одному, пока цель выбрана на карте */
+const SBELT_ROCKS=12;
+function sbeltRock(B,k){const m=makeRock(hashi(B.seed,k,0x50C),1);return k>=8?sbeltChip(m,hashi(B.seed,k,0xC41)):m;}
 function drawBeltRocks(ox,oy,B,Z,shx,shy){
   if(Z<.24)return;
   const zf=clamp((Z-.24)/.1,0,1);
@@ -104,7 +108,7 @@ function drawBeltRocks(ox,oy,B,Z,shx,shy){
   }
   if(!LIST.length)return;
   if(p3ok){
-    if(!B.rm){B.rm=[];for(let k=0;k<12;k++){const m=makeRock(hashi(B.seed,k,0x50C),1);B.rm.push(k>=8?sbeltChip(m,hashi(B.seed,k,0xC41)):m);}}
+    if(!B.rm)B.rm=[];while(B.rm.length<SBELT_ROCKS)B.rm.push(sbeltRock(B,B.rm.length));
     const D=2400/Z;
     cam=B.cam3||(B.cam3={x:0,y:0,z:0});cam.x=cx0;cam.y=cy0;cam.z=-D;
     const sys=G.sys,stl=sysStyle(sys),sc0=hex2rgb(sys.cls.col),scol=[sc0[0]*.6+92,sc0[1]*.6+90,sc0[2]*.6+88];

@@ -55,7 +55,7 @@ function bodyDot(x,y,col,wx,wy,al){
 /* кэш сеток по ключу: последние cap, старая отдаёт буфер вершин */
 function bodyMesh(key,cap,make){
   let m=BODY.M.get(key);if(m){BODY.M.delete(key);BODY.M.set(key,m);return m;}
-  m=make();BODY.M.set(key,m);
+  m=make();H3D.mk++;BODY.M.set(key,m);
   const pre=key.split(":")[0];let n=0;for(const k of BODY.M.keys())if(k.split(":")[0]===pre)n++;
   for(const k of BODY.M.keys()){if(n<=cap)break;if(k.split(":")[0]!==pre)continue;
     const o=BODY.M.get(k);if(o&&o.buf&&o.dev===GPU.dev)GPU.trash.push(o.buf);BODY.M.delete(k);n--;}

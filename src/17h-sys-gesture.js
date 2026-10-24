@@ -92,7 +92,7 @@ function gestRect(SH,P,x0,y0,w,h,C){gpuQuad(SH,P(x0,y0),P(x0+w,y0),P(x0+w,y0+h),
 /* за краем — мастер шагами, как у полосы (17g): пикет подходит с кормы из-за экрана, и печь его целиком в кадр
    прилёта незачем (S23, раунд 10) */
 function gestShip(f,x,y,r,s,al){const c=Math.cos(r)*s,q=Math.sin(r)*s,off=x<-200||x>W+200||y<-200||y>H+200;
-  fleetShipAt(f,fleetArtOf(f,off),c,q,-q,c,x,y,al);}
+  fleetShipAt(f,off?fleetArtOf(f,true)||false:null,c,q,-q,c,x,y,al);}
 function drawGesture(zx,zy,Z){
   const g=gestLive();if(!g||typeof fleetShipAt!=="function")return;
   const t=gestAge(g),T=GEST_T[g.by];

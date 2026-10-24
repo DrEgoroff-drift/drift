@@ -12,7 +12,7 @@
    Рисуется в свой слой ×4 MSAA (слой текстуры-массива) отдельной отправкой до кадра — проход
    сцены не рвётся, — и ложится в сцену одной картинкой смешением "hull" (маска корпуса 08b). */
 /* cap — потолок стороны слоя: в полёте 512, ангар (M723) и крупная проба поднимают до 1024 на время рисования */
-const H3D={M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512,atl:true,atlH:0,A:null,keep:true,KP:new Map(),kn:0,z:true};
+const H3D={M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512,atl:true,atlH:0,A:null,keep:true,KP:new Map(),kn:0,z:true,mk:0};
 const H3D_L=4;   /* слоёв на кадр: свой корабль и трое рядом */
 const H3D_SIDES=[128,256,512,1024];   /* классы слоя: мелкий корпус не чистит и не сводит 512² ×4 (телефон — тайлы); 1024 — только витрина, два слоя */
 const H3D_LZ=.48,H3D_FILL=.30,H3D_KEY=1.6;   /* высота звезды над плоскостью; заливка; сила звезды */
@@ -239,7 +239,7 @@ function h3dMesh(h,gear){
   m=h3dPack(V,hullGpuE(h),{st,ne,kh,gl,rig:pr?pr.rigs:[],tops:pr?pr.tops:[],holes:ho});
   if(pr)m.R=Math.max(m.R,pr.R*1.02);
   if(C4.size>=4){const k0=C4.keys().next().value,o=C4.get(k0);if(o.buf)o.buf.destroy();C4.delete(k0);}
-  C4.set(sig,m);return m;
+  C4.set(sig,m);H3D.mk++;return m;
 }
 /* треугольники простого многоугольника ушами (крыло бывает вогнутым); P — точки [x,y,…] */
 function h3dEar(P){
