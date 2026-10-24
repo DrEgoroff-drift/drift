@@ -41,6 +41,8 @@ fn lwin(d:vec2f,h:vec4f,i:vec4f)->f32{
   else if(t<2.5){w=(1.-smoothstep(.55,1.2,length(vec2f(d.x,d.y/i.y))));}
   else{let x=abs(d.x);w=exp(-sq(d.y/(.04+.2*x)))*(1.-smoothstep(.9,1.8,x));}
   return min(w*1.4,1.)*select(0.,1.,i.w>0.);}`;
+/* пересчёт полосами (16gc): GNB_N полос на цикл, поле запаса GNB_GM текселей по краю цели, параллакс сдвига GNB_RP */
+const GNB_N=6,GNB_GM=6,GNB_RP=.1;
 const GNB_GEN=`
 struct NU{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f,f:vec4f,g:vec4f,h:vec4f,i:vec4f,j:vec4f,k:vec4f,l:vec4f};
 @group(0) @binding(0) var<uniform> u:NU;
@@ -223,7 +225,8 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   let kc=k*mix(.35,1.,smoothstep(.2,.45,dc));
   return LK(e*kc,ab*kc,lwin(d,u.h,u.i));}
 @fragment fn fs(i:VO)->@location(0) vec4f{
-  let W=u.a.z;let H=u.a.w;let p=i.uv*vec2f(W,H);
+  /* цель шире кадра на GNB_GM текселей с каждой стороны (u.a.xy — её размер): тексель j+GM — тот же пиксель, что j в кадре */
+  let W=u.a.z;let H=u.a.w;let p=(i.uv*u.a.xy-${GNB_GM}.)/(u.a.xy-${2*GNB_GM}.)*vec2f(W,H);
   let t=u.b.z;let seed=u.b.w;
   let A=u.c.rgb;let dust=u.c.w;let B=u.d.rgb;let dens0=u.d.w;
   let sp=u.e.xy;let rr=max(u.e.z/H,.012);let son=u.e.w;let sc=u.f.rgb;let fill=u.f.w;

@@ -252,26 +252,38 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   GNB.phP=ph;GNB.lDP=lD;
   /* поля дальнего сведения — кэшем мира (16gbb): каждый кадр, и стоя, и на ходу — сведение их читает */
   gnbFarc();
-  const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
-  /* GPU.kill.ngen (?g11=deep): без пересчёта; стоя — перетекание (16gc) */
-  if(GNB.sys===sys&&(GPU.kill.ngen||moved<GNB_MOVE&&GPU.frameNo-GNB.last<GNB_AGE&&GPU.frameNo>=GNB.last))return gnbFade(),true;
+  /* пересчёт объёма — полосой за кадр в запасную цель, видимую собирает сдвиг двух готовых (16gc). Сразу и целиком —
+     при смене системы, размера и когда камера ушла за поле запаса. GPU.kill.ngen (?g11=deep): без пересчёта */
+  const sync=gnbGenNeed(sys,camx,camy);
+  if(!sync&&GPU.kill.ngen){gnbResolve(camx,camy);return true;}
+  const U=GPUBufferUsage,ub=gpuBuf("gnb.u",192,U.UNIFORM|U.COPY_DST);
+  /* форма цикла пишется раз, в его начале: все полосы — с одной камерой и одним временем */
+  gnbCamVel(sys,camx,camy,c[2]);
+  if(sync||GNB.cs===0){
+  /* цикл считается для камеры в середине своего показа (16gc gnbLead): тогда остаток параллакса слоёв и звезды
+     между «посчитано» и «показано» — в обе стороны от нуля, а не отставание на весь возраст цикла */
+  const L=sync?0:gnbLead(),px=camx+GNB.vx*L,py=camy+GNB.vy*L,dx=px-camx,dy=py-camy;
+  const sp={x:st.x-dx,y:st.y-dy,r:st.r,on:st.on,c:st.c};
+  const qx=sp.x-W/2,qy=sp.y-H/2,qD=Math.max(Math.hypot(qx,qy),1),qh=Math.atan2(qy,qx),qL=Math.log(qD/H);
+  const qex=Math.max(0,Math.abs(qx)-W/2),qey=Math.max(0,Math.abs(qy)-H/2),
+        q0=Math.log(Math.max(Math.hypot(qex,qey),.25*H)/H),q1=Math.log(Math.hypot(Math.abs(qx)+W/2,Math.abs(qy)+H/2)/H);
+  let dh=qh-ph;dh-=Math.round(dh/(2*Math.PI))*2*Math.PI;
+  const Qp=GNB.Qc+kD*(1-wD)*dh,Yp=GNB.Yc+kD*(1-wD)*(qL-lD);
+  const lp=gnbLfr(lm,px,py,sp);GNB.gcx=px;GNB.gcy=py;
   const a=GNB.U;
-  a[0]=GNB.w;a[1]=GNB.h;a[2]=W;a[3]=H;
-  a[4]=camx;a[5]=camy;a[6]=c[2];a[7]=c[3];
+  a[0]=GNB.gw;a[1]=GNB.gh;a[2]=W;a[3]=H;
+  a[4]=px;a[5]=py;a[6]=c[2]+GNB.vt*L;a[7]=c[3];
   a[8]=pl.a[0]/255;a[9]=pl.a[1]/255;a[10]=pl.a[2]/255;a[11]=clamp(st2.dust,.3,1.7);
   a[12]=pl.b[0]/255;a[13]=pl.b[1]/255;a[14]=pl.b[2]/255;a[15]=pl.dens;
-  a[16]=st.x;a[17]=st.y;a[18]=st.r;a[19]=st.on;
+  a[16]=sp.x;a[17]=sp.y;a[18]=st.r;a[19]=st.on;
   a[20]=st.c[0]/255;a[21]=st.c[1]/255;a[22]=st.c[2]/255;a[23]=pl.fill;
-  a[24]=GNB.Qc;a[25]=GNB.Yc;a[26]=(l0-lD)*kD+GNB.Yc;a[27]=(l1-lD)*kD+GNB.Yc;
+  a[24]=Qp;a[25]=Yp;a[26]=(q0-qL)*kD+Yp;a[27]=(q1-qL)*kD+Yp;
   a[28]=lm.x;a[29]=lm.y;a[30]=lm.s;a[31]=lm.t;a[32]=lm.a;a[33]=lm.p;a[34]=lm.l;a[35]=lm.k;
   a[36]=lm.c[0][0];a[37]=lm.c[0][1];a[38]=lm.c[0][2];a[39]=gnbDeep(pl);a[40]=lm.c[1][0];a[41]=lm.c[1][1];a[42]=lm.c[1][2];
-  a[43]=lq[4];for(let k=0;k<4;k++)a[44+k]=lq[k];
-  const U=GPUBufferUsage,ub=gpuBuf("gnb.u",192,U.UNIFORM|U.COPY_DST);
-  GPU.dev.queue.writeBuffer(ub,0,a);
-  const P=gnbPipe();
-  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:gnbGenView(sys,moved),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
-  p.setPipeline(P);p.setBindGroup(0,gpuBind("gnb.gen",P,[ub,GPU.S.lin,gnbNoiseTile()]));p.draw(3);p.end();
-  GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;gnbFade();
+  a[43]=lp[4];for(let k=0;k<4;k++)a[44+k]=lp[k];
+  GPU.dev.queue.writeBuffer(ub,0,a);}
+  gnbGenSlice(sync,camx,camy,ub);
+  GNB.sys=sys;gnbResolve(camx,camy);
   return true;
 }
 /* возвращает проход сцены, в который рисовать дальше: под меткой времени (проба) сведение
