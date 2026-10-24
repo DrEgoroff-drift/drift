@@ -155,7 +155,9 @@ function p3Tools(K){
 /* ── сборка частей в сетку корпуса ── K — инструменты 17c2a (h3dKit), gear — {list:[{slot,kind,mount,size,x,y,p}]},
    deck(x,y) — высота палубы корпуса. Возвращает погоны {slot,x,y,spin} (номер в сетке = индекс+1) и радиус,
    до которого дотягивается повёрнутая турель */
-function h3dParts(K,h,gear,deck){
+function h3dParts(K,h,gear,deck){const it=h3dPartsGen(K,h,gear,deck);let r;do r=it.next();while(!r.done);return r.value;}
+/* то же ходом: пауза после каждой части — сетка корпуса шагами (h3dMeshGen, 17c2a) */
+function* h3dPartsGen(K,h,gear,deck){
   const T=p3Tools(K),{cr,nz,mt,glo,quad,rev,bx,seg,ext,pipe,sph,torus,dish,bolts}=T,gun=p3Guns(T);
   const at=(x,y,z,s,seat)=>{T.O=[x,y,z];T.S=s;T.seat=seat;};
   /* излучатель поля: плинт, светящийся кристалл, жала с огнями, гало */
@@ -329,7 +331,7 @@ function h3dParts(K,h,gear,deck){
 
   const kh=clamp(.9+h.bw*.07,1,1.8),kH=clamp(.8+h.bw*.12,1,2.6),tops=[];
   /* верх каждой части — точка для маркера ангара (M723): по ней студия ставит метку и выноску */
-  for(const g of gear.list){T.zt=0;build(g);tops.push({slot:g.slot,x:g.x,y:g.y,z:T.zt});}
+  for(const g of gear.list){T.zt=0;build(g);tops.push({slot:g.slot,x:g.x,y:g.y,z:T.zt});yield;}
   return {rigs:T.rigs,R:T.Rb,tops};
   function build(g){
     const p=g.p,by=(p&&p.by)||h.by||"gt",MK=P3_MK[by]||P3_MK.gt,t=p?clamp(p.tier|0,1,5):1;

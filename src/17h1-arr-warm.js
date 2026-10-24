@@ -7,8 +7,9 @@
    Корпуса классов у полосы (очередь, садящийся, уходящий — тела 17c2e) — выпечка и сетка с оснасткой: сетка на
    телефоне — десятки мс (тестер, раунд 11: 66 из 109 мс в кадрах 2–3 прилёта). Сетка в шаге — тоже тяжёлая работа
    кадра (H3D.mk), как выпечка. Корабль жеста рисуется тем же телом — и его сетка тоже (раунд 13: 17–27 мс в кадре 1).
-   Камни пояса (17gc) — по камню за кадр */
-const ARRW={k:"",q:[],i:0};
+   Камни пояса (17gc) — по камню за кадр. Сетка корпуса — шагами в ARRW_MS (h3dMeshPump): целиком она переносила
+   рывок в кадры карты, 20–34 мс подряд на S23 (тестер, раунд 15) */
+const ARRW={k:"",q:[],i:0},ARRW_MS=3;
 function arrWarmAt(){
   if(G.mode==="map"&&G.sel&&!G.mapPeek)return mapJump().bad?null:[G.sel.x,G.sel.y];
   if(G.mode==="rail"&&RAIL_RIDE){const R=RAIL_RIDE,s=R.l.stops[R.seq[R.seg]];return s?[s.sx,s.sy]:null;}
@@ -17,7 +18,7 @@ function arrWarmAt(){
 /* корпус класса телом (17c2e bodyFleet → hullGpuDraw): выпечка и сетка со своей оснасткой, по шагу на каждую */
 function arrWarmHull(Q,id){const h=hullOf(id);
   Q.push(()=>{hullGpuBake(h,id,hullGpuSb(h,GPU.bw/W));return true;});
-  Q.push(()=>{h3dMesh(h,h3dStockGear(id));return true;});}
+  Q.push(()=>!!h3dMeshPump(h,h3dStockGear(id),ARRW_MS));}
 /* шаги — те же вызовы, что сделает кадр системы у входа; шаг вернул false — ещё печётся (мастер флота шагами),
    2 — сделал тяжёлое без выпечки и сетки (камень пояса): на этот кадр хватит */
 function arrWarmSteps(sx,sy){
@@ -37,7 +38,7 @@ function arrWarmSteps(sx,sy){
     Q.push(()=>{const m=h3dStationMesh(S,ty,sb,seed);
       if(m&&m.slip){const id="f"+(seed%92),h=hullOf(id);hullGpuBake(h,id,hullGpuSb(h,GPU.bw/W));}return true;});
     Q.push(()=>{const m=h3dStationMesh(S,ty,sb,seed);
-      if(m&&m.slip){const id="f"+(seed%92);h3dMesh(hullOf(id),h3dStockGear(id));}return true;});
+      if(!(m&&m.slip))return true;const id="f"+(seed%92);return !!h3dMeshPump(hullOf(id),h3dStockGear(id),ARRW_MS);});
     /* корпуса классов полосы — как bodyFleet → hullGpuDraw: выпечка тела и сетка со своей оснасткой (h3dStockGear) */
     if(P){const ids=new Set();for(const f of [...P.queue,P.dock,P.out]){const id=f&&bodyFleetHull(f);if(id)ids.add(id);}
       for(const id of ids)arrWarmHull(Q,id);}
