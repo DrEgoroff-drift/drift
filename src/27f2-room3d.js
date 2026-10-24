@@ -237,6 +237,8 @@ struct U{vp:mat4x4f,cam:vec4f,sky:vec4f,gnd:vec4f,fog:vec4f,acc:vec4f,win:vec4f,
 @group(0) @binding(3) var shs:sampler_comparison;
 @group(0) @binding(4) var tsg:texture_2d<f32>;
 @group(0) @binding(5) var tfl:texture_2d<f32>;
+@group(0) @binding(6) var vnt:texture_3d<f32>;
+@group(0) @binding(7) var vns:sampler;
 @group(1) @binding(0) var<uniform> sk:vec4u;
 struct VI{@location(0) p:vec3f,@location(1) n:vec3f,@location(2) c:vec3f,@location(3) m:vec3f};
 struct VO{@builtin(position) q:vec4f,@location(0) w:vec3f,@location(1) n:vec3f,@location(2) c:vec3f,@location(3) @interpolate(flat) m:vec3f,
@@ -261,6 +263,10 @@ fn h2(p:vec2f)->f32{return fract(sin(dot(p,vec2f(127.1,311.7)))*43758.5453);}
 fn vn3(p:vec3f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
   return mix(mix(mix(hh(i),hh(i+vec3f(1.,0.,0.)),w.x),mix(hh(i+vec3f(0.,1.,0.)),hh(i+vec3f(1.,1.,0.)),w.x),w.y),
              mix(mix(hh(i+vec3f(0.,0.,1.)),hh(i+vec3f(1.,0.,1.)),w.x),mix(hh(i+vec3f(0.,1.,1.)),hh(i+vec3f(1.,1.,1.)),w.x),w.y),w.z);}
+/* шум дыма из объёма 64³ (24.10, телефон): в узлах — те же хэши, между узлами — та же гладкая ступень (выборка в
+   i+w+½ при линейном фильтре даёт ровно смесь узлов с весом w). Одна выборка вместо восьми синусов на шаг луча;
+   решётка повторяется через 64 узла — 38 м по горизонтали, больше любого зала */
+fn vn3t(p:vec3f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);return textureSampleLevel(vnt,vns,(i+w+.5)/64.,0.).r;}
 fn vn2(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
   return mix(mix(h2(i),h2(i+vec2f(1.,0.)),w.x),mix(h2(i+vec2f(0.,1.)),h2(i+vec2f(1.,1.)),w.x),w.y);}
 fn fb2(p:vec2f)->f32{return vn2(p)*.5+vn2(p*2.03+vec2f(5.2,1.3))*.3+vn2(p*4.1+vec2f(2.7,8.1))*.2;}
@@ -636,15 +642,15 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
     let L=u.lt[k];if(L.s.z<=0.){continue;}
     let oc=ro-L.p.xyz;let b=dot(oc,rd);let cc=dot(oc,oc)-L.p.w*L.p.w;let hq=b*b-cc;if(hq<=0.){continue;}
     let sq=sqrt(hq);let t0=max(-b-sq,0.);let t1=min(-b+sq,tm);if(t1<=t0){continue;}
-    let dt=(t1-t0)/6.;
+    let dt=(t1-t0)/6.;let vr2=L.p.w*L.p.w;let vir4=1./(vr2*vr2);
     for(var j=0;j<6;j++){
       let p=ro+rd*(t0+(f32(j)+jit)*dt);let lv=L.p.xyz-p;let d2=dot(lv,lv);let l=lv*inverseSqrt(d2);
-      var at=clamp(1.-d2*d2/pow(L.p.w,4.),0.,1.)/(d2+.3);
+      var at=clamp(1.-d2*d2*vir4,0.,1.)/(d2+.3);
       if(L.c.w>.5){at*=smoothstep(L.d.w,L.s.y,dot(-l,L.d.xyz));}
       if(at<=1e-4){continue;}
       var s=1.;if(L.s.x>=0.){s=shadowAt(i32(L.s.x),p,1);}
-      let dn=.35+1.1*vn3(p*vec3f(1.7,1.2,1.7)+vec3f(t*.004,-t*.006,t*.003));
-      let ph=1.+1.6*pow(max(dot(l,rd),0.),6.);
+      let dn=.35+1.1*vn3t(p*vec3f(1.7,1.2,1.7)+vec3f(t*.004,-t*.006,t*.003));
+      let vcl=max(dot(l,rd),0.);let vc2=vcl*vcl;let ph=1.+1.6*vc2*vc2*vc2;
       vol+=L.c.rgb*at*s*dn*ph*dt*L.s.z;}
   }
   c=mix(c,u.fog.rgb,1.-exp(-tm*u.gnd.w));
@@ -707,6 +713,12 @@ function r3Dev(){
   R3.ub=d.createBuffer({size:R3_UN*4,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   R3.cmp=d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"});
   R3.smp=d.createSampler({magFilter:"linear",minFilter:"linear"});
+  /* объём шума дыма (vn3t): значения узлов тем же хэшем, что hh в шейдере */
+  R3.vns=d.createSampler({addressModeU:"repeat",addressModeV:"repeat",addressModeW:"repeat",magFilter:"linear",minFilter:"linear"});
+  {const N=64,a=new Uint8Array(N*N*N);
+    for(let z=0;z<N;z++)for(let y=0;y<N;y++)for(let x=0;x<N;x++){const s=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453;a[x+N*(y+N*z)]=Math.min(255,Math.round((s-Math.floor(s))*255));}
+    const vt=d.createTexture({size:[N,N,N],dimension:"3d",format:"r8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST});
+    d.queue.writeTexture({texture:vt},a,{bytesPerRow:N,rowsPerImage:N},[N,N,N]);R3.vnV=vt.createView({dimension:"3d"});}
   R3.skB=[];R3.skG=[];
   for(let i=0;i<R3_SH;i++){const b=d.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
     d.queue.writeBuffer(b,0,new Uint32Array([i,0,0,0]));R3.skB.push(b);
@@ -790,7 +802,8 @@ function r3Frame(cn,S,post,dst){
   let g0=R3.bgs.get(key);
   if(!g0){if(R3.bgs.size>16)R3.bgs.clear();
     g0=d.createBindGroup({layout:R3.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:R3.ub}},{binding:1,resource:R3.smp},
-      {binding:2,resource:R3.shA},{binding:3,resource:R3.cmp},{binding:4,resource:tsg},{binding:5,resource:tfl}]});R3.bgs.set(key,g0);}
+      {binding:2,resource:R3.shA},{binding:3,resource:R3.cmp},{binding:4,resource:tsg},{binding:5,resource:tfl},
+      {binding:6,resource:R3.vnV},{binding:7,resource:R3.vns}]});R3.bgs.set(key,g0);}
   const enc=d.createCommandEncoder();
   const draw=(p)=>{for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}};
   /* тени: по слою на лампу; пустые слои не чистятся — их никто не читает (M816c: зал чистил 6 слоёв на 4 лампы).
