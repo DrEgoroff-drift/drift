@@ -89,7 +89,7 @@ function helmLift(){
          без этой поправки следующий кадр увидел бы её чистой и уронил обратно —
          строка бы дрожала под пальцем. Поправка идёт НЕ от нынешнего lift, а от
          того, что стоял в момент ЗАМЕРА: прямоугольник подсказки лежит в кэше
-         (08-state), а --helmlift пишется в стиль <body>, за которым наблюдателя
+         (08-state), а --helmlift пишется в style подсказки и пульта (08a1), за ним наблюдателя
          нет, — значит замер может быть и старше нынешнего подъёма. Кэш отдаёт
          один и тот же объект, пока не пересчитан, по нему и узнаём, свежий ли
          он: сменился объект — сменилась и база. Без этого второй вызов подряд
@@ -112,7 +112,7 @@ function helmLift(){
   if(lift!==HELM.lift){
     HELM.lift=lift;
     if(document.body&&document.body.style&&document.body.style.setProperty){
-      hudVar("--helmlift",lift+"px");   /* на подсказке, не на <body>: там она пересчитывала всю страницу (08a1) */
+      hudVar("--helmlift",lift+"px");   /* на подсказке и пульте, не на <body>: там она пересчитывала всю страницу (08a1) */
       document.body.classList.toggle("helmstick",foot.length>0);
     }
   }else if(document.body&&document.body.classList&&

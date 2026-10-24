@@ -12,7 +12,7 @@ const HUDV_SEL={
   "--conx":"#console",
   "--mapbar":"#msg",
   "--rackbot":"#msg",
-  "--helmlift":"#prompt"};
+  "--helmlift":"#prompt,#console"};
 const HUDV={};
 function hudVar(k,v){
   v=String(v);if(HUDV[k]===v)return;HUDV[k]=v;
