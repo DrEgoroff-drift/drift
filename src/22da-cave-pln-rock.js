@@ -37,11 +37,16 @@ function cave3H3(ix,iy,iz,s){
   h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;
   return (h>>>0)/4294967296;
 }
+/* хэш угла из готовой свёртки осей: imul(i+1,K) = imul(i,K)+K по модулю 2³² — восемь углов делят шесть
+   произведений, числа те же до бита, что у cave3H3 (24.10: куски шахты и пещеры зовут шум сотни тысяч раз) */
+function cave3Hq(h){h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;return (h>>>0)/4294967296;}
 function cave3N3(x,y,z,s){
   const ix=Math.floor(x),iy=Math.floor(y),iz=Math.floor(z),fx=x-ix,fy=y-iy,fz=z-iz;
   const ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy),uz=fz*fz*(3-2*fz);
-  const a=cave3H3(ix,iy,iz,s),b=cave3H3(ix+1,iy,iz,s),c=cave3H3(ix,iy+1,iz,s),d=cave3H3(ix+1,iy+1,iz,s);
-  const e=cave3H3(ix,iy,iz+1,s),f=cave3H3(ix+1,iy,iz+1,s),g=cave3H3(ix,iy+1,iz+1,s),h=cave3H3(ix+1,iy+1,iz+1,s);
+  const x0=Math.imul(ix|0,374761393),x1=(x0+374761393)|0,y0=Math.imul(iy|0,668265263),y1=(y0+668265263)|0,
+    z0=Math.imul(iz|0,1440662683)^Math.imul(s|0,1274126177),z1=((Math.imul(iz|0,1440662683)+1440662683)|0)^Math.imul(s|0,1274126177);
+  const a=cave3Hq(x0^y0^z0),b=cave3Hq(x1^y0^z0),c=cave3Hq(x0^y1^z0),d=cave3Hq(x1^y1^z0);
+  const e=cave3Hq(x0^y0^z1),f=cave3Hq(x1^y0^z1),g=cave3Hq(x0^y1^z1),h=cave3Hq(x1^y1^z1);
   const k0=a+(b-a)*ux,k1=c+(d-c)*ux,k2=e+(f-e)*ux,k3=g+(h-g)*ux,m0=k0+(k1-k0)*uy,m1=k2+(k3-k2)*uy;
   return (m0+(m1-m0)*uz)*2-1;
 }

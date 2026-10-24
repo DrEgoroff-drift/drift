@@ -81,34 +81,57 @@ function dig3Land(F,X,Z){
 }
 /* пустота в плоскости разреза: < 0 — комната; DIG3_VZ[0] — её глубина вглубь, м */
 const DIG3_VZ=new Float32Array(1);
-function dig3Void(F,X,Y){
-  const CM=DIG3_CM,R=DIG3_ROOM,c0=Math.floor(X/CM),r0=Math.floor(-Y/CM);
-  let d=9,hw=0;
-  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
-    const c=c0+dc,r=r0+dr;
+/* комнаты клеток — раз на поле (F.g), а не в каждой точке: dig3Void собирала их из соседей заново и звала
+   dig3Dug до миллиона раз на кусок (24.10, телефон — 8 мс кадра на куски). Числа те же до бита: центр,
+   полуразмер без скругления и радиус посчитаны теми же выражениями */
+function dig3Rooms(F){
+  const CM=DIG3_CM,R=DIG3_ROOM,NC=F.NC,NR=F.NR,H=MINE_HALF,A=new Float64Array(NC*NR*5),ok=new Uint8Array(NC*NR),hl=new Uint8Array(NC*NR);
+  for(let r=0;r<NR;r++)for(let c=-H;c<=H;c++){
     if(!dig3Dug(F,c,r))continue;
-    const h=dig3Hall(F,c,r),w=h?R.wide:0,hc=CM*.5;
+    const q=r*NC+c+H,h=dig3Hall(F,c,r),w=h?R.wide:0,hc=CM*.5;
     const x0=c*CM-(dig3Dug(F,c-1,r)?hc:R.e+w),x1=(c+1)*CM+(dig3Dug(F,c+1,r)?hc:R.e+w);
     const y1=-r*CM+(dig3Dug(F,c,r-1)?hc:R.e),y0=-(r+1)*CM-(dig3Dug(F,c,r+1)?hc:0);
     const rr=R.r*(.75+.5*dig3Hash(c,r)),hx=(x1-x0)/2,hy=(y1-y0)/2;
-    const qx=Math.abs(X-(x0+x1)/2)-(hx-rr),qy=Math.abs(Y-(y0+y1)/2)-(hy-rr);
-    const s=Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-rr;
-    d=d>8?s:dig3Smin(d,s,R.k);
-    if(h)hw=Math.max(hw,1-plnSmooth(-.4,1.2,s));
+    A[q*5]=(x0+x1)/2;A[q*5+1]=(y0+y1)/2;A[q*5+2]=hx-rr;A[q*5+3]=hy-rr;A[q*5+4]=rr;ok[q]=1;hl[q]=h?1:0;
+  }
+  return F.rm={g:F.g,A,ok,hl,r:R.r,e:R.e,w:R.wide};
+}
+function dig3Void(F,X,Y){
+  const CM=DIG3_CM,R=DIG3_ROOM,c0=Math.floor(X/CM),r0=Math.floor(-Y/CM);
+  let M=F.rm;if(!M||M.g!==F.g||M.r!==R.r||M.e!==R.e||M.w!==R.wide)M=dig3Rooms(F);
+  const A=M.A,ok=M.ok,NC=F.NC,NR=F.NR,H=MINE_HALF;
+  let d=9,hw=0;
+  for(let dr=-1;dr<=1;dr++){
+    const r=r0+dr;if(r<0||r>=NR)continue;
+    for(let dc=-1;dc<=1;dc++){
+      const c=c0+dc;if(c<-H||c>H)continue;
+      const q=r*NC+c+H;if(!ok[q])continue;
+      const o=q*5,rr=A[o+4],qx=Math.abs(X-A[o])-A[o+2],qy=Math.abs(Y-A[o+1])-A[o+3];
+      const s=Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-rr;
+      d=d>8?s:dig3Smin(d,s,R.k);
+      if(M.hl[q])hw=Math.max(hw,1-plnSmooth(-.4,1.2,s));
+    }
   }
   DIG3_VZ[0]=lerp(R.zd,R.hall,hw);
   return d;
 }
 /* плотность, м: > 0 — камень */
 function dig3Den(F,X,Y,Z){
-  const g=dig3Land(F,X,Z)-Y;
+  const L=dig3Land(F,X,Z);
+  if(L-Y<-2.5)return L-Y;
+  const v=dig3Void(F,X,Y);
+  return dig3DenQ(F,X,Y,Z,L,v,DIG3_VZ[0]);
+}
+/* та же плотность из готовых столбцов: L — земля в (X,Z), v и zd — пустота в (X,Y) и её глубина. Земля не зависит
+   от высоты, пустота — от глубины: кусок берёт их раз на столбец, а не в каждой точке решётки (24.10) */
+function dig3DenQ(F,X,Y,Z,L,v,zd){
+  const g=L-Y;
   if(g<-2.5)return g;
   let d=g;
-  const v=dig3Void(F,X,Y);
   if(v<4){
     /* свод: кровля сходит в заднюю стену дугой (радиус до 1 м), почва — почти прямым углом;
        стык круглым скруглением, радиус по высоте в клетке */
-    const zd=DIG3_VZ[0],fr=-Y/DIG3_CM-Math.floor(-Y/DIG3_CM),rr=lerp(1,.22,plnSmooth(.25,.75,fr));
+    const fr=-Y/DIG3_CM-Math.floor(-Y/DIG3_CM),rr=lerp(1,.22,plnSmooth(.25,.75,fr));
     const ux=Math.max(rr+v,0),uz=Math.max(rr+Z-zd,0);
     d=Math.min(d,Math.min(-rr,Math.max(v,Z-zd))+Math.hypot(ux,uz));
   }
@@ -229,6 +252,14 @@ function* dig3ChunkGen(F,ci,cj){
   const nk=F.nk=dig3Nodes(F,X0-v,X0+s,Y0-v,Y0+s);   /* после остановки — снова свои: поле общее */
   const zmax=zs>0?zs:v*2,NK=Math.max(3,Math.ceil(zmax/v)+2);
   const zk=k=>(k-.5)*v,sJ=NI,sK=NI*NJ,V=new Float32Array(NI*NJ*NK).fill(NaN);
+  /* столбцы: земля по (i,k), пустота и её глубина по (i,j) — по первому спросу, числа те же, что у dig3Den */
+  const LA=new Float64Array(NI*NK).fill(NaN),VA=new Float64Array(NI*NJ).fill(NaN),ZA=new Float64Array(NI*NJ);
+  const den=(i,j,k,X,Y,Z)=>{
+    const a=i+NI*k;let L=LA[a];if(L!==L)L=LA[a]=dig3Land(F,X,Z);
+    if(L-Y<-2.5)return L-Y;
+    const b=i+NI*j;let w=VA[b];if(w!==w){w=VA[b]=dig3Void(F,X,Y);ZA[b]=DIG3_VZ[0];}
+    return dig3DenQ(F,X,Y,Z,L,w,ZA[b]);
+  };
   /* блоки 4×4×4: далёкий от грани блок — одним числом */
   const BI=Math.ceil((NI-1)/4),BJ=BI,BK=Math.ceil((NK-2)/4);
   for(let bk=0;bk<BK;bk++)for(let bj=0;bj<BJ;bj++)for(let bi=0;bi<BI;bi++){
@@ -238,7 +269,7 @@ function* dig3ChunkGen(F,ci,cj){
     const fill=far(d)&&far(dig3Den(F,cxm,cym,zk(k0)))&&far(dig3Den(F,cxm,cym,zk(k1)));
     for(let k=k0;k<=k1;k++){const z=zk(k);for(let j=j0;j<=j1;j++){
       let n=i0+sJ*j+sK*k;const y=py(j);
-      for(let i=i0;i<=i1;i++,n++)if(V[n]!==V[n])V[n]=fill?d:dig3Den(F,px(i),y,z);}}
+      for(let i=i0;i<=i1;i++,n++)if(V[n]!==V[n])V[n]=fill?d:den(i,j,k,px(i),y,z);}}
     if(bi===BI-1){yield;F.nk=nk;}
   }
   /* слой перед разрезом — воздух: грань между ним и первым слоем — лист разреза */
