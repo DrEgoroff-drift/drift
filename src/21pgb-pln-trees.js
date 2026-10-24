@@ -73,7 +73,7 @@ function plnTreeLimb(m,a,b,c,r0,r1,sub,w0,w1,col){
 /* Зонт — главная порода этого мира: толстая нога, развилка, ваза ветвей и крона в три яруса шапок
    с тенью между ними. Кости идут в том же порядке, что на стенде: дерево над площадкой — то самое.
    o.fork — где развилка (доля роста): высокая нога с малой вазой — пиния, низкая — шатёр */
-function plnTreeUmb(r,H,R,sub,rich,o){
+function* plnTreeUmbG(r,H,R,sub,rich,o){
   o=o||{};
   const m=plnMesh(4096),k=H/9,thin=o.thin||1,fine=sub>1;
   const lean=o.lean==null?(r()-.5)*.5:o.lean,bend=o.bend==null?(r()-.5)*1.2:o.bend;
@@ -87,7 +87,7 @@ function plnTreeUmb(r,H,R,sub,rich,o){
   /* ярус: его высота, радиус кольца, радиус шапок и сколько их */
   const tiers=rich?[[.71,.64,.38,6],[.835,.33,.37,4],[.95,0,.33,1]]
     :[[.72,.60,.42,4+(r()*2|0)],[.85,.27,.40,2+(r()*2|0)],[.96,0,.33,1]];
-  tiers.forEach(([th,tr,tp,tn],ti)=>{
+  for(let ti=0;ti<tiers.length;ti++){const [th,tr,tp,tn]=tiers[ti];
     const a0=r()*TAU;
     for(let b=0;b<tn;b++){
       const ang=a0+b/tn*TAU+(r()-.5)*.5,rr=R*tr*(.85+r()*.3);
@@ -102,15 +102,16 @@ function plnTreeUmb(r,H,R,sub,rich,o){
         plnFloraCap(m,[cx+Math.cos(a2)*r2,e[1]-pr*(.1+r()*.15),Math.sin(a2)*r2*.9],sr,sr*.45,
           {sub:Math.max(1,sub-1),seed:b*5+3,yaw:r()*TAU,col:leaf,wind:wnd,nc,ncK:.35});
       }
+      yield;
     }
-  });
+  }
   return m;
 }
 
 /* Свеча: узкое веретено из тесной стопки шапок; ствол виден только у земли. Вертикаль против
    лежачих планов дальнего берега. Шапки лежат одна на другой со сдвигом в стороны: обвод в зубцах,
    между ярусами — полоска тени, а верх каждого на свету. Нижние темнее: верхние держат их в тени */
-function plnTreeCol(r,H,R,sub,rich,o){
+function* plnTreeColG(r,H,R,sub,rich,o){
   o=o||{};
   const m=plnMesh(4096),k=H/9,lean=o.lean==null?(r()-.5)*.4:o.lean,bend=o.bend==null?(r()-.5)*.7:o.bend;
   const top=H*.93,ax=plnTreeAxis(H,top,lean,bend),n=rich?13:11,y0=H*(o.skirt||(.15+r()*.07)),a0=r()*TAU,wide=o.wide||.27;
@@ -130,13 +131,14 @@ function plnTreeCol(r,H,R,sub,rich,o){
       plnFloraCap(m,[c[0]-Math.cos(ang)*rho*.42,y-rho*(.12+r()*.1),c[2]-Math.sin(ang)*rho*.38],p2,p2*.42,
         {sub:Math.max(1,sub-1),seed:i*23+5,yaw:r()*TAU,lean:(r()-.5)*.2,col:leaf,wind:w,nc,ncK:.4});
     }
+    yield;
   }
   return m;
 }
 
 /* Ярусы: прямой ствол и плоские блюда кроны с воздухом между ними, кверху меньше.
    o.hs — высоты блюд (доли роста), o.taper — во сколько раз верхнее блюдо меньше нижнего */
-function plnTreePag(r,H,R,sub,rich,o){
+function* plnTreePagG(r,H,R,sub,rich,o){
   o=o||{};
   const m=plnMesh(4096),k=H/9,lean=o.lean==null?(r()-.5)*.3:o.lean,bend=o.bend==null?(r()-.5)*.6:o.bend;
   const top=H*.95,ax=plnTreeAxis(H,top,lean,bend),hs=o.hs||(rich?[.30,.47,.62,.76,.88]:[.34,.54,.71,.86]),n=hs.length,taper=o.taper||.4;
@@ -155,6 +157,7 @@ function plnTreePag(r,H,R,sub,rich,o){
         plnTreeLimb(m,f,[lerp(f[0],e[0],.5),lerp(f[1],e[1],.85),lerp(f[2],e[2],.5)],[e[0],e[1]-ph*.1,e[2]],.1*k,.03*k,sub,wt,wt+.06*k);
       }
       plnFloraCap(m,e,pr,ph,{sub,seed:i*29+b*7+(r()*99|0),yaw:r()*TAU,lean:(r()-.5)*.14,col:leaf,wind:w,nc,ncK:.4});
+      yield;
     }
   }
   const tp=ax(top);
@@ -236,4 +239,11 @@ function plnTreeSnag(r,H,R,sub){
   }
   return m;
 }
+/* шагами (24.10, телефон): зонт, свеча и ярусы — генераторы, шаг — ветвь или шапка. Набор флоры (21pg) берёт их по
+   шагу в простое; кому нужно дерево сразу — целиком через plnRunG. Порядок и кости те же — сетка та же */
+function plnRunG(it){let r;while(!(r=it.next()).done);return r.value;}
+function plnTreeUmb(r,H,R,sub,rich,o){return plnRunG(plnTreeUmbG(r,H,R,sub,rich,o));}
+function plnTreeCol(r,H,R,sub,rich,o){return plnRunG(plnTreeColG(r,H,R,sub,rich,o));}
+function plnTreePag(r,H,R,sub,rich,o){return plnRunG(plnTreePagG(r,H,R,sub,rich,o));}
+const PLN_TREE_GEN={umb:plnTreeUmbG,col:plnTreeColG,pag:plnTreePagG};
 const PLN_TREE_MAKE={umb:plnTreeUmb,col:plnTreeCol,pag:plnTreePag,orb:plnTreeOrb,fork:plnTreeFork,snag:plnTreeSnag};

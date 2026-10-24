@@ -190,14 +190,17 @@ function plnWingCaps(r,o){
 }
 
 /* набор кулисы: тела парами по семье (вайи, листья, трава, зонтики) и высота макушки каждого над нулём */
-function plnWingKit(geo){
+/* по телу на шаг набора (24.10, телефон): кулиса целиком стоила до 5 мс на ПК одним шагом; тела независимы —
+   у каждого своё зерно, сетки те же */
+function plnWingParts(geo){
   const mk=m=>{
     let top=-1e9;
     for(let k=0;k<m.nv;k++)top=Math.max(top,m.v[k*PLN_VS+1]);
     return {geo:geo(m),top};
   };
-  return [mk(plnWingFern(rng(7471),{n:10,curl:2})),mk(plnWingFern(rng(7472),{n:8,lean:.5,len:1.1,curl:1,flip:1})),
-    mk(plnWingLeaves(rng(7473),{n:7})),mk(plnWingLeaves(rng(7474),{n:5,len:1.15,flip:1})),
-    mk(plnWingGrass(rng(7475),{n:18,plume:4})),mk(plnWingGrass(rng(7476),{n:12,plume:2})),
-    mk(plnWingCaps(rng(7477),{n:6})),mk(plnWingCaps(rng(7478),{n:4}))];
+  return [()=>mk(plnWingFern(rng(7471),{n:10,curl:2})),()=>mk(plnWingFern(rng(7472),{n:8,lean:.5,len:1.1,curl:1,flip:1})),
+    ()=>mk(plnWingLeaves(rng(7473),{n:7})),()=>mk(plnWingLeaves(rng(7474),{n:5,len:1.15,flip:1})),
+    ()=>mk(plnWingGrass(rng(7475),{n:18,plume:4})),()=>mk(plnWingGrass(rng(7476),{n:12,plume:2})),
+    ()=>mk(plnWingCaps(rng(7477),{n:6})),()=>mk(plnWingCaps(rng(7478),{n:4}))];
 }
+function plnWingKit(geo){return plnWingParts(geo).map(f=>f());}

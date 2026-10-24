@@ -170,6 +170,12 @@ function plnFloraKitJob(){
     const r=rng(seed),T=PLN_TREES[sp],R=H*(rh||(T.R[0]+r()*T.R[1]));
     return {geo:geo(PLN_TREE_MAKE[sp](r,H,R,sub,rich,o)),R,sp};
   };
+  /* то же шагами: порода с генератором (21pgb) отдаёт ветвь или шапку за шаг */
+  const treeG=function*(sp,seed,sub,rich,o,rh){
+    const r=rng(seed),T=PLN_TREES[sp],R=H*(rh||(T.R[0]+r()*T.R[1])),G=PLN_TREE_GEN[sp];
+    let m;if(G)m=yield* G(r,H,R,sub,rich,o);else m=PLN_TREE_MAKE[sp](r,H,R,sub,rich,o);
+    return {geo:geo(m),R,sp};
+  };
   const add=(list,map,key,t)=>{(map[key]=map[key]||[]).push(list.length);list.push(t);};
   S.push(()=>{K.tuft=[0,1,2,3,4,5].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7100+k),{rings:3,w0:.09*W,w1:.06*W,off:.4*W/Q.foot,lean:1.1,wk:.3})));});
   S.push(()=>{K.reed=[0,1,2].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7150+k),{rings:4,w0:.07,w1:.04,off:.17,lean:1.2,wk:.25})));
@@ -209,8 +215,8 @@ function plnFloraKitJob(){
     K.pad=[0,1,2].map(k=>geo(plnFloraPad(plnMesh(32),rng(7550+k))));});
   /* деревья (породы — 21pgb). K.tree и K.far — тела подряд, K.sp и K.spFar — какие из них чьей
      породы. «hero» — зонт, что клонится над площадкой: он один и в рощах не растёт */
-  S.push(()=>{K.tree=[];K.sp={};K.far=[];K.spFar={};add(K.tree,K.sp,"hero",tree("umb",7401,3,true,{lean:-.95,bend:-1.7,thin:.74},.54));});
-  const T1=(sp,q)=>S.push(()=>add(K.tree,K.sp,sp,tree(sp,q[0],2,q[1],q[2],q[3])));
+  S.push(function*(){K.tree=[];K.sp={};K.far=[];K.spFar={};add(K.tree,K.sp,"hero",yield* treeG("umb",7401,3,true,{lean:-.95,bend:-1.7,thin:.74},.54));});
+  const T1=(sp,q)=>S.push(function*(){add(K.tree,K.sp,sp,yield* treeG(sp,q[0],2,q[1],q[2],q[3]));});
   [[7411,false],[7413,true],[7414,false,{lean:.55,bend:1.1,thin:.8}],[7415,false,{fork:.62,thin:.8,lean:-.3},.4],[7416,true,{fork:.27,lean:.25,bend:.6}]]
     .forEach(q=>T1("umb",q));
   [[7421,false],[7422,true,{thin:.85,wide:.4}],[7423,false,{lean:.5,skirt:.26}]].forEach(q=>T1("col",q));
@@ -223,18 +229,27 @@ function plnFloraKitJob(){
     if(PLN_TREES[sp].far>0)for(let k=0;k<2;k++)S.push(()=>add(K.far,K.spFar,sp,tree(sp,7600+i*10+k,1,false)));
   });
   /* кулиса: свои тела, узнаваемые по одной макушке (21pgc) */
-  S.push(()=>{K.wing=plnWingKit(geo);});
+  S.push(()=>{K.wing=[];});for(const f of plnWingParts(geo))S.push(()=>{K.wing.push(f());});
   return J;
 }
-/* один шаг набора; true — осталось ещё. Устройство — до первой геометрии: поколение берётся с него */
-function plnFloraKitStep(){
+/* один шаг набора; true — осталось ещё. Устройство — до первой геометрии: поколение берётся с него.
+   Шаг-генератор (порода шагами, 21pgb) идёт по ветви или шапке за раз. ms — бюджет вызова: шаги берутся, пока
+   следующий (по длине прошлого) в него влезает; без ms — один шаг (24.10, телефон) */
+function plnFloraKitStep(ms){
   const Q=PLN_FLORA;
   if(Q.kit&&Q.gen===PLN_GPU.gen)return false;
   if(!GPU.ok||!GPU.dev)return false;
   plnGpuDev();
   let J=Q.job;if(!J||J.gen!==PLN_GPU.gen)J=Q.job=plnFloraKitJob();
-  const t0=wallMs();J.steps[J.i++]();J.ms+=wallMs()-t0;
-  if(J.i<J.steps.length)return true;
+  const t0=wallMs();let t=t0;
+  for(;;){
+    if(J.it){if(J.it.next().done){J.it=null;J.i++;}}
+    else{const r=J.steps[J.i]();if(r&&r.next)J.it=r;else J.i++;}
+    const t1=wallMs();
+    if(J.i>=J.steps.length){J.ms+=t1-t0;break;}
+    if(!ms||t1-t0+(t1-t)>=ms){J.ms+=t1-t0;return true;}
+    t=t1;
+  }
   Q.gen=PLN_GPU.gen;Q.kit=J.K;Q.job=null;
   PLN.stat.kit={ms:Math.round(J.ms),verts:J.nv};
   return false;
@@ -245,9 +260,11 @@ function plnFloraKit(){
   while(plnFloraKitStep());
   return Q.kit;
 }
-/* из кадра системы, раз в восемь кадров: набор планеты готов к первой посадке (steps ~3 мс) */
-let PLN_KIT_N=0;
+/* из кадра системы, раз в четыре кадра, до PLN_KIT_MS: набор планеты готов к первой посадке. Был целый шаг раз в
+   восемь кадров — зонт у площадки 4 мс на ПК, свечи и кулиса по 2–5: на S23 кадры по 10–12 мс первые секунды полёта
+   (тестер, раунд 18) */
+let PLN_KIT_N=0;const PLN_KIT_MS=2;
 function plnKitTick(){
-  if((++PLN_KIT_N&7)!==0)return;
-  try{plnFloraKitStep();}catch(e){PLN_FLORA.job=null;console.error("набор флоры заранее",e);}
+  if((++PLN_KIT_N&3)!==0)return;
+  try{plnFloraKitStep(PLN_KIT_MS);}catch(e){PLN_FLORA.job=null;console.error("набор флоры заранее",e);}
 }
