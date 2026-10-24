@@ -48,8 +48,10 @@ function gnbStars(pass,ub,sb){
   pass.draw(6,GSP.nStars*4);
 }
 /* V[0]: камера x,y, время, зерно · V[1]: звезда x,y, радиус/H, вкл · V[2]: цвет звезды, ширина тени ·
-   V[3]: цвет теней · V[4..10]: планеты x,y,r (CSS px) — их тени */
-const GNB_EMI=GNB_FINE+GNB_FGAL+`
+   V[3]: цвет теней · V[4..10]: планеты x,y,r (CSS px) — их тени.
+   Тело сведения — GNB_EMI_CORE; конец (emiOut) — свой у полного прохода (газ + галактики сразу) и у
+   половинного (газ в цвет, вес галактик в альфу: их рисует подъём GNB_UP в полном разрешении) */
+const GNB_EMI_CORE=`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let H=fu.res.w;
   /* одна бикубика на пиксель: цвет, туман и цвет космоса читают её (было три — 12 выборок) */
@@ -134,7 +136,51 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
    let cq=.1*(1.-exp(-cy/.1));
    co=co*mix(1.,cq/max(cy,1e-4),hw);cy=dot(co,vec3f(.2126,.7152,.0722));}
   /* далёкие галактики — за газом: густой газ их закрывает, пыль гасит, как космос */
-  return vec4f(mix(vec3f(cy),co,.66)*mix(1.,.72,smoothstep(.12,.6,cy))+(vec3f(5.,7.,12.)/255.)*Tb+fgal(p)*(1.-.8*body)*mix(.4,1.,Tb.g),0.);}`;
+  return emiOut(mix(vec3f(cy),co,.66)*mix(1.,.72,smoothstep(.12,.6,cy))+(vec3f(5.,7.,12.)/255.)*Tb,(1.-.8*body)*mix(.4,1.,Tb.g),p);}`;
+const GNB_EMI=GNB_FINE+GNB_FGAL+GNB_EMI_CORE+`
+fn emiOut(c:vec3f,w:f32,p:vec2f)->vec4f{return vec4f(c+fgal(p)*w,0.);}`;
+/* сведение вполовину (24.10, телефон): на ×2 полный проход стоил 6.5–10.5 мс при 295 МГц — газ, пыль, волокна и
+   тени планет гладкие на шаге в два пикселя кадра (самая мелкая деталь, волокна fineE, — ~40 px на 1484), их
+   считает цель .5 кадра (не мельче пикселя CSS), подъём — Catmull-Rom (на гладком не мылит, как билинейный).
+   Резкое — далёкие галактики (точки в несколько пикселей) — считает подъём в полном разрешении */
+const GNB_EMI_H=GNB_FINE+GNB_EMI_CORE+`
+fn emiOut(c:vec3f,w:f32,p:vec2f)->vec4f{return vec4f(c,w);}`;
+const GNB_UP=GNB_NOISE+GNB_FGAL+`
+fn crs(j:vec2f)->vec4f{
+  let ts=vec2f(textureDimensions(t0));let c=floor(j-.5)+.5;let f=j-c;
+  let w0=f*(-.5+f*(1.-.5*f));let w1=1.+f*f*(-2.5+1.5*f);let w2=f*(.5+f*(2.-1.5*f));let w3=f*f*(-.5+.5*f);
+  let w12=w1+w2;let o0=(c-1.)/ts;let o3=(c+2.)/ts;let o12=(c+w2/w12)/ts;
+  return (textureSampleLevel(t0,smp,vec2f(o0.x,o0.y),0.)*w0.x+textureSampleLevel(t0,smp,vec2f(o12.x,o0.y),0.)*w12.x+textureSampleLevel(t0,smp,vec2f(o3.x,o0.y),0.)*w3.x)*w0.y
+        +(textureSampleLevel(t0,smp,vec2f(o0.x,o12.y),0.)*w0.x+textureSampleLevel(t0,smp,vec2f(o12.x,o12.y),0.)*w12.x+textureSampleLevel(t0,smp,vec2f(o3.x,o12.y),0.)*w3.x)*w12.y
+        +(textureSampleLevel(t0,smp,vec2f(o0.x,o3.y),0.)*w0.x+textureSampleLevel(t0,smp,vec2f(o12.x,o3.y),0.)*w12.x+textureSampleLevel(t0,smp,vec2f(o3.x,o3.y),0.)*w3.x)*w3.y;}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  var h:vec4f;
+  if(fu.v[2].x>.5){h=crs(uv*vec2f(textureDimensions(t0)));}else{h=textureSampleLevel(t0,smp,uv,0.);}
+  return vec4f(max(h.rgb,vec3f(0.))+fgal(p)*clamp(h.a,0.,1.),0.);}`;
+/* форма подъёма (GNB.CU): v[0..1] — как у сведения (их читает fgal: камера, зерно, звезда), v[2].x — подъём
+   Catmull-Rom (1) или билинейный (0) */
+/* цель половинного сведения: доля кадра GNB_HS, но не мельче пикселя CSS; кадр и так не крупнее CSS (Чёткость ×1) —
+   null, сведение идёт полным проходом. GPU.kill.nhalf — полный проход всегда (проба, сравнение) */
+const GNB_HS=.5;
+function gnbHalfTarget(){
+  const s=Math.min(1,Math.max(GNB_HS,W/Math.max(1,GPU.bw)));
+  if(s>.99||GPU.kill.nhalf)return null;
+  const w=Math.max(2,Math.ceil(GPU.bw*s)),h=Math.max(2,Math.ceil(GPU.bh*s)),T=GNB.hf;
+  if(T&&T.dev===GPU.dev&&T.w===w&&T.h===h)return T;
+  if(T&&T.dev===GPU.dev)GPU.trash.push(T.tex);
+  const tex=GPU.dev.createTexture({size:[w,h],format:"rgba16float",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.RENDER_ATTACHMENT});
+  return GNB.hf={tex,view:tex.createView(),w,h,dev:GPU.dev};
+}
+/* тело сведения — своим проходом до прохода сцены (формы GNB.C этого кадра уже записаны); GNB.hon — подъём
+   в проходе сцены возьмёт его */
+function gnbEmiHalf(){
+  GNB.hon=false;
+  const T=gnbHalfTarget();if(!T||!GNB.view)return;
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:T.view,loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}],
+    timestampWrites:gpuTs("nebHalf")});
+  gpuField(p,"gnb.emih",GNB_EMI_H,GNB.C,[{view:GNB.view},{view:gnbNoiseTile()},{view:GNB.F.va},{view:GNB.F.vb}],{blend:"bake"});
+  p.end();GNB.hon=true;
+}
 function gnbTarget(){
   const w=Math.max(2,Math.ceil(GPU.bw/4)),h=Math.max(2,Math.ceil(GPU.bh/4));
   if(GNB.tex&&GNB.dev===GPU.dev&&GNB.w===w&&GNB.h===h)return;
@@ -219,7 +265,7 @@ function gnbStar(sys,ox,oy,R){
    пикселях CSS (cx0*Z), st — gnbStar */
 function gpuNebulaGen(sys,camx,camy,st,Z){
   if(!GPU.on||!GPU.enc||GPU.scenePass||GPU.overPass)return false;
-  gnbTarget();
+  gnbTarget();GNB.hon=false;
   const st2=sysStyle(sys),pl=gnbPalette(sys);
   /* сведению — камера, звезда и тень каждый кадр, даже без пересчёта объёма */
   const c=GNB.C;c[0]=camx;c[1]=camy;c[2]=(G.t||0)*.0004;c[3]=(st2.nseed%997)*.013;
@@ -255,7 +301,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   /* пересчёт объёма — полосой за кадр в запасную цель, видимую собирает сдвиг двух готовых (16gc). Сразу и целиком —
      при смене системы, размера и когда камера ушла за поле запаса. GPU.kill.ngen (?g11=deep): без пересчёта */
   const sync=gnbGenNeed(sys,camx,camy);
-  if(!sync&&GPU.kill.ngen){gnbResolve(camx,camy);return true;}
+  if(!sync&&GPU.kill.ngen){gnbResolve(camx,camy);gnbEmiHalf();return true;}
   const U=GPUBufferUsage,ub=gpuBuf("gnb.u",192,U.UNIFORM|U.COPY_DST);
   /* форма цикла пишется раз, в его начале: все полосы — с одной камерой и одним временем */
   gnbCamVel(sys,camx,camy,c[2]);
@@ -283,7 +329,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   a[43]=lp[4];for(let k=0;k<4;k++)a[44+k]=lp[k];
   GPU.dev.queue.writeBuffer(ub,0,a);}
   gnbGenSlice(sync,camx,camy,ub);
-  GNB.sys=sys;gnbResolve(camx,camy);
+  GNB.sys=sys;gnbResolve(camx,camy);gnbEmiHalf();
   return true;
 }
 /* возвращает проход сцены, в который рисовать дальше: под меткой времени (проба) сведение
@@ -293,7 +339,10 @@ function gpuNebulaComp(pass){
   const ts=gpuTs("nebComp");let p=pass;
   if(ts){pass.end();GPU.scenePass=null;p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:ts});}
   /* пыль уже погасила и покраснила звёзды (gnbStars); газ светит поверх */
-  gpuField(p,"gnb.emi",GNB_EMI,GNB.C,[{view:GNB.view},{view:gnbNoiseTile()},{view:GNB.F.va},{view:GNB.F.vb}],{blend:"add"});
+  if(GNB.hon&&GNB.hf&&GNB.hf.dev===GPU.dev){
+    const u=GNB.CU||(GNB.CU=new Float32Array(12));u.set(GNB.C.subarray(0,8));u[8]=GPU.kill.nhcr?0:1;
+    gpuField(p,"gnb.up",GNB_UP,u,[{view:GNB.hf.view}],{blend:"add"});}
+  else gpuField(p,"gnb.emi",GNB_EMI,GNB.C,[{view:GNB.view},{view:gnbNoiseTile()},{view:GNB.F.va},{view:GNB.F.vb}],{blend:"add"});
   /* корпуса на ярком газе — силуэтами: общий проход темнит газ вокруг 2D (08b) */
   GPU.sep=.7;
   if(ts){p.end();return gpuScene();}
