@@ -18,8 +18,11 @@ TEST_SUITES.push(()=>suite("корпуса в объёме: глубина, по
   try{
     for(let i=0;i<3*GNB_N;i++)frame(true);
     ok(!!H3D.Pz,"конвейер глубины корпусов заведён");
-    const a=frame(false,true),a2=frame(false,true),b=frame(true,true);
-    eq(diff(a,a2),0,"кадр прежним путём повторяется");
+    /* сцена досыпает шагами (мастера бортов, сетки — по одной в кадр): сравнивать, когда кадр устоялся */
+    let a=frame(false,true),a2=frame(false,true),k=0;
+    for(;k<40&&diff(a,a2)>0;k++){a=a2;a2=frame(false,true);}
+    eq(diff(a,a2),0,"кадр прежним путём повторяется (устоялся за "+k+" кадров)");
+    const b=frame(true,true);
     const nb=diff(a2,b);
     ok(nb<=8,"кадр двумя проходами тот же, что одним ("+nb+" точек расходятся)");
   }finally{H3D.z=z0;GPU.wantSnap=false;G.t=t0;G.pirates=[];}
