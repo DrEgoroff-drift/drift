@@ -331,7 +331,7 @@ function rackFit(font,s,mw){
 function rackBottom(on){
   const g=on?rackGeo():null,rb=g&&g.mode==="shelf"?Math.round((g.y+g.h)*RACK_K):0;
   if(RACK.rb===rb)return;RACK.rb=rb;
-  document.documentElement.style.setProperty("--rackbot",rb+"px");
+  hudVar("--rackbot",rb+"px");
   document.body.classList.toggle("rackon",rb>0);
 }
 /* до мира: место плашки (печь, раскладка) и её рамка — препятствие табличкам (08bj hangBlock) и запрет

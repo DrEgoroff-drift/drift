@@ -33,8 +33,8 @@ let HUD_FLOOR=0, HUD_RAIL=0, HUD_RAILTOP=0;   /* верх правого бор�
    встаёт строка сообщения. HUD_LKEY — режим, классы тела и подписи ряда: при их смене полосы
    меряются заново */
 let HUD_MAPBAR=-1, HUD_LKEY="", HUD_MAPROW="";
-/* --mapbar двигает только строку сообщения (#msg), а запись в корень пересчитывает стиль всей страницы: посреди
-   hud её оплачивало первое же чтение (стили ряда пэдов, S23 4,5 мс в кадре прилёта) — она ждёт конца кадра hud */
+/* --mapbar двигает только строку сообщения (#msg) и лежит на ней (08a1); пока писалась в корень, посреди hud её
+   оплачивало первое же чтение (стили ряда пэдов, S23 4,5 мс в кадре прилёта) — она по-прежнему ждёт конца кадра hud */
 let HUD_MAPBAR_W=false;
 /* ── строка сообщения на карте (зрение 06.10.2026) ──
    По центру под верхом карты (--mapbar), пока под ней свободно. На низком окне до пульта места нет
@@ -189,12 +189,13 @@ let HUD_PRE=false;
    прилёта на S23 платил три таких подряд (getBoundingClientRect 11,5 мс на кадр, тестер, раунд 13). Теперь
    сначала все рамки, потом все записи, а второй заход чтений — только если запись что-то сдвинула: полоса
    двигает борт, классы пульта — пульт и подсказку, ширина борта — подсказку. Плашки сверху от этих записей
-   не зависят: их рамки из первого захода отдаются обёртке пещеры (HUD_VL, 22d) */
+   не зависят: их рамки из первого захода отдаются обёртке пещеры (HUD_VL, 22d). С раунда 16 переменные лежат
+   на своих читателях (08a1): пересчёт после записи — только их поддеревья, порядок заходов остался */
 let HUD_VL=null;
 function hudFloorMeasure(force,keep){
    if(!force&&!LAYOUT_DIRTY)return;
    if(!keep)LAYOUT_DIRTY=false;
-   const RS=document.documentElement.style,con=document.getElementById("console"),rail=document.querySelector(".rail");
+   const con=document.getElementById("console"),rail=document.querySelector(".rail");
    /* Верхнюю полосу меряем тем же заходом: состав строк задаёт таблица
       стилей (body.afoot прячет топливо и корпус, узкий экран кладёт шкалы в ряд),
       и второй источник правды однажды с ней разойдётся — поэтому мерим DOM, а не
@@ -223,7 +224,7 @@ function hudFloorMeasure(force,keep){
    /* записи — разом */
    if(vr){
      const band=Math.max(vr.bottom,lr.bottom);
-     if(band>0){if(HUD_BAND!==Math.round(band)){RS.setProperty("--hudband",Math.round(band)+"px");moved=true;}HUD_BAND=Math.round(band);}
+     if(band>0){if(HUD_BAND!==Math.round(band)){hudVar("--hudband",Math.round(band)+"px");moved=true;}HUD_BAND=Math.round(band);}
    }
    if(con&&$padsEl){
      const u=(typeof UIK==="number"&&UIK>0)?UIK:1,gap=12*u,WW=viewW();
@@ -233,15 +234,15 @@ function hudFloorMeasure(force,keep){
      const xs=[16*u,lx];let x=-1;
      for(const c of xs)if(cw>0&&c+cw<WW/2+cw/2&&free(c,c+cw)){x=c;break;}
      const mid=x<0&&cw>0&&free((WW-cw)/2,(WW+cw)/2),B=document.body.classList;
-     if(x>=0){const v=Math.round(x/u)+"px";if(RS.getPropertyValue("--conx")!==v){RS.setProperty("--conx",v);moved=true;}}
+     if(x>=0){const v=Math.round(x/u)+"px";if(HUDV["--conx"]!==v){hudVar("--conx",v);moved=true;}}
      if(B.contains("conleft")!==(x>=0)){B.toggle("conleft",x>=0);moved=true;}
      if(B.contains("conlow")!==(x>=0||mid)){B.toggle("conlow",x>=0||mid);moved=true;}
    }
    let rw=Math.round(rl);
-   if(HUD_RAIL!==rw){RS.setProperty("--railw",Math.max(0,viewW()-rw)+"px");moved=true;}   /* ширина борта — для поля адреса (M347) */
+   if(HUD_RAIL!==rw){hudVar("--railw",Math.max(0,viewW()-rw)+"px");moved=true;}   /* ширина борта — для поля адреса (M347) */
    /* второй заход — по сдвинутому: борт мог уехать за полосой, его ширина пишется заново */
    if(moved){fl=floorOf();[rl,rt]=railOf();
-     if(Math.round(rl)!==rw){rw=Math.round(rl);RS.setProperty("--railw",Math.max(0,viewW()-rw)+"px");}}
+     if(Math.round(rl)!==rw){rw=Math.round(rl);hudVar("--railw",Math.max(0,viewW()-rw)+"px");}}
    HUD_FLOOR=Math.round(fl);HUD_RAIL=rw;HUD_RAILTOP=Math.round(rt);
 }
 /* колпачки клавиш на пэдах: [элемент, действие] — собраны раз, чтения DOM в кадре нет */
@@ -670,7 +671,7 @@ function hud(){
      счётчик груза (зрение 06.10.2026). Меряем последним делом кадра, когда классы уже стоят */
   const lk=G.mode+"|"+document.body.className+"|"+HUD_MAPROW;
   if(lk!==HUD_LKEY){HUD_LKEY=lk;rectsDirty();hudFloorMeasure(true);}
-  if(HUD_MAPBAR_W){HUD_MAPBAR_W=false;document.documentElement.style.setProperty("--mapbar",HUD_MAPBAR+"px");}
+  if(HUD_MAPBAR_W){HUD_MAPBAR_W=false;hudVar("--mapbar",HUD_MAPBAR+"px");}
 }
 
 /* ── кнопка маяка без лишних записей ──

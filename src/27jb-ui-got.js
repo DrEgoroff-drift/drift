@@ -20,7 +20,7 @@ function gotCalm(){
 }
 function gotEl(){
   if(GOT.el)return GOT.el;
-  const e=document.createElement("div");e.id="gotwin";
+  const e=document.createElement("div");e.id="gotwin";hudVarsOn(e);
   document.body.appendChild(e);
   return (GOT.el=e);
 }

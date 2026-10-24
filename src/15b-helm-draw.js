@@ -112,7 +112,7 @@ function helmLift(){
   if(lift!==HELM.lift){
     HELM.lift=lift;
     if(document.body&&document.body.style&&document.body.style.setProperty){
-      document.body.style.setProperty("--helmlift",lift+"px");
+      hudVar("--helmlift",lift+"px");   /* на подсказке, не на <body>: там она пересчитывала всю страницу (08a1) */
       document.body.classList.toggle("helmstick",foot.length>0);
     }
   }else if(document.body&&document.body.classList&&

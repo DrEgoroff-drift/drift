@@ -12,7 +12,7 @@ let wanSig="";
 function wanPanel(){
   let w=document.getElementById("wanwin");
   if(w)return w;
-  w=document.createElement("div");w.id="wanwin";w.className="wanwin";
+  w=document.createElement("div");w.id="wanwin";w.className="wanwin";hudVarsOn(w);
   w.innerHTML="<header><b id='wanTitle'>«СОРОКА»</b><s id='wanSub'></s></header>"+
     "<div class='card' id='wanCard'></div><div class='acts' id='wanActs'></div>";
   document.body.appendChild(w);

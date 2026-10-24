@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 660 · top-level symbols: 8859
+Files: 661 · top-level symbols: 8870
 
 ## SYMBOLS
 
@@ -37,7 +37,7 @@ $sn                          src/27z-telemetry.js:13
 $sos                         src/16c-rescue.js:547
 $st                          src/26-ui-station.js:2
 $un                          src/27z-telemetry.js:75
-$vShip                       src/27z-telemetry.js:248
+$vShip                       src/27z-telemetry.js:249
 $vc                          src/27z-telemetry.js:73
 $vf                          src/27z-telemetry.js:72
 $vitals                      src/27z-telemetry.js:68
@@ -83,7 +83,7 @@ APPETITE                     src/12ab-hold.js:26-33
 APPETITE_ADD                 src/12ab-hold.js:24
 ARC_JUMP                     src/13a-guns.js:39
 ARMED_CAP                    src/13-combat.js:12
-ARRW                         src/17h1-arr-warm.js:11
+ARRW                         src/17h1-arr-warm.js:12
 ARTIFACTS                    src/12h-relic.js:48-63
 ASTRO_BOX                    src/20fa-life-gpu.js:190
 ASTRO_PAL                    src/20fa-life-gpu.js:191
@@ -816,9 +816,9 @@ GLOW_TIERS                   src/11i-glow.js:80
 GLT_H                        src/08b-gpu.js:481
 GLW                          src/21piic-pln-glow.js:11
 GNB                          src/16gb-gpu-nebula.js:17
-GNB_EMI                      src/16gba-gpu-nebula-comp.js:140
+GNB_EMI                      src/16gba-gpu-nebula-comp.js:141
 GNB_EMI_CORE                 src/16gba-gpu-nebula-comp.js:54
-GNB_EMI_H                    src/16gba-gpu-nebula-comp.js:146
+GNB_EMI_H                    src/16gba-gpu-nebula-comp.js:147
 GNB_FAR                      src/16gay-gpu-nebula-look.js:60
 GNB_FARC                     src/16gay-gpu-nebula-look.js:99
 GNB_FARC_BAKE                src/16gbb-gpu-nebula-farc.js:14
@@ -827,19 +827,19 @@ GNB_FIL                      src/16gay-gpu-nebula-look.js:75
 GNB_FILC                     src/16gay-gpu-nebula-look.js:94
 GNB_FINE                     src/16gba-gpu-nebula-comp.js:7
 GNB_GEN                      src/16gb-gpu-nebula.js:50
-GNB_HS                       src/16gba-gpu-nebula-comp.js:164
+GNB_HS                       src/16gba-gpu-nebula-comp.js:165
 GNB_HTO                      src/16gay-gpu-nebula-look.js:24
-GNB_LM_COL                   src/16gba-gpu-nebula-comp.js:221
+GNB_LM_COL                   src/16gba-gpu-nebula-comp.js:222
 GNB_N                        src/16gb-gpu-nebula.js:49
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gba-gpu-nebula-comp.js:204-219
+GNB_PAL                      src/16gba-gpu-nebula-comp.js:205-220
 GNB_RES                      src/16gc-gpu-nebfade.js:16
 GNB_SS                       src/16gay-gpu-nebula-look.js:17
 GNB_STAR_ABS                 src/16gba-gpu-nebula-comp.js:29
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
 GNB_TONE                     src/16gay-gpu-nebula-look.js:47
-GNB_UP                       src/16gba-gpu-nebula-comp.js:148
+GNB_UP                       src/16gba-gpu-nebula-comp.js:149
 GNB_VOL                      src/16gay-gpu-nebula-look.js:136
 GNB_WC                       src/16gay-gpu-nebula-look.js:70
 GOR                          src/17gab-gpu-orb.js:11
@@ -951,17 +951,18 @@ GcGrad                       src/08ca-gpu-canvas.js:69-87
 GcPat                        src/08cab-gpu-pattern.js:11-14
 GcPath2D                     src/08caa-gpu-path.js:15-27
 H3D                          src/17c2a-hull3d.js:15
-H3D_ATL                      src/17c2a-hull3d.js:423
+H3D_ATL                      src/17c2a-hull3d.js:449
 H3D_CARGO                    src/17c2a-hull3d.js:22
-H3D_KEEP_MAX                 src/17c2a-hull3d.js:459
+H3D_JOBS                     src/17c2a-hull3d.js:143
+H3D_KEEP_MAX                 src/17c2a-hull3d.js:485
 H3D_L                        src/17c2a-hull3d.js:16
-H3D_LAY                      src/17c2a-hull3d.js:387
+H3D_LAY                      src/17c2a-hull3d.js:413
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
-H3D_PIR                      src/17c2a-hull3d.js:639
+H3D_PIR                      src/17c2a-hull3d.js:665
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
-H3D_WGSL                     src/17c2a-hull3d.js:262
+H3D_WGSL                     src/17c2a-hull3d.js:288
 HAIL_HOLD                    src/12ar-hail.js:20
 HAIL_HOLD_PHONE              src/12ar-hail.js:23
 HAIL_RANGE                   src/12ar-hail.js:25
@@ -1191,6 +1192,8 @@ HQ_ORDER                     src/27f-hq-room.js:7
 HST                          src/29rf-home-still.js:11
 HS_LT                        src/17c2-hull-gpu.js:147
 HS_SIDE                      src/17c2-hull-gpu.js:149
+HUDV                         src/08a1-hud-vars.js:16
+HUDV_SEL                     src/08a1-hud-vars.js:8-20
 HUD_BAND                     src/27z-telemetry.js:21
 HUD_FLOOR                    src/27z-telemetry.js:31
 HUD_MAPBAR                   src/27z-telemetry.js:35
@@ -1200,9 +1203,9 @@ HUD_MSGOBS                   src/27z-telemetry.js:45
 HUD_NUM                      src/08-state.js:100
 HUD_PRE                      src/27z-telemetry.js:185
 HUD_PREV                     src/27z-telemetry.js:94
-HUD_PROMPT                   src/27z-telemetry.js:250
+HUD_PROMPT                   src/27z-telemetry.js:251
 HUD_STEP                     src/27z-telemetry.js:93
-HUD_VL                       src/27z-telemetry.js:193
+HUD_VL                       src/27z-telemetry.js:194
 HULL_BAKES                   src/03e1-hull-bake.js:24
 HULL_BOX                     src/03e1-hull-bake.js:25
 HULL_CACHE                   src/03-ships.js:199
@@ -1550,8 +1553,8 @@ P3_GL                        src/17c2b-parts3d.js:29
 P3_K                         src/17c2b-parts3d.js:32
 P3_MK                        src/17c2b-parts3d.js:20-27
 P3_SHIELD                    src/17c2b-parts3d.js:33
-P3_TURR                      src/17c2b-parts3d.js:372
-P3_UT                        src/17c2b-parts3d.js:373
+P3_TURR                      src/17c2b-parts3d.js:374
+P3_UT                        src/17c2b-parts3d.js:375
 PADCASE                      src/27y-hud-words.js:33
 PADNAME_K                    src/27y-hud-words.js:9
 PAD_KEY                      src/15-input.js:19
@@ -1814,8 +1817,8 @@ PROBE_SHOW                   src/21a8-base-world.js:29
 PROBE_SPREAD                 src/25m-probe.js:29
 PROBE_WAIT                   src/25m-probe.js:28
 PROFILE                      src/02-world.js:146-159
-PROMPT_LIVE                  src/27z-telemetry.js:262
-PROMPT_NUM_EVERY             src/27z-telemetry.js:257
+PROMPT_LIVE                  src/27z-telemetry.js:263
+PROMPT_NUM_EVERY             src/27z-telemetry.js:258
 PROMPT_RECT                  src/08-state.js:114
 PU_CELLS                     tests/91zzzzzd-pure.js:28
 PYARD                        src/04c-yards.js:89
@@ -2589,11 +2592,11 @@ applySaveRest                src/14a1-save-rest.js:15-392
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
-arrWarm                      src/17h1-arr-warm.js:60
-arrWarmAt                    src/17h1-arr-warm.js:12-16
-arrWarmHull                  src/17h1-arr-warm.js:18
-arrWarmStep                  src/17h1-arr-warm.js:48-59
-arrWarmSteps                 src/17h1-arr-warm.js:23-46
+arrWarm                      src/17h1-arr-warm.js:61
+arrWarmAt                    src/17h1-arr-warm.js:13-17
+arrWarmHull                  src/17h1-arr-warm.js:19
+arrWarmStep                  src/17h1-arr-warm.js:49-60
+arrWarmSteps                 src/17h1-arr-warm.js:24-47
 arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:734-785
 artGet                       src/08ca-gpu-canvas.js:550
@@ -4658,27 +4661,27 @@ glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
 gnbCamVel                    src/16gc-gpu-nebfade.js:65-71
 gnbDeep                      src/16gay-gpu-nebula-look.js:44
-gnbEmiHalf                   src/16gba-gpu-nebula-comp.js:178-185
+gnbEmiHalf                   src/16gba-gpu-nebula-comp.js:179-186
 gnbFarc                      src/16gbb-gpu-nebula-farc.js:49-85
 gnbFarcDesc                  src/16gbb-gpu-nebula-farc.js:46
-gnbGenDesc                   src/16gba-gpu-nebula-comp.js:195
+gnbGenDesc                   src/16gba-gpu-nebula-comp.js:196
 gnbGenNeed                   src/16gc-gpu-nebfade.js:57-62
 gnbGenSlice                  src/16gc-gpu-nebfade.js:77-86
 gnbGenTargets                src/16gc-gpu-nebfade.js:45-53
-gnbHalfTarget                src/16gba-gpu-nebula-comp.js:165-175
-gnbLandmark                  src/16gba-gpu-nebula-comp.js:222-237
+gnbHalfTarget                src/16gba-gpu-nebula-comp.js:166-176
+gnbLandmark                  src/16gba-gpu-nebula-comp.js:223-238
 gnbLead                      src/16gc-gpu-nebfade.js:74
-gnbLfr                       src/16gba-gpu-nebula-comp.js:240-258
+gnbLfr                       src/16gba-gpu-nebula-comp.js:241-259
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
 gnbOff                       src/16gc-gpu-nebfade.js:55
-gnbPalette                   src/16gba-gpu-nebula-comp.js:211-219
-gnbPipe                      src/16gba-gpu-nebula-comp.js:194
+gnbPalette                   src/16gba-gpu-nebula-comp.js:212-220
+gnbPipe                      src/16gba-gpu-nebula-comp.js:195
 gnbResDesc                   src/16gc-gpu-nebfade.js:39-43
 gnbResolve                   src/16gc-gpu-nebfade.js:88-99
-gnbStar                      src/16gba-gpu-nebula-comp.js:260-265
+gnbStar                      src/16gba-gpu-nebula-comp.js:261-266
 gnbStars                     src/16gba-gpu-nebula-comp.js:42-49
-gnbTarget                    src/16gba-gpu-nebula-comp.js:186-193
+gnbTarget                    src/16gba-gpu-nebula-comp.js:187-194
 goalCard                     src/13b-occupy.js:233-262
 goalOwnYacht                 src/13b-occupy.js:226-232
 gorBody                      src/17gab1-gpu-orb-draw.js:46-70
@@ -4755,8 +4758,8 @@ gpuMipDrop                   src/08c-gpu-kit.js:114
 gpuMipSmp                    src/08c-gpu-kit.js:115
 gpuMipTex                    src/08c-gpu-kit.js:101-113
 gpuMoon                      src/17ga-gpu-planets.js:441-447
-gpuNebulaComp                src/16gba-gpu-nebula-comp.js:339-352
-gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:268-336
+gpuNebulaComp                src/16gba-gpu-nebula-comp.js:340-353
+gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:269-337
 gpuNext                      src/08b-gpu.js:642-651
 gpuNoise                     src/08b-gpu.js:402-407
 gpuNone                      src/08b2-gpu-loss.js:6-14
@@ -4908,30 +4911,36 @@ gunSpecs                     src/05c-arms.js:210-221
 gunTotals                    src/05c-arms.js:339-353
 gunsInGroup                  src/05c-arms.js:233-236
 h01                          src/01-core.js:28
-h3dAtlasAt                   src/17c2a-hull3d.js:424-448
+h3dAtlasAt                   src/17c2a-hull3d.js:450-474
 h3dBargeMesh                 src/17c2f-body-barge.js:58-66
 h3dBargeWreck                src/17c2f-body-barge.js:68-90
-h3dCls                       src/17c2a-hull3d.js:483-493
-h3dDesc                      src/17c2a-hull3d.js:396-404
-h3dDev                       src/17c2a-hull3d.js:406-415
-h3dDraw                      src/17c2a-hull3d.js:497-509
-h3dDraw2                     src/17c2a-hull3d.js:617-620
-h3dEar                       src/17c2a-hull3d.js:245-260
-h3dKeepAt                    src/17c2a-hull3d.js:461-471
-h3dKeepSig                   src/17c2a-hull3d.js:473-481
+h3dCls                       src/17c2a-hull3d.js:509-519
+h3dDesc                      src/17c2a-hull3d.js:422-430
+h3dDev                       src/17c2a-hull3d.js:432-441
+h3dDraw                      src/17c2a-hull3d.js:523-535
+h3dDraw2                     src/17c2a-hull3d.js:643-646
+h3dEar                       src/17c2a-hull3d.js:271-286
+h3dJob                       src/17c2a-hull3d.js:145
+h3dKeepAt                    src/17c2a-hull3d.js:487-497
+h3dKeepSig                   src/17c2a-hull3d.js:499-507
 h3dKit                       src/17c2a-hull3d.js:27-90
-h3dLay                       src/17c2a-hull3d.js:388-395
-h3dMesh                      src/17c2a-hull3d.js:132-243
-h3dPack                      src/17c2a-hull3d.js:92-100
-h3dParts                     src/17c2b-parts3d.js:158-353
-h3dPirMesh                   src/17c2a-hull3d.js:640-696
-h3dPirate                    src/17c2a-hull3d.js:698-701
-h3dPlaneHoles                src/17c2a-hull3d.js:107-129
-h3dRun                       src/17c2a-hull3d.js:519-615
+h3dLay                       src/17c2a-hull3d.js:414-421
+h3dMesh                      src/17c2a-hull3d.js:135-138
+h3dMeshGen                   src/17c2a-hull3d.js:153-269
+h3dMeshHit                   src/17c2a-hull3d.js:144
+h3dMeshPump                  src/17c2a-hull3d.js:148-152
+h3dPack                      src/17c2a-hull3d.js:92
+h3dPackGen                   src/17c2a-hull3d.js:94-102
+h3dParts                     src/17c2b-parts3d.js:158
+h3dPartsGen                  src/17c2b-parts3d.js:160-355
+h3dPirMesh                   src/17c2a-hull3d.js:666-722
+h3dPirate                    src/17c2a-hull3d.js:724-727
+h3dPlaneHoles                src/17c2a-hull3d.js:109-132
+h3dRun                       src/17c2a-hull3d.js:545-641
 h3dStationMesh               src/17c2g-body-station.js:97-129
-h3dStockGear                 src/17c2b-parts3d.js:374-383
-h3dStudioPt                  src/17c2a-hull3d.js:512-516
-h3dStudioRT                  src/17c2a-hull3d.js:623-633
+h3dStockGear                 src/17c2b-parts3d.js:376-385
+h3dStudioPt                  src/17c2a-hull3d.js:538-542
+h3dStudioRT                  src/17c2a-hull3d.js:649-659
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60
@@ -5441,11 +5450,13 @@ hqScene                      src/29r-rooms-r3.js:307
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:273-674
-hudFloorMeasure              src/27z-telemetry.js:194-246
+hud                          src/27z-telemetry.js:274-675
+hudFloorMeasure              src/27z-telemetry.js:195-247
 hudMsgPlace                  src/27z-telemetry.js:46-67
 hudNumDirty                  src/08-state.js:101
 hudRect                      src/08-state.js:127-133
+hudVar                       src/08a1-hud-vars.js:17-20
+hudVarsOn                    src/08a1-hud-vars.js:21
 hudWake                      src/27z-telemetry.js:96-105
 hueToward                    src/19b-sky.js:55-66
 hullBakeDraw                 src/03e1-hull-bake.js:43-75
@@ -6422,7 +6433,7 @@ ownerSign                    src/12al1-toponym.js:20-23
 p3Guns                       src/17c2c-parts3d-guns.js:5-225
 p3In                         src/17c2b-parts3d.js:36
 p3KindCol                    src/17c2b-parts3d.js:35
-p3PartOf                     src/17c2b-parts3d.js:357-360
+p3PartOf                     src/17c2b-parts3d.js:359-362
 p3Tools                      src/17c2b-parts3d.js:68-153
 p3Top                        src/17c2b-parts3d.js:40-62
 p3tFlush                     src/17c2d-parts-thumb.js:106-115
@@ -7254,7 +7265,7 @@ prof                         src/28-loop.js:755-782
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
-promptSet                    src/27z-telemetry.js:263-272
+promptSet                    src/27z-telemetry.js:264-273
 prunePartsBought             src/14-save.js:33-41
 ptr                          src/15-input.js:403
 puFinger                     tests/91zzzzzd-pure.js:19-27
@@ -8072,7 +8083,7 @@ shieldTypeOf                 src/05c-arms.js:59-62
 shiftLogRec                  src/12pa-beacon.js:43-47
 shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
-shipGear3d                   src/17c2b-parts3d.js:361-371
+shipGear3d                   src/17c2b-parts3d.js:363-373
 shipGearGpu                  src/05c-arms.js:318-338
 shipRow                      src/26-ui-station.js:470-518
 shipScaleAt                  src/16c-rescue.js:234
@@ -9004,6 +9015,9 @@ zoomTo                       src/15-input.js:358
 ## src/08a-statehash.js · 6 KB
   · хэш состояния (M441):1
 
+## src/08a1-hud-vars.js · 2 KB
+  · переменные раскладки HUD — на своих читателях (24.10, телефон):1
+
 ## src/08b-gpu.js · 57 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
@@ -9640,7 +9654,7 @@ zoomTo                       src/15-input.js:358
 ## src/17c2-hull-gpu.js · 19 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 62 KB
+## src/17c2a-hull3d.js · 64 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c2b-parts3d.js · 33 KB
@@ -10727,8 +10741,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd5-hull-prepass.js · 3 KB
   · корпуса в объёме: глубина, потом краска (24.10, телефон):1
 
-## tests/91qd6-hud-batch.js · 3 KB
-  · вёрстка HUD при смене режима: чтения пачкой (24.10, телефон):1
+## tests/91qd6-hud-batch.js · 5 KB
+  · вёрстка HUD при смене режима: переменные на читателях (24.10, телефон):1
 
 ## tests/91qe-bar-seat.js · 7 KB
   · бар собран (M853):1

@@ -230,7 +230,7 @@ function hailWinSync(){
     return;
   }
   if(!e){
-    e=document.createElement("div");e.id="hailwin";
+    e=document.createElement("div");e.id="hailwin";hudVarsOn(e);
     e.innerHTML="<b><em></em></b><div class='hq'></div><div class='hbar'><i></i></div><s class='hw'></s>"+
       "<div class='ha'><button class='act' data-a='pass'>ПРОХОДОМ<small>ДЕЙСТВИЕ</small></button>"+
       "<button class='act' data-a='busy'>ПО ДЕЛУ<small>ЦЕЛЬ</small></button></div>";

@@ -233,7 +233,7 @@ function mapParseAddr(s){
 function mapAddrBox(){
   let e=document.getElementById("mapaddr");
   if(e)return e;
-  e=document.createElement("div");e.id="mapaddr";
+  e=document.createElement("div");e.id="mapaddr";hudVarsOn(e);
   e.innerHTML="<span>сектор</span><input id='mapAddrIn' inputmode='text' autocomplete='off' placeholder='4:-7' aria-label='адрес сектора'><button class='act sm' id='mapAddrGo'>→</button>"+
     "<button class='act sm' id='mapMarkGo' title='спичка на клетку: из кошелька, пока лежит'>ОТМЕТИТЬ</button>"+
     "<button class='act sm' id='mapLayerGo' title='владения · цены · слухи — по одному или все'>СЛОИ · ВСЕ</button>";
