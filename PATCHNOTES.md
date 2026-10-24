@@ -6,6 +6,14 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.27 — phone performance, round 1: the far nebula fields come from a world cache; two empty passes gone; cave rock hashes shared
+
+- The author's brief of 24.10: smooth on an overheated phone, without making the picture worse. The tester measures the live game on the S23 at the author's own settings (res 2, everything at 2: canvas 822×1484); round 0 found flight at 40 fps with the nebula taking 14.5 of 21 ms of GPU, the cave at 27 fps (scene 32 ms), the surface at 34 fps.
+- Nebula (`16gbb`, new): the far comp fields — dust veins, ridges, edge strands — depend only on the world point p + cam·.09, so they are baked into a torus anchored to the world (CSS-px texels, an apron row and column for seamless bilinear) and only the new columns and rows are drawn each frame. The fields are stored before their bends (distance to the zero line, raw ridge noise), so a vein near the star is as sharp as before. ~45 noise lookups per gas pixel became 2 samples and 3 lookups; PC nebComp 1.96 → 1.26 ms at 3200×1800, frame difference 0.16 % of pixels at ≤ 4 levels; the moving cache equals a full rebake bit for bit after 180 frames with the seam on screen.
+- Nebula: the strand warp and the dust gradient are hoisted out of their loops (`16gay`, `16gb`; same order of addition, bit for bit).
+- Engine (`08b`): the bloom no longer clears an emit texture nobody drew into — an empty 1×1 texture stands in; the cave (`22d`) opens its overlay pass only when the find is on screen — the empty pass cost 18.6 MB of tile load and store per frame.
+- Cave rock (`22dbw`): neighbouring lattice cells share their hash keys by u32 addition — the same bits, fewer multiplies on the phone.
+
 ## 0.499.26 — the pass ship, the three places and the village walls as engine bodies; the rail ring station as a body; the old 2D chunks of the mine are gone; descent by day and by night judged beside the stand; surfG makes no garbage
 
 - planet 7b676d4a, 3197f3a1, 280ee800 (M627b, `21pii*`): the pass ship as an engine body (`21piif`), the tower, the bowl and the stair platform as bodies (`21piig`; plnOwnPads clears the grass under them, placeDraw −3.5 KB), the village shade walls, smoke without beads, legs under the tin hopper. Control's notes stay open: the tower reads as a hoop on a pole and carries no light at night, the bowl is invisible from the walking line, the stair platform has no stone material by day, one white square on the base at night; the pass ship's keel, noon hull and night portholes are flat (Control notes of 22.10, returned to planet).

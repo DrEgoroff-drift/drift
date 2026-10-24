@@ -233,10 +233,14 @@ $runner = Join-Path $root "test-chrome.js"
 # как удачный. Часть прогона добавляет к суффиксу свой номер.
 $tag = $PID
 # Профили копятся в TEMP: чистим свой и чужие брошенные старше суток, чтобы
-# папка не росла прогонами, которых давно нет.
+# папка не росла прогонами, которых давно нет. Не больше восьми самых старых за
+# прогон и без права уронить прогон: 24.10 за сутки скопилось 1618 профилей по
+# ~1300 файлов, уборка шла девять минут вместо секунд, а файл, снесённый соседним
+# прогоном, под ErrorActionPreference=Stop ронял весь прогон до Хрома. Прогон -Full
+# заводит шесть профилей, так что восемь за раз завал разбирают.
 Get-ChildItem (Join-Path $env:TEMP "drift-tests-profile-*") -Directory -ErrorAction SilentlyContinue |
-  Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-1) } |
-  ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+  Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-1) } | Sort-Object LastWriteTime | Select-Object -First 8 |
+  ForEach-Object { try { Remove-Item $_.FullName -Recurse -Force -ErrorAction Stop } catch { } }
 # -Size "W,H" — третий размер окна. Мерка интерфейса (--ui = clamp(H/760,1,1.75))
 # на 1280x800 почти единица, то есть режим увеличенного интерфейса — высокий
 # экран, 4K, планшет — не мерился ничем. -Size "1440,1440" даёт --ui 1.75.

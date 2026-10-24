@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 651 · top-level symbols: 8782
+Files: 652 · top-level symbols: 8785
 
 ## SYMBOLS
 
@@ -254,7 +254,7 @@ CAVE3_FIELD0                 src/22de-cave-pln-far.js:55
 CAVE3_FOOT_Z                 src/22dg-cave-pln-life.js:16
 CAVE3_GAP                    src/22dh-cave-pln-gap.js:7
 CAVE3_GPU                    src/22db-cave-pln-light.js:8
-CAVE3_HUD                    src/22d-cave-pln.js:484
+CAVE3_HUD                    src/22d-cave-pln.js:486
 CAVE3_INK                    src/22da-cave-pln-rock.js:261
 CAVE3_INKS                   src/22df-cave-pln-ink.js:9
 CAVE3_K                      src/22db-cave-pln-light.js:16
@@ -263,20 +263,20 @@ CAVE3_LAMP                   src/22d-cave-pln.js:322
 CAVE3_LENS                   src/22d-cave-pln.js:16
 CAVE3_LIFE                   src/22dg-cave-pln-life.js:6
 CAVE3_MAT                    src/22da-cave-pln-rock.js:408
-CAVE3_OLD_ENTER              src/22d-cave-pln.js:469
-CAVE3_OLD_EXIT               src/22d-cave-pln.js:370
-CAVE3_OLD_FLOOR              src/22d-cave-pln.js:485
-CAVE3_OLD_HSURF              src/22d-cave-pln.js:401
-CAVE3_OLD_HUD                src/22d-cave-pln.js:494
-CAVE3_OLD_NAV                src/22d-cave-pln.js:364
+CAVE3_OLD_ENTER              src/22d-cave-pln.js:471
+CAVE3_OLD_EXIT               src/22d-cave-pln.js:372
+CAVE3_OLD_FLOOR              src/22d-cave-pln.js:487
+CAVE3_OLD_HSURF              src/22d-cave-pln.js:403
+CAVE3_OLD_HUD                src/22d-cave-pln.js:496
+CAVE3_OLD_NAV                src/22d-cave-pln.js:366
 CAVE3_STY                    src/22da-cave-pln-rock.js:20-28
 CAVE3_UB                     src/22db-cave-pln-light.js:12
 CAVE3_VAULT                  src/22da-cave-pln-rock.js:178
-CAVE3_W                      src/22d-cave-pln.js:384
+CAVE3_W                      src/22d-cave-pln.js:386
 CAVE3_WG                     src/22di-cave-pln-wing.js:6
 CAVE3_WGSL_COMMON            src/22dbw-cave-pln-wgsl.js:8
 CAVE3_WGSL_POST              src/22dbx-cave-pln-post.js:4
-CAVE3_WGSL_SCENE             src/22dbw-cave-pln-wgsl.js:139
+CAVE3_WGSL_SCENE             src/22dbw-cave-pln-wgsl.js:143
 CAVE3_Z                      src/22d-cave-pln.js:14
 CAVE3_ZK                     src/22dc-cave-pln-dress.js:15
 CAVE_NX                      src/22-mode-cave.js:14
@@ -812,17 +812,18 @@ GLOW_CACHE                   src/16a0-glow.js:23
 GLOW_LAMP                    src/11i-glow.js:48
 GLOW_SP                      src/16a0-glow.js:22
 GLOW_TIERS                   src/11i-glow.js:80
-GLT_H                        src/08b-gpu.js:470
+GLT_H                        src/08b-gpu.js:473
 GLW                          src/21piic-pln-glow.js:11
 GNB                          src/16gb-gpu-nebula.js:17
 GNB_AGE                      src/16gc-gpu-nebfade.js:10
 GNB_EMI                      src/16gba-gpu-nebula-comp.js:52
 GNB_FADE                     src/16gc-gpu-nebfade.js:11
 GNB_FAR                      src/16gay-gpu-nebula-look.js:60
-GNB_FARC                     src/16gay-gpu-nebula-look.js:96
+GNB_FARC                     src/16gay-gpu-nebula-look.js:99
+GNB_FARC_BAKE                src/16gbb-gpu-nebula-farc.js:14
 GNB_FGAL                     src/16gaza-gpu-fargal.js:7
 GNB_FIL                      src/16gay-gpu-nebula-look.js:75
-GNB_FILC                     src/16gay-gpu-nebula-look.js:91
+GNB_FILC                     src/16gay-gpu-nebula-look.js:94
 GNB_FINE                     src/16gba-gpu-nebula-comp.js:7
 GNB_GEN                      src/16gb-gpu-nebula.js:44
 GNB_HTO                      src/16gay-gpu-nebula-look.js:24
@@ -834,7 +835,7 @@ GNB_STAR_ABS                 src/16gba-gpu-nebula-comp.js:29
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
 GNB_TONE                     src/16gay-gpu-nebula-look.js:47
-GNB_VOL                      src/16gay-gpu-nebula-look.js:137
+GNB_VOL                      src/16gay-gpu-nebula-look.js:136
 GNB_WC                       src/16gay-gpu-nebula-look.js:70
 GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
@@ -864,7 +865,7 @@ GPU_CVTEX_CAP                src/08c-gpu-kit.js:70
 GPU_DROP_WHY                 tests/90-harness.js:105
 GPU_FLD                      src/08b0-gpu-pipe.js:33
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:367
-GPU_FRONT_LIKE               src/08b-gpu.js:533
+GPU_FRONT_LIKE               src/08b-gpu.js:536
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:195
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:169
@@ -875,15 +876,15 @@ GPU_LIT_SH                   src/17c-system-draw.js:21
 GPU_MIP                      src/08c-gpu-kit.js:100
 GPU_MIP_LOD                  src/08c-gpu-kit.js:194
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-69
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-70
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:50
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:42-63
-GPU_PL_WGSL                  src/08b-gpu.js:485
+GPU_PL_WGSL                  src/08b-gpu.js:488
 GPU_POST_WGSL                src/08b-gpu.js:80
 GPU_SCR                      src/08c-gpu-kit.js:176
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:266
 GPU_SNAP_OVER                src/08b-gpu.js:29
-GPU_TONE_FILM                src/08b-gpu.js:521
+GPU_TONE_FILM                src/08b-gpu.js:524
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:138
 GRADE_U                      src/19c-light.js:263
 GRADE_WGSL                   src/19c-light.js:253
@@ -3033,7 +3034,7 @@ cave3AmberGeo                src/22de-cave-pln-far.js:145-167
 cave3Band                    src/22dc-cave-pln-dress.js:61-86
 cave3BeastZ                  src/22dg-cave-pln-life.js:30
 cave3Bells                   src/22dc-cave-pln-dress.js:133-167
-cave3Biter                   src/22d-cave-pln.js:458-467
+cave3Biter                   src/22d-cave-pln.js:460-469
 cave3Caps                    src/22dc-cave-pln-dress.js:91-130
 cave3Chunk                   src/22da-cave-pln-rock.js:290
 cave3ChunkGen                src/22da-cave-pln-rock.js:291-406
@@ -3086,7 +3087,7 @@ cave3GpuTier                 src/22db-cave-pln-light.js:97-115
 cave3H3                      src/22da-cave-pln-rock.js:35-39
 cave3Hang                    src/22dc-cave-pln-dress.js:183-191
 cave3Hex                     src/22da-cave-pln-rock.js:30
-cave3InFrame                 src/22d-cave-pln.js:392
+cave3InFrame                 src/22d-cave-pln.js:394
 cave3InkBuild                src/22df-cave-pln-ink.js:61-146
 cave3InkItems                src/22df-cave-pln-ink.js:15-58
 cave3InkSolid                src/22df-cave-pln-ink.js:12
@@ -3106,19 +3107,19 @@ cave3Mouth                   src/22d-cave-pln.js:96-101
 cave3N3                      src/22da-cave-pln-rock.js:40-47
 cave3NearShift               src/22dg-cave-pln-life.js:109-118
 cave3Nrm                     src/22dc-cave-pln-dress.js:40-43
-cave3Over                    src/22d-cave-pln.js:328-341
+cave3Over                    src/22d-cave-pln.js:328-343
 cave3Paint                   src/22da-cave-pln-rock.js:262-282
 cave3Persp                   src/22db-cave-pln-light.js:21-25
 cave3PipeDescs               src/22db-cave-pln-light.js:59-80
 cave3PipeKey                 src/22db-cave-pln-light.js:81
 cave3PipesAhead              src/22d-cave-pln.js:122-136
-cave3Pj                      src/22d-cave-pln.js:387-391
+cave3Pj                      src/22d-cave-pln.js:389-393
 cave3PlantZs                 src/22dg-cave-pln-life.js:26-29
 cave3PostWgsl                src/22db-cave-pln-light.js:57
 cave3Reach                   src/22d-cave-pln.js:62
 cave3Samp                    src/22da-cave-pln-rock.js:160-165
 cave3Sd                      src/22da-cave-pln-rock.js:167-170
-cave3Spots                   src/22d-cave-pln.js:394-400
+cave3Spots                   src/22d-cave-pln.js:396-402
 cave3StyKind                 src/22da-cave-pln-rock.js:26-28
 cave3Up                      src/22dc-cave-pln-dress.js:32-38
 cave3VaultCut                src/22da-cave-pln-rock.js:179
@@ -3132,7 +3133,7 @@ cave3WingCone                src/22di-cave-pln-wing.js:25-37
 cave3WingFrame               src/22di-cave-pln-wing.js:80-120
 cave3WingFree                src/22di-cave-pln-wing.js:76
 cave3WingItems               src/22di-cave-pln-wing.js:10-22
-cave3WordsOn                 src/22d-cave-pln.js:385
+cave3WordsOn                 src/22d-cave-pln.js:387
 cave3Zd                      src/22dc-cave-pln-dress.js:45-48
 caveBoxFree                  src/22-mode-cave.js:249-253
 caveBuild                    src/22-mode-cave.js:105-174
@@ -3950,7 +3951,7 @@ drawBelt                     src/24-mode-belt.js:372
 drawBeltRocks                src/17gc-sys-belt.js:67-152
 drawBillboard                src/17k-billboard.js:182-198
 drawBuilt                    src/21c-built.js:64-102
-drawCave                     src/22d-cave-pln.js:345-362
+drawCave                     src/22d-cave-pln.js:347-364
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:68
 drawCombat                   src/13-pirates.js:378-486
@@ -4202,7 +4203,7 @@ expReady                     src/11x-expedition.js:25-28
 expRelease                   src/11x-expedition.js:101-110
 expStart                     src/11x-expedition.js:29-38
 exportCode                   src/14a-cloud.js:77
-f16                          src/08b-gpu.js:471
+f16                          src/08b-gpu.js:474
 faceEl                       src/27c-ui-hq.js:6-12
 faceRnd                      src/12d-mgr-face.js:19
 factPrices                   src/27c-ui-hq.js:493-510
@@ -4623,6 +4624,8 @@ glyphNodes                   src/12t-settle.js:92-102
 gnbDeep                      src/16gay-gpu-nebula-look.js:44
 gnbFade                      src/16gc-gpu-nebfade.js:37-42
 gnbFadeDesc                  src/16gc-gpu-nebfade.js:16-20
+gnbFarc                      src/16gbb-gpu-nebula-farc.js:49-85
+gnbFarcDesc                  src/16gbb-gpu-nebula-farc.js:46
 gnbGenDesc                   src/16gba-gpu-nebula-comp.js:147
 gnbGenView                   src/16gc-gpu-nebfade.js:22-35
 gnbLandmark                  src/16gba-gpu-nebula-comp.js:174-189
@@ -4674,14 +4677,14 @@ gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
 gpuBaked                     src/08ca-gpu-canvas.js:538-543
 gpuBargeBody                 src/12l-barge.js:550-557
 gpuBind                      src/08c-gpu-kit.js:42-48
-gpuBloom                     src/08b-gpu.js:674-679
+gpuBloom                     src/08b-gpu.js:675-681
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:33-38
 gpuBursts                    src/13z-gpu-combat.js:277-297
 gpuCanvasTex                 src/08c-gpu-kit.js:51-66
 gpuClouds                    src/19cc-gpu-air.js:118-165
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
-gpuCompNeb                   src/08b-gpu.js:444-454
+gpuCompNeb                   src/08b-gpu.js:447-457
 gpuCvLevel                   src/08c-gpu-kit.js:84-95
 gpuDrones                    src/16ga-gpu-trail.js:159-203
 gpuDrop                      src/08b2-gpu-loss.js:16-23
@@ -4690,35 +4693,35 @@ gpuFail                      src/08b2-gpu-loss.js:26-30
 gpuField                     src/08c-gpu-kit.js:389-416
 gpuFieldBaked                src/08c-gpu-kit.js:424-434
 gpuFieldLayout               src/08c-gpu-kit.js:382-388
-gpuFrame                     src/08b-gpu.js:552-565
+gpuFrame                     src/08b-gpu.js:555-568
 gpuFrontClean                src/08c-gpu-kit.js:130-135
-gpuFrontCopy                 src/08b-gpu.js:602-604
+gpuFrontCopy                 src/08b-gpu.js:605-607
 gpuFrontHook                 src/08c-gpu-kit.js:119-128
-gpuHaze                      src/08b-gpu.js:467
+gpuHaze                      src/08b-gpu.js:470
 gpuHudDpr                    src/08bh-gpu-hud.js:7
-gpuHueFor                    src/08b-gpu.js:524
+gpuHueFor                    src/08b-gpu.js:527
 gpuImage                     src/08c-gpu-kit.js:240-253
 gpuImgBind                   src/08c-gpu-kit.js:233-239
 gpuImgLayout                 src/08c-gpu-kit.js:225-232
 gpuKitU                      src/08c-gpu-kit.js:178-183
-gpuLight                     src/08b-gpu.js:469
+gpuLight                     src/08b-gpu.js:472
 gpuLitSprite                 src/17c-system-draw.js:176-191
-gpuLtWrite                   src/08b-gpu.js:473-480
-gpuManual                    src/08b-gpu.js:643-648
+gpuLtWrite                   src/08b-gpu.js:476-483
+gpuManual                    src/08b-gpu.js:646-651
 gpuMipDrop                   src/08c-gpu-kit.js:114
 gpuMipSmp                    src/08c-gpu-kit.js:115
 gpuMipTex                    src/08c-gpu-kit.js:101-113
 gpuMoon                      src/17ga-gpu-planets.js:441-447
-gpuNebulaComp                src/16gba-gpu-nebula-comp.js:277-287
-gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:220-274
-gpuNext                      src/08b-gpu.js:630-639
+gpuNebulaComp                src/16gba-gpu-nebula-comp.js:279-289
+gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:220-276
+gpuNext                      src/08b-gpu.js:633-642
 gpuNoise                     src/08b-gpu.js:394-399
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOrb                       src/17gab1-gpu-orb-draw.js:74-86
 gpuOrbMoon                   src/17gab1-gpu-orb-draw.js:107-113
 gpuOvFrontView               src/08bi-gpu-ovl.js:284
-gpuOver                      src/08b-gpu.js:605-625
-gpuPass                      src/08b-gpu.js:455-458
+gpuOver                      src/08b-gpu.js:608-628
+gpuPass                      src/08b-gpu.js:458-461
 gpuPipe                      src/08c-gpu-kit.js:22-26
 gpuPipeDesc                  src/08c-gpu-kit.js:27-32
 gpuPipeRecipe                src/08b0-gpu-pipe.js:55-63
@@ -4730,16 +4733,16 @@ gpuPipesWarm                 src/08b0-gpu-pipe.js:66-78
 gpuPirateBody                src/12i-pirate-hull.js:425-436
 gpuPirateLive                src/12i-pirate-hull.js:443-489
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
-gpuPresent                   src/08b-gpu.js:681-694
+gpuPresent                   src/08b-gpu.js:683-696
 gpuQuad                      src/08c-gpu-kit.js:320-324
-gpuResize                    src/08b-gpu.js:400-442
-gpuScene                     src/08b-gpu.js:569-582
-gpuScene3D                   src/08b-gpu.js:586-594
+gpuResize                    src/08b-gpu.js:400-445
+gpuScene                     src/08b-gpu.js:572-585
+gpuScene3D                   src/08b-gpu.js:589-597
 gpuScr                       src/08c-gpu-kit.js:177
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:351-362
-gpuShock                     src/08b-gpu.js:468
+gpuShock                     src/08b-gpu.js:471
 gpuShpAt                     src/08c-gpu-kit.js:328-341
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:324-415
@@ -4752,10 +4755,10 @@ gpuTrail                     src/16ga-gpu-trail.js:61-108
 gpuTs                        src/28z-fps-probe.js:128-135
 gpuTsAround                  src/28z-fps-probe.js:145-149
 gpuTsResolve                 src/28z-fps-probe.js:151-169
-gpuUni                       src/08b-gpu.js:534-548
+gpuUni                       src/08b-gpu.js:537-551
 gpuWake                      src/16ga-gpu-trail.js:117-150
 gpuWeatherFar                src/19cc-gpu-air.js:265-293
-gpuWorld                     src/08b-gpu.js:651-672
+gpuWorld                     src/08b-gpu.js:654-673
 gradeGpu                     src/19c-light.js:264-275
 gradePass                    src/19c-light.js:276-314
 greenAll                     src/21g-greenhouse.js:30-34
@@ -9524,7 +9527,7 @@ zoomTo                       src/15-input.js:358
 ## src/16ga-gpu-trail.js · 22 KB
   · шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
-## src/16gay-gpu-nebula-look.js · 15 KB
+## src/16gay-gpu-nebula-look.js · 14 KB
   · облик туманности «смело» (26.09, docs/DESIGN-gpu.md):1
 
 ## src/16gaz-gpu-noise.js · 3 KB
@@ -9532,11 +9535,14 @@ zoomTo                       src/15-input.js:358
 
 ## src/16gaza-gpu-fargal.js · 3 KB
 
-## src/16gb-gpu-nebula.js · 33 KB
+## src/16gb-gpu-nebula.js · 34 KB
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/16gba-gpu-nebula-comp.js · 24 KB
   · туманность системы: сведение и связка (разрез 16gb, M825):1
+
+## src/16gbb-gpu-nebula-farc.js · 6 KB
+  · туманность: кэш полей дальнего сведения (24.10, телефон):1
 
 ## src/16gc-gpu-nebfade.js · 3 KB
 
@@ -10122,7 +10128,7 @@ zoomTo                       src/15-input.js:358
 ## src/22db-cave-pln-light.js · 18 KB
   · пещера на движке: рендер (M630a):1
 
-## src/22dbw-cave-pln-wgsl.js · 37 KB
+## src/22dbw-cave-pln-wgsl.js · 38 KB
   · пещера на движке: шейдеры (M630a):1
 
 ## src/22dbx-cave-pln-post.js · 10 KB
