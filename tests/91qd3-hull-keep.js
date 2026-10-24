@@ -15,23 +15,30 @@ TEST_SUITES.push(()=>suite("корпуса в объёме: постоянный
   G.sys=s;G.ap=null;G.orbit=null;G.pirates=[];G.msl=[];G.zoom=1.1;G.zoomT=null;
   /* станция повёрнута по орбите на e рад, корабль — с ней: свет рядом тот же, звезда сдвинулась */
   const put=e=>{const c=Math.cos(e),q=Math.sin(e);st.x=x0*c-y0*q;st.y=x0*q+y0*c;sh.x=st.x+40;sh.y=st.y+90;sh.vx=sh.vy=0;};
+  /* сравнение — в круге станции (её вызов h3dRun больше атласа): искры и след, оставленные прежними наборами, гуляют
+     от кадра к кадру по всему экрану. Туманность за просветами станции сходится два цикла пересчёта (16gc), её ждём */
+  const run=window.h3dRun;let C=null,cw=1;
+  window.h3dRun=function(m,T,x,y,a,sc){if(!arguments[12]&&Math.ceil(2*m.R*sc*GPU.bw/W)>H3D_ATL.max)C={x,y,r:m.R*sc};return run.apply(this,arguments);};
   const frame=(k,snap)=>{H3D.keep=k;G.t=t0;GPU.wantSnap=!!snap;drawWorld();
-    if(snap){const c=GPU.snap;return c.getContext("2d",{willReadFrequently:true}).getImageData(0,0,c.width,c.height).data;}};
-  const big=(x,y)=>{let n=0;for(let i=0;i<x.length;i+=4)if(Math.max(Math.abs(x[i]-y[i]),Math.abs(x[i+1]-y[i+1]),Math.abs(x[i+2]-y[i+2]))>24)n++;return n;};
+    if(snap){const c=GPU.snap;cw=c.width;return c.getContext("2d",{willReadFrequently:true}).getImageData(0,0,c.width,c.height).data;}};
+  const big=(x,y)=>{let n=0;if(!C)return -1;const k=cw/W,cx=C.x*k,cy=C.y*k,rr=C.r*k*C.r*k;
+    for(let i=0;i<x.length;i+=4){const p=i/4,dx=p%cw-cx,dy=Math.floor(p/cw)-cy;if(dx*dx+dy*dy>rr)continue;
+      if(Math.max(Math.abs(x[i]-y[i]),Math.abs(x[i+1]-y[i+1]),Math.abs(x[i+2]-y[i+2]))>24)n++;}return n;};
   const kd=()=>H3D.kd||0;
   try{
     put(0);const k0=kd();for(let i=0;i<4;i++)frame(true);
     ok(H3D.kn>=1&&kd()>k0,"станция легла в постоянный слой (слоёв "+H3D.kn+", записей "+(kd()-k0)+")");
     /* кадры — подряд и до сдвигов корабля: след за ним и сама сцена понемногу гуляют от кадра к кадру */
+    for(let i=0;i<3*GNB_N;i++)frame(true);
     const a=frame(true,true),a2=frame(true,true),b=frame(false,true);
     eq(big(a,a2),0,"кадр с постоянным слоем повторяется");
     const nb=big(a2,b);
-    ok(nb<=8,"кадр постоянным слоем тот же, что прежним путём ("+nb+" точек расходятся)");
+    ok(nb>=0&&nb<=8,"кадр постоянным слоем тот же, что прежним путём ("+nb+" точек расходятся в круге станции)");
     let k1=kd();for(let i=0;i<5;i++)frame(true);
     eq(kd()-k1,0,"станция в покое: слой не переписывается");
     k1=kd();put(.001);frame(true);frame(true);
     eq(kd()-k1,0,"звезда сдвинулась на 0,001 рад — в допуске, слой тот же");
     k1=kd();put(.01);frame(true);frame(true);
     eq(kd()-k1,1,"звезда сдвинулась на 0,01 рад — слой переписан один раз");
-  }finally{H3D.keep=keep0;GPU.wantSnap=false;st.x=sx0;st.y=sy0;G.t=t0;}
+  }finally{window.h3dRun=run;H3D.keep=keep0;GPU.wantSnap=false;st.x=sx0;st.y=sy0;G.t=t0;}
 }));

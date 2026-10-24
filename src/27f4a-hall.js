@@ -487,9 +487,13 @@ function hallClose(){
 }
 /* зал уже нарисован во весь экран: мир под станцией не виден */
 function hallCovers(){return HALL.open&&HALL.frames>0&&!HALL.err&&!!HALL.walk&&!!HALL.cn&&HALL.cn.isConnected;}
+/* цели кадра (r3Targets: MSAA цвета и дыма, глубина, отсвет — 116 МБ при ×2 на телефоне) от станции не зависят, только
+   от экрана: живут дальше, новая станция их не заводит заново. Прежде они уходили здесь и тут же рождались первым шагом
+   заготовки — на S23 видеокарта стояла 50 мс через 0,23 с после каждого прыжка в систему со станцией (тестер,
+   раунд 9). Уходят только привязки холста: они держат текстуры прежней станции */
 function hallRelease(){
   if(HALL.open)return;
-  if(HALL.cn)r3Free(HALL.cn);hallGoodsDrop();hallInstrDrop();hallBoardDrop();hallHoldDrop();hallRigDrop();
+  if(HALL.cn&&HALL.cn.__rpg)HALL.cn.__rpg.bg.clear();hallGoodsDrop();hallInstrDrop();hallBoardDrop();hallHoldDrop();hallRigDrop();
   if(HALL.orbTex&&HALL.orbTex.dev===GPU.dev)GPU.trash.push(HALL.orbTex.tex);HALL.orbTex=null;HALL.orb=null;HALL.orbKey="";
 }
 /* вкладка сменилась: камера — к месту раздела */

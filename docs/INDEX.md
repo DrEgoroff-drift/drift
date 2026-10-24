@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 655 · top-level symbols: 8846
+Files: 656 · top-level symbols: 8846
 
 ## SYMBOLS
 
@@ -974,7 +974,7 @@ HALL_BOARD_BOX               src/27f4h-hall-board.js:11
 HALL_BOARD_COLS              src/27f4h-hall-board.js:13
 HALL_BOARD_MAX               src/27f4h-hall-board.js:12
 HALL_BOARD_SKIP              src/27f4h-hall-board.js:15
-HALL_BULB_R                  src/27f4a-hall.js:539
+HALL_BULB_R                  src/27f4a-hall.js:543
 HALL_CA                      src/27f4a-hall.js:98
 HALL_CAMS                    src/27f4a-hall.js:77-85
 HALL_CARD_MIN                src/27f4l-hall-walk.js:96
@@ -987,7 +987,7 @@ HALL_DRAG                    src/27f4l-hall-walk.js:235
 HALL_DRESS                   src/27f4b-hall-dress.js:263-369
 HALL_F                       src/27f4a-hall.js:31
 HALL_FCUT                    src/27f4a-hall.js:32
-HALL_FW                      src/27f4a-hall.js:511
+HALL_FW                      src/27f4a-hall.js:515
 HALL_GOODS                   src/27f4e-hall-goods.js:6
 HALL_GOODS_ACC               src/27f4e-hall-goods.js:12
 HALL_HERO                    src/27f4a-hall.js:33
@@ -4950,7 +4950,7 @@ hallBoardUp                  src/27f4h-hall-board.js:134-138
 hallBoardWire                src/27f4h-hall-board.js:47-52
 hallBoardZ                   src/27f4h-hall-board.js:25
 hallBones                    src/27f4b-hall-dress.js:70-183
-hallBulbU                    src/27f4a-hall.js:540-544
+hallBulbU                    src/27f4a-hall.js:544-548
 hallCage                     src/27f4d-hall-props.js:38-47
 hallCam                      src/27f4a-hall.js:117-123
 hallCamFr                    src/27f4l-hall-walk.js:124-127
@@ -4971,9 +4971,9 @@ hallDragEnd                  src/27f4l-hall-walk.js:236
 hallDrawW                    src/27f4a-hall.js:458
 hallDrum                     src/27f4b-hall-dress.js:66
 hallEase                     src/27f4a-hall.js:129
-hallFleetList                src/27f4a-hall.js:512-520
-hallFleetWarm                src/27f4a-hall.js:521-524
-hallFrame                    src/27f4a-hall.js:545-585
+hallFleetList                src/27f4a-hall.js:516-524
+hallFleetWarm                src/27f4a-hall.js:525-528
+hallFrame                    src/27f4a-hall.js:549-589
 hallGlideAt                  src/27f4a-hall.js:131-135
 hallGlint                    src/27f4b-hall-dress.js:35-41
 hallGo                       src/27f4a-hall.js:138-142
@@ -5022,15 +5022,15 @@ hallLensMoving               src/27f4e-hall-goods.js:72
 hallLensStep                 src/27f4e-hall-goods.js:67-71
 hallLensWant                 src/27f4e-hall-goods.js:59-65
 hallLimits                   src/27f4a-hall.js:409-412
-hallLoop                     src/27f4a-hall.js:526
-hallLoopIn                   src/27f4a-hall.js:527-537
+hallLoop                     src/27f4a-hall.js:530
+hallLoopIn                   src/27f4a-hall.js:531-541
 hallLum                      src/27f4a-hall.js:145
 hallManK                     src/27f4a-hall.js:103
 hallManMark                  src/27f4a-hall.js:402
 hallMeshParts                src/27f4a-hall.js:408
 hallMix3                     src/27f4a-hall.js:88
 hallMoving                   src/27f4a-hall.js:136
-hallMsgEther                 src/27f4a-hall.js:503-507
+hallMsgEther                 src/27f4a-hall.js:507-511
 hallNavOn                    src/27f4k-hall-phone.js:6-9
 hallNavSync                  src/27f4k-hall-phone.js:10-16
 hallNight                    src/27f4a-hall.js:91-95
@@ -5048,7 +5048,7 @@ hallPlate                    src/27f4d-hall-props.js:31-35
 hallPrepStep                 src/27f4a-hall.js:211-236
 hallPrepTick                 src/27f4a-hall.js:264-272
 hallR                        src/27f4a-hall.js:109
-hallRelease                  src/27f4a-hall.js:490-494
+hallRelease                  src/27f4a-hall.js:494-498
 hallRigDrop                  src/27f4j-hall-pilot.js:48
 hallRigMesh                  src/27f4j-hall-pilot.js:20-34
 hallRigPose                  src/27f4j-hall-pilot.js:37-47
@@ -5066,7 +5066,7 @@ hallSmudge                   src/27f4d-hall-props.js:49-55
 hallStencil                  src/27f4e-hall-goods.js:14
 hallStool                    src/27f4d-hall-props.js:10-18
 hallT                        src/27f4a-hall.js:106
-hallTab                      src/27f4a-hall.js:496-500
+hallTab                      src/27f4a-hall.js:500-504
 hallTablePose                src/27f4a-hall.js:55
 hallTagList                  src/27f4a-hall.js:416-425
 hallTagsDraw                 src/27f4a-hall.js:426-442
@@ -10419,7 +10419,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f4-cant3d.js · 20 KB
   · кантина в объёме (M725):1
 
-## src/27f4a-hall.js · 58 KB
+## src/27f4a-hall.js · 59 KB
   · зал за экранами (M810, docs/DESIGN-hall.md):1
 
 ## src/27f4b-hall-dress.js · 37 KB
@@ -10677,6 +10677,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91qc-hall.js · 39 KB
   · зал за экранами (M810):1
 
+## tests/91qc2-hall-targets.js · 2 KB
+  · цели кадра зала переживают смену станции (24.10, телефон):1
+
 ## tests/91qd-bodies.js · 3 KB
   · тела под звездой (M820):1
 
@@ -10694,7 +10697,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd2-relay.js · 3 KB
   · мачта телом (M827 · 11apa):1
 
-## tests/91qd3-hull-keep.js · 4 KB
+## tests/91qd3-hull-keep.js · 5 KB
   · постоянный слой крупного корпуса (24.10, телефон):1
 
 ## tests/91qd3-rail.js · 4 KB
