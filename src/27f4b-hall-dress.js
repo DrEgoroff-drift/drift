@@ -193,7 +193,7 @@ const HALL_COUNTER={
 };
 
 /* ── бар: кантина 27f4 целиком, сдвинутая на HALL_XB (её координаты внутри push) ── */
-function hallBar(K,L,R){
+function* hallBar(K,L,R){
   const st=L.st,acc=L.acc,hc=L.T.hc,LT=CANT_LIGHT[st]||CANT_LIGHT.trade,P=R3P,B=HALL_B;
   K.push([HALL_XB,0,0]);
   const Fr=K.mt([120,130,142],.7,11,P.brushed);
@@ -221,6 +221,7 @@ function hallBar(K,L,R){
       for(const s of [-1,1]){K.push([0,.2,s*.13],0,0,Math.PI/2);K.lathe([[-.02,.0],[-.02,.13],[.02,.13],[.02,0]],16,Mr);K.lathe([[-.025,.03],[.025,.03]],8,Mm);K.pop();}
       K.box([.0,.1,-.2],[.03,.03,.04],K.mt([255,210,160],.2,4,0,1.4,true),.004);
       K.pop();}}
+  yield;
   /* вывеска: плата, буквы — текстура вывески (27f4 c3SignTex), неоновая кромка */
   const sx0=HALL_SGN[0],sx1=HALL_SGN[1],sy0=HALL_SGN[2],sy1=HALL_SGN[3];
   K.box([(sx0+sx1)/2,(sy0+sy1)/2,B+.03],[(sx1-sx0)/2+.04,(sy1-sy0)/2+.04,.025],K.mt([16,18,22],.5,9,0),.01);
@@ -232,21 +233,24 @@ function hallBar(K,L,R){
   K.box([-3.9,1.05,B+.07],[.44,1.02,.02],K.mt(mixc(wall,[60,64,70],.4),.5,8,P.brushed),.01);
   K.ell([-3.9,1.62,B+.09],[.12,.12,.01],K.mt([150,190,230],.4,8,0,1.6,true),5,12);
   /* стойка, полка, табуреты, стаканы, колонка розлива */
-  c3Counter(K,st,acc,R);c3Shelf(K,st,acc,L.seed);
+  yield;c3Counter(K,st,acc,R);yield;c3Shelf(K,st,acc,L.seed);yield;
   for(const x of L.seats){hallStool(K,x,.36,R()*TAU);K.push([x+.13,C3_TOP,-.18]);c3Glass(K,[200,150,60],.5+R()*.4);K.pop();}
   hallStool(K,HALL_SEAT_PILOT,.36,.4);K.push([HALL_SEAT_PILOT-.1,C3_TOP,-.2]);c3Glass(K,[200,150,60],.6);K.pop();
   K.push([L.bx-.62,C3_TOP,-.32]);K.lathe([[0,.05],[.02,.05],[.03,.025],[.42,.025],[.44,0]],10,K.mt([170,174,180],.85,13,P.brushed));
   for(let i=0;i<3;i++)K.box([(i-1)*.07,.36,.05],[.012,.06,.012],K.mt([30,30,34],.5,8,0),.005);K.pop();
   for(let i=0;i<4;i++){K.push([C3_CL+.4+R()*(C3_CR-C3_CL-.8),C3_TOP,-.4-R()*.15]);c3Glass(K,[190,200,190],R()<.5?.4:0);K.pop();}
+  yield;
   /* толпе — высокий стол и стол со стульями */
   c3RoundTable(K,3.5,-1.1,1.05,.32,K.mt([70,50,36],.45,9,P.wood));
   for(let i=0;i<3;i++){K.push([3.5+(R()-.5)*.3,1.064,-1.1+(R()-.5)*.3]);K.lathe([[0,.04],[.11,.04],[.112,0]],10,K.mt([200,190,170],.4,8,0));K.pop();}
   for(const T2 of HALL_BAR_TABLES){c3RoundTable(K,T2.x,T2.z,.74,.36,K.mt([96,58,34],.45,9,P.wood));
     for(const s of T2.seats)c3Chair(K,s[0],s[1],Math.atan2(T2.x-s[0],T2.z-s[1])+Math.PI);
     K.push([T2.x+.08,.755,T2.z-.05]);c3Glass(K,[200,150,60],.6);K.pop();K.push([T2.x-.12,.755,T2.z+.1]);c3Glass(K,[190,200,190],.3);K.pop();}
+  yield;
   /* лампы над стойкой бара (их свет — в сцене); шнур до потолка */
   const tone=mixc(LT.tone,acc,.25);
   for(const x of hallLamps(L)){c3Lamp(K,x-HALL_XB,.12,tone,st==="sci"?"bar":"cone");hallCord(K,x-HALL_XB,3.2,.12,hc);}
+  yield;
   /* реквизит кантины — в дальних углах бара, не у конторы */
   const spots=[[4.6,-2.3],[4.7,2.6]];
   (L.S.props||[]).slice(0,2).forEach((k,i)=>{if(k==="fan"||k==="gantry"||k==="pipes")return;c3Prop(K,k,spots[i][0],spots[i][1],acc,R);});
@@ -365,12 +369,13 @@ const HALL_DRESS={
 };
 /* сетка зала: кости, бар, одежда типа */
 /* комната зала — шагами (тестер, S23 24.10: подготовка в полёте лепила её разом, 36 мс JS в одном кадре — рывок
-   через 2,5 с после прибытия к станции с залом). Шаги — разделы кости, бар, убранство, мелочь и упаковка;
+   через 2,5 с после прибытия к станции с залом). Шаги — разделы кости и бара (бар разом — 14–17 мс на S23,
+   раунд 7 тестера), убранство, мелочь и упаковка;
    подготовка (27f4a hallPrepStep) крутит их в бюджет, вход в док без подготовки — разом (hallRoomMesh) */
 function* hallRoomJob(L){
   const K=r3Kit(),R=rng(L.seed^0x3D1);
   yield* hallBones(K,L,R);yield;
-  if(L.bar){hallBar(K,L,R);yield;}
+  if(L.bar){yield* hallBar(K,L,R);yield;}
   const D=HALL_DRESS[L.st]||HALL_DRESS.trade;D(K,L,R);K.part=0;yield;
   hallClutter(K,L,R);K.part=0;yield;
   return K.pack();
