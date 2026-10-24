@@ -163,7 +163,10 @@ function ovClusters(qs,w,h){
    прежней рамки), новый — свободный; холст без скопления 30 кадров чистится и потом прячется */
 function ovLayout(qs){
   const S=OVL.sl,w=OVL.fw,h=OVL.fh,nd=OVL.cnd,c0=OVL.cv,tg=[];
-  const free=OVL.cg>0&&c0.parentNode===document.body&&c0.previousElementSibling===GPU.cv&&!(GPU.kill&&GPU.kill.ovclip);
+  /* по умолчанию — один холст во всё окно (тестер, S23 ×2, 24.10: четыре холста по скоплениям дороже на 1,5–2,7 мс
+     ЦП процесса ГПУ за кадр — у каждого свой проход, своя отправка и свой доступ сводящего потока, а заливку на
+     скоплениях это не окупает); скопления — опыт по GPU.ovClip */
+  const free=GPU.ovClip&&OVL.cg>0&&c0.parentNode===document.body&&c0.previousElementSibling===GPU.cv;
   if(!free){
     const s=S[0];ovFit(s,w,h,0,0,nd);s.r=[0,0,w,h];s.idle=0;
     tg.push({s,view:s.cx.getCurrentTexture().createView(),w,h,ox:0,oy:0,sc:null});
