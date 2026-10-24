@@ -381,6 +381,9 @@ function h3dDev(){
   H3D.dev=d;
   H3D.K={};
   H3D.ub=d.createBuffer({size:528,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  /* формы корпусов кадра — свой буфер на каждый (H3D.ui — номер в кадре): их проходы уходят одной отправкой
+     с кадром (gpuPreEnc, 08b), и общий буфер, переписанный до неё, отдал бы всем формы последнего */
+  H3D.ubs=[];H3D.ui=0;
   H3D.U=new Float32Array(132);H3D.P=null;
 }
 /* слои класса заводятся при первой нужде: ×4 цвет и глубина на проход, массив сведённых — на кадр */
@@ -424,7 +427,7 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
   if(!T||!T.view)return false;
   if(T.draw)gpuBakeLive(T);
   h3dDev();
-  if(H3D.frame!==GPU.frameNo){H3D.frame=GPU.frameNo;for(const k in H3D.K)H3D.K[k].slot=0;}
+  if(H3D.frame!==GPU.frameNo){H3D.frame=GPU.frameNo;H3D.ui=0;for(const k in H3D.K)H3D.K[k].slot=0;}
   const d=GPU.dev;
   if(m.dev!==d){m.buf=d.createBuffer({size:m.v.byteLength,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});d.queue.writeBuffer(m.buf,0,m.v);m.dev=d;}
   if(!H3D.P)H3D.P=gpuPipeline("h3d.hull",h3dDesc);
@@ -464,20 +467,26 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
   /* в клип (u.v[32]): студия — пиксели рамки (x,y,sc в CSS рамки, плотность nd), как kClip 08c */
   if(V){U[128]=2*sc*V.nd/V.bw;U[129]=2*sc*V.nd/V.bh;U[130]=2*x*V.nd/V.bw-1;U[131]=1-2*y*V.nd/V.bh;}
   else{U[128]=U[129]=1/Rb;}
-  d.queue.writeBuffer(H3D.ub,0,U);
+  const ub=V?H3D.ub:(H3D.ubs[H3D.ui]||(H3D.ubs[H3D.ui]=d.createBuffer({size:528,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST})));
+  if(!V)H3D.ui++;
+  d.queue.writeBuffer(ub,0,U);
   const mat=T.mat||{view:GPU.nView||(GPU.nView=GPU.N.createView())},lt=V?V.lt:GPU.V.lt;
   /* bind group — в кэше выпечки, пока её виды те же (охотник 22.10: по одной на каждый рисунок корабля и станции,
-     35 тыс. за 5 минут в системе — мусор сборщику, не утечка); студия (V) живёт своей рамкой — без кэша */
-  let bg=!V&&T.__bg&&T.__bgV===T.view&&T.__bgM===mat.view&&T.__bgL===lt&&T.__bgD===d&&T.__bgP===H3D.P?T.__bg:null;
-  if(!bg){bg=d.createBindGroup({layout:H3D.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:H3D.ub}},{binding:1,resource:gpuMipSmp()},
+     35 тыс. за 5 минут в системе — мусор сборщику, не утечка), по одной на буфер форм; студия (V) живёт своей
+     рамкой — без кэша */
+  let C=null;
+  if(!V){C=T.__h3c;if(!C||C.v!==T.view||C.m!==mat.view||C.l!==lt||C.d!==d||C.p!==H3D.P)C=T.__h3c={v:T.view,m:mat.view,l:lt,d,p:H3D.P,bg:new Map()};}
+  let bg=C?C.bg.get(ub):null;
+  if(!bg){bg=d.createBindGroup({layout:H3D.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:ub}},{binding:1,resource:gpuMipSmp()},
     {binding:2,resource:T.view},{binding:3,resource:mat.view},{binding:4,resource:lt}]});
-    if(!V){T.__bg=bg;T.__bgV=T.view;T.__bgM=mat.view;T.__bgL=lt;T.__bgD=d;T.__bgP=H3D.P;}}
-  const L=V?0:K.slot++,R=V?h3dStudioRT(V):null,enc=d.createCommandEncoder(),vw=V?V.bw:n,vh=V?V.bh:n,img=V?R.img:K.img[L];
+    if(C)C.bg.set(ub,bg);}
+  /* полёт — в кодировщик «до кадра» (уходит с кадром); студия и рисунок вне кадра — в свой и отправляют сами */
+  const pe=V?null:gpuPreEnc(),L=V?0:K.slot++,R=V?h3dStudioRT(V):null,enc=pe||d.createCommandEncoder(),vw=V?V.bw:n,vh=V?V.bh:n,img=V?R.img:K.img[L];
   const p=enc.beginRenderPass({colorAttachments:[{view:V?R.msV:K.msV,resolveTarget:img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
     depthStencilAttachment:{view:V?R.mdV:K.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"}});
   p.setViewport(0,0,vw,vh,0,1);p.setScissorRect(0,0,vw,vh);
   p.setPipeline(H3D.P);p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);p.draw(m.n);p.end();
-  d.queue.submit([enc.finish()]);
+  if(!pe)d.queue.submit([enc.finish()]);
   const pass=V?V.pass:gpuScene();if(!pass)return false;
   if(V){const w=V.bw/V.nd,h=V.bh/V.nd;gpuImage(pass,img,[{x:w/2,y:h/2,w,h}],{blend:"hull"});}
   else{   /* обвод (M824): тот же слой чуть шире, фон под ним темнеет — тёмная кромка в 2–3 px вокруг силуэта;

@@ -563,7 +563,7 @@ function gpuFrame(){
   ctx.setTransform(1,0,0,1,0,0);if(GPU.cState!==0)ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   chipDomSweep();   /* слой #ovl — 08bh */
   GPU.on=true;GPU.wDone=false;
-  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.hiScene=false;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
+  GPU.enc=GPU.fenc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.hiScene=false;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.
@@ -621,7 +621,7 @@ function gpuOver(){
   GPU.emitOn=true;
   p.setPipeline(GPU.P.comp);p.setBindGroup(0,GPU.sep?gpuCompNeb():GPU.B.comp);p.draw(3);p.end();
   /* отправляем сделанное: следующая загрузка #c не должна обогнать эту склейку */
-  d.queue.submit([GPU.enc.finish()]);GPU.enc=d.createCommandEncoder();
+  gpuSubmitFrame();GPU.enc=GPU.fenc=d.createCommandEncoder();
   if(GPU.cState!==0){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();}
   GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("over")});
   return GPU.overPass;
@@ -643,6 +643,17 @@ function gpuNext(){
 /* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей. Мир, не собранный
    рисунком, собирается здесь; признак — GPU.wDone, не ctx: 2D-слоя приборов нет, ctx всегда #c
    (прежде по ctx===#c второй gpuWorld без свечения гасил кадр на 10 % — золотые кадры, 26.09) */
+/* кодировщик «до кадра» (24.10, телефон): работа, которую проход сцены этого кадра читает, а писать её посреди
+   открытого прохода сцены нельзя — корпуса в объёме (17c2a). Прежде каждый такой писатель брал свой кодировщик и
+   отправлял сам: в бою десять отправок на кадр, а ЦП драйвера платит за каждую (трасса тестера: Queue::Submit
+   4,7 мс из 10 мс Dawn на кадр). Теперь он уходит той же отправкой, что кадр, первым буфером. null — пишет не
+   кадр (свой энкодер холста ovPaint или панели 27i0, замена после сбоя режима): тогда писатель отправляет сам */
+function gpuPreEnc(){const d=GPU.dev;if(!GPU.enc||GPU.enc!==GPU.fenc)return null;if(!GPU.pre||GPU.preD!==d){GPU.pre=d.createCommandEncoder();GPU.preD=d;}return GPU.pre;}
+function gpuSubmitFrame(){
+  const d=GPU.dev,b=[];
+  if(GPU.pre){if(GPU.preD===d)b.push(GPU.pre.finish());GPU.pre=null;}
+  b.push(GPU.enc.finish());d.queue.submit(b);
+}
 function gpuManual(draw){
   if(!gpuFrame())return false;
   GPU.wantSnap=true;
@@ -687,7 +698,7 @@ function gpuPresent(){
     gpuUni();gpuLtWrite();
     gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.kill.fin?GPU.P.fin0:GPU.P.fin,GPU.B.fin,"final");
     const tsRead=gpuTsResolve();
-    GPU.dev.queue.submit([GPU.enc.finish()]);
+    gpuSubmitFrame();
     if(tsRead)tsRead();
     GPU.frameNo++;
     if(GPU.wantSnap){GPU.wantSnap=false;gpuTakeSnap();}

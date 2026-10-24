@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 653 · top-level symbols: 8835
+Files: 653 · top-level symbols: 8837
 
 ## SYMBOLS
 
@@ -953,7 +953,7 @@ H3D_CARGO                    src/17c2a-hull3d.js:22
 H3D_L                        src/17c2a-hull3d.js:16
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
-H3D_PIR                      src/17c2a-hull3d.js:507
+H3D_PIR                      src/17c2a-hull3d.js:516
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
 H3D_WGSL                     src/17c2a-hull3d.js:262
@@ -4705,7 +4705,7 @@ gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
 gpuBaked                     src/08ca-gpu-canvas.js:538-543
 gpuBargeBody                 src/12l-barge.js:550-557
 gpuBind                      src/08c-gpu-kit.js:42-48
-gpuBloom                     src/08b-gpu.js:675-681
+gpuBloom                     src/08b-gpu.js:686-692
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:33-38
 gpuBursts                    src/13z-gpu-combat.js:277-297
@@ -4735,7 +4735,7 @@ gpuKitU                      src/08c-gpu-kit.js:178-183
 gpuLight                     src/08b-gpu.js:472
 gpuLitSprite                 src/17c-system-draw.js:176-191
 gpuLtWrite                   src/08b-gpu.js:476-483
-gpuManual                    src/08b-gpu.js:646-651
+gpuManual                    src/08b-gpu.js:657-662
 gpuMipDrop                   src/08c-gpu-kit.js:114
 gpuMipSmp                    src/08c-gpu-kit.js:115
 gpuMipTex                    src/08c-gpu-kit.js:101-113
@@ -4761,7 +4761,8 @@ gpuPipesWarm                 src/08b0-gpu-pipe.js:66-78
 gpuPirateBody                src/12i-pirate-hull.js:425-436
 gpuPirateLive                src/12i-pirate-hull.js:443-489
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
-gpuPresent                   src/08b-gpu.js:683-696
+gpuPreEnc                    src/08b-gpu.js:651
+gpuPresent                   src/08b-gpu.js:694-707
 gpuQuad                      src/08c-gpu-kit.js:320-324
 gpuResize                    src/08b-gpu.js:400-445
 gpuScene                     src/08b-gpu.js:572-585
@@ -4777,6 +4778,7 @@ gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:324-415
 gpuSnapshot                  src/08b-gpu.js:22-26
 gpuSpaceSys                  src/16g-gpu-space.js:201-222
 gpuSpaceTitle                src/16g-gpu-space.js:224-235
+gpuSubmitFrame               src/08b-gpu.js:652-656
 gpuSysUnder                  src/17g-gpu-system.js:516-522
 gpuTakeSnap                  src/08b-gpu.js:30-37
 gpuTrail                     src/16ga-gpu-trail.js:61-108
@@ -4786,7 +4788,7 @@ gpuTsResolve                 src/28z-fps-probe.js:151-169
 gpuUni                       src/08b-gpu.js:537-551
 gpuWake                      src/16ga-gpu-trail.js:117-150
 gpuWeatherFar                src/19cc-gpu-air.js:265-293
-gpuWorld                     src/08b-gpu.js:654-673
+gpuWorld                     src/08b-gpu.js:665-684
 gradeGpu                     src/19c-light.js:264-275
 gradePass                    src/19c-light.js:276-314
 greenAll                     src/21g-greenhouse.js:30-34
@@ -4893,23 +4895,23 @@ gunsInGroup                  src/05c-arms.js:233-236
 h01                          src/01-core.js:28
 h3dBargeMesh                 src/17c2f-body-barge.js:58-66
 h3dBargeWreck                src/17c2f-body-barge.js:68-90
-h3dCls                       src/17c2a-hull3d.js:387-397
+h3dCls                       src/17c2a-hull3d.js:390-400
 h3dDesc                      src/17c2a-hull3d.js:369-377
-h3dDev                       src/17c2a-hull3d.js:379-385
-h3dDraw                      src/17c2a-hull3d.js:401-413
+h3dDev                       src/17c2a-hull3d.js:379-388
+h3dDraw                      src/17c2a-hull3d.js:404-416
 h3dEar                       src/17c2a-hull3d.js:245-260
 h3dKit                       src/17c2a-hull3d.js:27-90
 h3dMesh                      src/17c2a-hull3d.js:132-243
 h3dPack                      src/17c2a-hull3d.js:92-100
 h3dParts                     src/17c2b-parts3d.js:158-353
-h3dPirMesh                   src/17c2a-hull3d.js:508-564
-h3dPirate                    src/17c2a-hull3d.js:566-569
+h3dPirMesh                   src/17c2a-hull3d.js:517-573
+h3dPirate                    src/17c2a-hull3d.js:575-578
 h3dPlaneHoles                src/17c2a-hull3d.js:107-129
-h3dRun                       src/17c2a-hull3d.js:423-488
+h3dRun                       src/17c2a-hull3d.js:426-497
 h3dStationMesh               src/17c2g-body-station.js:97-129
 h3dStockGear                 src/17c2b-parts3d.js:374-383
-h3dStudioPt                  src/17c2a-hull3d.js:416-420
-h3dStudioRT                  src/17c2a-hull3d.js:491-501
+h3dStudioPt                  src/17c2a-hull3d.js:419-423
+h3dStudioRT                  src/17c2a-hull3d.js:500-510
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60
@@ -8980,7 +8982,7 @@ zoomTo                       src/15-input.js:358
 ## src/08a-statehash.js · 6 KB
   · хэш состояния (M441):1
 
-## src/08b-gpu.js · 54 KB
+## src/08b-gpu.js · 56 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
 ## src/08b0-gpu-pipe.js · 11 KB
@@ -9616,7 +9618,7 @@ zoomTo                       src/15-input.js:358
 ## src/17c2-hull-gpu.js · 19 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 49 KB
+## src/17c2a-hull3d.js · 50 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c2b-parts3d.js · 33 KB
