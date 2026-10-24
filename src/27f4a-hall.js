@@ -206,7 +206,7 @@ function hallLayout(st,lazy){
    (QA 14.10, ПК). Пока корабль в системе со станцией, это делается по шагу раз в несколько кадров:
    тела (cpMesh — по человеку), выгрузка сеток и комната. Раскладка при входе строится заново — она
    дёшева и зависит от состояния дел, — но тела берутся из кэша, сетки уже на видеокарте, комната готова */
-const HALL_R3_KEYS=["r3.main","r3.shadow","r3.down"];
+const HALL_R3_KEYS=["r3.main","r3.shadow","r3.down"],HALL_PRE_MS=4;
 const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,n:0,cl:null,ci:0,cdone:true,tg:false};
 function hallPrepStep(){
   const sys=G.sys,S=sys&&sys.station,P=HALL_PRE;
@@ -215,7 +215,7 @@ function hallPrepStep(){
      их сама, в кадре. Ждём только их — вся очередь в полёте идёт шагом в 2,5 с */
   if(typeof GPU_PIPES!=="undefined"&&!(GPU_PIPES.late&&(GPU_PIPES.late.done||HALL_R3_KEYS.every(k=>{const w=GPU_PIPES.warm.get(k);return w&&w.p;}))))return;
   const st=S.stype||"trade",key=st+"|"+sys.key;
-  if(P.key!==key){P.key=key;P.L=null;P.i=0;P.up=false;P.done=false;P.cl=null;P.ci=0;P.cdone=false;P.tg=false;if(P.room){r3Drop(P.room);P.room=null;}hallRelease();}
+  if(P.key!==key){P.key=key;P.L=null;P.rj=null;P.i=0;P.up=false;P.done=false;P.cl=null;P.ci=0;P.cdone=false;P.tg=false;if(P.room){r3Drop(P.room);P.room=null;}hallRelease();}
   if(P.done){if(!P.cdone)hallCantPrep(S,sys);return;}
   /* цели кадра (MSAA, глубина, отсвет) и кубическая тень — пока корабль в системе: первый вход их не заводит */
   if(!P.tg){P.tg=true;if(typeof document!=="undefined"&&$st){const cn=hallCanvas(),R=(hallSize(cn),rpgGet(cn));if(R&&r3Dev())r3Targets(R,cn.width,cn.height);}return;}
@@ -226,7 +226,9 @@ function hallPrepStep(){
     if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,5);return;}   /* тело — шаг, выгрузка — следующий */
     r3Up(q.mesh);P.i++;return;
   }
-  if(!P.room){P.room=hallRoomMesh(P.L);P.rkey=P.L.rkey;return;}
+  /* комната — шагами в бюджет HALL_PRE_MS: разом она стоила 36 мс JS на S23 */
+  if(!P.room){if(!P.rj)P.rj=hallRoomJob(P.L);const t0=wallMs();let r;do r=P.rj.next();while(!r.done&&wallMs()-t0<HALL_PRE_MS);
+    if(!r.done)return;P.rj=null;P.room=r.value;P.rkey=P.L.rkey;return;}
   if(!P.up){r3Up(P.room);P.up=true;return;}
   /* планета в окне — тоже заранее: печать шара (27f4c) живёт до смены станции */
   {const keep=G.st;G.st=S;try{hallOrbUp(P.L);if(P.L.bar)c3SignTex(P.L.S);}finally{G.st=keep;}}   /* и вывеска бара */

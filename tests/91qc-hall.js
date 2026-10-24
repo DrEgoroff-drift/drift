@@ -14,6 +14,15 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
   /* стройка — своё место у окна (участок), остальные вкладки — к месту своего раздела */
   for(const g of ST_GROUPS)for(const t of g.tabs)eq(hallPlaceOf(t),t==="site"?"site":g.id,"вкладка «"+t+"» ведёт камеру к своему месту");
 
+  /* комната зала собирается шагами (подготовка в полёте крутит их в бюджет — разом было 36 мс JS на S23):
+     шаги дают ту же сетку, что сборка разом, и их не меньше шести */
+  for(const id of ["trade","yard"]){
+    const L=hallLayout(id),it=hallRoomJob(L);let r,n=0;do{r=it.next();n++;}while(!r.done);
+    const a=r.value,b=hallRoomMesh(hallLayout(id));let same=a.v.length===b.v.length;
+    for(let i=0;same&&i<a.v.length;i+=7)same=a.v[i]===b.v[i];
+    ok(same,"«"+id+"»: сетка зала шагами — та же, что разом");
+    ok(n>=6,"«"+id+"»: комната зала собирается шагами ("+n+")");
+  }
   const cam=hallCam(HALL_CAMS.trade,1280,720,true);
   for(const id of types){
     const L=hallLayout(id);L.room=hallRoomMesh(L);

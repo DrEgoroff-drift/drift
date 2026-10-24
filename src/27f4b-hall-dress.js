@@ -67,7 +67,7 @@ function hallDrum(K,x,z,acc,c){K.push([x,0,z]);K.lathe([[0,.28],[.05,.3],[.45,.3
   K.lathe([[.6,.312],[.7,.312]],18,K.mt(acc,.4,7,R3P.hazard));K.pop();}
 
 /* ── кости: пол, стены, потолок, балки, окно, доска, стойка, верстак, контора ── */
-function hallBones(K,L,R){
+function* hallBones(K,L,R){
   const T=L.T,P=R3P,hc=T.hc,X0=HALL_L,X1=L.R,B=HALL_B,F=L.cut?HALL_FCUT:HALL_F,wall=T.wall,wy=hallWinY(T);
   const rough=T.win===1||T.weld||T.dark;   /* литейка, верфь, застава — бетон и сталь, не плитка */
   const Mw=K.mt(wall.map(v=>v*1.25),.25,6,P.wall),Mw2=K.mt(mixc(wall,[12,10,10],.35),.3,6,P.wall);
@@ -110,12 +110,14 @@ function hallBones(K,L,R){
   if(L.bar){K.quad([HALL_XB-4.55,.004,B],[X1,.004,B],[X1,.004,F],[HALL_XB-4.55,.004,F],K.mt(mixc(wall,[118,92,70],.5),.4,8,P.wood),[0,1,0]);
     if(hc>3.4)K.box([HALL_XB-4.55,3.3,(B+F)/2],[.1,.1,(F-B)/2],Be,.02);}
   hallWindow(K,HALL_WIN[0],HALL_WIN[1],wy[0],wy[1],wy[1]-wy[0]>1.6?4:3,Fr);hallGlint(K,T);
+  yield;
   /* доска: пробковое поле в раме; листы на ней — объявления плиты (27f4h, M814), своей сеткой */
   {const D=HALL_BOARD_BOX,bx0=D.x0,bx1=D.x1,by0=D.y0,by1=D.y1,bz=B+.02;
   K.box([(bx0+bx1)/2,(by0+by1)/2,bz+.02],[(bx1-bx0)/2+.06,(by1-by0)/2+.06,.02],K.mt([58,46,34],.4,8,P.wood),.012);
   K.box([(bx0+bx1)/2,(by0+by1)/2,bz+.042],[(bx1-bx0)/2,(by1-by0)/2,.004],K.mt([128,98,66],.08,3,P.cloth),.002);
   K.box([(bx0+bx1)/2,by1+.16,bz+.03],[.34,.055,.012],K.mt([40,38,36],.4,8,0),.006);   /* табличка «ДОСКА» над рамой — тёмная плашка */
   K.box([(bx0+bx1)/2,by1+.16,bz+.043],[.28,.012,.001],K.mt(L.acc,.3,6,0,.35),0);}
+  yield;
   /* стойка вдоль левой стены: корпус, столешница, полка за спиной хозяина */
   const cx=-5.2,cz0=-2.74,cz1=L.cut?.95:2.5,cm=(cz0+cz1)/2,ch=(cz1-cz0)/2,Ms=HALL_COUNTER[L.st]||HALL_COUNTER.trade;
   const Mb=K.mt(Ms[0],.4,8,Ms[2]),Mt=K.mt(Ms[1],.55,10,Ms[3]);
@@ -151,6 +153,7 @@ function hallBones(K,L,R){
       else{const rr=.022+sz*.012,h=Math.min(room-.02,.1+sz*.08),Mg=K.mt(tone(GM.glass),.85*sp,14,P.glass);   /* тёмное стекло: бутыль с горлом */
         w=rr;K.push([FX,y,z+w]);K.lathe([[0,rr],[h*.62,rr],[h*.78,rr*.42],[h,rr*.38],[h+.006,0]],10,Mg);K.lathe([[h*.2,rr+.001],[h*.45,rr+.001]],10,K.mt(dust(PAP),.12,3,0));K.pop();w*=2;}
       z+=w+.012+R()*.05;}});
+  yield;
   /* бра: кронштейн и матовый колпак (свет — в сцене, если зал не тёмный) */
   if(!T.dark){K.box([X0+.04,2.2,-.9],[.04,.05,.03],K.mt([60,52,40],.6,9,P.brushed),.01);K.tube([[X0+.06,2.2,-.9],[X0+.2,2.24,-.9]],.008,K.mt([60,52,40],.6,9,P.brushed),5);
     K.ell([X0+.2,2.2,-.9],[.06,.08,.06],K.mt(mixc(T.key,[255,200,140],.4),.2,4,0,3.5,true),6,10);}
@@ -158,6 +161,7 @@ function hallBones(K,L,R){
   hallShade(K,HALL_KEYX,hallKeyY(T),.62,T.key,hc);
   /* рабочая лампа над верстаком у окна: та же тарелка в две трети, шнур до потолка */
   {const s=.66,wy=hallWorkY(T);K.push([HALL_WORK[0],wy,HALL_WORK[1]],0,0,0,s);hallShade(K,0,0,0,T.key,(hc-wy)/s);K.pop();}
+  yield;
   /* верстак под окном: столешница, ноги, ящики; на нём — инструменты места НАУКА */
   const Wb=K.mt([110,104,96],.5,9,P.brushed),Wt=K.mt([92,70,50],.35,7,P.wood);
   K.box([1.0,.88,-2.25],[1.6,.03,.33],Wt,.01);
@@ -360,11 +364,15 @@ const HALL_DRESS={
       K.surf(10,1,(u,v)=>[[HALL_L+.5+u*12.5,L.T.hc-.5-.35*Math.sin(u*Math.PI)-v*.25,z]],K.mt(c,.1,3,P.cloth),{flip:1});}}
 };
 /* сетка зала: кости, бар, одежда типа */
-function hallRoomMesh(L){
+/* комната зала — шагами (тестер, S23 24.10: подготовка в полёте лепила её разом, 36 мс JS в одном кадре — рывок
+   через 2,5 с после прибытия к станции с залом). Шаги — разделы кости, бар, убранство, мелочь и упаковка;
+   подготовка (27f4a hallPrepStep) крутит их в бюджет, вход в док без подготовки — разом (hallRoomMesh) */
+function* hallRoomJob(L){
   const K=r3Kit(),R=rng(L.seed^0x3D1);
-  hallBones(K,L,R);
-  if(L.bar)hallBar(K,L,R);
-  const D=HALL_DRESS[L.st]||HALL_DRESS.trade;D(K,L,R);K.part=0;
-  hallClutter(K,L,R);K.part=0;
+  yield* hallBones(K,L,R);yield;
+  if(L.bar){hallBar(K,L,R);yield;}
+  const D=HALL_DRESS[L.st]||HALL_DRESS.trade;D(K,L,R);K.part=0;yield;
+  hallClutter(K,L,R);K.part=0;yield;
   return K.pack();
 }
+function hallRoomMesh(L){const it=hallRoomJob(L);let r;do r=it.next();while(!r.done);return r.value;}
