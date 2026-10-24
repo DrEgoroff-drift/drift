@@ -30,7 +30,8 @@ const R3_DBG={notap:0,novol:0,nopass:0,notwin:0};   /* notwin — тень лю�
    лампы, матрицы теней, матрицы частей, тон частей */
 const R3U={vp:0,cam:16,sky:20,gnd:24,fog:28,acc:32,win:36,win2:40,sgn:44,sgn2:48,flm:52,flm2:56,lt:60,sv:60+R3_MAXL*16};
 R3U.M=R3U.sv+R3_SH*16;R3U.ot=R3U.M+R3_MAXI*R3_PART*16;
-const R3_UN=R3U.ot+R3_MAXI*R3_PART*4;
+R3U.iv=R3U.ot+R3_MAXI*R3_PART*4;   /* обратная матрица камеры — луч дыма в половине кадра (fsv) */
+const R3_UN=R3U.iv+16;
 /* узоры: номер — то, что знает шейдер */
 const R3P={none:0,wall:1,floor:2,wood:3,brushed:4,window:5,sign:6,cloth:7,skin:8,hair:9,glass:10,film:11,eye:12,leather:13,hazard:14,screen:15,neon:16,ceil:17,plant:18};
 
@@ -239,7 +240,7 @@ function r3Kit(){
 const R3_WGSL=`diagnostic(off, derivative_uniformity);
 struct Lt{p:vec4f,c:vec4f,d:vec4f,s:vec4f};
 struct U{vp:mat4x4f,cam:vec4f,sky:vec4f,gnd:vec4f,fog:vec4f,acc:vec4f,win:vec4f,win2:vec4f,sgn:vec4f,sgn2:vec4f,flm:vec4f,flm2:vec4f,
-  lt:array<Lt,${R3_MAXL}>,sv:array<mat4x4f,${R3_SH}>,M:array<mat4x4f,${R3_MAXI*R3_PART}>,ot:array<vec4f,${R3_MAXI*R3_PART}>};
+  lt:array<Lt,${R3_MAXL}>,sv:array<mat4x4f,${R3_SH}>,M:array<mat4x4f,${R3_MAXI*R3_PART}>,ot:array<vec4f,${R3_MAXI*R3_PART}>,iv:mat4x4f};
 @group(0) @binding(0) var<uniform> u:U;
 @group(0) @binding(1) var smp:sampler;
 @group(0) @binding(2) var shm:texture_depth_2d_array;
@@ -641,18 +642,38 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
       let d=length(W.xz-q.xy)/q.z;cs*=1.-.62*exp(-d*d*2.2);}
     c*=cs;}
   c*=1.-ot.y;
-  /* ── воздух: дым по лучу, в конусах ламп — с тенью (лучи сквозь людей) ── */
-  let ro=u.cam.xyz;let rv=W-ro;let tm=length(rv);let rd=rv/tm;
-  /* сдвиг шагов — чередующийся градиентный шум (ровнее белого), кадр к кадру смещён золотым сечением */
-  let jit=fract(fract(52.9829189*fract(dot(floor(i.q.xy),vec2f(.06711056,.00583715))))+fract(t*60.)*.618034);
+  /* ── воздух: дым по лучу считает свой проход в половину кадра (fsv, ниже): здесь только длина луча и покрытие ── */
+  let tm=length(W-u.cam.xyz);
+  c=mix(c,u.fog.rgb,1.-exp(-tm*u.gnd.w));
+  /* альфа кадра — маска резкости (бит 23): тела под ней, фон — нет; после сведения MSAA край тела — доля */
+  var o:FO2;o.c=vec4f(c,f32((f>>23u)&1u));o.v=vec4f(tm,1.,0.,0.);return o;}
+/* ── дым — половина кадра (24.10, телефон): петля по лампам с тенью и шумом на шаг шла в основном проходе на каждом
+   пикселе каждого слоя тел — у зала ~45 % цены прохода, — а потребитель брал её сведённой вдвое и размытой 13
+   выборками. Здесь тот же луч от камеры до тела: длина и покрытие — из основного прохода (vtm: rg = длина·покрытие,
+   покрытие после сведения MSAA), четыре пикселя кадра в один; кромка тела гасит дым своей долей, как сведение.
+   Шагов восемь вместо шести: зерно, что сводили 13 выборок полного кадра, здесь сводит та же выборка по половине ── */
+@group(0) @binding(8) var vtm:texture_2d<f32>;
+@vertex fn vsq(@builtin(vertex_index) i:u32)->@builtin(position) vec4f{
+  var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));return vec4f(P[i],0.,1.);}
+@fragment fn fsv(@builtin(position) q:vec4f)->@location(0) vec4f{
+  let sz=vec2i(textureDimensions(vtm));let b=vec2i(q.xy)*2;
+  var a=vec2f(0.);
+  for(var j=0;j<4;j++){a+=textureLoad(vtm,min(b+vec2i(j&1,j>>1),sz-1),0).xy;}
+  if(a.y<=1e-3){return vec4f(0.,0.,0.,1.);}
+  let tm=a.x/a.y;let cov=a.y*.25;
+  let uv=(vec2f(b)+1.)/vec2f(sz);
+  let P=u.iv*vec4f(uv.x*2.-1.,1.-uv.y*2.,.5,1.);
+  let ro=u.cam.xyz;let rd=normalize(P.xyz/P.w-ro);
+  let t=u.cam.w;let nl=i32(u.sgn2.z+.5);
+  let jit=fract(fract(52.9829189*fract(dot(floor(q.xy),vec2f(.06711056,.00583715))))+fract(t*60.)*.618034);
   var vol=vec3f(0.);
   for(var k=0;k<${R3_MAXL};k++){
     if(k>=nl){break;}
     let L=u.lt[k];if(L.s.z<=0.){continue;}
     let oc=ro-L.p.xyz;let b=dot(oc,rd);let cc=dot(oc,oc)-L.p.w*L.p.w;let hq=b*b-cc;if(hq<=0.){continue;}
     let sq=sqrt(hq);let t0=max(-b-sq,0.);let t1=min(-b+sq,tm);if(t1<=t0){continue;}
-    let dt=(t1-t0)/6.;let vr2=L.p.w*L.p.w;let vir4=1./(vr2*vr2);
-    for(var j=0;j<6;j++){
+    let dt=(t1-t0)/8.;let vr2=L.p.w*L.p.w;let vir4=1./(vr2*vr2);
+    for(var j=0;j<8;j++){
       let p=ro+rd*(t0+(f32(j)+jit)*dt);let lv=L.p.xyz-p;let d2=dot(lv,lv);let l=lv*inverseSqrt(d2);
       var at=clamp(1.-d2*d2*vir4,0.,1.)/(d2+.3);
       if(L.c.w>.5){at*=smoothstep(L.d.w,L.s.y,dot(-l,L.d.xyz));}
@@ -662,9 +683,7 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
       let vcl=max(dot(l,rd),0.);let vc2=vcl*vcl;let ph=1.+1.6*vc2*vc2*vc2;
       vol+=L.c.rgb*at*s*dn*ph*dt*L.s.z;}
   }
-  c=mix(c,u.fog.rgb,1.-exp(-tm*u.gnd.w));
-  /* альфа кадра — маска резкости (бит 23): тела под ней, фон — нет; после сведения MSAA край тела — доля */
-  var o:FO2;o.c=vec4f(c,f32((f>>23u)&1u));o.v=vec4f(vol*u.fog.w,1.);return o;}`;
+  return vec4f(vol*u.fog.w*cov,1.);}`;
 /* уменьшение вдвое на 13 выборок (как в больших движках): ступени отсвета и размытый дым.
    tx — шаг выборки источника и режим (1 — порог отсвета с мягким коленом) */
 const R3_DOWN_WGSL=`
@@ -692,9 +711,14 @@ const R3={dev:null,P:null,PS:null,sh:null,shA:null,shL:[],skB:[],skG:[],ub:null,
 function r3Desc(){
   const mod=gpuShader(R3_WGSL);
   return {layout:"auto",vertex:{module:mod,entryPoint:"vs",buffers:[r3VB()]},
-    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float"},{format:"rgba16float"}]},
+    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float"},{format:"rg16float"}]},
     primitive:{topology:"triangle-list",cullMode:"none"},multisample:{count:4},
     depthStencil:{format:"depth24plus",depthWriteEnabled:true,depthCompare:"less"}};
+}
+function r3VolDesc(){
+  const mod=gpuShader(R3_WGSL);
+  return {layout:"auto",vertex:{module:mod,entryPoint:"vsq"},fragment:{module:mod,entryPoint:"fsv",targets:[{format:"rgba16float"}]},
+    primitive:{topology:"triangle-list"}};
 }
 function r3ShDesc(){
   const mod=gpuShader(R3_WGSL);
@@ -715,7 +739,7 @@ GPU_PIPE_ONE["r3.down"]=()=>r3DownDesc();
 function r3Dev(){
   const d=GPU.dev;if(!d)return false;if(R3.dev===d)return true;
   R3.dev=d;const U=GPUTextureUsage;
-  R3.P=gpuPipeline("r3.main",r3Desc);R3.PS=gpuPipeline("r3.shadow",r3ShDesc);R3.PD=gpuPipeline("r3.down",r3DownDesc);
+  R3.P=gpuPipeline("r3.main",r3Desc);R3.PS=gpuPipeline("r3.shadow",r3ShDesc);R3.PD=gpuPipeline("r3.down",r3DownDesc);R3.PV=gpuPipeline("r3.vol",r3VolDesc);
   R3.sh=d.createTexture({size:[R3_SHN,R3_SHN,R3_SH],format:"depth24plus",usage:U.RENDER_ATTACHMENT|U.TEXTURE_BINDING});
   R3.shA=R3.sh.createView({dimension:"2d-array"});
   R3.shOwn=null;R3.shL=[];for(let i=0;i<R3_SH;i++)R3.shL.push(R3.sh.createView({dimension:"2d",baseArrayLayer:i,arrayLayerCount:1}));
@@ -745,7 +769,7 @@ function r3Up(m){
 }
 function r3Drop(m){if(m&&m.buf&&m.dev===GPU.dev)GPU.trash.push(m.buf);if(m){m.buf=null;m.dev=null;}}
 /* цели рендера холста — в корзину (холст больше не нужен) */
-function r3Free(cn){const R=cn&&cn.__rpg,T=R&&R.r3;if(T&&T.dev===GPU.dev)GPU.trash.push(T.ms,T.mv,T.md,T.res,T.vres,T.bl,T.vl,...T.ubs);if(R)R.r3=null;}
+function r3Free(cn){const R=cn&&cn.__rpg,T=R&&R.r3;if(T&&T.dev===GPU.dev)GPU.trash.push(T.ms,T.mv,T.md,T.res,T.vres,T.vh,T.bl,T.vl,...T.ubs);if(R)R.r3=null;}
 /* матрица теней лампы: из её места вдоль d, конус cosO (с запасом) */
 function r3ShadowVP(p,dir,cosO,range){
   const up=Math.abs(dir[1])>.9?[0,0,-1]:[0,1,0];
@@ -763,24 +787,27 @@ function r3Targets(R,w,h){
   const d=GPU.dev,U=GPUTextureUsage;
   let T=R.r3;
   if(!T||T.dev!==d||T.w!==w||T.h!==h){
-    if(T&&T.dev===d)GPU.trash.push(T.ms,T.mv,T.md,T.res,T.vres,T.bl,T.vl,...T.ubs);
+    if(T&&T.dev===d)GPU.trash.push(T.ms,T.mv,T.md,T.res,T.vres,T.vh,T.bl,T.vl,...T.ubs);
     /* цвет и дым (MSAA → разрешённые), глубина; ступени отсвета — мипы половинного размера; дым — половина */
     const RT=U.RENDER_ATTACHMENT|U.TEXTURE_BINDING,hw=Math.max(1,w>>1),hh=Math.max(1,h>>1);
     let nb=1;while(nb<5&&(Math.min(hw,hh)>>nb)>=8)nb++;
-    const ms=()=>d.createTexture({size:[w,h],format:"rgba16float",sampleCount:4,usage:U.RENDER_ATTACHMENT}),
-      full=()=>d.createTexture({size:[w,h],format:"rgba16float",usage:RT});
-    T=R.r3={dev:d,w,h,nb,ms:ms(),mv:ms(),md:d.createTexture({size:[w,h],format:"depth24plus",sampleCount:4,usage:U.RENDER_ATTACHMENT}),
-      res:full(),vres:full(),bl:d.createTexture({size:[hw,hh],mipLevelCount:nb,format:"rgba16float",usage:RT}),
+    const ms=f=>d.createTexture({size:[w,h],format:f||"rgba16float",sampleCount:4,usage:U.RENDER_ATTACHMENT}),
+      full=f=>d.createTexture({size:[w,h],format:f||"rgba16float",usage:RT});
+    T=R.r3={dev:d,w,h,nb,ms:ms(),mv:ms("rg16float"),md:d.createTexture({size:[w,h],format:"depth24plus",sampleCount:4,usage:U.RENDER_ATTACHMENT}),
+      res:full(),vres:full("rg16float"),vh:d.createTexture({size:[hw,hh],format:"rgba16float",usage:RT}),
+      bl:d.createTexture({size:[hw,hh],mipLevelCount:nb,format:"rgba16float",usage:RT}),
       vl:d.createTexture({size:[hw,hh],format:"rgba16float",usage:RT}),ubs:[],down:[]};
     T.msV=T.ms.createView();T.mvV=T.mv.createView();T.mdV=T.md.createView();T.resV=T.res.createView();T.vresV=T.vres.createView();
-    T.blV=T.bl.createView();T.vlV=T.vl.createView();
+    T.vhV=T.vh.createView();T.blV=T.bl.createView();T.vlV=T.vl.createView();
+    T.vg=d.createBindGroup({layout:R3.PV.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:R3.ub}},{binding:2,resource:R3.shA},
+      {binding:3,resource:R3.cmp},{binding:6,resource:R3.vnV},{binding:7,resource:R3.vns},{binding:8,resource:T.vresV}]});
     const blL=[];for(let i=0;i<nb;i++)blL.push(T.bl.createView({baseMipLevel:i,mipLevelCount:1}));
     const dn=(src,sw,sh,mode,dst)=>{const b=d.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
       d.queue.writeBuffer(b,0,new Float32Array([1/sw,1/sh,mode,0]));T.ubs.push(b);
       T.down.push([d.createBindGroup({layout:R3.PD.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:b}},{binding:1,resource:R3.smp},{binding:2,resource:src}]}),dst]);};
     dn(T.resV,w,h,1,blL[0]);
     for(let i=1;i<nb;i++)dn(blL[i-1],Math.max(1,hw>>(i-1)),Math.max(1,hh>>(i-1)),0,blL[i]);
-    dn(T.vresV,w,h,0,T.vlV);
+    dn(T.vhV,2*hw,2*hh,0,T.vlV);   /* дым уже в половине: те же 13 выборок с шагом в полпикселя его — пятно то же, что было */
     R.bg.clear();
   }
   return T;
@@ -804,15 +831,14 @@ function r3Frame(cn,S,post,dst){
     F.set([l.p[0],l.p[1],l.p[2],l.range, l.c[0],l.c[1],l.c[2],l.spot?1:0, (l.d||[0,-1,0])[0],(l.d||[0,-1,0])[1],(l.d||[0,-1,0])[2],l.spot?l.cosO:-2,
       R3_DBG.notap?-1:si,l.spot?l.cosI:-1,R3_DBG.novol?0:l.vol||0,0],o);});
   SV.forEach((m,k)=>F.set(m,R3U.sv+k*16));
-  F.set(S.M,R3U.M);F.set(S.ot,R3U.ot);
+  F.set(S.M,R3U.M);F.set(S.ot,R3U.ot);F.set(plnM4inv(S.vp,R3.ivm||(R3.ivm=new Float32Array(16))),R3U.iv);
   d.queue.writeBuffer(R3.ub,0,F);
   const tsg=S.tsg&&S.tsg.view||R3.blank,tfl=S.tfl&&S.tfl.view||R3.blank;
   const key=rpgTexId(tsg)+"|"+rpgTexId(tfl);
   let g0=R3.bgs.get(key);
   if(!g0){if(R3.bgs.size>16)R3.bgs.clear();
     g0=d.createBindGroup({layout:R3.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:R3.ub}},{binding:1,resource:R3.smp},
-      {binding:2,resource:R3.shA},{binding:3,resource:R3.cmp},{binding:4,resource:tsg},{binding:5,resource:tfl},
-      {binding:6,resource:R3.vnV},{binding:7,resource:R3.vns}]});R3.bgs.set(key,g0);}
+      {binding:2,resource:R3.shA},{binding:3,resource:R3.cmp},{binding:4,resource:tsg},{binding:5,resource:tfl}]});R3.bgs.set(key,g0);}   /* шум дыма (6, 7) — у прохода дыма (T.vg), основному не нужен */
   const enc=d.createCommandEncoder();
   const draw=(p)=>{for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}};
   /* тени: по слою на лампу; пустые слои не чистятся — их никто не читает (M816c: зал чистил 6 слоёв на 4 лампы).
@@ -833,9 +859,12 @@ function r3Frame(cn,S,post,dst){
     p.end();
   }
   const p=enc.beginRenderPass({colorAttachments:[{view:T.msV,resolveTarget:T.resV,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:1}},
-      {view:T.mvV,resolveTarget:T.vresV,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:1}}],
+      {view:T.mvV,resolveTarget:T.vresV,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
     depthStencilAttachment:{view:T.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"},timestampWrites:gpuTs("r3main")});
   p.setPipeline(R3.P);p.setBindGroup(0,g0);draw(p);p.end();
+  /* дым — половина кадра (fsv): после основного прохода, до ступеней — последняя из них его и размоет */
+  const pv=enc.beginRenderPass({colorAttachments:[{view:T.vhV,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}],timestampWrites:gpuTs("r3vol")});
+  pv.setPipeline(R3.PV);pv.setBindGroup(0,T.vg);pv.draw(3);pv.end();
   for(const [bg,dst] of T.down){
     const q=enc.beginRenderPass({colorAttachments:[{view:dst,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}],timestampWrites:gpuTs("r3down")});
     q.setPipeline(R3.PD);q.setBindGroup(0,bg);q.draw(3);q.end();}

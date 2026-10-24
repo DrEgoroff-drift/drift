@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 661 · top-level symbols: 8896
+Files: 661 · top-level symbols: 8897
 
 ## SYMBOLS
 
@@ -1839,17 +1839,17 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:691
-R3P                          src/27f2-room3d.js:35
+R3                           src/27f2-room3d.js:710
+R3P                          src/27f2-room3d.js:36
 R3U                          src/27f2-room3d.js:31
 R3_DBG                       src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:670
+R3_DOWN_WGSL                 src/27f2-room3d.js:689
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:851
-R3_SCR                       src/27f2-room3d.js:48
-R3_UN                        src/27f2-room3d.js:33
-R3_VPOOL                     src/27f2-room3d.js:79
-R3_WGSL                      src/27f2-room3d.js:239
+R3_POST_WGSL                 src/27f2-room3d.js:880
+R3_SCR                       src/27f2-room3d.js:49
+R3_UN                        src/27f2-room3d.js:34
+R3_VPOOL                     src/27f2-room3d.js:80
+R3_WGSL                      src/27f2-room3d.js:240
 RACK                         src/25d-instr-rack.js:44
 RACK_CH                      src/25d-instr-rack.js:26-32
 RACK_DQ                      src/25d-instr-rack.js:189
@@ -2162,7 +2162,7 @@ SET_SPILL                    src/21pii-pln-settle.js:24
 SET_V                        src/21pii-pln-settle.js:23
 SET_WIN                      src/21pii-pln-settle.js:25
 SFX                          src/09-audio.js:118-333
-SG_FREE                      src/27f2-room3d.js:83
+SG_FREE                      src/27f2-room3d.js:84
 SHARD_H                      tests/90-harness.js:32
 SHIELD_DELAY                 src/05c-arms.js:47
 SHIELD_KEYS                  src/05c-arms.js:46
@@ -7330,33 +7330,34 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:692-698
-r3Dev                        src/27f2-room3d.js:715-739
-r3DownDesc                   src/27f2-room3d.js:707-711
-r3Drop                       src/27f2-room3d.js:746
-r3Frame                      src/27f2-room3d.js:790-848
-r3Free                       src/27f2-room3d.js:748
-r3Kit                        src/27f2-room3d.js:87-236
-r3Lin                        src/27f2-room3d.js:38
-r3Look                       src/27f2-room3d.js:53-236
-r3MeshR                      src/27f2-room3d.js:789
-r3Mix                        src/27f2-room3d.js:39
-r3MixI                       src/27f2-room3d.js:42
-r3Mul                        src/27f2-room3d.js:50
-r3Persp                      src/27f2-room3d.js:52
-r3Pivot                      src/27f2-room3d.js:69
-r3Proj                       src/27f2-room3d.js:72-236
-r3Pt                         src/27f2-room3d.js:70
-r3Sc                         src/27f2-room3d.js:40
-r3ScI                        src/27f2-room3d.js:43
-r3Scr                        src/27f2-room3d.js:49
-r3ShDesc                     src/27f2-room3d.js:699-704
-r3ShadowVP                   src/27f2-room3d.js:750-755
-r3Step                       src/27f2-room3d.js:44
-r3Targets                    src/27f2-room3d.js:762-787
-r3Up                         src/27f2-room3d.js:741-745
-r3VB                         src/27f2-room3d.js:705
-r3Xf                         src/27f2-room3d.js:59-236
+r3Desc                       src/27f2-room3d.js:711-717
+r3Dev                        src/27f2-room3d.js:739-763
+r3DownDesc                   src/27f2-room3d.js:731-735
+r3Drop                       src/27f2-room3d.js:770
+r3Frame                      src/27f2-room3d.js:817-877
+r3Free                       src/27f2-room3d.js:772
+r3Kit                        src/27f2-room3d.js:88-237
+r3Lin                        src/27f2-room3d.js:39
+r3Look                       src/27f2-room3d.js:54-237
+r3MeshR                      src/27f2-room3d.js:816
+r3Mix                        src/27f2-room3d.js:40
+r3MixI                       src/27f2-room3d.js:43
+r3Mul                        src/27f2-room3d.js:51
+r3Persp                      src/27f2-room3d.js:53
+r3Pivot                      src/27f2-room3d.js:70
+r3Proj                       src/27f2-room3d.js:73-237
+r3Pt                         src/27f2-room3d.js:71
+r3Sc                         src/27f2-room3d.js:41
+r3ScI                        src/27f2-room3d.js:44
+r3Scr                        src/27f2-room3d.js:50
+r3ShDesc                     src/27f2-room3d.js:723-728
+r3ShadowVP                   src/27f2-room3d.js:774-779
+r3Step                       src/27f2-room3d.js:45
+r3Targets                    src/27f2-room3d.js:786-814
+r3Up                         src/27f2-room3d.js:765-769
+r3VB                         src/27f2-room3d.js:729
+r3VolDesc                    src/27f2-room3d.js:718-722
+r3Xf                         src/27f2-room3d.js:60-237
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
 rackBottom                   src/25d-instr-rack.js:331-336
@@ -8098,8 +8099,8 @@ settleWallX                  src/12t-settle.js:119
 settleWatch                  src/12t-settle.js:321-327
 settleWords                  src/12t-settle.js:258-262
 sfx                          src/09-audio.js:334-340
-sgArr                        src/27f2-room3d.js:85
-sgTake                       src/27f2-room3d.js:84
+sgArr                        src/27f2-room3d.js:86
+sgTake                       src/27f2-room3d.js:85
 sharpWord                    src/21a9-base-laws.js:41-45
 shatter                      src/24-mode-belt.js:122-136
 shieldFace                   src/05c-arms.js:53-57
@@ -10464,7 +10465,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 80 KB
+## src/27f2-room3d.js · 83 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 31 KB
