@@ -23,6 +23,9 @@
    Без устройства (Node) — ничего не рисуется, но камера и проекция работают: попадания по людям
    считаются в JS той же матрицей. */
 const R3_MAXI=32,R3_PART=16,R3_MAXL=12,R3_SH=6,R3_SHN=1024;
+/* отладка цены зала на телефоне (24.10): notap — шейдер не читает карты теней (слои рисуются), novol — без дыма,
+   nopass — слои не перерисовываются (выборки идут по старым). В игре все нули */
+const R3_DBG={notap:0,novol:0,nopass:0};
 /* раскладка формы (числа float32): матрица камеры, камера, небо, пол, дым, акцент, окно, вывеска, кино,
    лампы, матрицы теней, матрицы частей, тон частей */
 const R3U={vp:0,cam:16,sky:20,gnd:24,fog:28,acc:32,win:36,win2:40,sgn:44,sgn2:48,flm:52,flm2:56,lt:60,sv:60+R3_MAXL*16};
@@ -777,7 +780,8 @@ function r3Frame(cn,S,post,dst){
   F[R3U.sgn2+2]=L.length;   /* число ламп — третье число вывески (её .x — глубина, .y — мигание) */
   L.forEach((l,k)=>{const o=R3U.lt+k*16;let si=-1;
     if(l.shadow&&SV.length<R3_SH){si=SV.length;SL.push(l);SV.push(r3ShadowVP(l.p,l.d||[0,-1,0],l.spot?l.cosO:-.2,l.range));}
-    F.set([l.p[0],l.p[1],l.p[2],l.range, l.c[0],l.c[1],l.c[2],l.spot?1:0, (l.d||[0,-1,0])[0],(l.d||[0,-1,0])[1],(l.d||[0,-1,0])[2],l.spot?l.cosO:-2, si,l.spot?l.cosI:-1,l.vol||0,0],o);});
+    F.set([l.p[0],l.p[1],l.p[2],l.range, l.c[0],l.c[1],l.c[2],l.spot?1:0, (l.d||[0,-1,0])[0],(l.d||[0,-1,0])[1],(l.d||[0,-1,0])[2],l.spot?l.cosO:-2,
+      R3_DBG.notap?-1:si,l.spot?l.cosI:-1,R3_DBG.novol?0:l.vol||0,0],o);});
   SV.forEach((m,k)=>F.set(m,R3U.sv+k*16));
   F.set(S.M,R3U.M);F.set(S.ot,R3U.ot);
   d.queue.writeBuffer(R3.ub,0,F);
@@ -793,10 +797,10 @@ function r3Frame(cn,S,post,dst){
      В слой идут только тела в радиусе лампы: начало экземпляра (часть 0) ближе range + радиус сетки.
      Кэшировать слой между кадрами в зале нечем: все люди жестикулируют в радиусе своих ламп. S.shKeep — сцена просит
      оставить прошлые слои (зал в покое — через кадр): можно, только если их писала она же (S.own) и ламп столько же */
-  const keep=S.shKeep&&S.own&&R3.shOwn===S.own&&R3.shN===SV.length;
+  const keep=(S.shKeep||R3_DBG.nopass)&&S.own&&R3.shOwn===S.own&&R3.shN===SV.length;
   if(!keep){R3.shOwn=S.own||null;R3.shN=SV.length;}
   for(let k=0;k<(keep?0:SV.length);k++){
-    const l=SL[k],p=enc.beginRenderPass({colorAttachments:[],depthStencilAttachment:{view:R3.shL[k],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
+    const l=SL[k],p=enc.beginRenderPass({colorAttachments:[],depthStencilAttachment:{view:R3.shL[k],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"},timestampWrites:gpuTs("r3sh")});
     p.setPipeline(R3.PS);p.setBindGroup(0,R3.g0s);p.setBindGroup(1,R3.skG[k]);
     for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;
       if(!(cnt>1)){const o=(ii|0)*R3_PART*16,dx=S.M[o+12]-l.p[0],dy=S.M[o+13]-l.p[1],dz=S.M[o+14]-l.p[2],rr=l.range+r3MeshR(m);
@@ -806,14 +810,14 @@ function r3Frame(cn,S,post,dst){
   }
   const p=enc.beginRenderPass({colorAttachments:[{view:T.msV,resolveTarget:T.resV,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:1}},
       {view:T.mvV,resolveTarget:T.vresV,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:1}}],
-    depthStencilAttachment:{view:T.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"}});
+    depthStencilAttachment:{view:T.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"},timestampWrites:gpuTs("r3main")});
   p.setPipeline(R3.P);p.setBindGroup(0,g0);draw(p);p.end();
   for(const [bg,dst] of T.down){
-    const q=enc.beginRenderPass({colorAttachments:[{view:dst,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
+    const q=enc.beginRenderPass({colorAttachments:[{view:dst,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}],timestampWrites:gpuTs("r3down")});
     q.setPipeline(R3.PD);q.setBindGroup(0,bg);q.draw(3);q.end();}
   /* последний проход — на холст: форма поля пишется очередью до отправки */
   R.n=0;R.fn=0;R.W=w;R.H=h;R.cssW=w/(R.dpr||1);R.cssH=h/(R.dpr||1);
-  const pl=enc.beginRenderPass({colorAttachments:[{view:(dst?dst.cx:R.cx).getCurrentTexture().createView(),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
+  const pl=enc.beginRenderPass({colorAttachments:[{view:(dst?dst.cx:R.cx).getCurrentTexture().createView(),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}],timestampWrites:gpuTs("r3post")});
   post(pl,{view:T.resV},{view:T.vlV},{view:T.blV});pl.end();
   d.queue.submit([enc.finish()]);
   return true;
