@@ -29,6 +29,7 @@ const GPU_PIPE_KEYS=[
   "gc:wnz",
   "gc:wst",
   "gnb.fade",
+  "gnb.farc",
   "gnb.gen|16f",
   "gnb.noise",
   "h3d.hull",

@@ -102,38 +102,34 @@ const GNB_FARC=`
    let fl=smoothstep(.15,.45,sdc);
    if(fl>0.&&l0>.001){
     let qd=((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*3.6+fu.v[0].w+vec2f(2.,13.);
-    let wv=vec2f(gnt(qd*.5),gnt(qd*.5+vec2f(7.,3.)))*1.8;
-    let rl=1.-abs(2.*fbt(qd*1.7+wv,3)-1.);let rf=1.-abs(2.*fbt(qd*2.3+wv*1.4+vec2f(5.,1.),3)-1.);
+    /* поля прожилок и прядей зависят только от точки мира p+cam·.09 — они в кэше-торе (16gbb), его
+       дорисовывают по полоске за кадр. Хранятся поля до изгибов (расстояние до нулевой линии, сырой
+       шум гребней): изгиб считается здесь, после билинейной выборки, поэтому резкость прожилки и
+       гребня та же. Было ~45 выборок шума на пиксель газа (S23 на ×2: −4.5 мс, 24.10) */
+    let ks=vec2f(textureDimensions(t2))-1.;let kl=p+fu.v[0].xy*.09-.5;let kf=floor(kl);
+    let kuv=(kf-ks*floor(kf/ks)+.5+(kl-kf))/(ks+1.);
+    let FA=textureSampleLevel(t2,smp,kuv,0.);let FB=textureSampleLevel(t3,smp,kuv,0.);
+    let rl=1.-abs(2.*FA.z-1.);let rf=max(1.-abs(2.*FA.w-1.),0.);
     let bm=smoothstep(.03,.18,l0);
-    /* пылевые прожилки (M825): нулевая линия извитого поля, ширина — в пикселях (шаг поля на 1 px —
-       разностью: fwidth в этой ветке нельзя); тёмная сторона резкая, светлая мягкая; не везде — по маске */
-    /* вторая октава с другим периодом ломает ровную извилину (одна извилина читалась мрамором);
-       по длине прожилку режет шум — отрезки 60–200 px, а не сплошная нить через весь газ */
-    let qa=qd*1.9+wv*1.2+vec2f(3.,8.);let e1=1.9*3.6/H;let qc=qa*2.63+vec2f(1.7,6.1);let e3=e1*2.63;
-    let f0=fbt(qa,3)-.5+.38*(fbt(qc,2)-.5);
-    let gx=fbt(qa+vec2f(e1,0.),3)-.5+.38*(fbt(qc+vec2f(e3,0.),2)-.5)-f0;
-    let gy=fbt(qa+vec2f(0.,e1),3)-.5+.38*(fbt(qc+vec2f(0.,e3),2)-.5)-f0;
-    let fp=f0/max(length(vec2f(gx,gy)),1e-5);
-    /* СР · Визуал 22.10: вдали прожилка шириной в пиксель читалась тушью — замкнутые контуры-изолинии по всему
-       газу (мрамор, не пыль). Вдали (fz) ложбина широкая, 10–20 px, с мягкими краями; у звезды — как было */
-    let ln=mix(smoothstep(-5.,-.5,fp)*(1.-smoothstep(.5,1.6,fp)),smoothstep(-16.,-3.,fp)*(1.-smoothstep(2.,14.,fp)),fz)
-      *smoothstep(.44,.58,gnt(qd*2.4+vec2f(6.,3.)))*(.45+.55*gnt(qd*5.1+vec2f(1.,9.)));
+    /* пылевые прожилки (M825): нулевая линия извитого поля, ширина — в пикселях; тёмная сторона резкая,
+       светлая мягкая; по длине прожилку режет шум — отрезки 60–200 px. СР · Визуал 22.10: вдали ложбина
+       широкая, 10–20 px, с мягкими краями; у звезды — как было */
+    let fp=FA.x;
+    let ln=mix(smoothstep(-5.,-.5,fp)*(1.-smoothstep(.5,1.6,fp)),smoothstep(-16.,-3.,fp)*(1.-smoothstep(2.,14.,fp)),fz)*FB.z;
     /* маска — не пустыня: в ярком газе (value ≥ .25) прожилки есть везде, маска только ослабляет */
     let lm=max(smoothstep(.24,.44,gnt(qd*.45+vec2f(11.,4.))),.8*smoothstep(.025,.06,l0));
-    let qb=qd*3.3+wv*1.6+vec2f(9.,1.);let e2=3.3*3.6/H;
-    let h0=fbt(qb,3)-.5;let hx=fbt(qb+vec2f(e2,0.),3)-.5-h0;let hy=fbt(qb+vec2f(0.,e2),3)-.5-h0;
-    let hp=h0/max(length(vec2f(hx,hy)),1e-5);
-    let ln2=mix(smoothstep(-3.5,-.4,hp)*(1.-smoothstep(.4,1.2,hp)),smoothstep(-9.,-1.5,hp)*(1.-smoothstep(1.,8.,hp)),fz)*max(smoothstep(.5,.66,gnt(qd*.6+vec2f(2.,21.))),.75*smoothstep(.025,.06,l0))*smoothstep(.46,.6,gnt(qd*3.9+vec2f(13.,2.)))*(.45+.55*gnt(qd*7.3+vec2f(4.,6.)));
+    let hp=FA.y;
+    let ln2=mix(smoothstep(-3.5,-.4,hp)*(1.-smoothstep(.4,1.2,hp)),smoothstep(-9.,-1.5,hp)*(1.-smoothstep(1.,8.,hp)),fz)*max(smoothstep(.5,.66,gnt(qd*.6+vec2f(2.,21.))),.75*smoothstep(.025,.06,l0))*FB.w;
     c=c*(1.-mix(.6,.42,fz)*max(ln*lm,ln2*.8)*smoothstep(.0,.08,l0)*fl)*(1.+.55*pow(rf,6.)*bm*fz)*(1.-.18*smoothstep(.9,.985,rl)*bm*fz);
     /* тон внутри массы дрейфует: местами к сини, у ядра — к теплу; у ядра светлый узел */
     let tz=smoothstep(.45,.75,gnt(qd*.3+vec2f(5.,17.)))*bm*fz;
     c=mix(c,c*vec3f(.82,.8,1.28),tz*.55);
     let kn=smoothstep(.2,.42,l0)*fz;
     c=mix(c,c*vec3f(1.3,1.04,.78),kn*.5)*(1.+.55*kn*kn);
-    let q0=qd*6.+wv*3.;let w2=vec2f(gnt(q0*.4+vec2f(1.,5.)),gnt(q0*.4+vec2f(8.,2.)))*4.;let qs=q0+w2+vec2f(9.,2.);let rr=1.-abs(2.*(fbt(qs,3)*.62+fbt(qs*2.37+w2*.6+vec2f(4.,1.),2)*.38)-1.);
+    let rr=max(1.-abs(2.*FB.x-1.),0.);
     let rw=fz*(1.-smoothstep(.06,.25,l0));
     /* пряди кромки — двумя масштабами и рвутся по длине (отрезки 60–200 px): одна извилина читалась мрамором */
-    let rc=smoothstep(.34,.6,gnt(q0*.33+w2*.2+vec2f(3.,12.)));
+    let rc=FB.y;
     c=c*mix(1.,mix(.5,.15,rc)+1.7*pow(rr,4.)*mix(.35,1.,rc),rw);}}`;
 /* сведение: объём — отношение плотностей к звезде и здесь, а не разность: одинаково для тусклого
    и яркого газа; подсветка гаснет у звезды и у белого */

@@ -250,6 +250,8 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   if(GNB.dsys!==sys){GNB.dsys=sys;GNB.Qc=kD*((1-wD)*ph+Math.PI);GNB.Yc=kD*(1-wD)*lD;}
   else{let d=ph-GNB.phP;d-=Math.round(d/(2*Math.PI))*2*Math.PI;GNB.Qc+=kD*(1-wD)*d;GNB.Yc+=kD*(1-wD)*(lD-GNB.lDP);}
   GNB.phP=ph;GNB.lDP=lD;
+  /* поля дальнего сведения — кэшем мира (16gbb): каждый кадр, и стоя, и на ходу — сведение их читает */
+  gnbFarc();
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
   /* GPU.kill.ngen (?g11=deep): без пересчёта; стоя — перетекание (16gc) */
   if(GNB.sys===sys&&(GPU.kill.ngen||moved<GNB_MOVE&&GPU.frameNo-GNB.last<GNB_AGE&&GPU.frameNo>=GNB.last))return gnbFade(),true;
@@ -279,7 +281,7 @@ function gpuNebulaComp(pass){
   const ts=gpuTs("nebComp");let p=pass;
   if(ts){pass.end();GPU.scenePass=null;p=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:ts});}
   /* пыль уже погасила и покраснила звёзды (gnbStars); газ светит поверх */
-  gpuField(p,"gnb.emi",GNB_EMI,GNB.C,[{view:GNB.view},{view:gnbNoiseTile()}],{blend:"add"});
+  gpuField(p,"gnb.emi",GNB_EMI,GNB.C,[{view:GNB.view},{view:gnbNoiseTile()},{view:GNB.F.va},{view:GNB.F.vb}],{blend:"add"});
   /* корпуса на ярком газе — силуэтами: общий проход темнит газ вокруг 2D (08b) */
   GPU.sep=.7;
   if(ts){p.end();return gpuScene();}

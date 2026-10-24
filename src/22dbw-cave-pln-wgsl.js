@@ -47,10 +47,13 @@ fn hash2(p: vec2i, s: u32) -> f32 {
   let h = hashu(u32(p.x) * 374761393u + u32(p.y) * 668265263u + s * 1274126177u);
   return f32(h >> 8u) / 16777216.0;
 }
-fn hash3(p: vec3i, s: u32) -> f32 {
-  let h = hashu(u32(p.x) * 374761393u + u32(p.y) * 668265263u + u32(p.z) * 1440662683u + s * 1274126177u);
-  return f32(h >> 8u) / 16777216.0;
-}
+/* ключ хэша линеен по ячейке, а сложение u32 заворачивается: ключ соседней ячейки — прибавка, а не
+   четыре умножения на каждый угол. Значения те же бит в бит (24.10: на S23 целое умножение дорого, порода
+   брала ~200 хэшей на пиксель) */
+fn hk3(p: vec3i, s: u32) -> u32 { return u32(p.x) * 374761393u + u32(p.y) * 668265263u + u32(p.z) * 1440662683u + s * 1274126177u; }
+fn hs(s: u32) -> u32 { return s * 1274126177u; }
+fn hkf(k: u32) -> f32 { return f32(hashu(k) >> 8u) / 16777216.0; }
+fn hash3(p: vec3i, s: u32) -> f32 { return hkf(hk3(p, s)); }
 fn vnoise(p: vec2f, s: u32) -> f32 {
   let i = floor(p); let f = p - i;
   let u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
@@ -62,11 +65,12 @@ fn vnoise(p: vec2f, s: u32) -> f32 {
 fn vn3(p: vec3f, s: u32) -> f32 {
   let i = floor(p); let f = p - i;
   let u = f * f * (3.0 - 2.0 * f);
-  let ii = vec3i(i);
-  let a = mix(hash3(ii, s), hash3(ii + vec3i(1, 0, 0), s), u.x);
-  let b = mix(hash3(ii + vec3i(0, 1, 0), s), hash3(ii + vec3i(1, 1, 0), s), u.x);
-  let c = mix(hash3(ii + vec3i(0, 0, 1), s), hash3(ii + vec3i(1, 0, 1), s), u.x);
-  let d = mix(hash3(ii + vec3i(0, 1, 1), s), hash3(ii + vec3i(1, 1, 1), s), u.x);
+  /* углы ячейки: x +374761393, y +668265263, z +1440662683 к ключу */
+  let k = hk3(vec3i(i), s);
+  let a = mix(hkf(k), hkf(k + 374761393u), u.x);
+  let b = mix(hkf(k + 668265263u), hkf(k + 1043026656u), u.x);
+  let c = mix(hkf(k + 1440662683u), hkf(k + 1815424076u), u.x);
+  let d = mix(hkf(k + 2108927946u), hkf(k + 2483689339u), u.x);
   return mix(mix(a, b, u.y), mix(c, d, u.y), u.z);
 }
 fn ign(p: vec2f) -> f32 { return fract(52.9829189 * fract(dot(p, vec2f(0.06711056, 0.00583715)))); }
@@ -448,17 +452,20 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
       let dp = in.wpos * fsc + vec3f(vn3(wq, 61u), vn3(wq + 3.0, 63u), vn3(wq + 7.0, 65u)) * 1.1;
       let b = vec3i(floor(dp));
       var d1 = 9.0; var d2 = 9.0; var id = b;
+      let kb = hk3(b, 0u); let s91 = hs(91u); let s93 = hs(93u); let s95 = hs(95u);
       for (var k = 0; k < 27; k++) {
         let o = vec3i(k % 3 - 1, (k / 3) % 3 - 1, k / 9 - 1);
         let c = b + o;
-        let q = vec3f(c) + vec3f(hash3(c, 91u), hash3(c, 93u), hash3(c, 95u));
+        let kc = kb + u32(o.x) * 374761393u + u32(o.y) * 668265263u + u32(o.z) * 1440662683u;
+        let q = vec3f(c) + vec3f(hkf(kc + s91), hkf(kc + s93), hkf(kc + s95));
         let d = dot(dp - q, dp - q);
         if (d < d1) { d2 = d1; d1 = d; id = c; } else if (d < d2) { d2 = d; }
       }
-      let dn = vec3f(hash3(id, 81u), hash3(id, 83u) * 0.7, hash3(id, 85u)) - vec3f(0.5, 0.35, 0.5);
+      let ki = hk3(id, 0u);
+      let dn = vec3f(hkf(ki + hs(81u)), hkf(ki + hs(83u)) * 0.7, hkf(ki + hs(85u))) - vec3f(0.5, 0.35, 0.5);
       N = normalize(N + dn * mix(0.75 * (1.0 - 0.6 * fin.z), 0.9, fin.y));
-      alb *= 1.0 - mix(0.10, 0.3, fin.y) * hash3(id, 87u);
-      wet = mix(wet, 0.75, fin.y * step(0.65, hash3(id, 89u)));
+      alb *= 1.0 - mix(0.10, 0.3, fin.y) * hkf(ki + hs(87u));
+      wet = mix(wet, 0.75, fin.y * step(0.65, hkf(ki + hs(89u))));
       /* трещина — не у каждой плиты: пучками, где камень колется, и тоньше к краю пучка */
       let e = sqrt(d2) - sqrt(d1);
       let pw = length((abs(fx) + abs(fy)) * fsc);
