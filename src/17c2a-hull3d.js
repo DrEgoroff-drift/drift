@@ -522,7 +522,7 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
     const R=V?h3dStudioRT(V):null,vw=V?V.bw:n,vh=V?V.bh:n;img=V?R.img:K.img[K.slot++];
     p=enc.beginRenderPass({colorAttachments:[{view:V?R.msV:K.msV,resolveTarget:img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
       depthStencilAttachment:{view:V?R.mdV:K.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"},
-      timestampWrites:V?undefined:gpuTs("hull3d")});   /* проба g11GpuMs: корпуса кадра одной меткой */
+      timestampWrites:V?undefined:gpuTs("hull3dBig")});   /* проба g11GpuMs: крупные классом — своей меткой, атлас — hull3d */
     p.setViewport(0,0,vw,vh,0,1);p.setScissorRect(0,0,vw,vh);
     uv={u1:n/side,v1:n/side};}
   p.setPipeline(H3D.P);p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);p.draw(m.n);
