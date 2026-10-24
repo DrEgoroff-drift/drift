@@ -33,6 +33,7 @@ const GPU_PIPE_KEYS=[
   "gnb.noise",
   "gnb.res",
   "h3d.hull",
+  "h3d.pre",
   "ovl",
   "par",
   "par.add",

@@ -48,7 +48,7 @@ const GPU_PIPE_SRC={
 for(const n in GPU_FLD)GPU_PIPE_SRC[n]=()=>[GPU_WGSL_COMMON+GPU_FLD_HEAD+GPU_FLD[n](),gpuFieldLayout()];
 /* одиночные ключи — функция дескриптора в своём модуле */
 const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),"gnb.res":()=>gnbResDesc(),"gnb.farc":()=>gnbFarcDesc(),
-  "gnb.noise":()=>gnbNoiseDesc(),"h3d.hull":()=>h3dDesc(),gps:()=>gpsDesc(),ovl:()=>ovlDesc(),par:()=>parDesc(false),"par.add":()=>parDesc(true)};
+  "gnb.noise":()=>gnbNoiseDesc(),"h3d.hull":()=>h3dDesc(),"h3d.pre":()=>h3dDesc("z"),"h3d.hull1":()=>h3dDesc("1"),gps:()=>gpsDesc(),ovl:()=>ovlDesc(),par:()=>parDesc(false),"par.add":()=>parDesc(true)};
 /* камни и пыль пояса (24be): три конвейера, каждый в двух видах — ×4 (ПК) и ×1 (телефон) */
 for(const k of ["rock","rockf","dust"])for(const m of ["","4"])GPU_PIPE_ONE["belt."+k+m]=()=>brockPipeDesc("belt."+k+m);
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */

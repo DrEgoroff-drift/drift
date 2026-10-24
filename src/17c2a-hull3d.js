@@ -12,7 +12,7 @@
    Рисуется в свой слой ×4 MSAA (слой текстуры-массива) отдельной отправкой до кадра — проход
    сцены не рвётся, — и ложится в сцену одной картинкой смешением "hull" (маска корпуса 08b). */
 /* cap — потолок стороны слоя: в полёте 512, ангар (M723) и крупная проба поднимают до 1024 на время рисования */
-const H3D={M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512,atl:true,atlH:0,A:null,keep:true,KP:new Map(),kn:0};
+const H3D={M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512,atl:true,atlH:0,A:null,keep:true,KP:new Map(),kn:0,z:true};
 const H3D_L=4;   /* слоёв на кадр: свой корабль и трое рядом */
 const H3D_SIDES=[128,256,512,1024];   /* классы слоя: мелкий корпус не чистит и не сводит 512² ×4 (телефон — тайлы); 1024 — только витрина, два слоя */
 const H3D_LZ=.48,H3D_FILL=.30,H3D_KEY=1.6;   /* высота звезды над плоскостью; заливка; сила звезды */
@@ -267,7 +267,7 @@ struct U{v:array<vec4f,33>};
 @group(0) @binding(3) var tm:texture_2d<f32>;
 @group(0) @binding(4) var tl:texture_2d<f32>;
 struct VI{@location(0) p:vec3f,@location(1) n:vec3f,@location(2) c:vec4f,@location(3) m:vec2f};
-struct VO{@builtin(position) q:vec4f,@location(0) o:vec3f,@location(1) n:vec3f,@location(2) c:vec4f,@location(3) m:vec2f,
+struct VO{@builtin(position) @invariant q:vec4f,@location(0) o:vec3f,@location(1) n:vec3f,@location(2) c:vec4f,@location(3) m:vec2f,
   @location(4) s:vec2f,@location(5) no:vec3f};
 /* корпус → экран: крен вокруг продольной оси, потом курс; y экрана вниз, z — к зрителю.
    Студия (M723, u.v[8].w): наоборот — курс вокруг оси корпуса, потом наклон камеры вокруг горизонтали экрана */
@@ -296,14 +296,22 @@ fn bodyF(p:vec3f)->f32{let n=i32(u.v[8].y);let ne=u.v[7].w;let kh=u.v[8].x;
 fn bodySh(p:vec3f)->f32{var s=1.;let L=u.v[7].xyz;
   for(var j=1;j<=6;j++){let t=f32(j*j)*.35;s=min(s,clamp((bodyF(p+L*t)-1.)*1.6,0.,1.));}
   return s;}
-struct FO{@location(0) c:vec4f,@builtin(sample_mask) k:u32};
-@fragment fn fs(i:VO)->FO{
-  let E=u.v[3].w;let uv=(i.o.xy/E+1.)*.5;
-  let b=textureSampleBias(tb,smp,uv,${HG_BODY_LOD});
-  let q=textureSampleBias(tm,smp,vec2f(.5+uv.x*.5,uv.y),${HG_BODY_LOD});
+/* покрытие точки: пробоина пирата и доля выборок плоскости краски. Проход глубины (fz) кладёт по нему глубину,
+   краска (fs) идёт следом по «равно» и без discard; прежний путь (fs1) делал то и другое одним проходом */
+fn uvOf(i:VO)->vec2f{let E=u.v[3].w;return (i.o.xy/E+1.)*.5;}
+fn cover(i:VO,b:vec4f)->u32{
   let dec=i.m.y<-.5;
   /* у пирата пробоина выпечки — насквозь и в объёме: верх куска над пустой выпечкой не рисуется */
   if(u.v[8].z>.5&&!dec&&b.a<.2&&normalize(i.no).z>.5){discard;}
+  if(!dec){return 0xFu;}
+  /* плоскость краски: доля выборок по альфе выпечки, узор поворачивается от пикселя к пикселю */
+  let a=smoothstep(.25,.75,b.a);if(a<.06){discard;}
+  let nk=u32(clamp(round(a*4.),1.,4.));let m=0xFu>>(4u-nk);let r=(u32(i.q.x)+2u*u32(i.q.y))&3u;
+  return ((m<<r)|(m>>((4u-r)&3u)))&0xFu;}
+fn shade(i:VO,b:vec4f)->vec3f{
+  let uv=uvOf(i);
+  let q=textureSampleBias(tm,smp,vec2f(.5+uv.x*.5,uv.y),${HG_BODY_LOD});
+  let dec=i.m.y<-.5;
   var n=normalize(i.n);if(dec&&n.z<0.){n=-n;}
   let pa=b.rgb/max(b.a,1e-3);
   /* своя краска части: на бортах (по нормали корпуса) и там, где выпечка пуста */
@@ -359,21 +367,37 @@ struct FO{@location(0) c:vec4f,@builtin(sample_mask) k:u32};
   c+=vec3f(1.,.42,.16)*max(i.m.y,0.)*step(i.m.y,1.)*u.v[4].w;
   /* огонь сверх 1 — своё свечение части: излучатель, щель реактора, линза */
   c+=i.c.rgb*max(i.m.y-1.,0.);
-  var o:FO;o.c=vec4f(c,1.);o.k=0xFu;
-  /* плоскость краски: доля выборок по альфе выпечки, узор поворачивается от пикселя к пикселю */
-  if(dec){let a=smoothstep(.25,.75,b.a);if(a<.06){discard;}
-    let nk=u32(clamp(round(a*4.),1.,4.));let m=0xFu>>(4u-nk);let r=(u32(i.q.x)+2u*u32(i.q.y))&3u;
-    o.k=((m<<r)|(m>>((4u-r)&3u)))&0xFu;}
-  return o;}`;
+  return c;}
+struct FZ{@builtin(sample_mask) k:u32};
+struct FO{@location(0) c:vec4f,@builtin(sample_mask) k:u32};
+@fragment fn fz(i:VO)->FZ{var o:FZ;o.k=cover(i,textureSampleBias(tb,smp,uvOf(i),${HG_BODY_LOD}));return o;}
+@fragment fn fs(i:VO)->@location(0) vec4f{return vec4f(shade(i,textureSampleBias(tb,smp,uvOf(i),${HG_BODY_LOD})),1.);}
+@fragment fn fs1(i:VO)->FO{let b=textureSampleBias(tb,smp,uvOf(i),${HG_BODY_LOD});var o:FO;o.k=cover(i,b);o.c=vec4f(shade(i,b),1.);return o;}`;
 
-function h3dDesc(){
-  const mod=gpuShader(H3D_WGSL);
-  return {layout:"auto",vertex:{module:mod,entryPoint:"vs",buffers:[{arrayStride:48,attributes:[
+/* два прохода на корпус (24.10, телефон): шейдер краски — почти весь hull3d (тестер, S23 горячий: растр с MSAA и
+   сведением 0,4 мс из 3–5), а discard и маска выборок в нём выключали ранний тест глубины — краску считали и
+   днищу, и изнанке, и корпусу под частями (без discard и маски −0,9…−2,2 мс, отсечение граней −1 мс). Теперь
+   сначала глубина с тем же покрытием (fz, цвет не пишет), потом краска по «равно» — по разу на видимую точку
+   (пробоина и доля выборок плоскости краски берутся из глубины). Отсечение граней не годится: у частей обход
+   граней разный (гондолы теряли верх), а пробоина пирата должна показывать днище изнутри. Раскладка — общая,
+   bind group одна на оба прохода. pre: "z" — глубина, "1" — прежний путь одним проходом (H3D.z=false, A/B) */
+const H3D_LAY={d:null,bgl:null,pl:null};
+function h3dLay(){
+  const d=GPU.dev;if(H3D_LAY.d===d)return H3D_LAY;
+  const F=GPUShaderStage.FRAGMENT,tx={sampleType:"float"};
+  H3D_LAY.bgl=d.createBindGroupLayout({entries:[{binding:0,visibility:GPUShaderStage.VERTEX|F,buffer:{type:"uniform"}},
+    {binding:1,visibility:F,sampler:{type:"filtering"}},{binding:2,visibility:F,texture:tx},{binding:3,visibility:F,texture:tx},{binding:4,visibility:F,texture:tx}]});
+  H3D_LAY.pl=d.createPipelineLayout({bindGroupLayouts:[H3D_LAY.bgl]});H3D_LAY.d=d;
+  return H3D_LAY;
+}
+function h3dDesc(pre){
+  const mod=gpuShader(H3D_WGSL),z=pre==="z",one=pre==="1";
+  return {layout:h3dLay().pl,vertex:{module:mod,entryPoint:"vs",buffers:[{arrayStride:48,attributes:[
       {shaderLocation:0,offset:0,format:"float32x3"},{shaderLocation:1,offset:12,format:"float32x3"},
       {shaderLocation:2,offset:24,format:"float32x4"},{shaderLocation:3,offset:40,format:"float32x2"}]}]},
-    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float"}]},
+    fragment:{module:mod,entryPoint:z?"fz":one?"fs1":"fs",targets:[{format:"rgba16float",writeMask:z?0:GPUColorWrite.ALL}]},
     primitive:{topology:"triangle-list",cullMode:"none"},multisample:{count:4},
-    depthStencil:{format:"depth24plus",depthWriteEnabled:true,depthCompare:"less"}};
+    depthStencil:{format:"depth24plus",depthWriteEnabled:z||one,depthCompare:z||one?"less":"equal"}};
 }
 /* слои и буферы — на устройство */
 function h3dDev(){
@@ -384,7 +408,7 @@ function h3dDev(){
   /* формы корпусов кадра — свой буфер на каждый (H3D.ui — номер в кадре): их проходы уходят одной отправкой
      с кадром (gpuPreEnc, 08b), и общий буфер, переписанный до неё, отдал бы всем формы последнего */
   H3D.ubs=[];H3D.ui=0;
-  H3D.U=new Float32Array(132);H3D.P=null;
+  H3D.U=new Float32Array(132);H3D.P=null;H3D.Pz=null;H3D.P1=null;
 }
 /* атлас кадра (24.10, телефон): корпуса до 256 px — областями одного холста, одним проходом. Прежде каждый корпус
    (и накладка пирата 17c2h) — свой проход ×4 цвет и глубина размером с класс: в бою с восемью пиратами 18 проходов,
@@ -497,6 +521,8 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
   const d=GPU.dev;
   if(m.dev!==d){m.buf=d.createBuffer({size:m.v.byteLength,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});d.queue.writeBuffer(m.buf,0,m.v);m.dev=d;}
   if(!H3D.P)H3D.P=gpuPipeline("h3d.hull",h3dDesc);
+  if(!H3D.Pz)H3D.Pz=gpuPipeline("h3d.pre",()=>h3dDesc("z"));
+  if(!H3D.z&&!H3D.P1)H3D.P1=gpuPipeline("h3d.hull1",()=>h3dDesc("1"));
   /* V — студия (17c2 hullStudio, M723): своя плотность, свой проход, ровный свет, ни ламп, ни огня; V.v3 — курс,
      наклон и перспектива (h3dStudioPt). Квадрат слоя шире на перспективу: ближнее крупнее и не должно резаться.
      Студия рисует не в слой, а прямо в цель размером с рамку (h3dStudioRT): слой 1024 на 4K растягивал
@@ -543,7 +569,7 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
   let C=null;
   if(!V){C=T.__h3c;if(!C||C.v!==T.view||C.m!==mat.view||C.l!==lt||C.d!==d||C.p!==H3D.P)C=T.__h3c={v:T.view,m:mat.view,l:lt,d,p:H3D.P,bg:new Map()};}
   let bg=C?C.bg.get(ub):null;
-  if(!bg){bg=d.createBindGroup({layout:H3D.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:ub}},{binding:1,resource:gpuMipSmp()},
+  if(!bg){bg=d.createBindGroup({layout:h3dLay().bgl,entries:[{binding:0,resource:{buffer:ub}},{binding:1,resource:gpuMipSmp()},
     {binding:2,resource:T.view},{binding:3,resource:mat.view},{binding:4,resource:lt}]});
     if(C)C.bg.set(ub,bg);}
   /* атлас — область в открытом проходе кадра; полёт классом — в кодировщик «до кадра» (уходит с кадром);
@@ -564,7 +590,7 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
       E.bk=bk;E.sg=sg;E.n=nn;E.tv=tv;E.mv=mv;
       const e2=dv.createCommandEncoder(),p2=e2.beginRenderPass({colorAttachments:[{view:Kc.msV,resolveTarget:E.img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
         depthStencilAttachment:{view:Kc.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"},timestampWrites:ts});
-      p2.setViewport(0,0,nn,nn,0,1);p2.setScissorRect(0,0,nn,nn);p2.setPipeline(H3D.P);p2.setBindGroup(0,bgc);p2.setVertexBuffer(0,mb);p2.draw(mn);p2.end();
+      p2.setViewport(0,0,nn,nn,0,1);p2.setScissorRect(0,0,nn,nn);p2.setBindGroup(0,bgc);p2.setVertexBuffer(0,mb);h3dDraw2(p2,mn);p2.end();
       H3D.kd=(H3D.kd||0)+1;return e2.finish();});
     p=null;}
   else{pe=V?null:gpuPreEnc();enc=pe||d.createCommandEncoder();
@@ -574,7 +600,7 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
       timestampWrites:V?undefined:gpuTs("hull3dBig")});   /* проба g11GpuMs: крупные классом — своей меткой, атлас — hull3d */
     p.setViewport(0,0,vw,vh,0,1);p.setScissorRect(0,0,vw,vh);
     uv={u1:n/side,v1:n/side};}
-  if(p){p.setPipeline(H3D.P);p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);p.draw(m.n);
+  if(p){p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);h3dDraw2(p,m.n);
     if(!At){p.end();if(!pe)d.queue.submit([enc.finish()]);}}
   const pass=V?V.pass:gpuScene();if(!pass)return false;
   if(V){const w=V.bw/V.nd,h=V.bh/V.nd;gpuImage(pass,img,[{x:w/2,y:h/2,w,h}],{blend:"hull"});}
@@ -583,6 +609,11 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
     const hp=2*Rb*sc+8;gpuImage(pass,img,[Object.assign({x,y,w:hp,h:hp,a:.85},uv)],{blend:"shade"});
     gpuImage(pass,img,[Object.assign({x,y,w:2*Rb*sc,h:2*Rb*sc},uv)],{blend:"hull"});}
   return true;
+}
+/* корпус в проход: глубина, потом краска по «равно»; H3D.z=false — прежний путь одним проходом (h3dDesc) */
+function h3dDraw2(p,n){
+  if(!H3D.z&&H3D.P1){p.setPipeline(H3D.P1);p.draw(n);return;}
+  p.setPipeline(H3D.Pz);p.draw(n);p.setPipeline(H3D.P);p.draw(n);
 }
 /* цель студии (M723) — своя у держателя V, размером с его рамку: ×4 цвет и глубина, сведённая — картинкой
    в его проход. Одна на держателя: студия рисует корабль раз за кадр (второй вызов в кадре перетёр бы первый) */
