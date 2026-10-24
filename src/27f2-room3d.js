@@ -25,7 +25,7 @@
 const R3_MAXI=32,R3_PART=16,R3_MAXL=12,R3_SH=6,R3_SHN=1024;
 /* отладка цены зала на телефоне (24.10): notap — шейдер не читает карты теней (слои рисуются), novol — без дыма,
    nopass — слои не перерисовываются (выборки идут по старым). В игре все нули */
-const R3_DBG={notap:0,novol:0,nopass:0};
+const R3_DBG={notap:0,novol:0,nopass:0,notwin:0};   /* notwin — тень людей с полной сетки, как до 24.10 */
 /* раскладка формы (числа float32): матрица камеры, камера, небо, пол, дым, акцент, окно, вывеска, кино,
    лампы, матрицы теней, матрицы частей, тон частей */
 const R3U={vp:0,cam:16,sky:20,gnd:24,fog:28,acc:32,win:36,win2:40,sgn:44,sgn2:48,flm:52,flm2:56,lt:60,sv:60+R3_MAXL*16};
@@ -799,10 +799,12 @@ function r3Frame(cn,S,post,dst){
      оставить прошлые слои (зал в покое — через кадр): можно, только если их писала она же (S.own) и ламп столько же */
   const keep=(S.shKeep||R3_DBG.nopass)&&S.own&&R3.shOwn===S.own&&R3.shN===SV.length;
   if(!keep){R3.shOwn=S.own||null;R3.shN=SV.length;}
+  /* люди отбрасывают тень простым двойником (27f3 cpTwinPump): за кадр строится не больше одного, по шагам */
+  if(!keep&&SV.length&&!R3_DBG.notwin){for(const [m] of S.draws)if(m&&m.src&&!m.sh){if(typeof cpTwinPump==="function")cpTwinPump(m,1.5);break;}}
   for(let k=0;k<(keep?0:SV.length);k++){
     const l=SL[k],p=enc.beginRenderPass({colorAttachments:[],depthStencilAttachment:{view:R3.shL[k],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"},timestampWrites:gpuTs("r3sh")});
     p.setPipeline(R3.PS);p.setBindGroup(0,R3.g0s);p.setBindGroup(1,R3.skG[k]);
-    for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;
+    for(const [m0,ii,cnt] of S.draws){const m=m0&&m0.sh&&!R3_DBG.notwin?m0.sh:m0;if(!m||!m.n)continue;
       if(!(cnt>1)){const o=(ii|0)*R3_PART*16,dx=S.M[o+12]-l.p[0],dy=S.M[o+13]-l.p[1],dz=S.M[o+14]-l.p[2],rr=l.range+r3MeshR(m);
         if(dx*dx+dy*dy+dz*dz>rr*rr){R3.shCull=(R3.shCull||0)+1;continue;}}
       p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}

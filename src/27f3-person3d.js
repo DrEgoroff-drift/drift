@@ -298,7 +298,7 @@ function cpMeshKey(m,pose,lod){
   return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"")+(m.style!=null?"|s"+m.style:"");
 }
 function cpMeshPut(key,M){
-  if(CP_MESH.size>=96){   /* зал + кантина + портреты: 48 вытесняли друг друга по кругу */
+  if(CP_MESH.size>=128){   /* зал + кантина + портреты: 48 вытесняли друг друга по кругу; +32 — двойники теней (24.10) */
     const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
   CP_MESH.set(key,M);
 }
@@ -306,8 +306,18 @@ function cpMesh(m,pose,lod){
   const key=cpMeshKey(m,pose,lod);
   let M=CP_MESH.get(key);
   if(M){CP_MESH.delete(key);CP_MESH.set(key,M);return M;}
-  M=cpBody(m,lod,pose);
+  M=cpBody(m,lod,pose);if(lod>0)M.src={m,pose};
   cpMeshPut(key,M);return M;
+}
+/* двойник для карт теней (24.10, телефон): та же поза и те же части на простой сетке. В карте 1024² голова 92×84
+   и 30×24 дают одну тень (отклонение силуэта — доли миллиметра), а треугольников в шесть раз меньше: зал слал
+   в шесть слоёв теней 830 тысяч треугольников при 263 тысячах в самом кадре. Строится по шагам; пока не готов —
+   тень с самой сетки, как прежде */
+function cpTwinPump(M,budget){
+  if(!M||M.sh||!M.src)return M&&M.sh||null;
+  const t=cpMeshPump(M.src.m,M.src.pose,0,budget);
+  if(t)M.sh=t;
+  return t;
 }
 /* то же по шагам: простой зала берёт тело частями, пока шаги укладываются в бюджет кадра. null — ещё строится */
 const CP_JOBS=new Map();
@@ -320,7 +330,7 @@ function cpMeshPump(m,pose,lod,budget){
   const t0=wallMs();
   for(;;){
     const r=it.next();
-    if(r.done){CP_JOBS.delete(key);cpMeshPut(key,r.value);return r.value;}
+    if(r.done){CP_JOBS.delete(key);if(lod>0)r.value.src={m,pose};cpMeshPut(key,r.value);return r.value;}
     if(wallMs()-t0>=budget)return null;
   }
 }
