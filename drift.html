@@ -128881,7 +128881,7 @@ function gpuTs(name){
    цели — цена разметки, её несут только кадры пробы) */
 function gpuSeg(name){
   GPU.seg=name;
-  if(GPU.tsOn&&GPU.tsOk&&GPU.scenePass&&!GPU.scene3D){GPU.scenePass.end();GPU.scenePass=null;}
+  if(GPU.tsOn&&GPU.tsOk&&GPU.scenePass&&!GPU.scene3D&&!GPU.tsLite){GPU.scenePass.end();GPU.scenePass=null;}
 }
 /* окно вокруг операции очереди (копия #c): пустой вычислительный проход с меткой до и после,
    каждый своей отправкой. Начало второго минус конец первого — копия и растр 2D за ней */
@@ -128910,12 +128910,14 @@ function gpuTsResolve(){
     if(lo!==null){const r=acc.frame||(acc.frame={ms:0,n:0});r.ms+=Number(hi-lo)/1e6;r.n++;}
     rb.unmap();}).catch(()=>{});
 }
-/* мс видеокарты за sec: по имени — среднее на проход и доля кадров, где он был */
-async function g11GpuMs(sec){
+/* мс видеокарты за sec: по имени — среднее на проход и доля кадров, где он был. lite — проход сцены не
+   режется на куски (каждый кусок на плиточной видеокарте выгружает и грузит всю цель — на ×2 у телефона это
+   ~10 МБ туда и обратно): куски сцены сливаются в один, frame — честное время кадра (24.10) */
+async function g11GpuMs(sec,lite){
   if(!GPU.tsOk)return null;
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  GPU.tsAcc={};const f0=GPU.frameNo;GPU.tsOn=true;
-  try{await sleep(sec*1000);}finally{GPU.tsOn=false;}
+  GPU.tsAcc={};const f0=GPU.frameNo;GPU.tsOn=true;GPU.tsLite=!!lite;
+  try{await sleep(sec*1000);}finally{GPU.tsOn=false;GPU.tsLite=false;}
   const fr=Math.max(1,GPU.frameNo-f0);await sleep(300);
   /* ms — на один проход, pf — сумма за кадр (проход может идти дважды или не каждый кадр);
      sum — всё размеченное за кадр, кроме самого кадра: frame минус sum — простой видеокарты */

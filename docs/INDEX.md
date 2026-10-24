@@ -700,8 +700,8 @@ FWD_PAY_EVERY                src/21b6-base-forward.js:23
 FW_HOOKS                     src/28o-firstwatch.js:81-87
 FW_URG_MIN                   src/28o-firstwatch.js:17
 G                            src/08-state.js:207-293
-G11_CPU                      src/28z-fps-probe.js:185
-G11_GPU_KILL                 src/28z-fps-probe.js:210-241
+G11_CPU                      src/28z-fps-probe.js:187
+G11_GPU_KILL                 src/28z-fps-probe.js:212-243
 GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:20
 GAL_BULGE_CAP                src/17z1-galaxy.js:22
@@ -4422,9 +4422,9 @@ fwdLine                      src/21b6-base-forward.js:76-82
 fwdLineOf                    src/21b6-base-forward.js:118-124
 fwdMissing                   src/21b6-base-forward.js:42-52
 fwdStep                      src/21b6-base-forward.js:99-116
-g11CpuHook                   src/28z-fps-probe.js:186-191
+g11CpuHook                   src/28z-fps-probe.js:188-193
 g11Fps                       src/28z-fps-probe.js:7-14
-g11Iv                        src/28z-fps-probe.js:192-203
+g11Iv                        src/28z-fps-probe.js:194-205
 galArmD                      src/17z1-galaxy.js:25-29
 galArmPt                     src/17z2-galaxy-names.js:14
 galArmTh                     src/17z2-galaxy-names.js:13
