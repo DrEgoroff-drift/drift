@@ -6,6 +6,18 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.35 — phone performance, round 9: one frame budget for all building, work ahead after the frame is sent, the room smoke at half resolution
+
+- One build budget per frame (`17a0`, `28-loop`, `21pz`, `23c`, `22da`, `22dc`, `22d`): the mine and cave chunks, the cave dress, the planet ground and planting, and the work-ahead pumps each had their own budget (8, 8, 5, 8 and 3 ms). None of them knew what the others had already taken, so in a cave frame they stacked up to 20 ms on top of the frame itself (tester, round 21). There is now one ledger. `FB.base` is the frame's JS without building, smoothed over past frames. `FB.spent` is what has been built so far in this frame. Every builder takes `fbLeft(lo, hi, goal)` and records what it spent. The planet keeps its lower goal. The hall, planet flora, arrival warm-up and cave pre-build share one queue (`WORK`): ordered by priority, with a turn for a starved worker every 20 frames. It runs after `gpuPresent`, so the GPU draws the frame while the CPU builds ahead.
+- Off the frame (`17c2a`, `22d`, `22dc`, `22a`):
+  - A hull without its 3D mesh no longer builds the mesh inside the draw. The mesh is queued and built within the budget, and the flat bake stands in meanwhile.
+  - The cave rock noise grid (132 K `fbm2`) is computed ahead in rows. `caveMake` reads it back bit-exact.
+  - The cave dress strips and the lichens are generators, stepped within the budget. Their output is identical.
+  - Cave pre-build p95 on a PC: 3.2 ms.
+- Mine crash (`23cd`): the dig skirt threw "Invalid typed array length" when its strip went negative below the shaft depth. It is now guarded and cached by its key.
+- Room smoke (`27f2`): the smoke raymarch (lamps × 6 steps with shadow and noise) ran in the main pass on every fragment of every layer, and post then read it halved and blurred. The main pass now writes only ray length × coverage, and a half-frame pass marches the same ray in 8 steps. The last down step blurs it with the same footprint. Hall swipe on a PC: main 1.38 → 0.86 ms plus smoke 0.10 ms. The frames match (mean difference 0.4/255).
+- Glyph masks (`08cb`): alpha is read as the top byte of a 32-bit word. Same mask, 119 → 105 µs per label; the arrival frame rasters about twenty.
+
 ## 0.499.34 — phone performance, round 8: hall bodies cut finer, the planet flora kit built in small steps
 
 - Station hall people (`27f2`, `27f3`, `27f3a`): on 0.499.33 the S23 still had a few 8–9 ms hall calls in 30 s near a station (tester, round 18, live site). A pump always takes one step, and some steps were fixed spans of 0.8–3 ms on a PC: the torso surface, the ears, the eyes, the arms and the vertex copy of a portrait body (up to 10 MB). The torso and the eyes now run through the clocked surface, the vertex copy goes in 64 K chunks with the clock (`K.packG`), and the role kit, each arm, ear and eye and the lower teeth end a step. No fixed span of a body is over 0.9 ms on a PC; 30 bodies hash bit-identical, stepped or interleaved.
