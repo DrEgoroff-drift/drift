@@ -6,12 +6,12 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 659 · top-level symbols: 8856
+Files: 660 · top-level symbols: 8859
 
 ## SYMBOLS
 
-$actBtn                      src/27z-telemetry.js:68
-$bThr                        src/27z-telemetry.js:77
+$actBtn                      src/27z-telemetry.js:71
+$bThr                        src/27z-telemetry.js:80
 $bg                          src/12l-barge.js:626
 $cv                          src/27b-ui-crew.js:6
 $dl                          src/27n-ui-deal.js:18
@@ -21,29 +21,29 @@ $f                           src/27z-telemetry.js:6
 $fb                          src/27z-telemetry.js:7
 $fn                          src/27z-telemetry.js:12
 $hq                          src/27c-ui-hq.js:4
-$hudp                        src/27z-telemetry.js:92
+$hudp                        src/27z-telemetry.js:95
 $ipod                        src/25c-instr-hud.js:20
-$jn                          src/27z-telemetry.js:74
-$launch                      src/27z-telemetry.js:81
+$jn                          src/27z-telemetry.js:77
+$launch                      src/27z-telemetry.js:84
 $menu                        src/15-input.js:251
-$msg                         src/27z-telemetry.js:76
-$msl                         src/27z-telemetry.js:80
-$nav                         src/27z-telemetry.js:78
+$msg                         src/27z-telemetry.js:79
+$msl                         src/27z-telemetry.js:83
+$nav                         src/27z-telemetry.js:81
 $opts                        src/26-ui-station.js:743
 $padsEl                      src/15-input.js:4
-$place                       src/27z-telemetry.js:75
+$place                       src/27z-telemetry.js:78
 $sh                          src/27z-telemetry.js:8
 $sn                          src/27z-telemetry.js:13
 $sos                         src/16c-rescue.js:547
 $st                          src/26-ui-station.js:2
-$un                          src/27z-telemetry.js:72
-$vShip                       src/27z-telemetry.js:234
-$vc                          src/27z-telemetry.js:70
-$vf                          src/27z-telemetry.js:69
-$vitals                      src/27z-telemetry.js:65
-$vj                          src/27z-telemetry.js:73
-$vs                          src/27z-telemetry.js:71
-$zoombox                     src/27z-telemetry.js:79
+$un                          src/27z-telemetry.js:75
+$vShip                       src/27z-telemetry.js:248
+$vc                          src/27z-telemetry.js:73
+$vf                          src/27z-telemetry.js:72
+$vitals                      src/27z-telemetry.js:68
+$vj                          src/27z-telemetry.js:76
+$vs                          src/27z-telemetry.js:74
+$zoombox                     src/27z-telemetry.js:82
 ABIL                         src/16c-abil.js:15-23
 ABIL_BTN                     src/16c-abil.js:138
 ABIL_CONE                    src/16c-abil.js:158
@@ -83,7 +83,7 @@ APPETITE                     src/12ab-hold.js:26-33
 APPETITE_ADD                 src/12ab-hold.js:24
 ARC_JUMP                     src/13a-guns.js:39
 ARMED_CAP                    src/13-combat.js:12
-ARRW                         src/17h1-arr-warm.js:10
+ARRW                         src/17h1-arr-warm.js:11
 ARTIFACTS                    src/12h-relic.js:48-63
 ASTRO_BOX                    src/20fa-life-gpu.js:190
 ASTRO_PAL                    src/20fa-life-gpu.js:191
@@ -268,7 +268,7 @@ CAVE3_OLD_ENTER              src/22d-cave-pln.js:471
 CAVE3_OLD_EXIT               src/22d-cave-pln.js:372
 CAVE3_OLD_FLOOR              src/22d-cave-pln.js:487
 CAVE3_OLD_HSURF              src/22d-cave-pln.js:403
-CAVE3_OLD_HUD                src/22d-cave-pln.js:496
+CAVE3_OLD_HUD                src/22d-cave-pln.js:498
 CAVE3_OLD_NAV                src/22d-cave-pln.js:366
 CAVE3_STY                    src/22da-cave-pln-rock.js:20-28
 CAVE3_UB                     src/22db-cave-pln-light.js:12
@@ -813,7 +813,7 @@ GLOW_CACHE                   src/16a0-glow.js:23
 GLOW_LAMP                    src/11i-glow.js:48
 GLOW_SP                      src/16a0-glow.js:22
 GLOW_TIERS                   src/11i-glow.js:80
-GLT_H                        src/08b-gpu.js:473
+GLT_H                        src/08b-gpu.js:481
 GLW                          src/21piic-pln-glow.js:11
 GNB                          src/16gb-gpu-nebula.js:17
 GNB_EMI                      src/16gba-gpu-nebula-comp.js:140
@@ -870,7 +870,7 @@ GPU_CVTEX_CAP                src/08c-gpu-kit.js:70
 GPU_DROP_WHY                 tests/90-harness.js:105
 GPU_FLD                      src/08b0-gpu-pipe.js:33
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:367
-GPU_FRONT_LIKE               src/08b-gpu.js:537
+GPU_FRONT_LIKE               src/08b-gpu.js:545
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:195
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:169
@@ -886,12 +886,12 @@ GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-71
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:50
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:42-63
-GPU_PL_WGSL                  src/08b-gpu.js:489
+GPU_PL_WGSL                  src/08b-gpu.js:497
 GPU_POST_WGSL                src/08b-gpu.js:80
 GPU_SCR                      src/08c-gpu-kit.js:176
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:266
 GPU_SNAP_OVER                src/08b-gpu.js:29
-GPU_TONE_FILM                src/08b-gpu.js:525
+GPU_TONE_FILM                src/08b-gpu.js:533
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:138
 GRADE_U                      src/19c-light.js:263
 GRADE_WGSL                   src/19c-light.js:253
@@ -924,8 +924,8 @@ GST_WGSL                     src/17c-system-draw.js:27
 GSY                          src/17g-gpu-system.js:18
 GSY_COR_WGSL                 src/17g-gpu-system.js:56
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
-GSY_SH                       src/17g-gpu-system.js:471
-GSY_STARN_WGSL               src/17g-gpu-system.js:351
+GSY_SH                       src/17g-gpu-system.js:475
+GSY_STARN_WGSL               src/17g-gpu-system.js:355
 GSY_STAR_WGSL                src/17g-gpu-system.js:69
 GTN                          src/16ga-gpu-trail.js:33
 GTR                          src/16ga-gpu-trail.js:9
@@ -1194,13 +1194,15 @@ HS_SIDE                      src/17c2-hull-gpu.js:149
 HUD_BAND                     src/27z-telemetry.js:21
 HUD_FLOOR                    src/27z-telemetry.js:31
 HUD_MAPBAR                   src/27z-telemetry.js:35
-HUD_MSGKEY                   src/27z-telemetry.js:41
-HUD_MSGOBS                   src/27z-telemetry.js:42
+HUD_MAPBAR_W                 src/27z-telemetry.js:38
+HUD_MSGKEY                   src/27z-telemetry.js:44
+HUD_MSGOBS                   src/27z-telemetry.js:45
 HUD_NUM                      src/08-state.js:100
-HUD_PRE                      src/27z-telemetry.js:182
-HUD_PREV                     src/27z-telemetry.js:91
-HUD_PROMPT                   src/27z-telemetry.js:236
-HUD_STEP                     src/27z-telemetry.js:90
+HUD_PRE                      src/27z-telemetry.js:185
+HUD_PREV                     src/27z-telemetry.js:94
+HUD_PROMPT                   src/27z-telemetry.js:250
+HUD_STEP                     src/27z-telemetry.js:93
+HUD_VL                       src/27z-telemetry.js:193
 HULL_BAKES                   src/03e1-hull-bake.js:24
 HULL_BOX                     src/03e1-hull-bake.js:25
 HULL_CACHE                   src/03-ships.js:199
@@ -1812,8 +1814,8 @@ PROBE_SHOW                   src/21a8-base-world.js:29
 PROBE_SPREAD                 src/25m-probe.js:29
 PROBE_WAIT                   src/25m-probe.js:28
 PROFILE                      src/02-world.js:146-159
-PROMPT_LIVE                  src/27z-telemetry.js:248
-PROMPT_NUM_EVERY             src/27z-telemetry.js:243
+PROMPT_LIVE                  src/27z-telemetry.js:262
+PROMPT_NUM_EVERY             src/27z-telemetry.js:257
 PROMPT_RECT                  src/08-state.js:114
 PU_CELLS                     tests/91zzzzzd-pure.js:28
 PYARD                        src/04c-yards.js:89
@@ -2587,10 +2589,11 @@ applySaveRest                src/14a1-save-rest.js:15-392
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
-arrWarm                      src/17h1-arr-warm.js:55
-arrWarmAt                    src/17h1-arr-warm.js:11-15
-arrWarmStep                  src/17h1-arr-warm.js:43-54
-arrWarmSteps                 src/17h1-arr-warm.js:18-41
+arrWarm                      src/17h1-arr-warm.js:60
+arrWarmAt                    src/17h1-arr-warm.js:12-16
+arrWarmHull                  src/17h1-arr-warm.js:18
+arrWarmStep                  src/17h1-arr-warm.js:48-59
+arrWarmSteps                 src/17h1-arr-warm.js:23-46
 arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:734-785
 artGet                       src/08ca-gpu-canvas.js:550
@@ -4234,7 +4237,7 @@ expReady                     src/11x-expedition.js:25-28
 expRelease                   src/11x-expedition.js:101-110
 expStart                     src/11x-expedition.js:29-38
 exportCode                   src/14a-cloud.js:77
-f16                          src/08b-gpu.js:474
+f16                          src/08b-gpu.js:482
 faceEl                       src/27c-ui-hq.js:6-12
 faceRnd                      src/12d-mgr-face.js:19
 factPrices                   src/27c-ui-hq.js:493-510
@@ -4716,14 +4719,14 @@ gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
 gpuBaked                     src/08ca-gpu-canvas.js:538-543
 gpuBargeBody                 src/12l-barge.js:550-557
 gpuBind                      src/08c-gpu-kit.js:42-48
-gpuBloom                     src/08b-gpu.js:690-696
+gpuBloom                     src/08b-gpu.js:698-704
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:33-38
 gpuBursts                    src/13z-gpu-combat.js:277-297
 gpuCanvasTex                 src/08c-gpu-kit.js:51-66
 gpuClouds                    src/19cc-gpu-air.js:118-165
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
-gpuCompNeb                   src/08b-gpu.js:447-457
+gpuCompNeb                   src/08b-gpu.js:455-465
 gpuCvLevel                   src/08c-gpu-kit.js:84-95
 gpuDrones                    src/16ga-gpu-trail.js:159-203
 gpuDrop                      src/08b2-gpu-loss.js:16-23
@@ -4732,75 +4735,75 @@ gpuFail                      src/08b2-gpu-loss.js:26-30
 gpuField                     src/08c-gpu-kit.js:389-416
 gpuFieldBaked                src/08c-gpu-kit.js:424-434
 gpuFieldLayout               src/08c-gpu-kit.js:382-388
-gpuFrame                     src/08b-gpu.js:556-569
+gpuFrame                     src/08b-gpu.js:564-577
 gpuFrontClean                src/08c-gpu-kit.js:130-135
-gpuFrontCopy                 src/08b-gpu.js:606-608
+gpuFrontCopy                 src/08b-gpu.js:614-616
 gpuFrontHook                 src/08c-gpu-kit.js:119-128
-gpuHaze                      src/08b-gpu.js:470
+gpuHaze                      src/08b-gpu.js:478
 gpuHudDpr                    src/08bh-gpu-hud.js:7
-gpuHueFor                    src/08b-gpu.js:528
+gpuHueFor                    src/08b-gpu.js:536
 gpuImage                     src/08c-gpu-kit.js:240-253
 gpuImgBind                   src/08c-gpu-kit.js:233-239
 gpuImgLayout                 src/08c-gpu-kit.js:225-232
 gpuKitU                      src/08c-gpu-kit.js:178-183
 gpuLateGap                   src/08b0-gpu-pipe.js:115-121
-gpuLight                     src/08b-gpu.js:472
+gpuLight                     src/08b-gpu.js:480
 gpuLitSprite                 src/17c-system-draw.js:176-191
-gpuLtWrite                   src/08b-gpu.js:476-484
-gpuManual                    src/08b-gpu.js:661-666
+gpuLtWrite                   src/08b-gpu.js:484-492
+gpuManual                    src/08b-gpu.js:669-674
 gpuMipDrop                   src/08c-gpu-kit.js:114
 gpuMipSmp                    src/08c-gpu-kit.js:115
 gpuMipTex                    src/08c-gpu-kit.js:101-113
 gpuMoon                      src/17ga-gpu-planets.js:441-447
 gpuNebulaComp                src/16gba-gpu-nebula-comp.js:339-352
 gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:268-336
-gpuNext                      src/08b-gpu.js:634-643
-gpuNoise                     src/08b-gpu.js:394-399
+gpuNext                      src/08b-gpu.js:642-651
+gpuNoise                     src/08b-gpu.js:402-407
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOrb                       src/17gab1-gpu-orb-draw.js:74-86
 gpuOrbMoon                   src/17gab1-gpu-orb-draw.js:107-113
 gpuOvFrontView               src/08bi-gpu-ovl.js:390
-gpuOver                      src/08b-gpu.js:609-629
-gpuPass                      src/08b-gpu.js:458-461
+gpuOver                      src/08b-gpu.js:617-637
+gpuPass                      src/08b-gpu.js:466-469
 gpuPipe                      src/08c-gpu-kit.js:22-26
 gpuPipeDesc                  src/08c-gpu-kit.js:27-32
 gpuPipeRecipe                src/08b0-gpu-pipe.js:55-63
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
-gpuPipes                     src/08b-gpu.js:370-391
+gpuPipes                     src/08b-gpu.js:378-399
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesLate                 src/08b0-gpu-pipe.js:122-141
 gpuPipesWarm                 src/08b0-gpu-pipe.js:66-78
 gpuPirateBody                src/12i-pirate-hull.js:425-436
 gpuPirateLive                src/12i-pirate-hull.js:443-489
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
-gpuPreEnc                    src/08b-gpu.js:652
-gpuPresent                   src/08b-gpu.js:698-711
+gpuPreEnc                    src/08b-gpu.js:660
+gpuPresent                   src/08b-gpu.js:706-719
 gpuQuad                      src/08c-gpu-kit.js:320-324
-gpuResize                    src/08b-gpu.js:400-445
-gpuScene                     src/08b-gpu.js:573-586
-gpuScene3D                   src/08b-gpu.js:590-598
+gpuResize                    src/08b-gpu.js:408-453
+gpuScene                     src/08b-gpu.js:581-594
+gpuScene3D                   src/08b-gpu.js:598-606
 gpuScr                       src/08c-gpu-kit.js:177
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:351-362
-gpuShock                     src/08b-gpu.js:471
+gpuShock                     src/08b-gpu.js:479
 gpuShpAt                     src/08c-gpu-kit.js:328-341
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:324-415
 gpuSnapshot                  src/08b-gpu.js:22-26
 gpuSpaceSys                  src/16g-gpu-space.js:201-222
 gpuSpaceTitle                src/16g-gpu-space.js:224-235
-gpuSubmitFrame               src/08b-gpu.js:655-660
-gpuSysUnder                  src/17g-gpu-system.js:516-522
+gpuSubmitFrame               src/08b-gpu.js:663-668
+gpuSysUnder                  src/17g-gpu-system.js:520-526
 gpuTakeSnap                  src/08b-gpu.js:30-37
 gpuTrail                     src/16ga-gpu-trail.js:61-108
 gpuTs                        src/28z-fps-probe.js:128-135
 gpuTsAround                  src/28z-fps-probe.js:145-149
 gpuTsResolve                 src/28z-fps-probe.js:151-169
-gpuUni                       src/08b-gpu.js:538-552
+gpuUni                       src/08b-gpu.js:546-560
 gpuWake                      src/16ga-gpu-trail.js:117-150
 gpuWeatherFar                src/19cc-gpu-air.js:265-293
-gpuWorld                     src/08b-gpu.js:669-688
+gpuWorld                     src/08b-gpu.js:677-696
 gradeGpu                     src/19c-light.js:264-275
 gradePass                    src/19c-light.js:276-314
 greenAll                     src/21g-greenhouse.js:30-34
@@ -4868,17 +4871,17 @@ gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:369
-gsyBeltDots                  src/17g-gpu-system.js:406-414
+gsyBeltDots                  src/17g-gpu-system.js:410-418
 gsyBeltHaze                  src/17gc-sys-belt.js:207-222
-gsyEll                       src/17g-gpu-system.js:375-384
-gsyMean                      src/17g-gpu-system.js:385-388
-gsyOrb                       src/17g-gpu-system.js:367-373
-gsyOrbits                    src/17g-gpu-system.js:389-404
-gsyStar                      src/17g-gpu-system.js:492-514
-gsyStarBox                   src/17g-gpu-system.js:463-470
-gsyStarHalf                  src/17g-gpu-system.js:473-491
-gsyStarU                     src/17g-gpu-system.js:417-460
-gsyUni                       src/17g-gpu-system.js:361-365
+gsyEll                       src/17g-gpu-system.js:379-388
+gsyMean                      src/17g-gpu-system.js:389-392
+gsyOrb                       src/17g-gpu-system.js:371-377
+gsyOrbits                    src/17g-gpu-system.js:393-408
+gsyStar                      src/17g-gpu-system.js:496-518
+gsyStarBox                   src/17g-gpu-system.js:467-474
+gsyStarHalf                  src/17g-gpu-system.js:477-495
+gsyStarU                     src/17g-gpu-system.js:421-464
+gsyUni                       src/17g-gpu-system.js:365-369
 gtrDraw                      src/16ga-gpu-trail.js:51-59
 gtrLane                      src/16ga-gpu-trail.js:44-48
 gtrNode                      src/16ga-gpu-trail.js:40-42
@@ -5438,12 +5441,12 @@ hqScene                      src/29r-rooms-r3.js:307
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:259-659
-hudFloorMeasure              src/27z-telemetry.js:184-232
-hudMsgPlace                  src/27z-telemetry.js:43-64
+hud                          src/27z-telemetry.js:273-674
+hudFloorMeasure              src/27z-telemetry.js:194-246
+hudMsgPlace                  src/27z-telemetry.js:46-67
 hudNumDirty                  src/08-state.js:101
 hudRect                      src/08-state.js:127-133
-hudWake                      src/27z-telemetry.js:93-102
+hudWake                      src/27z-telemetry.js:96-105
 hueToward                    src/19b-sky.js:55-66
 hullBakeDraw                 src/03e1-hull-bake.js:43-75
 hullBakeGet                  src/03e1-hull-bake.js:76-105
@@ -6432,7 +6435,7 @@ packPart                     src/05-parts.js:465-472
 padCase                      src/27y-hud-words.js:34-39
 padCaseRaw                   src/27y-hud-words.js:40-48
 padNames                     src/27y-hud-words.js:10-23
-padWord                      src/27z-telemetry.js:160-164
+padWord                      src/27z-telemetry.js:163-167
 padsAuto                     src/15-input.js:69
 padsFadeIn                   src/15-input.js:77
 padsFadeOut                  src/15-input.js:76
@@ -7251,7 +7254,7 @@ prof                         src/28-loop.js:755-782
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
-promptSet                    src/27z-telemetry.js:249-258
+promptSet                    src/27z-telemetry.js:263-272
 prunePartsBought             src/14-save.js:33-41
 ptr                          src/15-input.js:403
 puFinger                     tests/91zzzzzd-pure.js:19-27
@@ -8024,11 +8027,11 @@ seedWorlds                   tests/91qm-seeds.js:14-26
 sellCargo                    src/12-economy.js:181-209
 sellDroneYield               src/12-economy.js:210-218
 sellQuote                    src/12ab-hold.js:134-152
-setBig                       src/27z-telemetry.js:145-156
-setPair                      src/27z-telemetry.js:165-170
-setPct                       src/27z-telemetry.js:135-141
-setSt                        src/27z-telemetry.js:127
-setTx                        src/27z-telemetry.js:117-126
+setBig                       src/27z-telemetry.js:148-159
+setPair                      src/27z-telemetry.js:168-173
+setPct                       src/27z-telemetry.js:138-144
+setSt                        src/27z-telemetry.js:130
+setTx                        src/27z-telemetry.js:120-129
 setZoom                      src/15-input.js:348
 settle                       tests/90-harness.js:446-457
 settleAsk                    src/12t-settle.js:263-292
@@ -9001,7 +9004,7 @@ zoomTo                       src/15-input.js:358
 ## src/08a-statehash.js · 6 KB
   · хэш состояния (M441):1
 
-## src/08b-gpu.js · 56 KB
+## src/08b-gpu.js · 57 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
 ## src/08b0-gpu-pipe.js · 13 KB
@@ -10531,7 +10534,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/27y-hud-words.js · 4 KB
 
-## src/27z-telemetry.js · 57 KB
+## src/27z-telemetry.js · 59 KB
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 71 KB
@@ -10723,6 +10726,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qd5-hull-prepass.js · 3 KB
   · корпуса в объёме: глубина, потом краска (24.10, телефон):1
+
+## tests/91qd6-hud-batch.js · 3 KB
+  · вёрстка HUD при смене режима: чтения пачкой (24.10, телефон):1
 
 ## tests/91qe-bar-seat.js · 7 KB
   · бар собран (M853):1
