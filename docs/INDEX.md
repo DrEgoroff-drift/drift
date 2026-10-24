@@ -741,14 +741,14 @@ GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
 GCL                          src/19cc-gpu-air.js:12
 GCL_WGSL                     src/19cc-gpu-air.js:13
-GC_ATL                       src/08cb-gpu-text.js:56
+GC_ATL                       src/08cb-gpu-text.js:58
 GC_BACK                      src/08ca-gpu-canvas.js:511
 GC_BIG1                      src/08ca-gpu-canvas.js:460
 GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:21
 GC_BUSY                      src/08ca-gpu-canvas.js:453
 GC_COL                       src/08ca-gpu-canvas.js:34
 GC_DEF                       src/08ca-gpu-canvas.js:88
-GC_GLYPHS                    src/08cb-gpu-text.js:17-51
+GC_GLYPHS                    src/08cb-gpu-text.js:17-53
 GC_KEYS                      src/08ca-gpu-canvas.js:93
 GC_MAT_K                     src/08cd-gpu-mat.js:18
 GC_MAT_WGSL                  src/08cd-gpu-mat.js:19
@@ -4480,7 +4480,7 @@ gaugeStopped                 src/28l-gauge.js:60
 gaugeTestStation             tests/91zzzw9d-gauge.js:5-12
 gaugeTestWin                 tests/91zzzw9d-gauge.js:13
 gaugeTick                    src/28l-gauge.js:124-133
-gcAtlas                      src/08cb-gpu-text.js:57-71
+gcAtlas                      src/08cb-gpu-text.js:59-73
 gcBack                       src/08ca-gpu-canvas.js:512
 gcBlurDesc                   src/08cc-gpu-shadow.js:38
 gcBlurPipe                   src/08cc-gpu-shadow.js:35-48
@@ -4496,7 +4496,7 @@ gcLay                        src/08ca-gpu-canvas.js:374-384
 gcMat                        src/08cd-gpu-mat.js:53-64
 gcMatDesc                    src/08cd-gpu-mat.js:47
 gcMatPipe                    src/08cd-gpu-mat.js:46
-gcMeasure                    src/08cb-gpu-text.js:74
+gcMeasure                    src/08cb-gpu-text.js:76
 gcMip16Desc                  src/08cd-gpu-mat.js:50
 gcMip16Pipe                  src/08cd-gpu-mat.js:49
 gcMipDesc                    src/08ca-gpu-canvas.js:402
@@ -9058,7 +9058,7 @@ zoomTo                       src/15-input.js:358
 ## src/08cab-gpu-pattern.js · 3 KB
   · Узор на GPU-холсте: createPattern (docs/GPU-PORT-CENSUS.md §2, дыра 2):1
 
-## src/08cb-gpu-text.js · 9 KB
+## src/08cb-gpu-text.js · 10 KB
   · GPU-холст, v2: текст (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08cc-gpu-shadow.js · 6 KB
