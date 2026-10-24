@@ -161,8 +161,9 @@ function r3Kit(){
   /* перф-проход 5 (22.10): горячие циклы — обычными функциями, не в теле генератора: генератор с yield внутри цикла
      V8 не поднимает в оптимизирующий ярус, и каждая дробь P[k]/NN[k] и аргументы vx3c коробились в HeapNumber —
      ≈2 КБ мусора на точку (hunter, отчёты 22–23). Математика и байты те же */
-  const sgSample=(nu,nv,f,mc,P,C,pool)=>{const n=(nu+1)*(nv+1);let Wt=null;
-    for(let j=0,k=0;j<=nv;j++)for(let i=0;i<=nu;i++,k++){const r=f(i/nu,j/nv),p=r[0],c=r[1]||mc,w=r[2];
+  /* выборка — рядом j (24.10, телефон): шаговая поверхность (ms) режет и её — борода и волосы шли куском до 12 мс на S23 */
+  const sgSample=(nu,nv,f,mc,P,C,pool,j,Wt)=>{const n=(nu+1)*(nv+1);
+    for(let i=0,k=j*(nu+1);i<=nu;i++,k++){const r=f(i/nu,j/nv),p=r[0],c=r[1]||mc,w=r[2];
       P[3*k]=p[0];P[3*k+1]=p[1];P[3*k+2]=p[2];C[3*k]=c[0];C[3*k+1]=c[1];C[3*k+2]=c[2];
       if(w){if(!Wt){Wt=sgArr(3,n,pool);Wt.fill(0,0,n);}
         if(typeof w==="number")Wt[k]=w;else{const wq=Math.round(clamp(w[1],0,1)*255);if(wq)Wt[k]=2048*w[0]+32768*wq;}}}
@@ -194,7 +195,8 @@ function r3Kit(){
     const brk=()=>ms&&wallMs()-t0>ms,pool=sgTake();
     try{
     if(o.src){P=o.src.P;C=o.src.C||null;Wt=o.src.W||null;}
-    else{P=sgArr(0,3*n,pool);C=sgArr(1,3*n,pool);Wt=sgSample(nu,nv,f,mc,P,C,pool);}
+    else{P=sgArr(0,3*n,pool);C=sgArr(1,3*n,pool);Wt=null;
+      for(let j=0;j<=nv;j++){Wt=sgSample(nu,nv,f,mc,P,C,pool,j,Wt);if(brk()){yield;t0=wallMs();}}}
     const NN=sgArr(2,3*n,pool),sg=o.flip?-1:1,wrap=!!o.wrap,keep=o.keep||null;
     for(let j=0;j<=nv;j++){sgNormRow(P,NN,nu,nv,j,wrap,sg);if(brk()){yield;t0=wallMs();}}
     for(let j=0;j<nv;j++){sgTriRow(P,NN,C,Wt,M,nu,nv,j,keep);if(brk()){yield;t0=wallMs();}}

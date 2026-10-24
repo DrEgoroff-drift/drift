@@ -206,7 +206,7 @@ function hallLayout(st,lazy){
    (QA 14.10, ПК). Пока корабль в системе со станцией, это делается по шагу раз в несколько кадров:
    тела (cpMesh — по человеку), выгрузка сеток и комната. Раскладка при входе строится заново — она
    дёшева и зависит от состояния дел, — но тела берутся из кэша, сетки уже на видеокарте, комната готова */
-const HALL_R3_KEYS=["r3.main","r3.shadow","r3.down"],HALL_PRE_MS=4;
+const HALL_R3_KEYS=["r3.main","r3.shadow","r3.down"],HALL_PRE_MS=3;
 const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,n:0,cl:null,ci:0,cdone:true,tg:false};
 function hallPrepStep(){
   const sys=G.sys,S=sys&&sys.station,P=HALL_PRE;
@@ -223,7 +223,7 @@ function hallPrepStep(){
   const pe=P.L.people;
   if(P.i<pe.length){
     const q=pe[P.i];
-    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,5);return;}   /* тело — шаг, выгрузка — следующий */
+    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,HALL_PRE_MS);return;}   /* тело — шаг, выгрузка — следующий */
     r3Up(q.mesh);P.i++;return;
   }
   /* комната — шагами в бюджет HALL_PRE_MS: разом она стоила 36 мс JS на S23 */
@@ -255,15 +255,16 @@ function hallCantPrep(S,sys){
   const pe=P.cl.people;
   if(P.ci<pe.length){
     const q=pe[P.ci];
-    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,5);return;}
+    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,HALL_PRE_MS);return;}
     r3Up(q.mesh);P.ci++;return;
   }
   P.cdone=true;
 }
-/* из кадра раз в восемь кадров: шаг — не больше кадра работы (тело ~20 мс), остальное — между */
+/* из кадра через кадр, шагом в HALL_PRE_MS: раньше — раз в восемь кадров по 5 мс, и на S23 это был рывок 10–14 мс
+   каждый восьмой кадр (тестер, раунд 16); теперь тело режется мельче (волосы, борода — 27f3a), а ход тот же */
 function hallPrepTick(){
   if(HALL_PRE.done&&HALL_PRE.cdone&&HALL_PRE.key===((G.sys&&G.sys.station&&((G.sys.station.stype||"trade")+"|"+G.sys.key))||""))return;
-  if((++HALL_PRE.n&7)!==0)return;
+  if((++HALL_PRE.n&1)!==0)return;
   /* заготовка смотрит на станцию за игрока, а первый взгляд якорит истории (11c storyPlace): из
      простоя системы, да ещё только при живой видеокарте, мир не трогаем — якоря вернутся на место */
   const pin=G.storyPin;G.storyPin=Object.assign({},pin||{});

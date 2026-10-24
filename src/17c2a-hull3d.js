@@ -147,8 +147,8 @@ function h3dJob(h,gear,sig){let J=H3D_JOBS.get(h);if(!J)H3D_JOBS.set(h,J=new Map
 /* null — ещё строится; budget — мс на вызов (часы стоят — достроит за вызов, как h3dMesh) */
 function h3dMeshPump(h,gear,budget){
   const sig=gear?gear.sig:"",m=h3dMeshHit(h,sig);if(m)return m;
-  const it=h3dJob(h,gear,sig),t0=wallMs();
-  for(;;){const r=it.next();if(r.done)return r.value;if(wallMs()-t0>=budget)return null;}
+  const it=h3dJob(h,gear,sig),t0=wallMs();let t=t0;   /* шаг длиной в прошлый, не влезающий в бюджет, — в следующий вызов */
+  for(;;){const r=it.next(),t1=wallMs();if(r.done)return r.value;if(t1-t0+(t1-t)>=budget)return null;t=t1;}
 }
 function* h3dMeshGen(h,gear,sig){
   const K=H3D_MK[h.by]||H3D_MK.gt,ne=K[0],kh=K[1];

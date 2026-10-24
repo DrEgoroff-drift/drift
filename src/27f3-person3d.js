@@ -327,10 +327,13 @@ function cpMeshPump(m,pose,lod,budget){
   if(M)return M;
   let it=CP_JOBS.get(key);
   if(!it){it=cpBodyGen(m,lod,pose);CP_JOBS.set(key,it);}
-  const t0=wallMs();
+  /* шаг длиной в прошлый, не влезающий в бюджет, ждёт следующего вызова: на S23 насос с бюджетом 5 мс брал
+     третий шаг поверх двух и выходил 10–14 мс (тестер, раунд 16) */
+  const t0=wallMs();let t=t0;
   for(;;){
-    const r=it.next();
+    const r=it.next(),t1=wallMs();
     if(r.done){CP_JOBS.delete(key);if(lod>0)r.value.src={m,pose};cpMeshPut(key,r.value);return r.value;}
-    if(wallMs()-t0>=budget)return null;
+    if(t1-t0+(t1-t)>=budget)return null;
+    t=t1;
   }
 }
