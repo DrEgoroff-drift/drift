@@ -206,6 +206,8 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   const neb=!GPU.kill.neb&&gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star,Z);
   /* с туманностью цвет космоса кладёт её проход EMI (16gb): очистка — в чёрное */
   if(neb)GPU.sceneBg=SPACE_BLACK;
+  /* шум короны светила вполовину (17g) — тоже своим проходом до сцены */
+  if(typeof gsyStarHalf==="function")gsyStarHalf(sys,W/2-cx0*Z,H/2-cy0*Z,sys.radius*Z);
   let pass=gpuScene();if(!pass)return;
   const P=gspPipes();
   const cx=cx0*.06*Z,cy=cy0*.06*Z;

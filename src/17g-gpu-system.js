@@ -53,13 +53,20 @@ struct VO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) k:u32};
   let a=al*cov;return vec4f(o3.rgb*a,a);}`;
 /* шум звезды — хэшем на месте (S23 25.09: пробовали решётку туманности 16gaz — 2.41→2.34 мс,
    в шуме замера; дорог не шум, а трансцендентные функции на весь экран, см. star) */
-const GSY_STAR_WGSL=`
+const GSY_COR_WGSL=`
 fn sh(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 fn sn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
   return mix(mix(sh(i),sh(i+vec2f(1.,0.)),w.x),mix(sh(i+vec2f(0.,1.)),sh(i+vec2f(1.,1.)),w.x),w.y);}
 fn sf(p0:vec2f)->f32{var p=p0;var s=0.;var a=.5;
   for(var k=0;k<4;k++){s=s+a*sn(p);p=mat2x2f(1.6,1.2,-1.2,1.6)*p+vec2f(3.1,7.7);a=a*.5;}
   return s;}
+/* шум короны (G2): два цикла струй со сдвигом на полпериода и треугольным весом; его же считает
+   проход вполовину (GSY_STARN_WGSL) */
+fn cor(dr:vec2f,x:f32,big:f32,ph:f32,u1:f32,u2:f32,w1:f32)->f32{
+  let n1=sf(dr*(3.2+big+.55*(x-2.*u1))+vec2f(ph*3.1,1.7));
+  let n2=sf(dr*(3.2+big+.55*(x-2.*u2))+vec2f(ph*3.1+7.3,3.8));
+  return n1*w1+n2*(1.-w1);}`;
+const GSY_STAR_WGSL=GSY_COR_WGSL+`
 fn lrot(d:vec2f,a:f32)->vec2f{let c=cos(a);let s=sin(a);return vec2f(c*d.x+s*d.y,-s*d.x+c*d.y);}
 fn edist(l:vec2f,A:f32,B:f32)->f32{let f=l.x*l.x/(A*A)+l.y*l.y/(B*B)-1.;
   return abs(f)/max(length(2.*vec2f(l.x/(A*A),l.y/(B*B))),1e-6);}
@@ -71,7 +78,7 @@ fn gcell(q:vec2f,t:f32)->vec3f{let i=floor(q);let f=q-i;var f1=9.;var f2=9.;var 
     let dd=length(g+o-f);if(dd<f1){f2=f1;f1=dd;id=sh(i+g+vec2f(5.,9.));}else if(dd<f2){f2=dd;}}}
   return vec3f(f1,f2,id);}
 /* одно светило: фотосфера (закрывает фон), корона со стримерами, ореол, четыре луча */
-fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
+fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32,hn:f32)->vec4f{
   let d=p-sv.xy;let R=sv.z;let heat=sv.w;let col=cv.rgb;let rr=length(d);let r=rr/R;
   if(cv.w<.5||r>9.5){return vec4f(0.);}
   /* диск маленький (белое ядро — точка, а не блин), у гиганта крупнее */
@@ -92,9 +99,8 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
        бесконечность, струи не схлопываются к центру через минуту */
     let u1=K9.y;let u2=K9.z;let w1=K9.w;
     let dr=vec2f(K10.x*dir.x+K10.y*dir.y,-K10.y*dir.x+K10.x*dir.y);
-    let n1=sf(dr*(3.2+big+.55*(x-2.*u1))+vec2f(ph*3.1,1.7));
-    let n2=sf(dr*(3.2+big+.55*(x-2.*u2))+vec2f(ph*3.1+7.3,3.8));
-    let n=n1*w1+n2*(1.-w1);
+    /* hn — шум из прохода вполовину (gsyStarHalf); −1 — его нет в этом кадре, считаем здесь */
+    var n=hn;if(hn<-.5){n=cor(dr,x,big,ph,u1,u2,w1);}
     /* ближняя корона срезана только вблизи (зум от 1, засветка ложилась на поверхность); в дальнем
        виде она и есть звезда — ореол держит самое яркое пятно кадра (fd — с процессора) */
     let wc=clamp((heat-.7)/.3,0.,1.);let fd=fu.v[12].y;
@@ -331,11 +337,27 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   /* без копии всего массива констант в регистры (let V=fu.v — 60 чисел на пиксель) */
   let V4=fu.v[4];let kind=V4.x;let t=V4.y;let px=1./fu.v[6].w;
   var acc=vec4f(0.);
-  if(kind<.5){let hz=1.-.8*fu.v[7].w;acc=over(acc,star(p,fu.v[0],fu.v[1],t,V4.w,px,hz,V4.z));acc=over(acc,star(p,fu.v[2],fu.v[3],t,V4.w,px,hz,V4.z+3.7));}
+  if(kind<.5){let hz=1.-.8*fu.v[7].w;
+    var hn=vec2f(-1.);if(fu.v[12].z>.5){hn=textureSampleLevel(t1,smp,uv,0.).xy;}
+    acc=over(acc,star(p,fu.v[0],fu.v[1],t,V4.w,px,hz,V4.z,hn.x));acc=over(acc,star(p,fu.v[2],fu.v[3],t,V4.w,px,hz,V4.z+3.7,hn.y));}
   else if(kind<1.5){acc=over(acc,neutron(p,fu.v[7],V4.z+t*.006,px));}
   else{acc=over(acc,hole(p,fu.v[7],fu.v[8],t,px));}
   return over(acc,vec4f(bleed(p,fu.v[5],fu.v[6].rgb),0.));
 }`;
+/* шум короны вполовину (24.10, телефон): на ×2 звезда стоила 1–3.3 мс при 295 МГц, и почти всё — два sf по
+   четыре октавы на пиксель в круге 9.5 R. Шум гладкий (самая частая его октава у лимба мельче пикселя и в
+   полном кадре), его считает цель в пол-кадра (не мельче пикселя CSS) под ножницами круга короны, кадр читает
+   билинейно. Лучи, диск, протуберанцы, вспышка и ядро — по-прежнему в полном разрешении */
+const GSY_STARN_WGSL=GSY_COR_WGSL+`
+fn cz(p:vec2f,sv:vec4f,cv:vec4f,big:f32,ph:f32)->f32{
+  let d=p-sv.xy;let rr=length(d);let r=rr/sv.z;
+  if(cv.w<.5||r>9.7||fu.v[12].x>=1.){return 0.;}
+  let dir=d/max(rr,1e-4);let x=max(r-mix(.24,.42,big),0.);
+  let K10=fu.v[10];let dr=vec2f(K10.x*dir.x+K10.y*dir.y,-K10.y*dir.x+K10.x*dir.y);
+  return cor(dr,x,big,ph,fu.v[9].y,fu.v[9].z,fu.v[9].w);}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let V4=fu.v[4];
+  return vec4f(cz(p,fu.v[0],fu.v[1],V4.w,V4.z),cz(p,fu.v[2],fu.v[3],V4.w,V4.z+3.7),0.,0.);}`;
 function gsyUni(){
   const a=GSY.UA;a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;
   const U=GPUBufferUsage,b=gpuBuf("gsy.u",32,U.UNIFORM|U.COPY_DST);
@@ -390,7 +412,9 @@ function gsyBeltDots(pass,B,ox,oy,Z){
   }
   L.length=n;if(n)gpuShapes(pass,L);
 }
-function gsyStar(pass,sys,ox,oy,R){
+/* формы светила (GSY.SA) — их берут и проход шума вполовину до сцены, и само светило в сцене; G.t в
+   кадре один, второй вызов даёт те же числа */
+function gsyStarU(sys,ox,oy,R){
   const st=sysStyle(sys),S=GSY.SA;S.fill(0);
   const put=(o,x,y,r,heat,col)=>{const c=hex2rgb(col);S[o]=x;S[o+1]=y;S[o+2]=r;S[o+3]=heat;
     S[o+4]=c[0]/255;S[o+5]=c[1]/255;S[o+6]=c[2]/255;S[o+7]=1;};
@@ -432,6 +456,41 @@ function gsyStar(pass,sys,ox,oy,R){
   /* зарево держит объёмная туманность (16gb) — рассеянием по газу; ровный круг поверх давал бурую муть */
   if(GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys)S[23]=0;
   S[24]=c[0]/255;S[25]=c[1]/255;S[26]=c[2]/255;S[27]=DPR;
+  return {st,S,kind,big,tex};
+}
+/* рамка (CSS px), где обычное светило не ноль: круг 9.5 R у каждого (star() дальше отдаёт ноль), с
+   заревом (bleed) — и его круг; урезана кадром; null — светила в кадре нет */
+function gsyStarBox(S,glow){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  const add=(x,y,r)=>{x0=Math.min(x0,x-r);y0=Math.min(y0,y-r);x1=Math.max(x1,x+r);y1=Math.max(y1,y+r);};
+  for(const o of [0,8])if(S[o+7]>=.5)add(S[o],S[o+1],S[o+2]*9.5+2);
+  if(glow&&S[23]>=.5)add(S[20],S[21],S[22]+2);
+  x0=Math.max(0,x0);y0=Math.max(0,y0);x1=Math.min(W,x1);y1=Math.min(H,y1);
+  return x1>x0&&y1>y0?[x0,y0,x1,y1]:null;
+}
+const GSY_SH=.5;
+/* проход шума короны — до прохода сцены (16g gpuSpaceSys); GPU.kill.shalf — шум в полном кадре (проба) */
+function gsyStarHalf(sys,ox,oy,R){
+  if(!GPU.on||!GPU.enc||GPU.scenePass||GPU.overPass||GPU.kill.shalf)return;
+  const s=Math.min(1,Math.max(GSY_SH,W/Math.max(1,GPU.bw)));if(s>.99)return;
+  const sk=sysStyle(sys).kind;if(sk==="hole"||sk==="neutron")return;
+  const S=gsyStarU(sys,ox,oy,R).S;if(S[48]>=1)return;
+  const b=gsyStarBox(S,false);if(!b)return;
+  const w=Math.max(2,Math.ceil(GPU.bw*s)),h=Math.max(2,Math.ceil(GPU.bh*s));let T=GSY.hf;
+  if(!T||T.dev!==GPU.dev||T.w!==w||T.h!==h){
+    if(T&&T.dev===GPU.dev)GPU.trash.push(T.tex);
+    const tex=GPU.dev.createTexture({size:[w,h],format:"rgba16float",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.RENDER_ATTACHMENT});
+    T=GSY.hf={tex,view:tex.createView(),w,h,dev:GPU.dev};}
+  const kx=w/W,ky=h/H,x0=Math.max(0,Math.floor(b[0]*kx)-2),y0=Math.max(0,Math.floor(b[1]*ky)-2),
+    x1=Math.min(w,Math.ceil(b[2]*kx)+2),y1=Math.min(h,Math.ceil(b[3]*ky)+2);
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:T.view,loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}],
+    timestampWrites:gpuTs("starHalf")});
+  p.setScissorRect(x0,y0,x1-x0,y1-y0);
+  gpuField(p,"gsy.starn",GSY_STARN_WGSL,S,[]);
+  p.end();GSY.hfr=GPU.frameNo;
+}
+function gsyStar(pass,sys,ox,oy,R){
+  const {st,S,kind,big,tex}=gsyStarU(sys,ox,oy,R);
   /* L2 2/n: грейд кадра — по классу звезды, оптика (штрих, блики) — только когда диск
      в кадре (08b fsFinal). Дыра не светит — ни грейда, ни бликов */
   if(!kind){const g=st.kind==="giant"?[.6,"#ff7448",.8]:st.kind==="dwarf"?[1.6,"#e8f4ff",1]:[sys.cls.t||1,sys.cls.col,1];
@@ -441,7 +500,17 @@ function gsyStar(pass,sys,ox,oy,R){
     const rd=r0*(big?.42:.24)*1.12;
     if(rd>16){const n=ovNd();hangBlock((ox-rd)*n,(oy-rd)*n,(ox+rd)*n,(oy+rd)*n);}
     GPU.lens={x:ox/W,y:oy/H,k:g[2]*clamp(m/(r0+60),0,1)*(1-.85*nr),r:r0*(big?.42:.24)*.16*(1-nr),cr:q[0]/255,cg:q[1]/255,cb:q[2]/255,t:g[0]};}
-  gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);
+  if(kind){gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);return;}
+  /* обычное светило — под ножницами своего круга (за ним шейдер считал ноль на каждом пикселе кадра),
+     вне кадра не рисуется; шум короны — из прохода вполовину, если он был в этом кадре */
+  const b=gsyStarBox(S,true);if(!b)return;
+  const hf=GSY.hf,on=GSY.hfr===GPU.frameNo&&hf&&hf.dev===GPU.dev;S[50]=on?1:0;
+  const kx=GPU.bw/W,ky=GPU.bh/H,x0=Math.max(0,Math.floor(b[0]*kx)),y0=Math.max(0,Math.floor(b[1]*ky)),
+    x1=Math.min(GPU.bw,Math.ceil(b[2]*kx)),y1=Math.min(GPU.bh,Math.ceil(b[3]*ky));
+  if(x1<=x0||y1<=y0)return;
+  pass.setScissorRect(x0,y0,x1-x0,y1-y0);
+  gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,on?[null,{view:hf.view}]:[]);
+  pass.setScissorRect(0,0,GPU.bw,GPU.bh);
 }
 /* всё под планетами — в проход сцены, сразу за фоном (16g) */
 function gpuSysUnder(sys,ox,oy,R,Z){

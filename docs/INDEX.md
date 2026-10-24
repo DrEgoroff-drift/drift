@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 653 · top-level symbols: 8826
+Files: 653 · top-level symbols: 8832
 
 ## SYMBOLS
 
@@ -920,8 +920,11 @@ GSP_STARS                    src/16g-gpu-space.js:39
 GSP_WGSL_U                   src/16g-gpu-space.js:20
 GST_WGSL                     src/17c-system-draw.js:27
 GSY                          src/17g-gpu-system.js:18
+GSY_COR_WGSL                 src/17g-gpu-system.js:56
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
-GSY_STAR_WGSL                src/17g-gpu-system.js:56
+GSY_SH                       src/17g-gpu-system.js:471
+GSY_STARN_WGSL               src/17g-gpu-system.js:351
+GSY_STAR_WGSL                src/17g-gpu-system.js:69
 GTN                          src/16ga-gpu-trail.js:33
 GTR                          src/16ga-gpu-trail.js:9
 GTR_WGSL                     src/16ga-gpu-trail.js:10
@@ -4770,9 +4773,9 @@ gpuShpAt                     src/08c-gpu-kit.js:328-341
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:324-415
 gpuSnapshot                  src/08b-gpu.js:22-26
-gpuSpaceSys                  src/16g-gpu-space.js:201-220
-gpuSpaceTitle                src/16g-gpu-space.js:222-233
-gpuSysUnder                  src/17g-gpu-system.js:447-453
+gpuSpaceSys                  src/16g-gpu-space.js:201-222
+gpuSpaceTitle                src/16g-gpu-space.js:224-235
+gpuSysUnder                  src/17g-gpu-system.js:516-522
 gpuTakeSnap                  src/08b-gpu.js:30-37
 gpuTrail                     src/16ga-gpu-trail.js:61-108
 gpuTs                        src/28z-fps-probe.js:128-135
@@ -4849,14 +4852,17 @@ gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:369
-gsyBeltDots                  src/17g-gpu-system.js:384-392
+gsyBeltDots                  src/17g-gpu-system.js:406-414
 gsyBeltHaze                  src/17gc-sys-belt.js:203-218
-gsyEll                       src/17g-gpu-system.js:353-362
-gsyMean                      src/17g-gpu-system.js:363-366
-gsyOrb                       src/17g-gpu-system.js:345-351
-gsyOrbits                    src/17g-gpu-system.js:367-382
-gsyStar                      src/17g-gpu-system.js:393-445
-gsyUni                       src/17g-gpu-system.js:339-343
+gsyEll                       src/17g-gpu-system.js:375-384
+gsyMean                      src/17g-gpu-system.js:385-388
+gsyOrb                       src/17g-gpu-system.js:367-373
+gsyOrbits                    src/17g-gpu-system.js:389-404
+gsyStar                      src/17g-gpu-system.js:492-514
+gsyStarBox                   src/17g-gpu-system.js:463-470
+gsyStarHalf                  src/17g-gpu-system.js:473-491
+gsyStarU                     src/17g-gpu-system.js:417-460
+gsyUni                       src/17g-gpu-system.js:361-365
 gtrDraw                      src/16ga-gpu-trail.js:51-59
 gtrLane                      src/16ga-gpu-trail.js:44-48
 gtrNode                      src/16ga-gpu-trail.js:40-42
@@ -9636,7 +9642,7 @@ zoomTo                       src/15-input.js:358
 ## src/17f-sys-traffic.js · 7 KB
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-gpu-system.js · 33 KB
+## src/17g-gpu-system.js · 38 KB
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
 ## src/17g-sys-lane.js · 15 KB
