@@ -12,7 +12,7 @@
    Рисуется в свой слой ×4 MSAA (слой текстуры-массива) отдельной отправкой до кадра — проход
    сцены не рвётся, — и ложится в сцену одной картинкой смешением "hull" (маска корпуса 08b). */
 /* cap — потолок стороны слоя: в полёте 512, ангар (M723) и крупная проба поднимают до 1024 на время рисования */
-const H3D={M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512,atl:true,atlH:0,A:null};
+const H3D={M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512,atl:true,atlH:0,A:null,keep:true,KP:new Map(),kn:0};
 const H3D_L=4;   /* слоёв на кадр: свой корабль и трое рядом */
 const H3D_SIDES=[128,256,512,1024];   /* классы слоя: мелкий корпус не чистит и не сводит 512² ×4 (телефон — тайлы); 1024 — только витрина, два слоя */
 const H3D_LZ=.48,H3D_FILL=.30,H3D_KEY=1.6;   /* высота звезды над плоскостью; заливка; сила звезды */
@@ -379,7 +379,7 @@ function h3dDesc(){
 function h3dDev(){
   const d=GPU.dev;if(H3D.dev===d)return;
   H3D.dev=d;
-  H3D.K={};H3D.A=null;
+  H3D.K={};H3D.A=null;H3D.KP=new Map();H3D.kn=0;
   H3D.ub=d.createBuffer({size:528,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   /* формы корпусов кадра — свой буфер на каждый (H3D.ui — номер в кадре): их проходы уходят одной отправкой
      с кадром (gpuPreEnc, 08b), и общий буфер, переписанный до неё, отдал бы всем формы последнего */
@@ -418,6 +418,39 @@ function h3dAtlasAt(n){
   for(const t of A.sh)if(t.h>=q&&t.x+q<=A.S&&(!s||t.h<s.h))s=t;
   if(!s){const h=q>192?q:Math.ceil(q/64)*64;if(A.top+h>A.H){H3D.atlH=Math.min(H3D_ATL.h2,A.H+256);return null;}s={y:A.top,h,x:0};A.sh.push(s);A.top+=h;}
   const r={x:s.x,y:s.y,A};s.x+=q;return r;
+}
+/* постоянный слой крупного (24.10, телефон): корпус больше атласа (станция, свой корабль на крупном плане) —
+   слой 512² с тяжёлым шейдером, и он перерисовывался каждый кадр, хотя станция не вертится, свет у неё от звезды,
+   а на экране меняется только место (тестер, S23: hull3d 1,7 мс на дальнем плане без единого пирата, 6 мс при
+   зуме 2,4). Теперь у сетки свой слой на кадры вперёд; проход пишется при отправке кадра (GPU.preF, 08b), когда
+   свет кадра уже в текстуре, и только если ключ другой: формы корпуса без места на экране (огонь — от центра),
+   выпечка, размер, и свет со заслонами рядом — от центра корпуса, с точностью до четверти точки. Картинка та же:
+   шейдер читает место только против света и огня. Свет дальше восьми своих радиусов (вклад < 1,5 %) в ключ не
+   идёт. Звезда у станции ходит вместе с орбитой (2,3° в секунду, 0,0007 рад на кадр): направление на неё
+   в ключе — с допуском 0,002 рад, слой отстаёт от света меньше чем на полточки блика на корпусе в 512 px и
+   переписывается раз в три кадра, а не каждый. H3D.keep=false — прежний путь (A/B) */
+const H3D_KEEP_MAX=4,H3D_KEEP_EPS=.002,H3D_KEEP_LT=new Uint8Array(132);
+for(const i of [8,9,10,28,29,30])H3D_KEEP_LT[i]=1;
+function h3dKeepAt(m,side){
+  const d=GPU.dev,f=GPU.frameNo;let L=H3D.KP.get(m);if(!L)H3D.KP.set(m,L=[]);
+  let e=L.find(q=>q.f!==f&&q.side===side&&q.dev===d);
+  if(!e){
+    if(H3D.kn>=H3D_KEEP_MAX){let o=null,ol=null;
+      for(const [mm,LL] of H3D.KP)for(const q of LL)if(q.f!==f&&(!o||q.f<o.f)){o=q;ol=LL;}
+      if(!o)return null;ol.splice(ol.indexOf(o),1);if(o.dev===d)o.tex.destroy();H3D.kn--;}
+    const U=GPUTextureUsage,tex=d.createTexture({size:[side,side],format:"rgba16float",usage:U.RENDER_ATTACHMENT|U.TEXTURE_BINDING});
+    e={tex,img:{view:tex.createView()},side,dev:d,f:-1,bk:null,sg:null};L.push(e);H3D.kn++;}
+  e.f=f;return e;
+}
+/* свет и заслоны рядом с корпусом (x,y, радиус rr) — от его центра; null — свет кадра ещё не записан */
+function h3dKeepSig(x,y,rr){
+  if(GPU.ltN!==GPU.frameNo)return null;
+  const q=v=>Math.round(v*4),o=[],L=GPU.plOff?[]:GPU.lt,O=GPU.plOff?[]:GPU.oc;
+  for(let i=0;i<Math.min(16,L.length);i++){const l=L[i],ax=l[0]-x,ay=l[1]-y,bx=l[2]-l[0],by=l[3]-l[1],bb=bx*bx+by*by;
+    const t=bb>1e-6?clamp(-(ax*bx+ay*by)/bb,0,1):0,dd=Math.hypot(ax+bx*t,ay+by*t)-rr;
+    if(dd<8*l[7])o.push(q(ax),q(ay),q(l[2]-x),q(l[3]-y),Math.round(l[4]*256),Math.round(l[5]*256),Math.round(l[6]*256),q(l[7]));}
+  for(let i=0;i<Math.min(16,O.length);i++){const c=O[i];if(Math.hypot(c[0]-x,c[1]-y)<rr+c[2]+8)o.push(q(c[0]-x),q(c[1]-y),q(c[2]));}
+  return o.join(",");
 }
 /* слои класса заводятся при первой нужде: ×4 цвет и глубина на проход, массив сведённых — на кадр */
 function h3dCls(n){
@@ -515,9 +548,25 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
     if(C)C.bg.set(ub,bg);}
   /* атлас — область в открытом проходе кадра; полёт классом — в кодировщик «до кадра» (уходит с кадром);
      студия и рисунок вне кадра — в свой и отправляют сами */
-  let p,img,pe=null,enc=null,uv;
+  let p,img,pe=null,enc=null,uv,Ek=null;
   if(At){p=At.A.p;img=At.A.img;p.setViewport(At.x,At.y,n,n,0,1);p.setScissorRect(At.x,At.y,n,n);
     uv={u0:At.x/At.A.S,v0:At.y/At.A.H,u1:(At.x+n)/At.A.S,v1:(At.y+n)/At.A.H};}
+  else if(!V&&H3D.keep&&n>H3D_ATL.max&&GPU.enc&&GPU.enc===GPU.fenc&&(Ek=h3dKeepAt(m,side))){
+    /* постоянный слой: ключ — сейчас, свет — при отправке; проход пишется, только если что-то другое */
+    img=Ek.img;uv={u1:n/side,v1:n/side};
+    const bk=U.slice(),E=Ek,Kc=K,mb=m.buf,mn=m.n,bgc=bg,tv=T.view,mv=mat.view,ts=gpuTs("hull3dBig"),rr=Rb*sc,nn=n;
+    bk[0]=bk[1]=0;if(fl){bk[20]-=x;bk[21]-=y;}
+    (GPU.preF||(GPU.preF=[])).push(dv=>{
+      if(dv!==E.dev)return null;
+      const sg=h3dKeepSig(x,y,rr);
+      if(sg!==null&&sg===E.sg&&E.n===nn&&E.tv===tv&&E.mv===mv&&E.bk&&E.bk.every((v,i)=>v===bk[i]||H3D_KEEP_LT[i]&&Math.abs(v-bk[i])<H3D_KEEP_EPS)){
+        if(!ts)return null;const e2=dv.createCommandEncoder();e2.beginComputePass({timestampWrites:ts}).end();return e2.finish();}
+      E.bk=bk;E.sg=sg;E.n=nn;E.tv=tv;E.mv=mv;
+      const e2=dv.createCommandEncoder(),p2=e2.beginRenderPass({colorAttachments:[{view:Kc.msV,resolveTarget:E.img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
+        depthStencilAttachment:{view:Kc.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"},timestampWrites:ts});
+      p2.setViewport(0,0,nn,nn,0,1);p2.setScissorRect(0,0,nn,nn);p2.setPipeline(H3D.P);p2.setBindGroup(0,bgc);p2.setVertexBuffer(0,mb);p2.draw(mn);p2.end();
+      H3D.kd=(H3D.kd||0)+1;return e2.finish();});
+    p=null;}
   else{pe=V?null:gpuPreEnc();enc=pe||d.createCommandEncoder();
     const R=V?h3dStudioRT(V):null,vw=V?V.bw:n,vh=V?V.bh:n;img=V?R.img:K.img[K.slot++];
     p=enc.beginRenderPass({colorAttachments:[{view:V?R.msV:K.msV,resolveTarget:img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
@@ -525,8 +574,8 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
       timestampWrites:V?undefined:gpuTs("hull3dBig")});   /* проба g11GpuMs: крупные классом — своей меткой, атлас — hull3d */
     p.setViewport(0,0,vw,vh,0,1);p.setScissorRect(0,0,vw,vh);
     uv={u1:n/side,v1:n/side};}
-  p.setPipeline(H3D.P);p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);p.draw(m.n);
-  if(!At){p.end();if(!pe)d.queue.submit([enc.finish()]);}
+  if(p){p.setPipeline(H3D.P);p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);p.draw(m.n);
+    if(!At){p.end();if(!pe)d.queue.submit([enc.finish()]);}}
   const pass=V?V.pass:gpuScene();if(!pass)return false;
   if(V){const w=V.bw/V.nd,h=V.bh/V.nd;gpuImage(pass,img,[{x:w/2,y:h/2,w,h}],{blend:"hull"});}
   else{   /* обвод (M824): тот же слой чуть шире, фон под ним темнеет — тёмная кромка в 2–3 px вокруг силуэта;

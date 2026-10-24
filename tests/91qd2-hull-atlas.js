@@ -14,13 +14,14 @@ TEST_SUITES.push(()=>suite("корпуса в объёме: атлас кадр�
       p.shipId=pirateShipId(seed);G.pirates.push(p);}
     G.zoom=1.4;G.zoomT=null;};
   /* проходы считаются только корпусные — открытые изнутри h3dRun (выпечки и прочее кадра гуляют от кадра к кадру) */
-  const E=GPUCommandEncoder.prototype,bR=E.beginRenderPass,cls=window.h3dCls,run=window.h3dRun,atl0=H3D.atl;let np=0,small=0,inH=0;
+  const E=GPUCommandEncoder.prototype,bR=E.beginRenderPass,cls=window.h3dCls,run=window.h3dRun,atl0=H3D.atl,keep0=H3D.keep;let np=0,small=0,inH=0;
   E.beginRenderPass=function(){if(inH)np++;return bR.apply(this,arguments);};
   window.h3dRun=function(){inH++;try{return run.apply(this,arguments);}finally{inH--;}};
   const frame=(a,snap)=>{H3D.atl=a;np=0;small=0;GPU.wantSnap=!!snap;drawWorld();const r={p:np,small};
     if(snap){const c=GPU.snap;r.d=c.getContext("2d",{willReadFrequently:true}).getImageData(0,0,c.width,c.height).data;}return r;};
   const big=(x,y)=>{let n=0;for(let i=0;i<x.length;i+=4)if(Math.max(Math.abs(x[i]-y[i]),Math.abs(x[i+1]-y[i+1]),Math.abs(x[i+2]-y[i+2]))>24)n++;return n;};
   try{
+    H3D.keep=false;   /* крупное (станция) — постоянным слоем (91qd3); здесь мерится атлас против прежнего пути */
     /* класс мельче нужного: корпус до 256 px ушёл в слой 128 при свободном атласе */
     window.h3dCls=function(n){if(H3D.atl&&n<=128)small++;return cls.apply(this,arguments);};
     put(8);for(let i=0;i<4;i++)frame(true);
@@ -33,5 +34,5 @@ TEST_SUITES.push(()=>suite("корпуса в объёме: атлас кадр�
     ok(big(a.d,a2.d)===0,"кадр с атласом повторяется");
     const nb=big(a.d,b.d);
     ok(nb<=8,"трое пиратов: картинка атласом та же, что прежним путём ("+nb+" точек расходятся)");
-  }finally{E.beginRenderPass=bR;window.h3dCls=cls;window.h3dRun=run;H3D.atl=atl0;GPU.wantSnap=false;G.pirates=[];}
+  }finally{E.beginRenderPass=bR;window.h3dCls=cls;window.h3dRun=run;H3D.atl=atl0;H3D.keep=keep0;GPU.wantSnap=false;G.pirates=[];}
 }));

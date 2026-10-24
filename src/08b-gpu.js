@@ -480,6 +480,7 @@ function gpuLtWrite(){
   const O=GPU.plOff?[]:GPU.oc;
   for(let i=0;i<Math.min(16,O.length);i++){const o=O[i];A[128+i*4]=f16(o[0]);A[129+i*4]=f16(o[1]);A[130+i*4]=f16(o[2]);}
   GPU.dev.queue.writeTexture({texture:GPU.T.lt},A,{bytesPerRow:128},[16,3]);
+  GPU.ltN=GPU.frameNo;   /* свет этого кадра в текстуре — постоянный слой корпуса (17c2a) сверяется с ним */
 }
 /* свет и заслоны для проходов корпусов (t1 — текстура света): plAt — сумма по рельефу nb,
    источники на высоте hz над плоскостью; корпус сам себе заслон — шесть шагов по его маске
