@@ -105,7 +105,9 @@ fn tone(c:vec3f)->vec3f{
   /* дорога (u.dn.w, gpuWorld clip): у main её свет — 2D «lighter», канал упирается в единицу
      сам. Плечо брало у ярких жгутов на ходу до 9 % (Контроль 26.09: «не ниже main») */
   if(u.dn.w>.5){return min(c,vec3f(1.));}
-  let K=.75;let x=max(c-vec3f(K),vec3f(0.));
+  /* ниже колена плечо — тождество (exp(0) = 1): тёмный пиксель не платит трёх экспонент (24.10, телефон) */
+  let K=.75;if(max(c.r,max(c.g,c.b))<=K){return c;}
+  let x=max(c-vec3f(K),vec3f(0.));
   let pc=min(c,vec3f(K))+(1.-K)*(vec3f(1.)-exp(-x/(1.-K)));
   let m=max(c.r,max(c.g,c.b));
   if(u.dn.y<=0.||m<=K){return pc;}
@@ -162,7 +164,8 @@ fn knee(c:vec3f,th:f32)->vec3f{
   return c*q/max(m,1e-4);}
 /* те же плечо и колено в половинной точности (P2) — для лестницы свечения */
 fn toneH(c:H3)->H3{
-  let K=H(.75);let x=max(c-H3(K),H3(0.));
+  let K=H(.75);if(max(c.r,max(c.g,c.b))<=K){return c;}
+  let x=max(c-H3(K),H3(0.));
   let pc=min(c,H3(K))+(H(1.)-K)*(H3(1.)-exp(-x/(H(1.)-K)));
   let m=max(c.r,max(c.g,c.b));
   if(u.dn.y<=0.||m<=K){return pc;}
@@ -199,7 +202,10 @@ fn frameHdr(uv:vec2f)->vec3f{
   for(var j=0;j<4;j++){for(var i=0;i<4;i++){
     let q=v.uv+((vec2f(f32(i),f32(j))+.5)/4.-.5)*fp;
     let f=H4(textureSampleLevel(tFront,sl,q,0.));let S=H4(textureSampleLevel(tScene,sl,q,0.));let s=max(S.rgb,H3(0.))*sc;let a=H(1.)-f.a;
-    c+=(toneH(s)*a+f.rgb)*(H(1.)-(H(1.)-H(.5)*H(silK(q)))*sc*(H(1.)-S.a));h+=(kneeH(s,H(1.4))+H3(textureSampleLevel(tEmit,sl,q,0.).rgb))*a;}}
+    /* обвод своего корабля — только на краске корпусов: при альфе сцены 1 множитель ровно 1, и шестнадцать
+       выборок не перебирают корпуса (24.10) */
+    var sk=H(1.);if(S.a!=H(1.)&&sc!=H(0.)){sk=H(1.)-(H(1.)-H(.5)*H(silK(q)))*sc*(H(1.)-S.a);}
+    c+=(toneH(s)*a+f.rgb)*sk;h+=(kneeH(s,H(1.4))+H3(textureSampleLevel(tEmit,sl,q,0.).rgb))*a;}}
   c=c/H(16.);return vec4f(vec3f(c*c+h/H(16.)),1.);}
 fn bs(uv:vec2f)->H3{return H3(textureSampleLevel(tBloom,sl,uv,0.).rgb);}
 @fragment fn fsMipDn(v:V)->@location(0) vec4f{
@@ -318,14 +324,16 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
     let fa=1.-.7*f.a;let sc=u.lc.rgb/max(max(u.lc.r,u.lc.g),1e-3);
     let sw=1.+u.ln.w*1.5;
     let y1=d.y/sw;let y5=y1*.2;
-    let st=(exp(-y1*y1)+.3*exp(-y5*y5))*exp(-abs(d.x)/(u.css.x*.2));
+    /* штрих и блики — пятна; за их краем (вклад < 1e-8) экспоненты, atan2 и cos не считаются (24.10, телефон):
+       hx не меньше |q| — шестигранник вписан в круг rr·1.05 */
+    var st=0.;if(abs(y5)<4.2){st=(exp(-y1*y1)+.3*exp(-y5*y5))*exp(-abs(d.x)/(u.css.x*.2));}
     var o=mix(sc,vec3f(.6,.8,1.),.55)*st*.055;
     let ax=u.css*.5-sp;let mm=min(u.css.x,u.css.y);
     var tns=array<vec3f,3>(vec3f(.7,.95,1.),vec3f(1.,.8,.55),vec3f(.85,.72,1.));
     for(var k=0;k<3;k++){
       let g=vec3f(.62,1.38,1.9)[k];let rr=mm*vec3f(.034,.065,.022)[k];
       let tn=tns[k];
-      let q=px-(sp+ax*g);
+      let q=px-(sp+ax*g);if(length(q)>=rr*1.06){continue;}
       /* шестигранник: расстояние до стороны, повёрнутый на постоянный угол */
       let an=atan2(q.y,q.x)+.3;let sgm=1.0471976;
       let hx=length(q)*cos(abs(an-sgm*floor(an/sgm)-sgm*.5))/.8660254;
