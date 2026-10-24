@@ -954,7 +954,7 @@ H3D_CARGO                    src/17c2a-hull3d.js:22
 H3D_L                        src/17c2a-hull3d.js:16
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
-H3D_PIR                      src/17c2a-hull3d.js:516
+H3D_PIR                      src/17c2a-hull3d.js:517
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
 H3D_WGSL                     src/17c2a-hull3d.js:262
@@ -4907,14 +4907,14 @@ h3dKit                       src/17c2a-hull3d.js:27-90
 h3dMesh                      src/17c2a-hull3d.js:132-243
 h3dPack                      src/17c2a-hull3d.js:92-100
 h3dParts                     src/17c2b-parts3d.js:158-353
-h3dPirMesh                   src/17c2a-hull3d.js:517-573
-h3dPirate                    src/17c2a-hull3d.js:575-578
+h3dPirMesh                   src/17c2a-hull3d.js:518-574
+h3dPirate                    src/17c2a-hull3d.js:576-579
 h3dPlaneHoles                src/17c2a-hull3d.js:107-129
-h3dRun                       src/17c2a-hull3d.js:426-497
+h3dRun                       src/17c2a-hull3d.js:426-498
 h3dStationMesh               src/17c2g-body-station.js:97-129
 h3dStockGear                 src/17c2b-parts3d.js:374-383
 h3dStudioPt                  src/17c2a-hull3d.js:419-423
-h3dStudioRT                  src/17c2a-hull3d.js:500-510
+h3dStudioRT                  src/17c2a-hull3d.js:501-511
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60

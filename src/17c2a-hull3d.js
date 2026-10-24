@@ -483,7 +483,8 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw,V,lc){
   /* полёт — в кодировщик «до кадра» (уходит с кадром); студия и рисунок вне кадра — в свой и отправляют сами */
   const pe=V?null:gpuPreEnc(),L=V?0:K.slot++,R=V?h3dStudioRT(V):null,enc=pe||d.createCommandEncoder(),vw=V?V.bw:n,vh=V?V.bh:n,img=V?R.img:K.img[L];
   const p=enc.beginRenderPass({colorAttachments:[{view:V?R.msV:K.msV,resolveTarget:img.view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
-    depthStencilAttachment:{view:V?R.mdV:K.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"}});
+    depthStencilAttachment:{view:V?R.mdV:K.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"},
+    timestampWrites:V?undefined:gpuTs("hull3d")});   /* проба g11GpuMs: корпуса кадра одной меткой */
   p.setViewport(0,0,vw,vh,0,1);p.setScissorRect(0,0,vw,vh);
   p.setPipeline(H3D.P);p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);p.draw(m.n);p.end();
   if(!pe)d.queue.submit([enc.finish()]);
