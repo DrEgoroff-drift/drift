@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 653 · top-level symbols: 8834
+Files: 653 · top-level symbols: 8835
 
 ## SYMBOLS
 
@@ -828,10 +828,10 @@ GNB_FINE                     src/16gba-gpu-nebula-comp.js:7
 GNB_GEN                      src/16gb-gpu-nebula.js:46
 GNB_HS                       src/16gba-gpu-nebula-comp.js:164
 GNB_HTO                      src/16gay-gpu-nebula-look.js:24
-GNB_LM_COL                   src/16gba-gpu-nebula-comp.js:219
+GNB_LM_COL                   src/16gba-gpu-nebula-comp.js:221
 GNB_N                        src/16gb-gpu-nebula.js:45
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gba-gpu-nebula-comp.js:202-217
+GNB_PAL                      src/16gba-gpu-nebula-comp.js:204-219
 GNB_RES                      src/16gc-gpu-nebfade.js:16
 GNB_SS                       src/16gay-gpu-nebula-look.js:17
 GNB_STAR_ABS                 src/16gba-gpu-nebula-comp.js:29
@@ -1613,8 +1613,8 @@ PHONE_DPR                    src/08-state.js:12
 PI                           src/21pb-pln-wgsl-air.js:54
 PI                           src/22dbw-cave-pln-wgsl.js:38
 PICKUPS                      src/24a-mode-raid.js:24-28
-PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-53
-PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:61-93
+PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-60
+PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:68-100
 PIRATE_COLS                  src/13-pirates.js:4
 PIRATE_LOADOUT               src/13d-loadout.js:23-28
 PIRATE_NAMES                 src/13-pirates.js:3
@@ -1806,7 +1806,8 @@ PROBE_SHOW                   src/21a8-base-world.js:29
 PROBE_SPREAD                 src/25m-probe.js:29
 PROBE_WAIT                   src/25m-probe.js:28
 PROFILE                      src/02-world.js:146-159
-PROMPT_NUM_EVERY             src/27z-telemetry.js:241
+PROMPT_LIVE                  src/27z-telemetry.js:248
+PROMPT_NUM_EVERY             src/27z-telemetry.js:243
 PROMPT_RECT                  src/08-state.js:114
 PU_CELLS                     tests/91zzzzzd-pure.js:28
 PYARD                        src/04c-yards.js:89
@@ -4643,27 +4644,27 @@ glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
 gnbCamVel                    src/16gc-gpu-nebfade.js:65-71
 gnbDeep                      src/16gay-gpu-nebula-look.js:44
-gnbEmiHalf                   src/16gba-gpu-nebula-comp.js:176-183
+gnbEmiHalf                   src/16gba-gpu-nebula-comp.js:178-185
 gnbFarc                      src/16gbb-gpu-nebula-farc.js:49-85
 gnbFarcDesc                  src/16gbb-gpu-nebula-farc.js:46
-gnbGenDesc                   src/16gba-gpu-nebula-comp.js:193
+gnbGenDesc                   src/16gba-gpu-nebula-comp.js:195
 gnbGenNeed                   src/16gc-gpu-nebfade.js:57-62
 gnbGenSlice                  src/16gc-gpu-nebfade.js:77-86
 gnbGenTargets                src/16gc-gpu-nebfade.js:45-53
-gnbHalfTarget                src/16gba-gpu-nebula-comp.js:165-173
-gnbLandmark                  src/16gba-gpu-nebula-comp.js:220-235
+gnbHalfTarget                src/16gba-gpu-nebula-comp.js:165-175
+gnbLandmark                  src/16gba-gpu-nebula-comp.js:222-237
 gnbLead                      src/16gc-gpu-nebfade.js:74
-gnbLfr                       src/16gba-gpu-nebula-comp.js:238-256
+gnbLfr                       src/16gba-gpu-nebula-comp.js:240-258
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
 gnbOff                       src/16gc-gpu-nebfade.js:55
-gnbPalette                   src/16gba-gpu-nebula-comp.js:209-217
-gnbPipe                      src/16gba-gpu-nebula-comp.js:192
+gnbPalette                   src/16gba-gpu-nebula-comp.js:211-219
+gnbPipe                      src/16gba-gpu-nebula-comp.js:194
 gnbResDesc                   src/16gc-gpu-nebfade.js:39-43
 gnbResolve                   src/16gc-gpu-nebfade.js:88-99
-gnbStar                      src/16gba-gpu-nebula-comp.js:258-263
+gnbStar                      src/16gba-gpu-nebula-comp.js:260-265
 gnbStars                     src/16gba-gpu-nebula-comp.js:42-49
-gnbTarget                    src/16gba-gpu-nebula-comp.js:184-191
+gnbTarget                    src/16gba-gpu-nebula-comp.js:186-193
 goalCard                     src/13b-occupy.js:233-262
 goalOwnYacht                 src/13b-occupy.js:226-232
 gorBody                      src/17gab1-gpu-orb-draw.js:46-70
@@ -4739,8 +4740,8 @@ gpuMipDrop                   src/08c-gpu-kit.js:114
 gpuMipSmp                    src/08c-gpu-kit.js:115
 gpuMipTex                    src/08c-gpu-kit.js:101-113
 gpuMoon                      src/17ga-gpu-planets.js:441-447
-gpuNebulaComp                src/16gba-gpu-nebula-comp.js:337-350
-gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:266-334
+gpuNebulaComp                src/16gba-gpu-nebula-comp.js:339-352
+gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:268-336
 gpuNext                      src/08b-gpu.js:633-642
 gpuNoise                     src/08b-gpu.js:394-399
 gpuNone                      src/08b2-gpu-loss.js:6-14
@@ -5417,7 +5418,7 @@ hqScene                      src/29r-rooms-r3.js:307
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:250-650
+hud                          src/27z-telemetry.js:259-659
 hudFloorMeasure              src/27z-telemetry.js:184-232
 hudMsgPlace                  src/27z-telemetry.js:43-64
 hudNumDirty                  src/08-state.js:101
@@ -6559,7 +6560,7 @@ pickKindByBias               src/20-life.js:192-196
 pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
 pinch0                       src/15-input.js:404
-pipeWho                      tests/91zzzzzzy4-pipes.js:55-60
+pipeWho                      tests/91zzzzzzy4-pipes.js:62-67
 pirateArmTick                src/13d-loadout.js:164-182
 pirateArtOf                  src/12i-pirate-hull.js:238-414
 pirateBaseGpu                src/24a-mode-raid.js:111-186
@@ -7230,7 +7231,7 @@ prof                         src/28-loop.js:754-781
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
-promptSet                    src/27z-telemetry.js:242-249
+promptSet                    src/27z-telemetry.js:249-258
 prunePartsBought             src/14-save.js:33-41
 ptr                          src/15-input.js:403
 puFinger                     tests/91zzzzzd-pure.js:19-27
@@ -9589,7 +9590,7 @@ zoomTo                       src/15-input.js:358
 ## src/16gb-gpu-nebula.js · 35 KB
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
-## src/16gba-gpu-nebula-comp.js · 29 KB
+## src/16gba-gpu-nebula-comp.js · 30 KB
   · туманность системы: сведение и связка (разрез 16gb, M825):1
 
 ## src/16gbb-gpu-nebula-farc.js · 6 KB
@@ -10506,7 +10507,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/27y-hud-words.js · 4 KB
 
-## src/27z-telemetry.js · 56 KB
+## src/27z-telemetry.js · 57 KB
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 71 KB
@@ -10833,9 +10834,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzzy3-gate2d.js · 35 KB
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
-## tests/91zzzzzzy4-pipes.js · 12 KB
+## tests/91zzzzzzy4-pipes.js · 13 KB
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
-  · прыжок между системами: группа привязок — своего конвейера (M800):95
+  · прыжок между системами: группа привязок — своего конвейера (M800):102
 
 ## tests/91zzzzzzy5-gpu-loss.js · 6 KB
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1

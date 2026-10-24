@@ -163,7 +163,9 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
    null, сведение идёт полным проходом. GPU.kill.nhalf — полный проход всегда (проба, сравнение) */
 const GNB_HS=.5;
 function gnbHalfTarget(){
-  const s=Math.min(1,Math.max(GNB_HS,W/Math.max(1,GPU.bw)));
+  /* GPU.halfForce — доля GNB_HS и при кадре не крупнее CSS: так полёт детектора конвейеров (тесты, кадр ×1)
+     спрашивает те же конвейеры, что телефон при ×2 */
+  const s=GPU.halfForce?GNB_HS:Math.min(1,Math.max(GNB_HS,W/Math.max(1,GPU.bw)));
   if(s>.99||GPU.kill.nhalf)return null;
   const w=Math.max(2,Math.ceil(GPU.bw*s)),h=Math.max(2,Math.ceil(GPU.bh*s)),T=GNB.hf;
   if(T&&T.dev===GPU.dev&&T.w===w&&T.h===h)return T;

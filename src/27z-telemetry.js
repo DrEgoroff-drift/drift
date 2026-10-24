@@ -236,16 +236,25 @@ let $vShip=null,$padKeys=null;
 const HUD_PROMPT={k:null,dup:false,lbl:null};
 /* число в подсказке («Нейэль I · 248 ед.») менялось каждый кадр подлёта, и каждая запись в #prompt будила
    наблюдателя вёрстки (08-state): следующий кадр перемерял пол, кнопки ряда и борт — 13 чтений прямоугольника
-   на кадр (телефон, 24.10). Смена одних цифр той же длины пишется не чаще раза в PROMPT_NUM_EVERY кадров
-   (счётчик на 7–8 Гц читается лучше мелькания); новый текст, другая длина числа, пустая строка — сразу */
+   на кадр (телефон, 24.10). Смена одних цифр той же длины пишется не чаще раза в PROMPT_NUM_EVERY тиков
+   игры — в цикле тик и есть кадр (счётчик на 7–8 Гц читается лучше мелькания); новый текст, другая длина
+   числа, пустая строка — сразу. Меряется часами игры G.t, а не числом вызовов: прогон детектора зовёт
+   hud() раз на пятнадцать тиков мира, и счёт вызовов прятал там ответ на жест */
 const PROMPT_NUM_EVERY=8;
+/* ответ на жест — сразу (закон детектора, 90c): смена руля — тяга, поворот, тормоз, верх, низ — открывает
+   четверть секунды (PROMPT_LIVE тиков) без придержки. Показания захода («высота 20 м · снижение 2,3 м/с»)
+   и подлёта отвечают пальцу в тот же кадр, а в покое и на долгой тяге снова идут на 7–8 Гц.
+   Запасной ход — PROMPT_NUM_EVERY×4 вызовов: часы игры стоят, а строка живёт — пишем и так */
+const PROMPT_LIVE=15;
 function promptSet(v){
-  const P=HUD_PROMPT,s=v==null?"":String(v);
+  const P=HUD_PROMPT,s=v==null?"":String(v),t=G.t;
   P.nz=(P.nz||0)+1;
+  const kb=(keys.left?1:0)|(keys.right?2:0)|(keys.thrust?4:0)|(keys.brake?8:0)|(keys.pup?16:0)|(keys.pdown?32:0);
+  if(kb!==P.kb){P.kb=kb;P.lt=t+PROMPT_LIVE;}
   if(s===P.shown)return;
-  const sk=s.replace(/[0-9]/g,"0");
-  if(P.shown!=null&&s&&sk===P.sk&&P.nz<PROMPT_NUM_EVERY)return;
-  P.shown=s;P.sk=sk;P.nz=0;setTx($prompt,s);
+  const sk=s.replace(/[0-9]/g,"0"),dt=P.tw==null?1e9:t-P.tw;
+  if(P.shown!=null&&s&&sk===P.sk&&dt>=0&&dt<PROMPT_NUM_EVERY&&!(t<P.lt)&&P.nz<PROMPT_NUM_EVERY*4)return;
+  P.shown=s;P.sk=sk;P.nz=0;P.tw=t;setTx($prompt,s);
 }
 function hud(){
   const st=stat();

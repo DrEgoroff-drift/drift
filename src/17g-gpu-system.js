@@ -472,7 +472,7 @@ const GSY_SH=.5;
 /* проход шума короны — до прохода сцены (16g gpuSpaceSys); GPU.kill.shalf — шум в полном кадре (проба) */
 function gsyStarHalf(sys,ox,oy,R){
   if(!GPU.on||!GPU.enc||GPU.scenePass||GPU.overPass||GPU.kill.shalf)return;
-  const s=Math.min(1,Math.max(GSY_SH,W/Math.max(1,GPU.bw)));if(s>.99)return;
+  const s=GPU.halfForce?GSY_SH:Math.min(1,Math.max(GSY_SH,W/Math.max(1,GPU.bw)));if(s>.99)return;
   const sk=sysStyle(sys).kind;if(sk==="hole"||sk==="neutron")return;
   const S=gsyStarU(sys,ox,oy,R).S;if(S[48]>=1)return;
   const b=gsyStarBox(S,false);if(!b)return;
@@ -486,7 +486,7 @@ function gsyStarHalf(sys,ox,oy,R){
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view:T.view,loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}],
     timestampWrites:gpuTs("starHalf")});
   p.setScissorRect(x0,y0,x1-x0,y1-y0);
-  gpuField(p,"gsy.starn",GSY_STARN_WGSL,S,[]);
+  gpuField(p,"gsy.starn",GSY_STARN_WGSL,S,[],{blend:"bake"});
   p.end();GSY.hfr=GPU.frameNo;
 }
 function gsyStar(pass,sys,ox,oy,R){
