@@ -77,7 +77,10 @@ fn gcell(q:vec2f,t:f32)->vec3f{let i=floor(q);let f=q-i;var f1=9.;var f2=9.;var 
     let h=vec2f(sh(i+g),sh(i+g+vec2f(17.,31.)));let o=vec2f(.5)+.38*sin(vec2f(t*.0021,t*.0017)+6.2832*h);
     let dd=length(g+o-f);if(dd<f1){f2=f1;f1=dd;id=sh(i+g+vec2f(5.,9.));}else if(dd<f2){f2=dd;}}}
   return vec3f(f1,f2,id);}
-/* одно светило: фотосфера (закрывает фон), корона со стримерами, ореол, четыре луча */
+/* одно светило: фотосфера (закрывает фон), корона со стримерами, ореол, четыре луча.
+   Хвосты (24.10, телефон): экспонента, что дальше своей границы даёт меньше 1e-7, там не считается — гигант у
+   станции (0,0) накрывает кругом 9.5 R весь кадр, и на каждом пикселе шли пять экспонент короны, ядро, блик и
+   по две на каждый луч. Кадр тот же: против прежнего шейдера ±1/255 на долях процента точек (округление) */
 fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32,hn:f32)->vec4f{
   let d=p-sv.xy;let R=sv.z;let heat=sv.w;let col=cv.rgb;let rr=length(d);let r=rr/R;
   if(cv.w<.5||r>9.5){return vec4f(0.);}
@@ -104,12 +107,13 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32,hn:f32)->ve
     /* ближняя корона срезана только вблизи (зум от 1, засветка ложилась на поверхность); в дальнем
        виде она и есть звезда — ореол держит самое яркое пятно кадра (fd — с процессора) */
     let wc=clamp((heat-.7)/.3,0.,1.);let fd=fu.v[12].y;
-    let cr=col*mix(vec3f(1.),vec3f(1.,.72,.6),exp(-x*8.)*(1.-fd));e=e+cr*(exp(-x*3.)*mix(mix(.42,.22,big)*(1.-.4*wc),.5,fd)+exp(-x*.9)*.16*(.45+1.6*n*n))*breath;
+    var m8=0.;if(x<2.1&&fd<1.){m8=exp(-x*8.)*(1.-fd);}var a3=0.;if(x<5.5){a3=exp(-x*3.)*mix(mix(.42,.22,big)*(1.-.4*wc),.5,fd);}
+    let cr=col*mix(vec3f(1.),vec3f(1.,.72,.6),m8);e=e+cr*(a3+exp(-x*.9)*.16*(.45+1.6*n*n))*breath;
     /* длинные слабые стримеры — тают в свечение, конца у них нет */
     e=e+mix(col,vec3f(1.,.9,.78),.3)*exp(-x*.4)*.05*(n*n*n)*8.*breath;
     /* L2: сразу за лимбом — тугая корона, красная, как хромосфера; G2: не ярче самого лимба,
        иначе у кромки горб светлым кольцом. У гиганта слабее — он и так тонет в газе */
-    e=e+mix(col,vec3f(1.,.82,.55),.5)*mix(.24,.08,big)*(1.-.5*wc)*exp(-x*14.)*smoothstep(Rd*.92,Rd,r)*breath;
+    if(x<1.2){e=e+mix(col,vec3f(1.,.82,.55),.5)*mix(.24,.08,big)*(1.-.5*wc)*exp(-x*14.)*smoothstep(Rd*.92,Rd,r)*breath;}
   }
   /* G2: протуберанцы — арки на лимбе, дышат и текут волокнами; край у них гауссов, а
      концы тают по дуге — ни одного порогового края, тон тёплый, не неон */
@@ -137,23 +141,23 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32,hn:f32)->ve
   if(vv<3.&&fI>.001){
     let fa=6.2832*sh(vec2f(K10.w+ph,9.));
     let fd=length(d/R-vec2f(cos(fa),sin(fa))*Rd*.93)/Rd;
-    e=e+vec3f(1.,.92,.8)*fI*(1.3*exp(-fd*fd/.006)+.35*exp(-fd*fd/.05)+.08*exp(-fd*fd/.4));
+    if(fd<2.7){e=e+vec3f(1.,.92,.8)*fI*(1.3*exp(-fd*fd/.006)+.35*exp(-fd*fd/.05)+.08*exp(-fd*fd/.4));}
   }
   /* широкий ореол цветом звезды; при объёмной туманности его держит рассеяние по газу
      (16gb) — свой, одноцветный, ложился на газ дополнительного тона серой дымкой */
   if(vv<3.){
-  e=e+col*.15*heat*hz*pow(clamp(1.-(r-.3)/6.7,0.,1.),2.2)*smoothstep(Rd*.9,Rd*1.3,r);
-  let r23=(r-2.3)/.3;e=e+col*.03*exp(-r23*r23);
+  if(r<7.){e=e+col*.15*heat*hz*pow(clamp(1.-(r-.3)/6.7,0.,1.),2.2)*smoothstep(Rd*.9,Rd*1.3,r);}
+  let r23=(r-2.3)/.3;if(abs(r23)<4.4){e=e+col*.03*exp(-r23*r23);}
   for(var i=0;i<4;i++){
     let a=f32(i)*1.5707963+.2;let ax=vec2f(cos(a),sin(a));
     let s=dot(d,ax)/R;let q=abs(dot(d,vec2f(-ax.y,ax.x)))/R;
     let len=K11[i]*heat;
     if(s>Rd*.6&&s<len){let k=(s-Rd*.6)/(len-Rd*.6);
       let w=max(.05*(1.-k)+.006,.7*px/R);
-      e=e+mix(col,vec3f(1.,.97,.92),.55*(1.-k))*.6*(1.-k)*smoothstep(Rd*.6,Rd*1.4,s)*exp(-q*q/(w*w))*(.6+.4*exp(-q*q/(w*w*.12)));}
+      if(q<4.*w){e=e+mix(col,vec3f(1.,.97,.92),.55*(1.-k))*.6*(1.-k)*smoothstep(Rd*.6,Rd*1.4,s)*exp(-q*q/(w*w))*(.6+.4*exp(-q*q/(w*w*.12)));}}
   }}
   /* белое горячее ядро и блик: источник — самое яркое в кадре, и на ярком газе тоже */
-  let rc=r/(Rd*.16);e=e+vec3f(1.,.97,.93)*1.6*exp(-rc*rc);
+  let rc=r/(Rd*.16);if(rc<4.5){e=e+vec3f(1.,.97,.93)*1.6*exp(-rc*rc);}
   var photo=vec4f(0.);var gl=1.;
   /* M825: диск крупнее ~20 px радиуса — смотрим на поверхность, а не на точку света */
   let near=smoothstep(20.,70.,Rd*R);
@@ -213,7 +217,7 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32,hn:f32)->ve
   let tone=vec3f(1.)-exp(-raw)+max(raw-vec3f(1.6),vec3f(0.))*.6+photo.rgb*near*.5;
   /* сверх тона — горячая середина: одна она светит далеко выше газа, и лестница
      свечения даёт ей широкий тёплый ореол; диск вокруг остаётся своего цвета */
-  let rh=r/(Rd*.11);let hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat)*(1.-near);
+  let rh=r/(Rd*.11);var hc=vec3f(0.);if(rh<5.){hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat)*(1.-near);}
   return vec4f(tone+hc,photo.a);
 }
 fn bleed(p:vec2f,bv:vec4f,col:vec3f)->vec3f{
