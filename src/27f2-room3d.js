@@ -225,6 +225,13 @@ function r3Kit(){
   K.pack=()=>{const r={v:V.slice(0,VN),n:VN/12,buf:null,dev:null};
     if(V.length<=R3_VPOOL_MAX&&(!R3_VPOOL||R3_VPOOL.length<V.length))R3_VPOOL=V;
     V=R3_VNIL;VN=0;return r;};
+  /* то же шагами (24.10, телефон): копия вершин тела на портрете — до 10 МБ, на S23 до 6 мс одним куском; режем по 64 К
+     чисел с часами, байты те же, что у slice */
+  K.packG=function*(ms){const v=new Float32Array(VN),C=1<<16;let t0=wallMs();
+    for(let a=0;a<VN;a+=C){v.set(V.subarray(a,Math.min(VN,a+C)),a);if(a+C<VN&&wallMs()-t0>ms){yield;t0=wallMs();}}
+    const r={v,n:VN/12,buf:null,dev:null};
+    if(V.length<=R3_VPOOL_MAX&&(!R3_VPOOL||R3_VPOOL.length<V.length))R3_VPOOL=V;
+    V=R3_VNIL;VN=0;return r;};
   return K;
 }
 

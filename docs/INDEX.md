@@ -386,9 +386,9 @@ CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_JOBS                      src/27f3-person3d.js:323
+CP_JOBS                      src/27f3-person3d.js:326
 CP_KIT                       src/27f3-person3d.js:126
-CP_MESH                      src/27f3-person3d.js:296
+CP_MESH                      src/27f3-person3d.js:299
 CP_SO                        src/27f3a-face3d.js:84
 CP_TEMPER                    src/27f6-face-live.js:25
 CP_TORSO                     src/27f3-person3d.js:97
@@ -1835,17 +1835,17 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:684
+R3                           src/27f2-room3d.js:691
 R3P                          src/27f2-room3d.js:35
 R3U                          src/27f2-room3d.js:31
 R3_DBG                       src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:663
+R3_DOWN_WGSL                 src/27f2-room3d.js:670
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:844
+R3_POST_WGSL                 src/27f2-room3d.js:851
 R3_SCR                       src/27f2-room3d.js:48
 R3_UN                        src/27f2-room3d.js:33
 R3_VPOOL                     src/27f2-room3d.js:79
-R3_WGSL                      src/27f2-room3d.js:232
+R3_WGSL                      src/27f2-room3d.js:239
 RACK                         src/25d-instr-rack.js:44
 RACK_CH                      src/25d-instr-rack.js:26-32
 RACK_DQ                      src/25d-instr-rack.js:189
@@ -3487,7 +3487,7 @@ cpBand                       src/27f3-person3d.js:111-119
 cpBasis                      src/27f3-person3d.js:89-93
 cpBeardG                     src/27f3a-face3d.js:395-410
 cpBody                       src/27f3-person3d.js:128
-cpBodyGen                    src/27f3-person3d.js:129-293
+cpBodyGen                    src/27f3-person3d.js:129-296
 cpCloth                      src/27f3-person3d.js:46-51
 cpClump                      src/27f3a-face3d.js:386-393
 cpEmoMix                     src/27f6-face-live.js:56-58
@@ -3504,10 +3504,10 @@ cpHead                       src/27f3a-face3d.js:189
 cpHeadAI                     src/27f3a-face3d.js:412-422
 cpHeadFn                     src/27f3a-face3d.js:18-52
 cpHeadGen                    src/27f3a-face3d.js:190-297
-cpMesh                       src/27f3-person3d.js:305-311
-cpMeshKey                    src/27f3-person3d.js:297-299
-cpMeshPump                   src/27f3-person3d.js:324-339
-cpMeshPut                    src/27f3-person3d.js:300-304
+cpMesh                       src/27f3-person3d.js:308-314
+cpMeshKey                    src/27f3-person3d.js:300-302
+cpMeshPump                   src/27f3-person3d.js:327-342
+cpMeshPut                    src/27f3-person3d.js:303-307
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:23-29
 cpPose                       src/27f3-person3d.js:53-87
@@ -3518,7 +3518,7 @@ cpSkin                       src/27f3a-face3d.js:165-168
 cpSkinZ                      src/27f3a-face3d.js:170
 cpTeeth                      src/27f3a-face3d.js:173-185
 cpTorsoAt                    src/27f3-person3d.js:100-109
-cpTwinPump                   src/27f3-person3d.js:316-321
+cpTwinPump                   src/27f3-person3d.js:319-324
 cpUn                         src/27f3a-face3d.js:86
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
@@ -7306,33 +7306,33 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:685-691
-r3Dev                        src/27f2-room3d.js:708-732
-r3DownDesc                   src/27f2-room3d.js:700-704
-r3Drop                       src/27f2-room3d.js:739
-r3Frame                      src/27f2-room3d.js:783-841
-r3Free                       src/27f2-room3d.js:741
-r3Kit                        src/27f2-room3d.js:87-229
+r3Desc                       src/27f2-room3d.js:692-698
+r3Dev                        src/27f2-room3d.js:715-739
+r3DownDesc                   src/27f2-room3d.js:707-711
+r3Drop                       src/27f2-room3d.js:746
+r3Frame                      src/27f2-room3d.js:790-848
+r3Free                       src/27f2-room3d.js:748
+r3Kit                        src/27f2-room3d.js:87-236
 r3Lin                        src/27f2-room3d.js:38
-r3Look                       src/27f2-room3d.js:53-229
-r3MeshR                      src/27f2-room3d.js:782
+r3Look                       src/27f2-room3d.js:53-236
+r3MeshR                      src/27f2-room3d.js:789
 r3Mix                        src/27f2-room3d.js:39
 r3MixI                       src/27f2-room3d.js:42
 r3Mul                        src/27f2-room3d.js:50
 r3Persp                      src/27f2-room3d.js:52
 r3Pivot                      src/27f2-room3d.js:69
-r3Proj                       src/27f2-room3d.js:72-229
+r3Proj                       src/27f2-room3d.js:72-236
 r3Pt                         src/27f2-room3d.js:70
 r3Sc                         src/27f2-room3d.js:40
 r3ScI                        src/27f2-room3d.js:43
 r3Scr                        src/27f2-room3d.js:49
-r3ShDesc                     src/27f2-room3d.js:692-697
-r3ShadowVP                   src/27f2-room3d.js:743-748
+r3ShDesc                     src/27f2-room3d.js:699-704
+r3ShadowVP                   src/27f2-room3d.js:750-755
 r3Step                       src/27f2-room3d.js:44
-r3Targets                    src/27f2-room3d.js:755-780
-r3Up                         src/27f2-room3d.js:734-738
-r3VB                         src/27f2-room3d.js:698
-r3Xf                         src/27f2-room3d.js:59-229
+r3Targets                    src/27f2-room3d.js:762-787
+r3Up                         src/27f2-room3d.js:741-745
+r3VB                         src/27f2-room3d.js:705
+r3Xf                         src/27f2-room3d.js:59-236
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
 rackBottom                   src/25d-instr-rack.js:331-336
@@ -10440,7 +10440,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f2-room3d.js · 80 KB
   · комната в объёме (M725):1
 
-## src/27f3-person3d.js · 30 KB
+## src/27f3-person3d.js · 31 KB
   · человек в объёме (M725):1
 
 ## src/27f3a-face3d.js · 40 KB

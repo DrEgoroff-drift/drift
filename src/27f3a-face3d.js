@@ -244,7 +244,7 @@ function* cpHeadGen(K,g,lod,cl,seed){
       K.tube(rim,[.002,.0028,.0034,.0036,.0036,.0034,.0032,.003,.0028,.0026,.0024,.0024,.0026,.003,.0034],Me,5);
       K.ell([s*.003,-.002,.002],[.004,.014*er,.009*er],K.mt(mixc(g.skin,[60,30,25],.35),.1,4,P.skin),4,8);
       K.ell([s*.002,-.021*er,.002],[.0055,.0065*er,.007*er],Me,4,8);}   /* мочка */
-    K.pop();}
+    K.pop();if(s<0)yield;}   /* ухо — шаг */
   yield;
   /* глаза: яблоко — сфера с полюсом по взгляду (зрачок и радужка — кольцами, ровно), роговица чуть выпуклая;
      ресницы — тёмная лента по кромке верхнего века. Смотрит прямо — взгляд двигает cpRig */
@@ -260,7 +260,7 @@ function* cpHeadGen(K,g,lod,cl,seed){
         K.tube(rg,.0018,K.mt([150,154,160],.8,11,P.brushed),5);}
     }else{
       const pr=.15+.03*((seed>>>5)%3),nu=lod>1?40:lod?20:10,nv=lod>1?30:lod?14:6;
-      K.surf(nu,nv,(u,v)=>{const az=u*TAU,al=Math.PI*Math.pow(v,1.45),r=er0+.0007*r3Step(.5,.26,al),sa=Math.sin(al);
+      yield* K.surfG(nu,nv,(u,v)=>{const az=u*TAU,al=Math.PI*Math.pow(v,1.45),r=er0+.0007*r3Step(.5,.26,al),sa=Math.sin(al);
         const d=[sa*Math.cos(az),sa*Math.sin(az),Math.cos(al)];
         let col;
         if(al<pr)col=pup;
@@ -268,7 +268,7 @@ function* cpHeadGen(K,g,lod,cl,seed){
           col=r3Sc(iris,(.5+.75*st)*(1.15-.3*k+.25*Math.exp(-Math.pow((k-.22)/.08,2)))*(k>.84?.4:1));}
         else col=r3Mix(scl,pink,r3Step(1.05,1.6,al)*(.4+.6*Math.abs(Math.cos(az))));
         col=r3Sc(col,1-.38*r3Step(-.15,.75,d[1])-.12*r3Step(.3,.9,Math.abs(d[0])));   /* тень века сверху, углы глубже */
-        return [[E[0]+d[0]*r,E[1]+d[1]*r,E[2]+d[2]*r],col];},K.mt([255,255,255],.85,13,P.eye),{wrap:1});
+        return [[E[0]+d[0]*r,E[1]+d[1]*r,E[2]+d[2]*r],col];},K.mt([255,255,255],.85,13,P.eye),{wrap:1},2);
     }
     if(lod){   /* ресницы: от кромки наружу, вперёд и чуть вверх; у наружного угла длиннее */
       K.part=CPR.lidU;const n=lod>1?18:8,LP=[];
@@ -278,13 +278,13 @@ function* cpHeadGen(K,g,lod,cl,seed){
         LP.push([[x,y,z],[x+(nr[0]*.55)*L,y+(nr[1]*.4+.55)*L,z+(nr[2]*.6+.35)*L]]);}
       K.surf(n,2,(u,v)=>{const i=Math.round(u*n),a=LP[i][0],b=LP[i][1],c=v*v*(3-2*v);return [[a[0]+(b[0]-a[0])*v,a[1]+(b[1]-a[1])*c,a[2]+(b[2]-a[2])*v],lashC];},K.mt([20,15,13],.2,4,P.hair));
     }
-    K.part=1;
+    K.part=1;if(s<0)yield;   /* глаз — шаг */
   }
   yield;
   /* зубы за губами: верхние стоят с головой (улыбка поднимает губу над ними), нижние ходят с нижней губой */
   if(lod){const zf=cpSkinZ(H,F,0,F.my)+.0016;
     K.part=CPR.teeth;cpTeeth(K,F.my+.0105,F.my-.0004,zf,.026,.0195,lod,1,F.age);
-    K.part=CPR.lipL;cpTeeth(K,F.my-.0018,F.my-.0095,zf-.0024,.023,.0135,lod,0,F.age);   /* уже и глубже: края не пробивают кожу под губой */
+    yield;K.part=CPR.lipL;cpTeeth(K,F.my-.0018,F.my-.0095,zf-.0024,.023,.0135,lod,0,F.age);   /* уже и глубже: края не пробивают кожу под губой */
     K.part=1;}
   rig.mouth=[0,F.my,cpSkinZ(H,F,0,F.my)];
   yield;

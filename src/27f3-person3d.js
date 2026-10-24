@@ -145,7 +145,8 @@ function* cpBodyGen(m,lod,poseK){
   const vh=v=>!ai&&v>.8?2*Math.asin(Math.min(.95,v-.8+.02)):0;
   K.push(pel,0,ln,0);
   K.part=0;
-  K.surf(NU,NV,(u,v)=>{const h=vh(v),th=h+u*(TAU-2*h),sn=Math.sin(th);
+  /* корпус — поверхностью шагами (24.10, телефон): одним куском он стоил до 7 мс на S23 */
+  yield* K.surfG(NU,NV,(u,v)=>{const h=vh(v),th=h+u*(TAU-2*h),sn=Math.sin(th);
     let col=jl;
     if(v<.13)col=pl;else if(v<.19)col=bl;
     else{
@@ -155,7 +156,7 @@ function* cpBodyGen(m,lod,poseK){
       if(rk==="keep"&&(Math.abs(v-.47)<.022||Math.abs(v-.57)<.022))col=hv;   /* светоотражающие полосы */
     }
     const ao=1-.25*(Math.abs(sn)>.85&&v>.55&&v<.86?1:0)-.15*r3Step(.25,.0,v);
-    return [TA(th,v),r3Sc(col,ao)];},Mj);
+    return [TA(th,v),r3Sc(col,ao)];},Mj,null,2);
   if(!ai){
     const sc=rk==="fact"?[226,220,206]:rk==="clerk"?mixc(KT.jac,[255,255,255],.25):cl.shirt,Msh=K.mt(sc,.2,4,P.cloth),ed=[[],[]];
     K.surf(8,lod?6:3,(u,w)=>{const v=.79+w*.205,h=vh(v)*1.08;return [TA((u*2-1)*h,v,.968)];},Msh);
@@ -175,6 +176,7 @@ function* cpBodyGen(m,lod,poseK){
     }
     if(lod&&rk!=="fact"&&rk!=="clerk"){const zp=[];for(let i=0;i<=8;i++){const v=.2+i/8*.6;zp.push([0,yf(v),zf(v)+.003]);}K.tube(zp,.0028,Mm,4);
       if(rk!=="cmd"&&rk!=="clerk")for(const s of [-1,1])K.box([s*.075*wB,.33*TL,zf(.66)+.004],[.032,.026,.006],K.mt(mixc(jac,[0,0,0],.18),.2,5,P.cloth),.004);}
+    yield;   /* снаряжение роли — свой шаг */
     if(rk==="cmd"){   /* жилет поверх куртки: проймы открыты, подсумки на поясе, рация на груди, лямки через плечи */
       const Mv=K.mt(mixc([44,48,42],rc,.1),.25,6,P.cloth),Mpo=K.mt(mixc([36,40,34],rc,.08),.2,5,P.cloth);
       K.surf(NU,Math.max(6,Math.round(NV*.6)),(u,w)=>[TA(u*TAU,.22+w*.6,1.07)],Mv,
@@ -260,6 +262,7 @@ function* cpBodyGen(m,lod,poseK){
     K.ell([-s*.03,.004,.04],[.011,.011,.03],Msk,4,6);
     K.pop();
     arms.push({S,E,W,f});
+    if(!k)yield;   /* рука — шаг */
   }
   yield;
   /* ноги: таз → колено → лодыжка, ботинок по стопе */
@@ -284,7 +287,7 @@ function* cpBodyGen(m,lod,poseK){
   K.pop();
   K.part=0;
   yield;   /* упаковка — свой шаг (M816c: тело одним шагом стоило до 70 мс) */
-  const M=K.pack();
+  const M=yield* K.packG(2);
   const H=cpHeadFn(g.ai?{w:.27,h:.345,jaw:.8,chin:.8,brow:.9}:g);
   M.at={neck,head:hc,top:[hc[0],hc[1]+H.b*hs+.03,hc[2]],sh,arms,pel,hand:arms.map(a=>[a.W[0]+a.f[0]*.07,a.W[1]+a.f[1]*.07,a.W[2]+a.f[2]*.07]),hold:J.hold||0,seat:!!J.seat};
   M.at.hp=[hc,-ln*.6,hs];M.rig=rig;
