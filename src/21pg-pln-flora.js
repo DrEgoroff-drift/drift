@@ -260,11 +260,11 @@ function plnFloraKit(){
   while(plnFloraKitStep());
   return Q.kit;
 }
-/* из кадра системы, раз в четыре кадра, до PLN_KIT_MS: набор планеты готов к первой посадке. Был целый шаг раз в
+/* из кадра системы, работником общего бюджета (17a0): набор планеты готов к первой посадке. Был целый шаг раз в
    восемь кадров — зонт у площадки 4 мс на ПК, свечи и кулиса по 2–5: на S23 кадры по 10–12 мс первые секунды полёта
    (тестер, раунд 18) */
-let PLN_KIT_N=0;const PLN_KIT_MS=2;
-function plnKitTick(){
-  if((++PLN_KIT_N&3)!==0)return;
-  try{plnFloraKitStep(PLN_KIT_MS);}catch(e){PLN_FLORA.job=null;console.error("набор флоры заранее",e);}
+const PLN_KIT_MS=2;
+function plnKitTick(ms){
+  try{return plnFloraKitStep(ms>0?ms:PLN_KIT_MS);}catch(e){PLN_FLORA.job=null;console.error("набор флоры заранее",e);return false;}
 }
+workAdd("flora",3,()=>G.mode==="system",ms=>plnKitTick(ms));

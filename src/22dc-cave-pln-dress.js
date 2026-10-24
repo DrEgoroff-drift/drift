@@ -313,7 +313,10 @@ function cave3VeinBody(C,F,m,v,r){
   return {n,col};
 }
 /* одна полоса: тело убранства, чернила разреза, огни кристаллов */
-function cave3DressBin(C,F,items){
+/* полоса — шагами по вещи (24.10): целиком она 4 мс на ПК, ~17 на S23; заготовка (cave3DressAhead) крутит шаги в
+   бюджет, кадр достраивает начатую тем же ходом. Вещи те же и в том же порядке: rng у каждой своё (q.seed) */
+function cave3DressBin(C,F,items){const it=cave3DressBinG(C,F,items);let r;do r=it.next();while(!r.done);return r.value;}
+function* cave3DressBinG(C,F,items){
   const m=plnMesh(1<<14),ink=plnMesh(1<<10),B={F,m,r:null,D:CAVE3_DS=cave3DripSty(F)},lights=[],glows=[],P=CAVE_PPM;
   const air=(X,Y,Z,e)=>cave3Den(F,X,Y,Z)<-(e==null?.4:e);
   /* место в глубине за линией ходьбы; не нашлось — ближе к разрезу */
@@ -323,6 +326,7 @@ function cave3DressBin(C,F,items){
     return -1;
   };
   for(const q of items){
+    yield;CAVE3_DS=B.D;   /* стиль капели — общий на модуль: между шагами его мог сменить чужой ход */
     const r=B.r=rng(q.seed^0x5EED),g=q.g;
     if(q.k==="ink"){cave3InkBuild(F,ink,q,r);continue;}
     if(q.k==="vein"){cave3VeinBody(C,F,m,q.t,r);continue;}
@@ -398,14 +402,39 @@ function cave3DressCryst(B,q,lights,glows){
     }
   }
 }
-/* ── кадр: полосы, что видны, строятся по бюджету; огни ближних кристаллов — в кадр ── */
-function cave3DressFrame(C,F,Fd,x0,x1,cx,first,cy){
+function cave3DressQ(C,Fd){
   const Q=C.dr3||(C.dr3={m:new Map(),gen:-1,t:0,items:null,by:null});
-  if(Q.gen!==PLN_GPU.gen){for(const b of Q.m.values()){plnGeoFree(b.m);plnGeoFree(b.ink);}Q.m.clear();Q.gen=PLN_GPU.gen;}
+  if(Q.gen!==PLN_GPU.gen){for(const b of Q.m.values()){plnGeoFree(b.m);plnGeoFree(b.ink);}Q.m.clear();Q.job=null;Q.gen=PLN_GPU.gen;}
   if(!Q.items){
     Q.items=cave3DressItems(C,Fd);Q.by=new Map();
     for(const q of Q.items){let a=Q.by.get(q.b);if(!a)Q.by.set(q.b,a=[]);a.push(q);}
   }
+  return Q;
+}
+/* полосы окна входа — заранее, из заготовки пещеры (caveTick, 22d): первый кадр пещеры строил их разом, в бюджет
+   CAVE3_DR.first (300 мс) — 32–39 мс на S23 (тестер, раунд 21). Те же полосы тем же cave3DressBin, ближние к устью
+   первыми, по одной, пока следующая (судя по прошлой) влезает в ms; true — окно готово */
+function cave3DressAhead(C,Fd,x0,x1,cx,ms){
+  if(!(C.dr3&&C.dr3.items)){cave3DressQ(C,Fd);return false;}
+  const Q=cave3DressQ(C,Fd),s=CAVE3_DR.s,want=[];
+  for(let b=Math.floor(x0/s);b<=Math.floor(x1/s);b++)if(!Q.m.has(b)&&Q.by.has(b))want.push([b,Math.abs((b+.5)*s-cx)]);
+  want.sort((a,b)=>a[1]-b[1]);
+  const t0=wallMs();let t=t0;
+  while(want.length){
+    if(!Q.job){const b=want[0][0];Q.job={b,it:cave3DressBinG(C,Fd,Q.by.get(b))};}
+    const r=Q.job.it.next(),t1=wallMs();
+    if(r.done){const b=Q.job.b;Q.job=null;r.value.t=Q.t;Q.m.set(b,r.value);want.shift();}
+    if(t1-t0+(t1-t)>=ms)break;t=t1;}
+  return !want.length;
+}
+/* полоса для кадра: начатую заготовкой — достроить её ходом, иначе целиком */
+function cave3DressTake(Q,C,Fd,b){
+  if(Q.job&&Q.job.b===b){const J=Q.job;Q.job=null;let r;do r=J.it.next();while(!r.done);return r.value;}
+  return cave3DressBin(C,Fd,Q.by.get(b));
+}
+/* ── кадр: полосы, что видны, строятся по бюджету; огни ближних кристаллов — в кадр ── */
+function cave3DressFrame(C,F,Fd,x0,x1,cx,first,cy){
+  const Q=cave3DressQ(C,Fd);
   Q.t++;
   const s=CAVE3_DR.s,b0=Math.floor(x0/s),b1=Math.floor(x1/s),want=[],vis=[];
   for(let b=b0;b<=b1;b++){
@@ -417,7 +446,7 @@ function cave3DressFrame(C,F,Fd,x0,x1,cx,first,cy){
   let built=0;
   for(const [b] of want){
     if(built&&wallMs()-t0>lim)break;
-    const k=cave3DressBin(C,Fd,Q.by.get(b));k.t=Q.t;Q.m.set(b,k);vis.push(k);built++;
+    const k=cave3DressTake(Q,C,Fd,b);k.t=Q.t;Q.m.set(b,k);vis.push(k);built++;
   }
   if(Q.m.size>CAVE3_DR.keep){
     const old=[...Q.m.entries()].filter(e=>e[1].t!==Q.t).sort((a,b)=>a[1].t-b[1].t);

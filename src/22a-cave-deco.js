@@ -91,8 +91,26 @@ function caveWet(C,x){
 }
 
 /* ── разовая генерация убранства ── */
+/* убранство — шагами (24.10): лишайник ~0,4 мс на ПК, десять разом — 4 мс, ~15 на S23 одним кадром. Заготовка
+   пещеры (caveTick, 22d) крутит шаги в бюджет кадра; кто спросит раньше — достроит начатое тем же ходом, числа
+   те же: у каждой части своё зерно. Пока заготовка лепит пещеру (CAVE_DECO.defer), caveMake его не ждёт */
+const CAVE_DECO={defer:false,job:new WeakMap()};
 function caveDeco(C,p){
   if(C.deco)return C.deco;
+  if(CAVE_DECO.defer)return null;
+  const J=CAVE_DECO.job.get(C)||caveDecoG(C,p);CAVE_DECO.job.delete(C);
+  let r;do r=J.next();while(!r.done);
+  return r.value;
+}
+function caveDecoAhead(C,p,ms){
+  if(C.deco)return true;
+  let J=CAVE_DECO.job.get(C);if(!J)CAVE_DECO.job.set(C,J=caveDecoG(C,p));
+  const t0=wallMs();let t=t0;
+  for(;;){const r=J.next(),t1=wallMs();
+    if(r.done){CAVE_DECO.job.delete(C);return true;}
+    if(t1-t0+(t1-t)>=ms)return false;t=t1;}
+}
+function* caveDecoG(C,p){
   const pal=(p&&p.T&&p.T.pal)||[[90,90,100],[70,70,80],[50,50,60]];
   const base=pal[Math.min(pal.length-1,2)];
   const rockCol=[0,1,2].map(j=>Math.round(base[j]*.55+14));
@@ -145,6 +163,7 @@ function caveDeco(C,p){
   {
     const rl=rng(C.seed^0x11C4);
     for(let i=0;i<10;i++){
+      yield;
       const low=rl()<.35;
       const x=low?360+rl()*(CAVE_W-620):140+rl()*(CAVE_W-280);
       const up=rl()<.7;
@@ -154,6 +173,7 @@ function caveDeco(C,p){
         col:rl()<.5?[116,138,112]:[104,124,128]});
     }
   }
+  yield;
   /* светящиеся жилы: ломаная вдоль породы, цвет минерала зала. Пульсируют
      медленно и врозь — синхронная пульсация читается как мигание интерфейса */
   for(const z of Z){

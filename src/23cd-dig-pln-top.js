@@ -139,10 +139,16 @@ function dig3TopLand(L,out,ex,V,T){
 /* юбка среза на входе и выходе: тёмный пласт под краем земли — срез читается толщей, а не листом;
    у разреза она сходит на нет (глубина ∝ расстоянию до него), иначе закрыла бы разрез рудника */
 function dig3TopSkirt(T,C){
-  const Z=DIG3_TOP,zc=Z.zc,L=T.L;
+  const Z=DIG3_TOP,zc=Z.zc,L=T.L,hw=C.hw*(1+zc/C.D)+4;
+  /* та же юбка — тот же буфер: кадр её пересобирал каждый раз (с буфером на видеокарте), и когда срез стоит */
+  const key=zc>-.02||hw<=0?"":zc.toFixed(2)+"|"+C.ex+"|"+hw.toFixed(3)+"|"+PLN_GPU.gen;
+  if(Z.sk&&Z.skKey===key&&Z.skL===L)return Z.sk;
   if(Z.sk){plnGeoFree(Z.sk);Z.sk=null;}
-  if(zc>-.02)return null;
-  const hw=C.hw*(1+zc/C.D)+4,x0=C.ex-hw,dx=Math.max(L.dx,2*hw/400),n=Math.ceil(2*hw/dx)+1,hs=Math.min(60,-zc*4);
+  Z.skKey=key;Z.skL=L;
+  /* глубже разреза (zc < -C.D) ширина уходит в минус: юбки нет. Было «Invalid typed array length» на входе в
+     шахту, шесть кадров подряд (тестер, раунд 21, живой сайт) */
+  if(!key)return null;
+  const x0=C.ex-hw,dx=Math.max(L.dx,2*hw/400),n=Math.ceil(2*hw/dx)+1,hs=Math.min(60,-zc*4);
   const m=plnMesh(n*2+8),nk=plnNorm([0,.25,-1]),c=plnMul(PLN_PAL.soilDark,.8),c2=plnMul(PLN_PAL.soilDark,.4);
   for(let i=0;i<n;i++){
     const x=x0+i*dx,h=plnLandRibAt(L,x,zc);

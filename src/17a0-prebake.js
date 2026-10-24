@@ -39,3 +39,30 @@ function prebake(key,make,sync){
 }
 /* виден ли прямоугольник экрана [x,y,w,h] — и «в экране от края» (m — доля экрана запаса) */
 function pbOnScreen(x,y,w,h,m){const mx=W*(m||0),my=H*(m||0);return x<W+mx&&x+w>-mx&&y<H+my&&y+h>-my;}
+
+/* ══════════════ заготовки наперёд: общий бюджет кадра (24.10) ══════════════
+   Зал станции, набор флоры, вещи у входа цели, пещера у устья — каждая заготовка жила своим бюджетом и своим
+   ходом (3 мс через кадр, 2 мс раз в четыре, 3 мс каждый кадр): в кадре, где сходились две, они складывались, и
+   ни одна не знала, во что уже обошёлся кадр. Теперь их зовёт одно место — workPump, раз за кадр, по порядку
+   важности, и все вместе они тратят не больше WORK_MS. Бюджет — то, что осталось кадру: прошлый кадр без
+   заготовок (FRAME_JS - WORK_T) вычитается из WORK_JS, так что на телефоне, где кадр и без них тяжёл,
+   заготовкам достаётся меньше, на ПК — полный. Часы свои у каждой машины: мс телефона — мс телефона.
+   Работник: step(ms) — шагает, пока следующий шаг (судя по прошлому) влезает в ms, и отвечает, сделал ли
+   что-то; when() — его режим. Шаг не делится, поэтому работник, кому бюджета не досталось, всё равно
+   получает ход раз в WORK_STARVE кадров — иначе тяжёлый кадр не дал бы заготовке кончиться никогда.
+   WORK_MAX[имя] — самый долгий ход работника (мс), для ворот и замеров */
+const WORK=[],WORK_MS=3,WORK_LO=.5,WORK_JS=10,WORK_STARVE=20,WORK_MAX={};
+let WORK_F=0,WORK_T=0;
+function workAdd(name,prio,when,step){WORK.push({name,prio,when,step,f:0});WORK.sort((a,b)=>a.prio-b.prio);}
+function workPump(){
+  WORK_F++;
+  const t0=wallMs();let left=Math.min(WORK_MS,Math.max(WORK_LO,WORK_JS-(FRAME_JS-WORK_T)));
+  for(const w of WORK){
+    if(!w.when())continue;
+    if(left<WORK_LO&&WORK_F-w.f<WORK_STARVE)continue;
+    const a=wallMs(),go=w.step(Math.max(left,WORK_LO)),dt=wallMs()-a;
+    left-=dt;
+    if(go){w.f=WORK_F;if(!(WORK_MAX[w.name]>=dt))WORK_MAX[w.name]=dt;}
+  }
+  WORK_T=wallMs()-t0;
+}

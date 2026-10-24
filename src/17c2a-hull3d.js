@@ -150,6 +150,23 @@ function h3dMeshPump(h,gear,budget){
   const it=h3dJob(h,gear,sig),t0=wallMs();let t=t0;   /* шаг длиной в прошлый, не влезающий в бюджет, — в следующий вызов */
   for(;;){const r=it.next(),t1=wallMs();if(r.done)return r.value;if(t1-t0+(t1-t)>=budget)return null;t=t1;}
 }
+/* сетки, которых не хватило кадру (24.10, телефон): кадр их больше не строит. Корпус без сетки рисуется своей
+   плоской выпечкой (hullGpuDraw → gpuLitSprite), а сетка встаёт сюда, и её достраивает работник общего бюджета
+   кадра (17a0) — первым, раньше заготовок наперёд: она нужна на экране. Было: голый корпус целиком в кадре первой
+   встречи (1–2 мс на ПК, 18–28 на S23 — корабль полосы, свой корпус после загрузки), с частями — один за кадр.
+   Брошенная (кадр не спрашивал её H3D_NEED_KEEP кадров) уходит из очереди: её начатый ход ждёт в H3D_JOBS */
+const H3D_NEED=[],H3D_NEED_KEEP=120;
+function h3dNeed(h,gear){const sig=gear?gear.sig:"";
+  for(const q of H3D_NEED)if(q.h===h&&q.sig===sig){q.f=GPU.frameNo;return;}
+  H3D_NEED.push({h,gear,sig,f:GPU.frameNo});}
+function h3dNeedPump(ms){
+  const t0=wallMs();let go=false;
+  while(H3D_NEED.length){const q=H3D_NEED[0];
+    if(GPU.frameNo-q.f>H3D_NEED_KEEP){H3D_NEED.shift();continue;}
+    const left=ms-(wallMs()-t0);if(go&&left<WORK_LO)break;
+    go=true;if(!h3dMeshPump(q.h,q.gear,Math.max(WORK_LO,left)))break;H3D_NEED.shift();}
+  return go;}
+workAdd("hull3d",0,()=>H3D_NEED.length>0&&!!GPU.dev,ms=>h3dNeedPump(ms));
 function* h3dMeshGen(h,gear,sig){
   const K=H3D_MK[h.by]||H3D_MK.gt,ne=K[0],kh=K[1];
   const kit=h3dKit(),{V,C,ctr,face,loft,lathe,box,prism,tube}=kit;
@@ -522,13 +539,14 @@ function h3dCls(n){
    false — слоя нет (не тот кадр, слои кончились): рисуй спрайтом */
 function h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,ember,gear,V){
   if(!GPU.on||!GPU.dev||!GPU.enc)return false;
-  /* новая сетка с частями — одна за кадр (M722): штука стоит 2–3,5 мс на ПК и вчетверо больше на телефоне, вход
-     в систему с восемью корпусами иначе встаёт колом. Кто ждёт очереди — голый корпус, стволы ему рисует 05c */
-  if(gear){const C4=H3D.MG.get(h);if(!(C4&&C4.has(gear.sig))){if(H3D.built===GPU.frameNo)gear=null;else H3D.built=GPU.frameNo;}}
+  /* сетки нет — в кадре её не строим (h3dNeed выше): с частями стоила 2–3,5 мс на ПК и вчетверо больше на
+     телефоне (M722). Пока она в очереди — голый корпус, если он готов (стволы ему рисует 05c), иначе выпечка */
+  let m=h3dMeshHit(h,gear?gear.sig:"");
+  if(!m){h3dNeed(h,gear);if(gear&&(m=h3dMeshHit(h,"")))gear=null;if(!m)return false;}
   /* крен в объёме — меньше игрового (M712): на .8 рад корпус сверху ложился боком, в тень и в палку;
      .6 от него держит план читаемым, а поворот всё равно виден по бликам (пираты — так же) */
   const aim=V?(V.v3&&V.v3.aim)||null:(gear&&gear.yaw?s=>gear.yaw(s,a):null);
-  const ok=h3dRun(h3dMesh(h,gear),B.B,x,y,a,sc,(bank||0)*.6,lx,ly,fl,ember,aim,V);
+  const ok=h3dRun(m,B.B,x,y,a,sc,(bank||0)*.6,lx,ly,fl,ember,aim,V);
   /* части нарисованы объёмом — плоские стволы 05c поверх уже не нужны (студия полёту не указ) */
   if(ok&&gear&&!V)gear.drawn=GPU.frameNo;
   return ok;

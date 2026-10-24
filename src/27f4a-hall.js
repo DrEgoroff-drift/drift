@@ -207,37 +207,37 @@ function hallLayout(st,lazy){
    тела (cpMesh — по человеку), выгрузка сеток и комната. Раскладка при входе строится заново — она
    дёшева и зависит от состояния дел, — но тела берутся из кэша, сетки уже на видеокарте, комната готова */
 const HALL_R3_KEYS=["r3.main","r3.shadow","r3.down"],HALL_PRE_MS=3;
-const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,n:0,cl:null,ci:0,cdone:true,tg:false};
-function hallPrepStep(){
+const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,cl:null,ci:0,cdone:true,tg:false};
+function hallPrepStep(ms){
   const sys=G.sys,S=sys&&sys.station,P=HALL_PRE;
-  if(G.mode!=="system"||!S||HALL.open||!GPU.ok||!GPU.dev)return;
+  if(G.mode!=="system"||!S||HALL.open||!GPU.ok||!GPU.dev)return false;
   /* конвейеры комнаты (r3.*) строит поздний прогрев (08b0), первыми в очереди: раньше них подготовка собрала бы
      их сама, в кадре. Ждём только их — вся очередь в полёте идёт шагом в 2,5 с */
-  if(typeof GPU_PIPES!=="undefined"&&!(GPU_PIPES.late&&(GPU_PIPES.late.done||HALL_R3_KEYS.every(k=>{const w=GPU_PIPES.warm.get(k);return w&&w.p;}))))return;
+  if(typeof GPU_PIPES!=="undefined"&&!(GPU_PIPES.late&&(GPU_PIPES.late.done||HALL_R3_KEYS.every(k=>{const w=GPU_PIPES.warm.get(k);return w&&w.p;}))))return false;
   const st=S.stype||"trade",key=st+"|"+sys.key;
   if(P.key!==key){P.key=key;P.L=null;P.rj=null;P.i=0;P.up=false;P.done=false;P.cl=null;P.ci=0;P.cdone=false;P.tg=false;if(P.room){r3Drop(P.room);P.room=null;}hallRelease();}
-  if(P.done){if(!P.cdone)hallCantPrep(S,sys);return;}
+  if(P.done){if(P.cdone)return false;hallCantPrep(S,sys,ms);return true;}
   /* цели кадра (MSAA, глубина, отсвет) и кубическая тень — пока корабль в системе: первый вход их не заводит */
-  if(!P.tg){P.tg=true;if(typeof document!=="undefined"&&$st){const cn=hallCanvas(),R=(hallSize(cn),rpgGet(cn));if(R&&r3Dev())r3Targets(R,cn.width,cn.height);}return;}
-  if(!P.L){P.L=hallLayout(st,true);return;}
+  if(!P.tg){P.tg=true;if(typeof document!=="undefined"&&$st){const cn=hallCanvas(),R=(hallSize(cn),rpgGet(cn));if(R&&r3Dev())r3Targets(R,cn.width,cn.height);}return true;}
+  if(!P.L){P.L=hallLayout(st,true);return true;}
   const pe=P.L.people;
   if(P.i<pe.length){
     const q=pe[P.i];
-    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,HALL_PRE_MS);return;}   /* тело — шаг, выгрузка — следующий */
-    r3Up(q.mesh);P.i++;return;
+    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,ms);return true;}   /* тело — шаг, выгрузка — следующий */
+    r3Up(q.mesh);P.i++;return true;
   }
-  /* комната — шагами в бюджет HALL_PRE_MS: разом она стоила 36 мс JS на S23 */
-  if(!P.room){if(!P.rj)P.rj=hallRoomJob(P.L);const t0=wallMs();let r;do r=P.rj.next();while(!r.done&&wallMs()-t0<HALL_PRE_MS);
-    if(!r.done)return;P.rj=null;P.room=r.value;P.rkey=P.L.rkey;return;}
-  if(!P.up){r3Up(P.room);P.up=true;return;}
+  /* комната — шагами в бюджет ms: разом она стоила 36 мс JS на S23 */
+  if(!P.room){if(!P.rj)P.rj=hallRoomJob(P.L);const t0=wallMs();let r;do r=P.rj.next();while(!r.done&&wallMs()-t0<ms);
+    if(!r.done)return true;P.rj=null;P.room=r.value;P.rkey=P.L.rkey;return true;}
+  if(!P.up){r3Up(P.room);P.up=true;return true;}
   /* планета в окне — тоже заранее: печать шара (27f4c) живёт до смены станции */
   {const keep=G.st;G.st=S;try{hallOrbUp(P.L);if(P.L.bar)c3SignTex(P.L.S);}finally{G.st=keep;}}   /* и вывеска бара */
-  P.done=true;
+  P.done=true;return true;
 }
 /* люди кантины (вкладка «Кантина» дока): тела кандидатов, столиков, толпы — по одному на шаг.
    Вкладка при первом открытии лепила их все разом: 0,35 с. Раскладка считается так же, как её
    считает renderCantina, и с тем же G.st (в системе его нет — на время шага он станция) */
-function hallCantPrep(S,sys){
+function hallCantPrep(S,sys,ms){
   const P=HALL_PRE;
   if(!P.cl){
     const keep=G.st;G.st=S;
@@ -255,22 +255,26 @@ function hallCantPrep(S,sys){
   const pe=P.cl.people;
   if(P.ci<pe.length){
     const q=pe[P.ci];
-    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,HALL_PRE_MS);return;}
+    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,ms);return;}
     r3Up(q.mesh);P.ci++;return;
   }
   P.cdone=true;
 }
-/* из кадра через кадр, шагом в HALL_PRE_MS: раньше — раз в восемь кадров по 5 мс, и на S23 это был рывок 10–14 мс
-   каждый восьмой кадр (тестер, раунд 16); теперь тело режется мельче (волосы, борода — 27f3a), а ход тот же */
-function hallPrepTick(){
-  if(HALL_PRE.done&&HALL_PRE.cdone&&HALL_PRE.key===((G.sys&&G.sys.station&&((G.sys.station.stype||"trade")+"|"+G.sys.key))||""))return;
-  if((++HALL_PRE.n&1)!==0)return;
+/* работник общего бюджета кадра (17a0): шаги, пока следующий, судя по прошлому, влезает в ms (без ms — HALL_PRE_MS).
+   Раньше — свой ход: раз в восемь кадров по 5 мс (рывок 10–14 мс на S23, тестер, раунд 16), потом через кадр по 3 */
+function hallPrepTick(ms){
+  if(HALL_PRE.done&&HALL_PRE.cdone&&HALL_PRE.key===((G.sys&&G.sys.station&&((G.sys.station.stype||"trade")+"|"+G.sys.key))||""))return false;
+  if(!(ms>0))ms=HALL_PRE_MS;
   /* заготовка смотрит на станцию за игрока, а первый взгляд якорит истории (11c storyPlace): из
      простоя системы, да ещё только при живой видеокарте, мир не трогаем — якоря вернутся на место */
   const pin=G.storyPin;G.storyPin=Object.assign({},pin||{});
-  try{hallPrepStep();}catch(e){HALL_PRE.done=true;HALL_PRE.cdone=true;console.error("заготовка зала",e);}
+  let go=false;
+  try{const t0=wallMs();let t=t0,a;do{a=t;if(!hallPrepStep(Math.max(WORK_LO,ms-(t-t0))))break;go=true;t=wallMs();}while(t-t0+(t-a)<ms);}
+  catch(e){HALL_PRE.done=true;HALL_PRE.cdone=true;console.error("заготовка зала",e);}
   finally{if(pin===undefined)delete G.storyPin;else G.storyPin=pin;}
+  return go;
 }
+workAdd("hall",2,()=>G.mode==="system",ms=>hallPrepTick(ms));
 /* прилавки блошинца: x, z (перед окном — низкие, навес выше луча к окну) */
 const HALL_STALLS=[[-1.25,.55],[1.15,.55],[3.45,.55],[4.6,2.0],[6.5,2.0]];
 

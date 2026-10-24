@@ -144,13 +144,37 @@ function cavePreWatch(p){
   if(!T||T.stage<2||(p&&(p.idx|0)!==(T.idx|0))||T.mood<30)return 0;
   return clamp((T.stage>=3?1:.65)*(.3+T.mood/100),0,1);
 }
+/* сетка шума породы (caveBuild, 22-mode-cave: NX·NY вызовов fbm2 по 4 октавы) — половина цены caveMake, 25–45 мс
+   на S23 одним кадром (тестер, раунд 21). Её строки считаются заранее, шагом работника, тем же выражением, что у
+   caveBuild, и в Float64 — числа до бита те же. Пока caveMake лепит пещеру, fbm2 подменён: вызов с зерном сетки и
+   ровно тем аргументом, что идёт по порядку, берёт готовое; всякий другой — настоящий fbm2 */
+function caveGridStep(S,ms){
+  const st=CAVE_PRE.st,seed=hashi(S.p.seed,S.ancient?9:7,0xCA5E)^0xC4,N=CAVE_NX*CAVE_NY;
+  let g=st.grid;if(!g||g.seed!==seed)g=st.grid={seed,k:0,v:new Float64Array(N)};
+  const t0=wallMs();let t=t0;
+  while(g.k<N){const cy=(g.k/CAVE_NX)|0,y=cy*CAVE_CS+CAVE_Y0,o=cy*CAVE_NX;
+    for(let cx=0;cx<CAVE_NX;cx++){const x=cx*CAVE_CS;g.v[o+cx]=fbm2(x*.0052,y*.0052,seed,4);}
+    g.k=o+CAVE_NX;const t1=wallMs();if(t1-t0+(t1-t)>=ms)break;t=t1;}
+  return g.k>=N;
+}
+function caveGridRead(g){
+  const f2=fbm2,N=CAVE_NX*CAVE_NY;let i=0;
+  return {f2,f:function(x,y,s,o){
+    if(s===g.seed&&o===4&&i<N){const cx=i%CAVE_NX,cy=(i/CAVE_NX)|0;
+      if(x===cx*CAVE_CS*.0052&&y===(cy*CAVE_CS+CAVE_Y0)*.0052)return g.v[i++];}
+    return f2(x,y,s,o);}};
+}
 function cavePreMake(S){
   const p=S.p,rs=rndState(),kG=new Set(Object.keys(G)),kS=new Set(Object.keys(S)),kP=new Set(Object.keys(p));
-  const sw=settleWatch;
+  const sw=settleWatch,st=CAVE_PRE.st,g=st&&st.grid,R=g&&g.k>=CAVE_NX*CAVE_NY?caveGridRead(g):null;
   settleWatch=cavePreWatch;
+  if(R)fbm2=R.f;
+  CAVE_DECO.defer=true;   /* убранство (22a) — следующими шагами caveTick */
   let C;
   try{C=caveMake(S);}
   finally{
+    if(R)fbm2=R.f2;
+    CAVE_DECO.defer=false;
     settleWatch=sw;rndRestore(rs);
     for(const k of Object.keys(G))if(!kG.has(k))delete G[k];
     for(const k of Object.keys(S))if(!kS.has(k))delete S[k];
@@ -159,26 +183,32 @@ function cavePreMake(S){
   for(const k of Object.keys(p))if(!kP.has(k)){put[k]=p[k];delete p[k];}
   return {C,done:false,put};
 }
-function caveTick(){
+/* работник общего бюджета (17a0): ms — его доля кадра; ответ — шагнул ли */
+function caveTick(ms){
   const S=G.surf;
-  if(G.mode!=="surface"||!S||!GPU.ok||!GPU.dev)return;
+  if(G.mode!=="surface"||!S||!GPU.ok||!GPU.dev)return false;
   try{cave3PipesAhead();}catch(e){console.error("пещера: конвейеры заранее",e);}
-  if(!S.cave)return;
+  if(!S.cave)return false;
   let st=CAVE_PRE.st;
   if(!st||st.S!==S)st=CAVE_PRE.st={S,n:0,P:null};
-  if(++st.n<CAVE_PRE.wait)return;
+  if(++st.n<CAVE_PRE.wait)return false;
   let P=st.P;
-  if(P&&P.done)return;
+  if(P&&P.done)return false;
+  const B=ms>0?ms:CAVE_PRE.ms;
   try{
     plnGpuDev();
-    if(!P){st.P=cavePreMake(S);return;}
+    if(!P){if(caveGridStep(S,B))st.P=cavePreMake(S);return true;}
     /* поле породы — под бюджетом (холодное одним куском — до сотен мс), потом куски */
-    if(!cave3FieldStep(P.C,CAVE_PRE.ms))return;
+    if(!caveDecoAhead(P.C,S.p,B))return true;
+    if(!cave3FieldStep(P.C,B))return true;
     const b=cave3EntryBox(P.C);
-    cave3Chunks(P.C,b.box,b.mx,b.my,false,CAVE_PRE.ms);
-    if(P.C.ch3&&P.C.ch3.left===0)P.done=true;
+    cave3Chunks(P.C,b.box,b.mx,b.my,false,B);
+    /* и убранство окна входа (22dc) — тот же отступ, что берёт кадр пещеры: окно ±3 м */
+    if(P.C.ch3&&P.C.ch3.left===0&&cave3DressAhead(P.C,cave3Field(P.C),b.box[0]-1,b.box[1]+1,b.mx,B))P.done=true;
   }catch(e){st.P={C:null,done:true,put:{}};console.error("пещера заранее",e);}
+  return true;
 }
+workAdd("cave",4,()=>G.mode==="surface",ms=>caveTick(ms));
 function cave3Frame(){
   const t0=wallMs(),C=G.cave,Fd=cave3Field(C),M=CAVE3,Ln=CAVE3_LENS;
   if(C.cy==null)C.cy=C.y;
@@ -475,7 +505,7 @@ enterCave=function(){
   const S=G.surf,st=CAVE_PRE.st;
   if(S&&st&&st.S===S&&st.P){
     const P=st.P;CAVE_PRE.st=null;
-    if(P.C&&S.p){for(const k in P.put)if(!(k in S.p))S.p[k]=P.put[k];S.cavePre={C:P.C,done:true};}
+    if(P.C&&S.p){if(!P.C.deco)caveDeco(P.C,S.p);for(const k in P.put)if(!(k in S.p))S.p[k]=P.put[k];S.cavePre={C:P.C,done:true};}
   }
   const r=CAVE3_OLD_ENTER.apply(this,arguments);
   CAVE3_W.tip=G.mode==="cave"?String(G.msg||""):null;
