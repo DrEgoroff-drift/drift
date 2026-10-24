@@ -3024,6 +3024,14 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 #stWalkAct{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);min-width:220px;min-height:52px}
 #stWalkOut{position:absolute;right:16px;bottom:24px;min-height:52px;min-width:120px}
 #stWalkBack{position:absolute;left:16px;bottom:24px;min-height:52px;min-width:120px;display:none}
+/* ведение пальцем (27f4l hallDrag): зал на ходу не прокручивается — жест принадлежит пилоту */
+#station.hall.walk:not(.eng),#station.hall.walk:not(.eng) :is(#stHall,#stWalk){touch-action:none}
+/* намёк жестом при первом входе — над полом, под кнопками его нет; качается вдоль хода */
+#stWalkHint{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);padding:9px 16px;white-space:nowrap;font-size:12px;letter-spacing:.12em;
+  color:var(--ink2);background:rgba(14,13,12,.74);border:1px solid var(--pl-edge);border-radius:4px;pointer-events:none!important;animation:whint 2.6s ease-in-out infinite}
+@keyframes whint{0%,100%{transform:translateX(calc(-50% - 12px))}50%{transform:translateX(calc(-50% + 12px))}}
+@media (prefers-reduced-motion:reduce){#stWalkHint{animation:none}}
+#station.hall.walk.eng #stWalkHint{display:none}
 #station.hall.walk.eng :is(#stWalkStrip,#stWalkAct,#stWalkOut){display:none}
 #station.hall.walk.eng #stWalkBack{display:block}
 #station.hall.walk.eng:not(.lock)>footer{display:none!important}

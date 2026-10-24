@@ -49,7 +49,7 @@ function hallWalkSettle(){
 /* ход: x на линии, лицо (±1), фаза шага, скорость, цель (x) и место, в которое войти по приходу */
 function hallWalkInit(){
   const W=HALL.walk,same=W&&W.vk===((G.sys&&G.sys.key)||"");
-  HALL.walk={x:same?W.x:HALL_PLACES[0].x+.35,face:1,ph:0,v:0,goal:null,go:null,eng:null,at:"lock",vk:(G.sys&&G.sys.key)||"",
+  HALL.walk={x:same?W.x:HALL_PLACES[0].x+.35,face:1,ph:0,v:0,drv:0,goal:null,go:null,eng:null,at:"lock",vk:(G.sys&&G.sys.key)||"",
     t0:wallMs(),cx:null,fk:0,bf:null,bg0:0,in0:same?0:wallMs(),act:false};
   hallWalkDom();
 }
@@ -59,7 +59,8 @@ function hallWalkStep(dt){
   const W=HALL.walk;if(!W||W.eng)return false;
   const P=hallPlacesHere(),x0=P.length?P[0].x-.2:-6.6,x1=P.length?P[P.length-1].x+.6:HALL_XB+1.5;
   const kl=!!(keys.left),kr=!!(keys.right);let dir=0,vmax=HALL_WALK_V;
-  if(kl||kr){W.goal=null;W.go=null;dir=(kr?1:0)-(kl?1:0);}
+  if(kl||kr){W.goal=null;W.go=null;dir=(kr?1:0)-(kl?1:0);hallHintDone();}
+  else if(W.drv){W.goal=null;W.go=null;dir=Math.sign(W.drv);vmax=Math.abs(W.drv)*HALL_WALK_V;}   /* палец ведёт (hallDrag) */
   else if(W.goal!=null){const d=W.goal-W.x;if(Math.abs(d)<.04){W.x=W.goal;W.goal=null;const g=W.go;W.go=null;if(g)hallWalkEngage(g);}
     else{dir=Math.sign(d);if(W.jog)vmax=HALL_JOG_V;}}
   const want=dir*vmax;W.v+=(want-W.v)*(1-Math.exp(-dt*9));if(!dir&&Math.abs(W.v)<.02)W.v=0;
@@ -111,7 +112,11 @@ function hallWalkPilot(){
 function hallWalkLens(L,sz,dt){
   const W=HALL.walk,ph=!sz.wide,D=ph?HALL_WALK_D.ph:HALL_WALK_D.pc,fy=HALL_WALK_D.fy;
   const half=D*Math.tan(fy/2)*sz.cw/Math.max(1,sz.ch),X0=HALL_L-.6,X1=L.R+.6;
-  const want=X1-X0<2*half?(X0+X1)/2:clamp(W.x,X0+half,X1-half);
+  /* стоит у места — объектив сдвинут к вещи на половину пути от пилота до таблички: пилот стоит к вещи спиной между
+     ней и объективом и закрывал её ранцем, а табличка висела на нём (телефон, 24.10). Сдвиг уводит луч к вещи мимо него */
+  const pl=!W.eng&&W.at&&Math.abs(W.v)<.05&&W.goal==null&&!W.drv?HALL_PLACES.find(q=>q.id===W.at):null;
+  const wx=pl?W.x+(pl.tag[0]-W.x)*.55:W.x;
+  const want=X1-X0<2*half?(X0+X1)/2:clamp(wx,X0+half,X1-half);W.cw=want;
   if(W.cx==null||dt>=1)W.cx=want;else W.cx+=(want-W.cx)*(1-Math.exp(-dt/.45));
   return {eye:[W.cx+.35,HALL_WALK_D.ey,HALL_WZ+D],tgt:[W.cx,HALL_WALK_D.ty,HALL_WZ],fy};
 }
@@ -143,12 +148,12 @@ function hallWalkCam(L,sz,c0){
   const cx=.5+((ph?.5:hallWalkFree(sz.cw)/2)-.5)*k,c0y=ph?.6:.5,cy=c0y+((ph?.225:.5)-c0y)*k;   /* телефон на ходу: цель ниже середины — сцена под полосой мест, а не над пустым срезом */
   const cam=hallCamFr(c,sz.cw,sz.ch,cx,cy);cam.c=c;return cam;
 }
-function hallWalkMoving(){const W=HALL.walk;return !!W&&(Math.abs(W.v)>.01||W.goal!=null||(W.fk>0&&W.fk<1)||(W.cx!=null&&Math.abs(W.cx-W.x)>.02&&Math.abs(W.v)>0));}
+function hallWalkMoving(){const W=HALL.walk;return !!W&&(Math.abs(W.v)>.01||!!W.drv||W.goal!=null||(W.fk>0&&W.fk<1)||(W.cx!=null&&W.cw!=null&&Math.abs(W.cx-W.cw)>.01));}
 /* войти в место: вкладка — первая из его здесь, камера — к месту, карточка — сбоку */
 function hallWalkEngage(id){
   const W=HALL.walk;if(!W)return;
   const p=hallPlacesHere().find(q=>q.id===id);if(!p)return;
-  W.goal=null;W.go=null;W.v=0;W.x=p.x;W.at=id;W.eng=id;
+  W.goal=null;W.go=null;W.v=0;W.drv=0;W.x=p.x;W.at=id;W.eng=id;
   if(id!=="lock"){const has=stTabsHere(),t=p.tabs.filter(x=>has.indexOf(x)>=0);if(t.length&&t.indexOf(tab)<0){tab=t[0];syncTabs();}}
   hallGo(id==="lock"?"lock":hallPlaceOf(tab)==="site"&&id==="ship"?"site":id,false);HALL.gd=450;
   /* подошёл к бару в кинодень — сеанс засчитан (27da: строка в журнале и в трудовой, раз на сеанс) */
@@ -192,14 +197,25 @@ function hallWalkDom(){
     mk("button","stWalkAct","act gold","",()=>{const W=HALL.walk;if(W&&W.at&&!W.eng)hallWalkEngage(W.at);});
     mk("button","stWalkOut","act","ОТСТЫКОВАТЬСЯ",()=>closeStation());
     mk("button","stWalkBack","act","НАЗАД",()=>hallWalkBack());
+    mk("div","stWalkHint","whint","");
     $st.appendChild(d);
-    /* тап по полу: идти туда (только мимо кнопок и карточки) */
-    $st.addEventListener("pointerdown",e=>{const W=HALL.walk;if(!W||!HALL.open||W.eng||!HALL.vp)return;
-      if(e.target!==$st&&e.target.id!=="stHall"&&e.target.id!=="stWalk")return;
-      const r=$st.getBoundingClientRect(),ui=(typeof UIK==="number"&&UIK>0)?UIK:1,sx=(e.clientX-r.left)*ui,w=r.width*ui;
-      const L=HALL.L;if(!L)return;const c=hallWalkLens(L,{cw:w,ch:r.height*ui,wide:hallWide()},0);
-      const half=(hallWide()?HALL_WALK_D.pc:HALL_WALK_D.ph)*Math.tan(HALL_WALK_D.fy/2)*w/Math.max(1,r.height*ui);
-      W.goal=c.tgt[0]+(sx/w-.5)*2*half;W.go=null;W.jog=Math.abs(W.goal-W.x)>6;});}
+    /* ведение пальцем (24.10, автор: «человек пальцем водит, а не тапает по хер знает куда»): держишь и ведёшь —
+       пилот идёт в сторону пальца, тем быстрее, чем дальше отвёл от точки касания (стик по горизонтали); отпустил —
+       встал. Короткий тап без ведения — как прежде: идти в точку пола. Касание — только мимо кнопок и карточки */
+    const okT=e=>e.target===$st||e.target.id==="stHall"||e.target.id==="stWalk";
+    $st.addEventListener("pointerdown",e=>{const W=HALL.walk;if(!W||!HALL.open||W.eng||!HALL.vp||!okT(e))return;
+      if(e.pointerType==="mouse"&&e.button!==0)return;
+      HALL_DRAG.id=e.pointerId;HALL_DRAG.x0=e.clientX;HALL_DRAG.t0=wallMs();HALL_DRAG.moved=false;
+      try{$st.setPointerCapture(e.pointerId);}catch(_){}});
+    $st.addEventListener("pointermove",e=>{if(e.pointerId!==HALL_DRAG.id)return;const W=HALL.walk;if(!W||W.eng||!HALL.open){hallDragEnd();return;}
+      const dx=e.clientX-HALL_DRAG.x0,a=Math.abs(dx);
+      if(a>HALL_DRAG_DZ){if(!HALL_DRAG.moved){HALL_DRAG.moved=true;hallHintDone();}
+        W.goal=null;W.go=null;W.drv=Math.sign(dx)*Math.min(HALL_JOG_V/HALL_WALK_V,(a-HALL_DRAG_DZ)/HALL_DRAG_FULL);}
+      else if(HALL_DRAG.moved)W.drv=0;});   /* вернул палец к точке касания — стоит, не отпуская */
+    $st.addEventListener("pointerup",e=>{if(e.pointerId!==HALL_DRAG.id)return;
+      const tap=!HALL_DRAG.moved&&wallMs()-HALL_DRAG.t0<450;hallDragEnd();
+      const W=HALL.walk;if(tap&&W&&!W.eng&&HALL.open&&HALL.vp)hallWalkTapAt(e.clientX);});
+    $st.addEventListener("pointercancel",e=>{if(e.pointerId===HALL_DRAG.id)hallDragEnd();});}
   const s=document.getElementById("stWalkStrip");if(!s)return;s.textContent="";
   hallPlacesHere().forEach((p,i)=>{const b=document.createElement("button");b.dataset.place=p.id;b.id="stWalk-"+p.id;
     const k=document.createElement("i");k.textContent=String(i+1);b.appendChild(k);b.appendChild(document.createTextNode(p.ru));
@@ -211,7 +227,31 @@ function hallWalkUi(force){
   const key=(W.at||"")+"|"+(W.eng||"");if(!force&&W.uik===key)return;W.uik=key;
   const p=W.at&&HALL_PLACES.find(q=>q.id===W.at),a=document.getElementById("stWalkAct");
   if(a){a.textContent=p?p.verb:"";a.hidden=!p||!!W.eng;}
+  const h=document.getElementById("stWalkHint");
+  if(h){h.textContent=hallWide()?"← A  D →   или веди мышью по залу":"←  веди пальцем по залу  →";h.hidden=!!W.eng||hallHintSeen();}
   document.querySelectorAll("#stWalkStrip button").forEach(b=>b.classList.toggle("on",b.dataset.place===(W.eng||W.at)));
+}
+/* жест ведения: точка касания, время, было ли ведение; мёртвая зона и отвод до полного шага — в CSS px */
+const HALL_DRAG={id:null,x0:0,t0:0,moved:false},HALL_DRAG_DZ=12,HALL_DRAG_FULL=60;
+function hallDragEnd(){HALL_DRAG.id=null;HALL_DRAG.moved=false;const W=HALL.walk;if(W)W.drv=0;}
+/* тап по полу: идти в точку под пальцем (прежнее поведение pointerdown) */
+function hallWalkTapAt(clientX){
+  const W=HALL.walk,L=HALL.L;if(!W||!L)return;
+  const r=$st.getBoundingClientRect(),ui=(typeof UIK==="number"&&UIK>0)?UIK:1,sx=(clientX-r.left)*ui,w=r.width*ui;
+  const c=hallWalkLens(L,{cw:w,ch:r.height*ui,wide:hallWide()},0);
+  const half=(hallWide()?HALL_WALK_D.pc:HALL_WALK_D.ph)*Math.tan(HALL_WALK_D.fy/2)*w/Math.max(1,r.height*ui);
+  W.goal=c.tgt[0]+(sx/w-.5)*2*half;W.go=null;W.jog=Math.abs(W.goal-W.x)>6;
+}
+/* намёк жестом при первом входе: висит над полом, пока игрок сам не повёл пилота (палец, мышь, клавиши) — один раз
+   на устройство. Хранилище недоступно — намёк гаснет до конца сеанса */
+const HALL_HINT={seen:null};
+function hallHintSeen(){
+  if(HALL_HINT.seen==null){HALL_HINT.seen=false;try{HALL_HINT.seen=localStorage.getItem("drift_hint_hallwalk")==="1";}catch(e){}}
+  return HALL_HINT.seen;
+}
+function hallHintDone(){
+  if(hallHintSeen())return;HALL_HINT.seen=true;try{localStorage.setItem("drift_hint_hallwalk","1");}catch(e){}
+  const h=typeof document!=="undefined"&&document.getElementById("stWalkHint");if(h)h.hidden=true;
 }
 /* таблички у вещей: место под ногами и два соседа; в месте — прежние таблички места */
 function hallWalkTagList(){
