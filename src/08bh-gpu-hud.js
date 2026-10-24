@@ -8,7 +8,9 @@ function gpuHudDpr(){return Math.min(3,(typeof window!=="undefined"&&window.devi
 /* снимок кадра (gpuTakeSnap): фишки поверх, как их кладёт композитор, — чтобы look(),
    детекторы и эталоны видели то же, что игрок. Платится только в момент снимка */
 function chipDomSnap(g,sc){
-  if(OVL.on&&OVL.cv)g.drawImage(OVL.cv,0,0,OVL.cv.width/ovNd()*sc,OVL.cv.height/ovNd()*sc);
+  if(!OVL.on||!OVL.cv)return;
+  const k=sc/ovNd();
+  for(const s of OVL.sl||[])if(s.on)g.drawImage(s.cv,s.ox*k,s.oy*k,s.cv.width*k,s.cv.height*k);
 }
 /* подписи мира (domLabel) — на #ovl (08bi) */
 const DLID={id:new WeakMap(),n:0};
@@ -18,6 +20,6 @@ function domLabelId(o){let i=DLID.id.get(o);if(!i){i=++DLID.n;DLID.id.set(o,i);}
 /* начало кадра: мир прошлого кадра не доходил до конца (другой режим, чистый кадр) — слой
    фишек спрятать; очередь, брошенная посреди кадра, — долой */
 function chipDomSweep(){
-  if(!OVL.fl&&OVL.on){OVL.on=false;OVL.cv.style.display="none";}
+  if(!OVL.fl&&OVL.on)ovHide();
   OVL.fl=false;OVL.lq.length=OVL.cq.length=0;
 }

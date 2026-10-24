@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 653 · top-level symbols: 8812
+Files: 653 · top-level symbols: 8820
 
 ## SYMBOLS
 
@@ -542,7 +542,7 @@ DISP_LIFE                    src/28m-dispatch.js:24
 DISP_NAMES                   src/28m-dispatch.js:26
 DISP_V                       src/28m-dispatch.js:31-52
 DISP_WIN                     src/28m-dispatch.js:23
-DLID                         src/08bh-gpu-hud.js:14
+DLID                         src/08bh-gpu-hud.js:16
 DMG_KEYS                     src/05c-arms.js:35
 DMG_TYPES                    src/05c-arms.js:24-34
 DOMR                         src/15d-domread.js:17
@@ -1512,15 +1512,16 @@ ORDERS                       src/12a-crew.js:149-155
 ORDER_WIN                    src/12aa-need.js:76
 ORE_KEYS                     src/02-world.js:145
 ORE_NODE_W                   src/23-mode-dig.js:12
-OVL                          src/08bi-gpu-ovl.js:17
-OVL_N                        src/08bi-gpu-ovl.js:20
-OVL_PLATE                    src/08bi-gpu-ovl.js:207
-OVL_RUN                      src/08bi-gpu-ovl.js:136
-OVL_UF                       src/08bi-gpu-ovl.js:246
-OVL_WGSL                     src/08bi-gpu-ovl.js:21
-OVR                          src/08bi-gpu-ovl.js:323
-OV_CV                        src/08bi-gpu-ovl.js:304
-OV_EYE                       src/08bi-gpu-ovl.js:300
+OVL                          src/08bi-gpu-ovl.js:26
+OVL_K                        src/08bi-gpu-ovl.js:133
+OVL_N                        src/08bi-gpu-ovl.js:29
+OVL_PLATE                    src/08bi-gpu-ovl.js:300
+OVL_RUN                      src/08bi-gpu-ovl.js:229
+OVL_UF                       src/08bi-gpu-ovl.js:343
+OVL_WGSL                     src/08bi-gpu-ovl.js:30
+OVR                          src/08bi-gpu-ovl.js:426
+OV_CV                        src/08bi-gpu-ovl.js:407
+OV_EYE                       src/08bi-gpu-ovl.js:403
 OWN                          src/21pig-pln-own.js:26
 OWN_GREEN                    src/21pig-pln-own.js:304
 OWN_GREEN_SP                 src/21pig-pln-own.js:305
@@ -3250,9 +3251,9 @@ chessPaint                   src/25n-chess.js:256-316
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
 chipDist                     src/17-mode-system.js:741-747
-chipDom                      src/08bi-gpu-ovl.js:208-224
-chipDomSnap                  src/08bh-gpu-hud.js:10-12
-chipDomSweep                 src/08bh-gpu-hud.js:20-23
+chipDom                      src/08bi-gpu-ovl.js:301-317
+chipDomSnap                  src/08bh-gpu-hud.js:10-14
+chipDomSweep                 src/08bh-gpu-hud.js:22-25
 chronAgentMove               src/12am-chron-agents.js:78-209
 chronArcs                    src/12am-chron-director.js:243
 chronAtWar                   src/12am-chron-agents.js:54-57
@@ -3893,8 +3894,8 @@ dkPaper                      src/27ia-desk-top.js:37-45
 dkRule                       src/27ia-desk-top.js:46-52
 dkShadow                     src/27ia-desk-top.js:30-35
 dmgMul                       src/05c-arms.js:36-39
-domLabel                     src/08bi-gpu-ovl.js:194-201
-domLabelId                   src/08bh-gpu-hud.js:17
+domLabel                     src/08bi-gpu-ovl.js:287-294
+domLabelId                   src/08bh-gpu-hud.js:19
 domReadCount                 src/15d-domread.js:19
 domReadWatch                 src/15d-domread.js:21-56
 domReadZero                  src/15d-domread.js:20
@@ -4735,7 +4736,7 @@ gpuNoise                     src/08b-gpu.js:394-399
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOrb                       src/17gab1-gpu-orb-draw.js:74-86
 gpuOrbMoon                   src/17gab1-gpu-orb-draw.js:107-113
-gpuOvFrontView               src/08bi-gpu-ovl.js:284
+gpuOvFrontView               src/08bi-gpu-ovl.js:387
 gpuOver                      src/08b-gpu.js:608-628
 gpuPass                      src/08b-gpu.js:458-461
 gpuPipe                      src/08c-gpu-kit.js:22-26
@@ -6341,33 +6342,40 @@ orderTake                    src/12aa-need.js:103-114
 orderTick                    src/12aa-need.js:136-142
 orderWin                     src/12aa-need.js:77
 oreNode                      src/23-mode-dig.js:13-29
-ovArc                        src/08bi-gpu-ovl.js:351-354
-ovAtlas                      src/08bi-gpu-ovl.js:112-131
-ovBind                       src/08bi-gpu-ovl.js:275-283
-ovCanvas                     src/08bi-gpu-ovl.js:97-109
-ovCap                        src/08bi-gpu-ovl.js:335-338
-ovCap3                       src/08bi-gpu-ovl.js:346-349
-ovEll                        src/08bi-gpu-ovl.js:341-344
-ovFlush                      src/08bi-gpu-ovl.js:229-243
-ovGraph                      src/08bi-gpu-ovl.js:362-366
+ovArc                        src/08bi-gpu-ovl.js:454-457
+ovAtlas                      src/08bi-gpu-ovl.js:205-224
+ovBind                       src/08bi-gpu-ovl.js:379-386
+ovCanvas                     src/08bi-gpu-ovl.js:107-121
+ovCap                        src/08bi-gpu-ovl.js:438-441
+ovCap3                       src/08bi-gpu-ovl.js:449-452
+ovClusters                   src/08bi-gpu-ovl.js:138-161
+ovEll                        src/08bi-gpu-ovl.js:444-447
+ovFit                        src/08bi-gpu-ovl.js:124-129
+ovFlush                      src/08bi-gpu-ovl.js:322-338
+ovGraph                      src/08bi-gpu-ovl.js:465-469
 ovHang                       src/08bj-ovl-hang.js:34-38
 ovHangFlush                  src/08bj-ovl-hang.js:298-315
-ovHushed                     src/08bi-gpu-ovl.js:204
-ovImage                      src/08bi-gpu-ovl.js:290-296
-ovInto                       src/08bi-gpu-ovl.js:90-93
-ovNd                         src/08bi-gpu-ovl.js:88
-ovPaint                      src/08bi-gpu-ovl.js:305-320
-ovPass                       src/08bi-gpu-ovl.js:247-273
-ovPm                         src/08bi-gpu-ovl.js:286
-ovPush                       src/08bi-gpu-ovl.js:132-135
-ovQuad                       src/08bi-gpu-ovl.js:357-360
-ovRead                       src/08bi-gpu-ovl.js:324-333
-ovRect                       src/08bi-gpu-ovl.js:287
-ovRuns                       src/08bi-gpu-ovl.js:140-151
-ovTarget                     src/08bi-gpu-ovl.js:95
-ovText                       src/08bi-gpu-ovl.js:154-180
-ovTextRot                    src/08bi-gpu-ovl.js:183-191
-ovlDesc                      src/08bi-gpu-ovl.js:226
+ovHide                       src/08bi-gpu-ovl.js:132
+ovHushed                     src/08bi-gpu-ovl.js:297
+ovImage                      src/08bi-gpu-ovl.js:393-399
+ovInto                       src/08bi-gpu-ovl.js:99-102
+ovLayout                     src/08bi-gpu-ovl.js:164-202
+ovNd                         src/08bi-gpu-ovl.js:97
+ovNear                       src/08bi-gpu-ovl.js:135
+ovPaint                      src/08bi-gpu-ovl.js:408-423
+ovPass                       src/08bi-gpu-ovl.js:344-377
+ovPm                         src/08bi-gpu-ovl.js:389
+ovPush                       src/08bi-gpu-ovl.js:225-228
+ovQuad                       src/08bi-gpu-ovl.js:460-463
+ovRead                       src/08bi-gpu-ovl.js:427-436
+ovRect                       src/08bi-gpu-ovl.js:390
+ovRuns                       src/08bi-gpu-ovl.js:233-244
+ovShow                       src/08bi-gpu-ovl.js:130
+ovTarget                     src/08bi-gpu-ovl.js:104
+ovText                       src/08bi-gpu-ovl.js:247-273
+ovTextRot                    src/08bi-gpu-ovl.js:276-284
+ovUnion                      src/08bi-gpu-ovl.js:134
+ovlDesc                      src/08bi-gpu-ovl.js:319
 owAt                         tests/91qe-own.js:16-22
 owFound                      tests/91qe-own.js:23
 owWorld                      tests/91qe-own.js:5-13
@@ -8973,7 +8981,7 @@ zoomTo                       src/15-input.js:358
 ## src/08bh-gpu-hud.js · 2 KB
   · слой приборов: фишки у кромки и подписи мира (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08bi-gpu-ovl.js · 31 KB
+## src/08bi-gpu-ovl.js · 39 KB
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
 ## src/08bj-ovl-hang.js · 33 KB
