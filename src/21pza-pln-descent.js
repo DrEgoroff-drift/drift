@@ -265,9 +265,13 @@ hud=function(){
 const PLN_OLD_ULAND=updateLanding;
 updateLanding=function(){
   if(PLN.on&&G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone)return;   /* заход ещё собирается (21pz) — спуск стоит */
+  const m0=G.mode;
   PLN_OLD_ULAND.apply(this,arguments);
   const L=G.land;
   if(PLN.on&&G.mode==="landing"&&L&&L.tr&&!(L.over>0))G.prompt=plnLandRead(L);
+  /* касание: строку захода гасим — итог говорит say(). Тик касания пишет строку 2D-захода (19, «ВЫСОТА … ВЕРТ …»),
+     и после крушения она висела в системе: режим меняется без чистки подсказки (тестер, 24.10) */
+  else if(m0==="landing"&&(G.mode!=="landing"||(L&&L.over>0))&&/^(ВЫСОТА |АВТОМАТИЧЕСКАЯ ПОСАДКА)/.test(G.prompt||""))G.prompt="";
 };
 
 /* ── переключатель ── */

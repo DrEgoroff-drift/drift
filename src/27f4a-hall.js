@@ -206,12 +206,14 @@ function hallLayout(st,lazy){
    (QA 14.10, ПК). Пока корабль в системе со станцией, это делается по шагу раз в несколько кадров:
    тела (cpMesh — по человеку), выгрузка сеток и комната. Раскладка при входе строится заново — она
    дёшева и зависит от состояния дел, — но тела берутся из кэша, сетки уже на видеокарте, комната готова */
+const HALL_R3_KEYS=["r3.main","r3.shadow","r3.down"];
 const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,n:0,cl:null,ci:0,cdone:true,tg:false};
 function hallPrepStep(){
   const sys=G.sys,S=sys&&sys.station,P=HALL_PRE;
   if(G.mode!=="system"||!S||HALL.open||!GPU.ok||!GPU.dev)return;
-  /* конвейеры комнаты (r3.*) строит поздний прогрев (08b0): раньше него подготовка собрала бы их сама, в кадре */
-  if(typeof GPU_PIPES!=="undefined"&&!(GPU_PIPES.late&&GPU_PIPES.late.done))return;
+  /* конвейеры комнаты (r3.*) строит поздний прогрев (08b0), первыми в очереди: раньше них подготовка собрала бы
+     их сама, в кадре. Ждём только их — вся очередь в полёте идёт шагом в 2,5 с */
+  if(typeof GPU_PIPES!=="undefined"&&!(GPU_PIPES.late&&(GPU_PIPES.late.done||HALL_R3_KEYS.every(k=>{const w=GPU_PIPES.warm.get(k);return w&&w.p;}))))return;
   const st=S.stype||"trade",key=st+"|"+sys.key;
   if(P.key!==key){P.key=key;P.L=null;P.i=0;P.up=false;P.done=false;P.cl=null;P.ci=0;P.cdone=false;P.tg=false;if(P.room){r3Drop(P.room);P.room=null;}hallRelease();}
   if(P.done){if(!P.cdone)hallCantPrep(S,sys);return;}

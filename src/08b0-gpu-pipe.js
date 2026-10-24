@@ -105,15 +105,29 @@ const GPU_LATE_KEYS=[
   "pipe:fld.map.gal|over","pipe:fld.map.gal|bake",
   "pipe:fld.r3post|over","raid3d","raid3d.spr"];
 const GPU_LATE_GROUPS=[];
-/* по одному ключу за шаг, 30 мс между шагами: компилятор не занят ничем другим, кадр не ждёт.
+/* по одному ключу за шаг: компилятор не занят ничем другим, кадр не ждёт. Темп — по тому, что на экране
+   (тестер, S23 24.10: в первые 3–4 с полёта очередь собирала 18–23 конвейера, и рядом с ними стояли кадры
+   58–83 мс — сборка на Android всё же занимает главный поток процесса ГПУ). Тихо — заставка до «Начать»,
+   док, карта, скрытая вкладка, сборка захода (21pz), набор тестов: шаг через 30 мс. Планета — раз в 0,5 с:
+   пещера и шахта ждут своих. В живом полёте — раз в 2,5 с: рывок одиночный, а не очередью.
    GPU_PIPES.late — {n, ms, done, bad} для детектора и лаборатории */
+const GPU_LATE_GAP=30,GPU_LATE_PLANET=500,GPU_LATE_FLIGHT=2500;
+function gpuLateGap(){
+  if(typeof TEST!=="undefined"||typeof G==="undefined"||!G.running||document.hidden)return GPU_LATE_GAP;
+  const m=G.mode;
+  if(m==="dock"||m==="map"||(m==="landing"&&G.land&&G.land.warm&&!G.land.warmDone))return GPU_LATE_GAP;
+  if(m==="landing"||m==="surface"||m==="cave"||m==="dig")return GPU_LATE_PLANET;
+  return GPU_LATE_FLIGHT;
+}
 function gpuPipesLate(){
   const d=gpuPipesDev(),t0=wallMs(),L=GPU_PIPES.late={n:0,ms:0,done:false,bad:[],asked:0};
   const todo=GPU_LATE_KEYS.map(k=>()=>{const r=gpuPipeRecipe(k);return r?[[k,r]]:(L.bad.push(k),[]);}).concat(
     GPU_LATE_GROUPS.map(g=>()=>g()));
-  const flat=[];
+  const flat=[];let last=-1e9;
   const next=()=>{
     if(GPU_PIPES.dev!==d)return;   /* устройство сменилось: прогрев нового начнёт свой */
+    /* темп смотрим перед каждым шагом: игрок вошёл в док — очередь ускоряется, не дожидаясь шага полёта */
+    const wait=last+gpuLateGap()-wallMs();if(wait>1){setTimeout(next,Math.min(wait,250));return;}
     while(!flat.length&&todo.length){try{for(const x of todo.shift()())flat.push(x);}catch(e){L.bad.push(String(e&&e.message||e).slice(0,60));}}
     const it=flat.shift();
     if(!it){L.done=true;L.ms=Math.round(wallMs()-t0);return;}
@@ -121,7 +135,7 @@ function gpuPipesLate(){
     if(c&&c.p){next();return;}
     const w={p:null,code:r.code};GPU_PIPES.warm.set(key,w);L.asked++;
     d.createRenderPipelineAsync(r.desc).then(p=>{if(GPU_PIPES.dev===d){w.p=p;L.n++;}},()=>{L.bad.push(key);})
-      .then(()=>setTimeout(next,30));
+      .then(()=>{last=wallMs();setTimeout(next,GPU_LATE_GAP);});
   };
   next();
 }
