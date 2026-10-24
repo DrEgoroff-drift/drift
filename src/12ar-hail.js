@@ -21,7 +21,7 @@ const HAIL_HOLD=420;        /* сколько кадров ждут ответа
 /* на телефоне семи секунд не хватает: вопрос надо прочесть и дотянуться до
    ответа большим пальцем (тестировщик на деве, 12.09) — пятнадцать */
 const HAIL_HOLD_PHONE=900;
-function hailHold(){return (typeof innerWidth==="number"&&innerWidth<=760)?HAIL_HOLD_PHONE:HAIL_HOLD;}
+function hailHold(){return viewW()<=760?HAIL_HOLD_PHONE:HAIL_HOLD;}   /* размер на кадр (01b): полоса ответа зовёт её каждый кадр */
 const HAIL_RANGE=900;       /* с какого расстояния окликают */
 function hailPicket(sh){
   /* ближайший чужой борт державы, который может окликнуть */

@@ -394,7 +394,7 @@ function home3Canvas(){
   cn.style.display="";tg.style.display="";return cn;
 }
 function home3Size(cn){
-  const cw=innerWidth,ch=innerHeight,dpr=hallDpr(cw,ch,window.devicePixelRatio);
+  const cw=viewW(),ch=viewH(),dpr=hallDpr(cw,ch,window.devicePixelRatio);
   const pw=Math.max(2,Math.round(cw*dpr)),ph=Math.max(2,Math.round(ch*dpr));
   if(cn.width!==pw||cn.height!==ph){cn.width=pw;cn.height=ph;}
   cn.__dpr=pw/cw;cn.style.width=cw+"px";cn.style.height=ch+"px";

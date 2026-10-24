@@ -111,7 +111,7 @@ function hallR(st){return hallHasBar(st)?HALL_XB+5.4:7.4;}
 function hallPlaceOf(t){if(t==="site")return "site";if(t==="none"||!t)return "trade";return stGroupOf(t);}
 /* доля зала на ПК — то же правило, что у вёрстки (style.css, M810): 40 %, но справа не меньше 880 px вёрстки */
 function hallHero(w){const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;return clamp((w-880*ui)/Math.max(1,w),.3,HALL_HERO);}
-function hallWide(){return (typeof innerWidth==="number"?innerWidth:1280)>=900;}
+function hallWide(){return viewW()>=900;}   /* размер — снятый на кадр (01b): здесь его спрашивали после записей */
 
 /* ── камера: место → матрица; сдвиг оптики ставит цель посередине зоны героя ── */
 function hallCam(c,w,h,wide){
@@ -454,11 +454,11 @@ function hallDpr(rw,ch,dev){return Math.min(dev||1,2,Math.sqrt(HALL_PX/Math.max(
 function hallDrawW(cw,wide){const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;return wide?Math.min(cw,Math.ceil(hallHero(cw)*cw+8*ui)):cw;}
 /* размер: на ПК кадр — весь экран, холст — его левая часть (rw); на телефоне — полоса */
 function hallSize(cn){
-  const wide=hallWide(),vw=innerWidth,vh=innerHeight,ui=(typeof UIK==="number"&&UIK>0)?UIK:1;
+  const wide=hallWide(),vw=viewW(),vh=viewH(),ui=(typeof UIK==="number"&&UIK>0)?UIK:1;
   const cw=vw,ch=vh,rw=cw,dpr=hallDpr(rw,ch,window.devicePixelRatio);   /* M816: на ходу — весь экран */
   const pw=Math.max(2,Math.round(rw*dpr)),ph=Math.max(2,Math.round(ch*dpr));
   if(cn.width!==pw||cn.height!==ph){cn.width=pw;cn.height=ph;}
-  cn.__dpr=pw/rw;cn.style.width=(rw/ui)+"px";cn.style.height=(ch/ui)+"px";
+  cn.__dpr=pw/rw;const sw=(rw/ui)+"px",sh=(ch/ui)+"px";if(cn.style.width!==sw)cn.style.width=sw;if(cn.style.height!==sh)cn.style.height=sh;
   return {cw,ch,wide,rw};
 }
 /* срез кадра: проекция всего экрана, сжатая по x на левую долю h — холст видит ровно то, что видно из-под плиты */
@@ -518,7 +518,9 @@ function hallFleetWarm(tw){
   if(G.mode!=="dock"||!GPU.dev||typeof fleetArtOf!=="function"||tw-HALL_FW.t<400)return;
   for(const f of hallFleetList()){if(FLEET_ART["fl"+f.k+f.seed+"!"+(f.by||"gt")])continue;HALL_FW.t=tw;fleetArtOf(f);return;}
 }
-function hallLoop(){
+/* колбэк кадра зала: размер окна — тот же, что у кадра игры (01b, метка rAF одна на кадр) */
+function hallLoop(ts){viewIn(ts);try{hallLoopIn();}finally{viewOut();}}
+function hallLoopIn(){
   HALL.raf=0;
   if(!HALL.open||!HALL.cn||!HALL.cn.isConnected)return;
   const tw=wallMs();hallMsgEther(hallWide());

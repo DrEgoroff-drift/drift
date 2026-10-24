@@ -470,7 +470,18 @@ function drawWorldIn(){
      сцены, виньетка — где своей нет (M244). У видеокарты всё это — один проход (08b) */
   gpuWorld(BLOOM_K[G.mode]||0,G.mode!=="map",!(G.mode==="surface"||G.mode==="landing"));
 }
+/* обёртка кадра (24.10, телефон): размер окна — один на кадр (01b), а пол HUD меряется ДО первой записи кадра в DOM.
+   Раньше hud мерил его посреди своих записей, и каждая мерка заставляла браузер сверстать страницу заново.
+   Перемена вёрстки приходит от наблюдателя после кадра — значит, в начале следующего страница уже свёрстана и
+   чтение бесплатно. Кто сбросит вёрстку посреди кадра (rectsDirty), снимет HUD_PRE, и hud перемерит как прежде */
 function frameBody(now){
+  viewIn(VIEWP.d?VIEWP.t:NaN);
+  try{
+    if(!LOOP_OFF&&!HUD_PRE&&LAYOUT_DIRTY&&!document.hidden){hudFloorMeasure(0,1);HUD_PRE=true;}
+    return frameBodyIn(now);
+  }finally{HUD_PRE=false;viewOut();}
+}
+function frameBodyIn(now){
   FRAME_IN=true;   /* всё, что скажет кадр, — голос мира (say, 08-state); снимается в конце и на событиях */
   if(LOOP_OFF)return;
   /* Скрытая страница не рисует. Обычно её и так не будят — rAF стоит, — но в
@@ -627,7 +638,7 @@ function crashAt(e){
     const m=/at\s+(?:new\s+)?([A-Za-z0-9_$.]+)\s*[\(@]/.exec(L);
     if(!m)continue;
     const n=m[1];
-    if(n==="crashAt"||n==="crashSay"||n==="frame"||n==="frameBody")continue;
+    if(n==="crashAt"||n==="crashSay"||n==="frame"||n==="frameBody"||n==="frameBodyIn")continue;
     out.push(n);
     if(out.length>=2)break;
   }
@@ -713,7 +724,9 @@ function frame(now){
       BEAT.sent++;BEAT.t=now;BEAT.n=0;BEAT.ms=0;}}}
   if(!STORAGE_OK&&!CRASH_SHIP.st){CRASH_SHIP.st=1;crashShip("storage","localStorage недоступен","");}
   const fb0=wallMs();   /* stallWho (выше) читает FRAME_JS — засекаем реальным временем, как остальной цикл */
+  viewIn(now);   /* размер окна — на весь кадр, и для циклов зала и комнат в том же кадре (01b) */
   try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
+  viewOut();
   FRAME_JS=wallMs()-fb0;
   tactWork(FRAME_JS);   /* средняя работа кадра решает, можно ли 120 (0.1b) */
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */

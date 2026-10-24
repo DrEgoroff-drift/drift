@@ -189,7 +189,7 @@ function room3Canvas(host){
   ROOM3.cn=cn;ROOM3.tags=tg;return cn;
 }
 function room3Size(cn){
-  const wide=hallWide(),vw=innerWidth,vh=innerHeight,ui=(typeof UIK==="number"&&UIK>0)?UIK:1;
+  const wide=hallWide(),vw=viewW(),vh=viewH(),ui=(typeof UIK==="number"&&UIK>0)?UIK:1;
   const cw=vw,ch=wide?vh:Math.round(vh*HALL_STRIP),rw=hallDrawW(cw,wide),dpr=hallDpr(rw,ch,window.devicePixelRatio);
   const pw=Math.max(2,Math.round(rw*dpr)),ph=Math.max(2,Math.round(ch*dpr));
   if(cn.width!==pw||cn.height!==ph){cn.width=pw;cn.height=ph;}
@@ -229,7 +229,8 @@ function room3Close(){
   if(ROOM3.tags){ROOM3.tags.remove();ROOM3.tags.__key="";ROOM3.tags=null;}
   r3Drop(ROOM3.mesh);ROOM3.mesh=null;ROOM3.rkey="";ROOM3.L=null;ROOM3.open=null;ROOM3.host=null;ROOM3.cn=null;
 }
-function room3Loop(){
+function room3Loop(ts){viewIn(ts);try{room3LoopIn();}finally{viewOut();}}   /* размер окна на кадр (01b) */
+function room3LoopIn(){
   ROOM3.raf=0;
   if(!ROOM3.open||!ROOM3.host||!ROOM3.host.classList.contains("open")){room3Close();return;}
   const tw=wallMs();

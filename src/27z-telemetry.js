@@ -43,7 +43,7 @@ const HUD_MSGOBS=["#console","#mapaddr",".rail","#ipod",".pads",".vitals",".locu
 function hudMsgPlace(){
   const T=typeof MAP_TOP!=="undefined"?MAP_TOP:null;
   const on=G.mode==="map"&&!!T&&!!$msg.textContent&&!document.querySelector(".scr.open");
-  const key=on?$msg.textContent+"|"+HUD_LKEY+"|"+innerWidth+"x"+innerHeight+"|"+Math.round(T.floor)+"|"+Math.round(T.hb):"";
+  const key=on?$msg.textContent+"|"+HUD_LKEY+"|"+viewW()+"x"+viewH()+"|"+Math.round(T.floor)+"|"+Math.round(T.hb):"";
   if(key===HUD_MSGKEY)return;HUD_MSGKEY=key;
   const reset=()=>{for(const p of ["left","top","maxWidth","transform","textAlign"])setSt($msg,p,"");};
   reset();if(!on)return;
@@ -51,7 +51,7 @@ function hudMsgPlace(){
   for(const s of HUD_MSGOBS){const e=document.querySelector(s);if(!e||!e.offsetWidth)continue;const r=e.getBoundingClientRect();if(r.width>0&&r.height>0)obs.push(r);}
   obs.push({left:T.hx-4,right:T.hx+T.hw,top:T.hb-26*mapU(),bottom:T.hb});   /* шапка — холст */
   const fits=()=>{const r=$msg.getBoundingClientRect();
-    return r.bottom<=innerHeight-4&&$msg.scrollHeight<=$msg.clientHeight+1&&
+    return r.bottom<=viewH()-4&&$msg.scrollHeight<=$msg.clientHeight+1&&
       !obs.some(o=>r.left<o.right+4&&r.right+4>o.left&&r.top<o.bottom+4&&r.bottom+4>o.top);};
   if(fits())return;
   const k=(typeof UIK==="number"&&UIK>0)?UIK:1,U=mapU(),x0=MAP_RUL*U+8,top=Math.max(T.hb,mapRulerTop()+14*U)+4;
@@ -177,9 +177,13 @@ function setPair(el,key,a,b){
    когда меняется вёрстка — окно, ряд пэдов, появившаяся строка подсказки,
    открытый экран. Обо всех таких переменах говорит наблюдатель из 08-state
    (LAYOUT_DIRTY); кто перестроил вёрстку сам, зовёт с force. */
-function hudFloorMeasure(force){
+/* keep — мерка в начале кадра (28-loop frameBody): флаг остаётся до hud, его читают и другие (21ae) */
+/* пол HUD снят в начале этого кадра (28-loop frameBody); сброс вёрстки посреди кадра снимает флаг — hud перемерит */
+let HUD_PRE=false;
+{const f=rectsDirty;rectsDirty=function(){HUD_PRE=false;return f.apply(this,arguments);};}
+function hudFloorMeasure(force,keep){
    if(!force&&!LAYOUT_DIRTY)return;
-   LAYOUT_DIRTY=false;
+   if(!keep)LAYOUT_DIRTY=false;
    /* Верхнюю полосу меряем тем же заходом: состав строк задаёт таблица
       стилей (body.afoot прячет топливо и корпус, узкий экран кладёт шкалы в ряд),
       и второй источник правды однажды с ней разойдётся — поэтому мерим DOM, а не
@@ -194,7 +198,7 @@ function hudFloorMeasure(force){
       карты при свободном низе). Мерка ширины пульта от его места не зависит — петли нет */
    const con=document.getElementById("console");
    if(con&&$padsEl){
-     const cw=con.getBoundingClientRect().width,u=(typeof UIK==="number"&&UIK>0)?UIK:1,gap=12*u,WW=innerWidth;
+     const cw=con.getBoundingClientRect().width,u=(typeof UIK==="number"&&UIK>0)?UIK:1,gap=12*u,WW=viewW();
      const bs=[];for(const b of $padsEl.querySelectorAll("button")){const r=b.getBoundingClientRect();if(r.width>0&&r.height>0)bs.push(r);}
      const free=(x0,x1)=>!bs.some(r=>r.left<x1+gap&&r.right>x0-gap);
      /* три места по очереди: у левой кромки, сразу за левыми пэдами (A/D), по центру */
@@ -206,7 +210,7 @@ function hudFloorMeasure(force){
      document.body.classList.toggle("conleft",x>=0);
      document.body.classList.toggle("conlow",x>=0||mid);
    }
-   let fl=innerHeight,rl=innerWidth,rt=0;
+   let fl=viewH(),rl=viewW(),rt=0;
    /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
       подсказка и правый борт стоят position:fixed, а у таких offsetParent
       всегда null — первая версия этой мерки поэтому не находила НИЧЕГО и
@@ -223,7 +227,7 @@ function hudFloorMeasure(force){
      const r=rail.getBoundingClientRect();
      if(r.width>0&&r.height>0){rl=Math.min(rl,r.left);rt=r.top;}
    }
-   if(HUD_RAIL!==Math.round(rl))document.documentElement.style.setProperty("--railw",Math.max(0,innerWidth-Math.round(rl))+"px");   /* ширина борта — для поля адреса (M347) */
+   if(HUD_RAIL!==Math.round(rl))document.documentElement.style.setProperty("--railw",Math.max(0,viewW()-Math.round(rl))+"px");   /* ширина борта — для поля адреса (M347) */
    HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);HUD_RAILTOP=Math.round(rt);
 }
 /* колпачки клавиш на пэдах: [элемент, действие] — собраны раз, чтения DOM в кадре нет */
@@ -449,8 +453,9 @@ function hud(){
      разойдётся. Чтение — одно на кадр и почти всегда бесплатное: setTx/setSt
      не пишут в DOM, пока показания не менялись, поэтому вёрстка чаще всего
      не грязная и пересчитывать её браузеру не приходится. */
-  /* полоса, пол и правый борт — одной меркой и только по грязной вёрстке (0.3) */
-  hudFloorMeasure();
+  /* полоса, пол и правый борт — одной меркой и только по грязной вёрстке (0.3); в кадре её уже сняли в начале,
+     до записей (HUD_PRE, 28-loop) — здесь, после setTx, та же мерка стоила вёрстки страницы (24.10) */
+  if(HUD_PRE)LAYOUT_DIRTY=false;else hudFloorMeasure();
   const msgOn=G.msgT>0&&!msgHeld()&&!hangMsgHung();   /* висит табличкой у вещи — DOM молчит (M826, 08bj) */
   setTx($msg,msgOn?G.msg:"");
   setSt($msg,"opacity",msgOn?clamp(G.msgT/40,0,1):0);
@@ -614,7 +619,7 @@ function hud(){
      принимают решения, то есть в полёте и на карте */
   document.body.classList.toggle("inflight",
     G.mode==="system"||G.mode==="map"||G.mode==="belt"||G.mode==="scoop"||G.mode==="landing");
-  document.body.classList.toggle("mobile",innerWidth<=760);   /* телефон (M167) */
+  document.body.classList.toggle("mobile",viewW()<=760);   /* телефон (M167); размер — снятый в начале кадра (01b) */
   document.body.classList.toggle("onmap",G.mode==="map");   /* строка сообщения на карте — на матовой плашке */
   /* ── ВЗЛЁТ гасит кадр, а не поверхность (M234, второй заход) ──
      Кнопку показывал и прятал `updateSurface`, то есть код, который в других
