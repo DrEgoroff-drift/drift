@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 653 · top-level symbols: 8832
+Files: 653 · top-level symbols: 8834
 
 ## SYMBOLS
 
@@ -1806,6 +1806,7 @@ PROBE_SHOW                   src/21a8-base-world.js:29
 PROBE_SPREAD                 src/25m-probe.js:29
 PROBE_WAIT                   src/25m-probe.js:28
 PROFILE                      src/02-world.js:146-159
+PROMPT_NUM_EVERY             src/27z-telemetry.js:241
 PROMPT_RECT                  src/08-state.js:114
 PU_CELLS                     tests/91zzzzzd-pure.js:28
 PYARD                        src/04c-yards.js:89
@@ -5416,7 +5417,7 @@ hqScene                      src/29r-rooms-r3.js:307
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:237-637
+hud                          src/27z-telemetry.js:250-650
 hudFloorMeasure              src/27z-telemetry.js:184-232
 hudMsgPlace                  src/27z-telemetry.js:43-64
 hudNumDirty                  src/08-state.js:101
@@ -7229,6 +7230,7 @@ prof                         src/28-loop.js:754-781
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
+promptSet                    src/27z-telemetry.js:242-249
 prunePartsBought             src/14-save.js:33-41
 ptr                          src/15-input.js:403
 puFinger                     tests/91zzzzzd-pure.js:19-27
@@ -10504,7 +10506,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/27y-hud-words.js · 4 KB
 
-## src/27z-telemetry.js · 55 KB
+## src/27z-telemetry.js · 56 KB
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 71 KB

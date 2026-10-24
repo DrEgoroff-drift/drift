@@ -124727,6 +124727,19 @@ function hudFloorMeasure(force,keep){
 let $vShip=null,$padKeys=null;
 /* разбор G.prompt по ключу «режим|текст»: dup — строка повторяет кнопку, lbl — [слово кнопки, есть действие] */
 const HUD_PROMPT={k:null,dup:false,lbl:null};
+/* число в подсказке («Нейэль I · 248 ед.») менялось каждый кадр подлёта, и каждая запись в #prompt будила
+   наблюдателя вёрстки (08-state): следующий кадр перемерял пол, кнопки ряда и борт — 13 чтений прямоугольника
+   на кадр (телефон, 24.10). Смена одних цифр той же длины пишется не чаще раза в PROMPT_NUM_EVERY кадров
+   (счётчик на 7–8 Гц читается лучше мелькания); новый текст, другая длина числа, пустая строка — сразу */
+const PROMPT_NUM_EVERY=8;
+function promptSet(v){
+  const P=HUD_PROMPT,s=v==null?"":String(v);
+  P.nz=(P.nz||0)+1;
+  if(s===P.shown)return;
+  const sk=s.replace(/[0-9]/g,"0");
+  if(P.shown!=null&&s&&sk===P.sk&&P.nz<PROMPT_NUM_EVERY)return;
+  P.shown=s;P.sk=sk;P.nz=0;setTx($prompt,s);
+}
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
@@ -124964,7 +124977,7 @@ function hud(){
     const pv=/^ДЕЙСТВИЕ\s*—\s*([^·\n]+)$/.exec(String(G.prompt||"").trim());
     PK.dup=!!pv&&pv[1].replace(/\s*\(?\d+\)?\s*$/,"").trim().split(/\s+/).length<=2;}
   const pDup=PK.dup;
-  setTx($prompt,G.mode==="dock"||mapHintHung()||hangCueHung()||pDup?"":G.prompt);
+  promptSet(G.mode==="dock"||mapHintHung()||hangCueHung()||pDup?"":G.prompt);
   /* на тяге значок, на грунте и в шахте — слово. Слову, как подписям прочих пэдов, свой <span>,
      регистр предложения и кегль (.word): ПРЫЖОК капителью в 17 px был шире круга на телефоне в 320 */
   if($bThr){const w=G.mode==="surface"?"Прыжок":(G.mode==="dig"?"Вверх":"");
