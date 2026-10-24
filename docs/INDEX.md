@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 656 · top-level symbols: 8846
+Files: 659 · top-level symbols: 8856
 
 ## SYMBOLS
 
@@ -83,6 +83,7 @@ APPETITE                     src/12ab-hold.js:26-33
 APPETITE_ADD                 src/12ab-hold.js:24
 ARC_JUMP                     src/13a-guns.js:39
 ARMED_CAP                    src/13-combat.js:12
+ARRW                         src/17h1-arr-warm.js:10
 ARTIFACTS                    src/12h-relic.js:48-63
 ASTRO_BOX                    src/20fa-life-gpu.js:190
 ASTRO_PAL                    src/20fa-life-gpu.js:191
@@ -787,7 +788,7 @@ GEO_WORLD                    tests/90b3-geom-world.js:9-13
 GEO_Z                        tests/90b2-geom.js:28
 GEST                         src/17h-sys-gesture.js:23
 GEST_POST                    src/17h-sys-gesture.js:21
-GEST_POST_CV                 src/17h-sys-gesture.js:179
+GEST_POST_CV                 src/17h-sys-gesture.js:183
 GEST_SAID                    src/17h-sys-gesture.js:24
 GEST_T                       src/17h-sys-gesture.js:20
 GEW                          src/17-mode-system.js:48
@@ -882,7 +883,7 @@ GPU_MIP                      src/08c-gpu-kit.js:100
 GPU_MIP_LOD                  src/08c-gpu-kit.js:194
 GPU_OPQ                      src/21pe-pln-gpu.js:229
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-70
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-71
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:50
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:42-63
 GPU_PL_WGSL                  src/08b-gpu.js:489
@@ -950,13 +951,14 @@ GcGrad                       src/08ca-gpu-canvas.js:69-87
 GcPat                        src/08cab-gpu-pattern.js:11-14
 GcPath2D                     src/08caa-gpu-path.js:15-27
 H3D                          src/17c2a-hull3d.js:15
-H3D_ATL                      src/17c2a-hull3d.js:396
+H3D_ATL                      src/17c2a-hull3d.js:423
 H3D_CARGO                    src/17c2a-hull3d.js:22
-H3D_KEEP_MAX                 src/17c2a-hull3d.js:432
+H3D_KEEP_MAX                 src/17c2a-hull3d.js:459
 H3D_L                        src/17c2a-hull3d.js:16
+H3D_LAY                      src/17c2a-hull3d.js:387
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
-H3D_PIR                      src/17c2a-hull3d.js:605
+H3D_PIR                      src/17c2a-hull3d.js:639
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
 H3D_WGSL                     src/17c2a-hull3d.js:262
@@ -2078,12 +2080,13 @@ SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-57
 SAVE_KEY                     src/14-save.js:6
 SBELT_ARC                    src/17gc-sys-belt.js:9
 SBELT_BAS                    src/17gc-sys-belt.js:55
-SBELT_HAZE_WGSL              src/17gc-sys-belt.js:169
+SBELT_HAZE_WGSL              src/17gc-sys-belt.js:173
 SBELT_LAY                    src/17gc-sys-belt.js:54
-SBELT_LIST                   src/17gc-sys-belt.js:153
-SBELT_PICK                   src/17gc-sys-belt.js:219
-SBELT_TINT                   src/17gc-sys-belt.js:155
-SBELT_U                      src/17gc-sys-belt.js:202
+SBELT_LIST                   src/17gc-sys-belt.js:157
+SBELT_PICK                   src/17gc-sys-belt.js:223
+SBELT_ROCKS                  src/17gc-sys-belt.js:69
+SBELT_TINT                   src/17gc-sys-belt.js:159
+SBELT_U                      src/17gc-sys-belt.js:206
 SCALES                       src/10-music.js:5-24
 SCALE_KEYS                   src/10-music.js:25
 SCAR_KEYS                    src/05b2-scars.js:14
@@ -2584,6 +2587,10 @@ applySaveRest                src/14a1-save-rest.js:15-392
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
+arrWarm                      src/17h1-arr-warm.js:55
+arrWarmAt                    src/17h1-arr-warm.js:11-15
+arrWarmStep                  src/17h1-arr-warm.js:43-54
+arrWarmSteps                 src/17h1-arr-warm.js:18-41
 arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:734-785
 artGet                       src/08ca-gpu-canvas.js:550
@@ -2821,7 +2828,7 @@ beastFormWord                src/20e-species.js:215-223
 beastTake                    src/21ac2-base-farm.js:45-51
 beastTraitWord               src/20e-species.js:224-233
 beltBasis                    src/24-mode-belt.js:150-160
-beltDots                     src/17gc-sys-belt.js:159-165
+beltDots                     src/17gc-sys-belt.js:163-169
 beltDust                     src/24ba-belt-gpu.js:237-259
 beltFwd                      src/24-mode-belt.js:145-148
 beltGpuDraw                  src/24ba-belt-gpu.js:91-233
@@ -3520,9 +3527,9 @@ cppX                         src/27f5-portrait3d.js:96
 craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
-crashAt                      src/28-loop.js:632-646
-crashN                       src/28-loop.js:627
-crashSay                     src/28-loop.js:653-682
+crashAt                      src/28-loop.js:633-647
+crashN                       src/28-loop.js:628
+crashSay                     src/28-loop.js:654-683
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 crewAssignShip               src/12a-crew.js:252-260
@@ -3610,7 +3617,7 @@ cvs                          src/08-state.js:2
 cvsRect                      src/08-state.js:107-110
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:792-862
+dbg                          src/28-loop.js:793-863
 dcLensEq                     tests/91qc-descent.js:15-18
 dcWorld                      tests/91qc-descent.js:6-14
 dcol                         src/21b-surface-deco.js:155-160
@@ -3972,7 +3979,7 @@ drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
 drawBeastAlien               src/20f-fauna.js:68-238
 drawBelt                     src/24-mode-belt.js:372
-drawBeltRocks                src/17gc-sys-belt.js:67-152
+drawBeltRocks                src/17gc-sys-belt.js:71-156
 drawBillboard                src/17k-billboard.js:182-198
 drawBuilt                    src/21c-built.js:64-102
 drawCave                     src/22d-cave-pln.js:347-364
@@ -3997,15 +4004,15 @@ drawFindsSystem              src/17b-finds.js:240-267
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:135-155
 drawFleetMap                 src/12ai-fleet.js:325-356
-drawFleetShip                src/12ai1-fleet-art.js:450
+drawFleetShip                src/12ai1-fleet-art.js:455
 drawFoeBody                  src/24ab-raid-foe.js:11-131
 drawForeground               src/21b-surface-deco.js:276-289
 drawGalaxy                   src/17z1-galaxy.js:64-67
 drawGalaxyNames              src/17z2-galaxy-names.js:38-68
 drawGalaxyStars              src/17z1-galaxy.js:86-115
-drawGestPost                 src/17h-sys-gesture.js:196-216
-drawGesture                  src/17h-sys-gesture.js:92-144
-drawGestureTop               src/17h-sys-gesture.js:148-177
+drawGestPost                 src/17h-sys-gesture.js:200-220
+drawGesture                  src/17h-sys-gesture.js:96-148
+drawGestureTop               src/17h-sys-gesture.js:152-181
 drawGiant                    src/17o-giants.js:182-211
 drawGiantsMap                src/17o-giants.js:70-81
 drawGlyph                    src/12t-settle.js:59-77
@@ -4354,7 +4361,7 @@ fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipAt                  src/12ai1-fleet-art.js:417-448
+fleetShipAt                  src/12ai1-fleet-art.js:420-453
 fleetShipGpu                 src/12ai1-fleet-art.js:411-415
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
@@ -4390,11 +4397,11 @@ forkSt                       src/28q-fork.js:19-22
 forkTick                     src/28q-fork.js:56-81
 forkWage                     src/28q-fork.js:48-55
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:686-734
+frame                        src/28-loop.js:687-735
 frameBody                    src/28-loop.js:477-483
-frameBodyIn                  src/28-loop.js:484-618
+frameBodyIn                  src/28-loop.js:484-619
 frameCapNow                  src/28-loop.js:264-268
-frameLastAt                  src/28-loop.js:685
+frameLastAt                  src/28-loop.js:686
 freeVoice                    src/09-audio.js:104-108
 fridgeFee                    src/21ac4-base-fridge.js:19
 fridgeFirmAt                 src/21ac4-base-fridge.js:15-18
@@ -4589,19 +4596,19 @@ geoWorld                     tests/90b3-geom-world.js:41-56
 geoWorldBox                  tests/90b3-geom-world.js:15-26
 geoWorldOne                  tests/90b3-geom-world.js:27-40
 geologyOf                    src/18b-geology.js:45-71
-gestAge                      src/17h-sys-gesture.js:44
-gestArrive                   src/17h-sys-gesture.js:32-40
-gestAt                       src/17h-sys-gesture.js:89
-gestEase                     src/17h-sys-gesture.js:86
-gestLive                     src/17h-sys-gesture.js:41-43
-gestOnce                     src/17h-sys-gesture.js:46-50
-gestOwner                    src/17h-sys-gesture.js:25-30
-gestPostNo                   src/17h-sys-gesture.js:51
-gestPostSprite               src/17h-sys-gesture.js:180-195
-gestRect                     src/17h-sys-gesture.js:90
-gestShip                     src/17h-sys-gesture.js:91
-gestShipFrame                src/17h-sys-gesture.js:81-85
-gestTick                     src/17h-sys-gesture.js:52-79
+gestAge                      src/17h-sys-gesture.js:45
+gestArrive                   src/17h-sys-gesture.js:33-41
+gestAt                       src/17h-sys-gesture.js:90
+gestEase                     src/17h-sys-gesture.js:87
+gestLive                     src/17h-sys-gesture.js:42-44
+gestOnce                     src/17h-sys-gesture.js:47-51
+gestOwner                    src/17h-sys-gesture.js:25-31
+gestPostNo                   src/17h-sys-gesture.js:52
+gestPostSprite               src/17h-sys-gesture.js:184-199
+gestRect                     src/17h-sys-gesture.js:91
+gestShip                     src/17h-sys-gesture.js:94
+gestShipFrame                src/17h-sys-gesture.js:82-86
+gestTick                     src/17h-sys-gesture.js:53-80
 getSystem                    src/06-galaxy.js:95-198
 gexDraw                      src/16ga-gpu-trail.js:316-325
 gexPush                      src/16ga-gpu-trail.js:280-286
@@ -4862,7 +4869,7 @@ gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:369
 gsyBeltDots                  src/17g-gpu-system.js:406-414
-gsyBeltHaze                  src/17gc-sys-belt.js:203-218
+gsyBeltHaze                  src/17gc-sys-belt.js:207-222
 gsyEll                       src/17g-gpu-system.js:375-384
 gsyMean                      src/17g-gpu-system.js:385-388
 gsyOrb                       src/17g-gpu-system.js:367-373
@@ -4898,28 +4905,30 @@ gunSpecs                     src/05c-arms.js:210-221
 gunTotals                    src/05c-arms.js:339-353
 gunsInGroup                  src/05c-arms.js:233-236
 h01                          src/01-core.js:28
-h3dAtlasAt                   src/17c2a-hull3d.js:397-421
+h3dAtlasAt                   src/17c2a-hull3d.js:424-448
 h3dBargeMesh                 src/17c2f-body-barge.js:58-66
 h3dBargeWreck                src/17c2f-body-barge.js:68-90
-h3dCls                       src/17c2a-hull3d.js:456-466
-h3dDesc                      src/17c2a-hull3d.js:369-377
-h3dDev                       src/17c2a-hull3d.js:379-388
-h3dDraw                      src/17c2a-hull3d.js:470-482
+h3dCls                       src/17c2a-hull3d.js:483-493
+h3dDesc                      src/17c2a-hull3d.js:396-404
+h3dDev                       src/17c2a-hull3d.js:406-415
+h3dDraw                      src/17c2a-hull3d.js:497-509
+h3dDraw2                     src/17c2a-hull3d.js:617-620
 h3dEar                       src/17c2a-hull3d.js:245-260
-h3dKeepAt                    src/17c2a-hull3d.js:434-444
-h3dKeepSig                   src/17c2a-hull3d.js:446-454
+h3dKeepAt                    src/17c2a-hull3d.js:461-471
+h3dKeepSig                   src/17c2a-hull3d.js:473-481
 h3dKit                       src/17c2a-hull3d.js:27-90
+h3dLay                       src/17c2a-hull3d.js:388-395
 h3dMesh                      src/17c2a-hull3d.js:132-243
 h3dPack                      src/17c2a-hull3d.js:92-100
 h3dParts                     src/17c2b-parts3d.js:158-353
-h3dPirMesh                   src/17c2a-hull3d.js:606-662
-h3dPirate                    src/17c2a-hull3d.js:664-667
+h3dPirMesh                   src/17c2a-hull3d.js:640-696
+h3dPirate                    src/17c2a-hull3d.js:698-701
 h3dPlaneHoles                src/17c2a-hull3d.js:107-129
-h3dRun                       src/17c2a-hull3d.js:492-586
+h3dRun                       src/17c2a-hull3d.js:519-615
 h3dStationMesh               src/17c2g-body-station.js:97-129
 h3dStockGear                 src/17c2b-parts3d.js:374-383
-h3dStudioPt                  src/17c2a-hull3d.js:485-489
-h3dStudioRT                  src/17c2a-hull3d.js:589-599
+h3dStudioPt                  src/17c2a-hull3d.js:512-516
+h3dStudioRT                  src/17c2a-hull3d.js:623-633
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60
@@ -7238,7 +7247,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:754-781
+prof                         src/28-loop.js:755-782
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
@@ -7885,6 +7894,7 @@ say                          src/08-state.js:382
 sbeltChip                    src/17gc-sys-belt.js:57-66
 sbeltClumps                  src/17gc-sys-belt.js:11-20
 sbeltDens                    src/17gc-sys-belt.js:22-35
+sbeltRock                    src/17gc-sys-belt.js:70
 sbss                         src/17gc-sys-belt.js:10
 scarBlock                    src/05b2-scars.js:44-58
 scarFactors                  src/05b2-scars.js:23-25
@@ -9627,7 +9637,7 @@ zoomTo                       src/15-input.js:358
 ## src/17c2-hull-gpu.js · 19 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 59 KB
+## src/17c2a-hull3d.js · 62 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c2b-parts3d.js · 33 KB
@@ -9677,8 +9687,11 @@ zoomTo                       src/15-input.js:358
 ## src/17gc-sys-belt.js · 14 KB
   · пояс в кадре системы (M824):1
 
-## src/17h-sys-gesture.js · 14 KB
+## src/17h-sys-gesture.js · 15 KB
   · чья земля — за пять секунд: жест первого корабля и пост (M452, DESIGN-review §2.1):1
+
+## src/17h1-arr-warm.js · 5 KB
+  · прилёт заранее (24.10, телефон):1
 
 ## src/17i-stamp.js · 9 KB
   · отметка о проезде: штамп на границе (M453, DESIGN-borders §2.2):1
@@ -10529,9 +10542,9 @@ zoomTo                       src/15-input.js:358
   · авторазрешение:209
   · РОВНЫЙ ТАКТ (0.1b):358
   · развилка режимов — одна на всех (M238):414
-  · кадр, который не убивает игру (M234):619
-  · prof() — на что уходит кадр:742
-  · dbg() — что держит корабль:783
+  · кадр, который не убивает игру (M234):620
+  · prof() — на что уходит кадр:743
+  · dbg() — что держит корабль:784
 
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
@@ -10703,7 +10716,13 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd3-rail.js · 4 KB
   · поездка на движке (M828 · 18gb), кольцо станции телом (M806 · 18fa):1
 
+## tests/91qd4-arrive-warm.js · 7 KB
+  · прилёт заранее (24.10, телефон):1
+
 ## tests/91qd4-chipcue.js · 3 KB
+
+## tests/91qd5-hull-prepass.js · 3 KB
+  · корпуса в объёме: глубина, потом краска (24.10, телефон):1
 
 ## tests/91qe-bar-seat.js · 7 KB
   · бар собран (M853):1
