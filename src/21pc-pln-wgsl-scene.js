@@ -176,9 +176,12 @@ fn lampShade(w: vec3f, lp: vec3f) -> f32 {
   return vec4f(applyFog(in.col * in.par.z, in.wpos, 0.9 * (1.0 - clamp(in.par.w, 0.0, 1.0))), a);
 }
 
+/* OPQ — тела главного прохода: там зеркальной отсечки нет, и шейдер без discard не выключает телефону
+   раннюю отсечку скрытого (LRZ у Adreno); зеркало и кулисы — прежний вариант с отбросом (24.10) */
+override OPQ: bool = false;
 @fragment fn fs_main(in: VOut) -> @location(0) vec4f {
   let fx = dpdx(in.wpos); let fy = dpdy(in.wpos);
-  if (g.misc.y > 0.5 && in.wpos.y < g.misc.x) { discard; }
+  if (!OPQ && g.misc.y > 0.5 && in.wpos.y < g.misc.x) { discard; }
   let mat = i32(round(in.par.x));
   let glow = in.par.z; let ex = in.par.w;
   /* своё свечение света не берёт; в запасе у него доля пустоты: темнота проёма воздуха почти не берёт */

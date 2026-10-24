@@ -64,9 +64,12 @@ function cave3PipeDescs(d,L,ms){
   const mk=(key,desc)=>out.push([key,desc]);
   mk("shadow",{layout:lH,vertex:{module:mS,entryPoint:"vs_shadow",buffers:PLN_VB},primitive:prim,
     depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"less",depthBias:2,depthBiasSlopeScale:2.2}});
+  /* небо — на глубине очистки: «≥» после тел красит только непокрытое (24.10, порядок — GPU_OPQ в 21pe) */
   mk("sky",{layout:lS,vertex:{module:mS,entryPoint:"vs_full"},fragment:{module:mS,entryPoint:"fs_sky",targets:[{format:PLN_HDR}]},
-    primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"always"},multisample:mu});
+    primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater-equal"},multisample:mu});
   mk("body",{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_main",targets:[{format:PLN_HDR}]},
+    primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"greater"},multisample:mu});
+  mk("bodyO",{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_main",constants:{OPQ:1},targets:[{format:PLN_HDR}]},
     primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"greater"},multisample:mu});
   /* зеркало: та же сцена в полкадра без сглаживания; вода — поверх породы, глубину не пишет */
   mk("bodyR",{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_main",targets:[{format:PLN_HDR}]},
@@ -78,7 +81,7 @@ function cave3PipeDescs(d,L,ms){
   mk("comp",pp("fs_comp",{format:PLN_HDR,writeMask:GPUColorWrite.RED|GPUColorWrite.GREEN|GPUColorWrite.BLUE}));
   return out;
 }
-const cave3PipeKey=(k,ms)=>"cave3."+k+(/^(sky|body|water)$/.test(k)?ms:"");
+const cave3PipeKey=(k,ms)=>"cave3."+k+(/^(sky|body|bodyO|water)$/.test(k)?ms:"");
 /* ── то, что живёт с устройством ── */
 function cave3GpuDev(){
   const Q=CAVE3_GPU,d=GPU.dev;
@@ -244,8 +247,10 @@ function cave3GpuFrame(F){
     const col=ms>1?{view:V.ms,resolveTarget:V.hdr,clearValue:bg,loadOp:"clear",storeOp:"discard"}:{view:V.hdr,clearValue:bg,loadOp:"clear",storeOp:"store"};
     const p=e.beginRenderPass({colorAttachments:[col],timestampWrites:gpuTs("cave3.scene"),
       depthStencilAttachment:{view:V.depth,depthClearValue:0,depthLoadOp:"clear",depthStoreOp:"store"}});
-    p.setBindGroup(0,Q.B0.main);p.setPipeline(P.sky);p.draw(3);
-    p.setPipeline(P.body);run(p,()=>true);
+    p.setBindGroup(0,Q.B0.main);
+    /* тела без отброса первыми, кулисы (они в списке последние) — своим вариантом, небо — после всех */
+    if(GPU_OPQ.on){p.setPipeline(P.bodyO);run(p,b=>!b.wing);p.setPipeline(P.body);run(p,b=>!!b.wing);p.setPipeline(P.sky);p.draw(3);}
+    else{p.setPipeline(P.sky);p.draw(3);p.setPipeline(P.body);run(p,()=>true);}
     if(lake){p.setPipeline(P.water);run(p,null,F.water);}
     p.end();
   }

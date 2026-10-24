@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 652 · top-level symbols: 8785
+Files: 652 · top-level symbols: 8786
 
 ## SYMBOLS
 
@@ -875,6 +875,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:23
 GPU_LIT_SH                   src/17c-system-draw.js:21
 GPU_MIP                      src/08c-gpu-kit.js:100
 GPU_MIP_LOD                  src/08c-gpu-kit.js:194
+GPU_OPQ                      src/21pe-pln-gpu.js:229
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-70
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:50
@@ -3078,12 +3079,12 @@ cave3GapPlan                 src/22dh-cave-pln-gap.js:15-32
 cave3GapVent                 src/22dh-cave-pln-gap.js:99-149
 cave3GapWet                  src/22dh-cave-pln-gap.js:181-204
 cave3GapWorm                 src/22dh-cave-pln-gap.js:65-97
-cave3Globals                 src/22db-cave-pln-light.js:171-196
-cave3GpuDev                  src/22db-cave-pln-light.js:83-95
-cave3GpuFrame                src/22db-cave-pln-light.js:199-267
-cave3GpuReady                src/22db-cave-pln-light.js:159-168
-cave3GpuSize                 src/22db-cave-pln-light.js:123-158
-cave3GpuTier                 src/22db-cave-pln-light.js:97-115
+cave3Globals                 src/22db-cave-pln-light.js:174-199
+cave3GpuDev                  src/22db-cave-pln-light.js:86-98
+cave3GpuFrame                src/22db-cave-pln-light.js:202-272
+cave3GpuReady                src/22db-cave-pln-light.js:162-171
+cave3GpuSize                 src/22db-cave-pln-light.js:126-161
+cave3GpuTier                 src/22db-cave-pln-light.js:100-118
 cave3H3                      src/22da-cave-pln-rock.js:35-39
 cave3Hang                    src/22dc-cave-pln-dress.js:183-191
 cave3Hex                     src/22da-cave-pln-rock.js:30
@@ -3110,8 +3111,8 @@ cave3Nrm                     src/22dc-cave-pln-dress.js:40-43
 cave3Over                    src/22d-cave-pln.js:328-343
 cave3Paint                   src/22da-cave-pln-rock.js:262-282
 cave3Persp                   src/22db-cave-pln-light.js:21-25
-cave3PipeDescs               src/22db-cave-pln-light.js:59-80
-cave3PipeKey                 src/22db-cave-pln-light.js:81
+cave3PipeDescs               src/22db-cave-pln-light.js:59-83
+cave3PipeKey                 src/22db-cave-pln-light.js:84
 cave3PipesAhead              src/22d-cave-pln.js:122-136
 cave3Pj                      src/22d-cave-pln.js:389-393
 cave3PlantZs                 src/22dg-cave-pln-life.js:26-29
@@ -6722,7 +6723,7 @@ plnGeoFree                   src/21pe-pln-gpu.js:97
 plnGlide                     src/21pz-pln-frame.js:262-270
 plnGlintDir                  src/21pw-pln-water.js:316-319
 plnGlintHour                 src/21pw-pln-water.js:315
-plnGlobals                   src/21pe-pln-gpu.js:311-334
+plnGlobals                   src/21pe-pln-gpu.js:319-342
 plnGlwDash                   src/21piic-pln-glow.js:22-26
 plnGlwFrame                  src/21piic-pln-glow.js:81-94
 plnGlwFree                   src/21piic-pln-glow.js:60-65
@@ -6731,12 +6732,12 @@ plnGlwRing                   src/21piic-pln-glow.js:27-30
 plnGlwStep                   src/21piic-pln-glow.js:66-79
 plnGlwStrip                  src/21piic-pln-glow.js:16-21
 plnGpuDev                    src/21pe-pln-gpu.js:151-177
-plnGpuFrame                  src/21pe-pln-gpu.js:358-416
-plnGpuPipes                  src/21pe-pln-gpu.js:227-233
-plnGpuReady                  src/21pe-pln-gpu.js:302-306
-plnGpuSize                   src/21pe-pln-gpu.js:242-301
+plnGpuFrame                  src/21pe-pln-gpu.js:366-426
+plnGpuPipes                  src/21pe-pln-gpu.js:235-241
+plnGpuReady                  src/21pe-pln-gpu.js:310-314
+plnGpuSize                   src/21pe-pln-gpu.js:250-309
 plnGpuTier                   src/21pe-pln-gpu.js:179-190
-plnGpuWrite                  src/21pe-pln-gpu.js:335-352
+plnGpuWrite                  src/21pe-pln-gpu.js:343-360
 plnGunLaid                   src/21pifb-pln-marks-act-move.js:281
 plnHandAge                   src/21pz-pln-frame.js:278-288
 plnHandWin                   src/21pz-pln-frame.js:290-293
@@ -6912,8 +6913,8 @@ plnPeepFrame                 src/21piid-pln-peep.js:78-88
 plnPeepFree                  src/21piid-pln-peep.js:57-62
 plnPeepMesh                  src/21piid-pln-peep.js:14-56
 plnPeepStep                  src/21piid-pln-peep.js:63-76
-plnPipeDescs                 src/21pe-pln-gpu.js:194-222
-plnPipeKey                   src/21pe-pln-gpu.js:224
+plnPipeDescs                 src/21pe-pln-gpu.js:194-226
+plnPipeKey                   src/21pe-pln-gpu.js:232
 plnPlaceAt                   src/21piig-pln-places.js:16-27
 plnPlaceFlat                 src/21piig-pln-places.js:28-31
 plnPlaceFrame                src/21piig-pln-places.js:110-114
@@ -9956,7 +9957,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pd-pln-wgsl-post.js · 8 KB
   · планета: свёртка кадра (M610):1
 
-## src/21pe-pln-gpu.js · 29 KB
+## src/21pe-pln-gpu.js · 31 KB
   · планета: цели, конвейеры и проходы одного кадра (M610):1
 
 ## src/21pf-pln-land.js · 35 KB
@@ -10125,7 +10126,7 @@ zoomTo                       src/15-input.js:358
 ## src/22da-cave-pln-rock.js · 28 KB
   · пещера на движке: порода из сетки игры (M630a):1
 
-## src/22db-cave-pln-light.js · 18 KB
+## src/22db-cave-pln-light.js · 19 KB
   · пещера на движке: рендер (M630a):1
 
 ## src/22dbw-cave-pln-wgsl.js · 38 KB

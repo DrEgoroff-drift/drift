@@ -317,10 +317,13 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
   return c;
 }
 
+/* OPQ — порода и вещи главного прохода: без discard телефон отсекает скрытое до шейдера (24.10).
+   Кулисы (mat 17) растворяются отбросом — их рисует прежний вариант */
+override OPQ: bool = false;
 @fragment fn fs_main(in: VOut) -> @location(0) vec4f {
   let fx = dpdx(in.wpos); let fy = dpdy(in.wpos);
   /* в зеркале озера то, что под водой, не отражается */
-  if (g.misc.y > 0.5 && in.wpos.y < g.misc.x) { discard; }
+  if (!OPQ && g.misc.y > 0.5 && in.wpos.y < g.misc.x) { discard; }
   let mat = i32(round(in.par.x));
   let glow = in.par.z; let ex = in.par.w;
   let V = normalize(g.camPos.xyz - in.wpos);
@@ -342,7 +345,7 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
     let cut = (1.0 - smoothstep(0.75, 1.35, abs(pr.x))) * (1.0 - smoothstep(2.0, 2.7, pr.y)) * smoothstep(-0.8, -0.2, pr.y);
     /* на ближней стоянке объектив у самой кулисы — она раздулась бы на полкадра: растворяется */
     let gone = max(cut, 1.0 - smoothstep(10.0, 13.5, in.wpos.z - g.camPos.z));
-    if (gone > ign(in.pos.xy)) { discard; }
+    if (!OPQ && gone > ign(in.pos.xy)) { discard; }
     var nS = normalize(in.nrm);
     if (dot(nS, V) < 0.0) { nS = -nS; }
     let nv = clamp(dot(nS, V), 0.0, 1.0);

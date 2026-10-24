@@ -202,9 +202,13 @@ function plnPipeDescs(d,L,ms){
   const blend={color:{srcFactor:"src-alpha",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}};
   for(const n of (ms>1?[1,ms]:[1])){
     const mu={count:n};
+    /* небо стоит на глубине 0 = очистке: «≥» пропускает его везде, пока тел нет (зеркало рисует его первым), а после тел —
+       только в непокрытые выборки; кадр тот же, что при «always» первым (24.10) */
     mk("sky"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_full"},fragment:{module:mS,entryPoint:"fs_sky",targets:[{format:PLN_HDR}]},
-      primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"always"},multisample:mu});
+      primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater-equal"},multisample:mu});
     mk("body"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_main",targets:[{format:PLN_HDR}]},
+      primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"greater"},multisample:mu});
+    mk("bodyo"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_main",constants:{OPQ:1},targets:[{format:PLN_HDR}]},
       primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"greater"},multisample:mu});
     mk("water"+n,plnWaterPipe(lS,mS,mu));
     /* вуаль: дым и пар — свечение с альфой записи; глубину читают, не пишут */
@@ -220,6 +224,10 @@ function plnPipeDescs(d,L,ms){
   mk("comp",post("fs_comp",{format:PLN_HDR,writeMask:GPUColorWrite.RED|GPUColorWrite.GREEN|GPUColorWrite.BLUE}));
   return out;
 }
+/* порядок главного прохода сцен поверхности и пещеры (24.10): тела без отброса первыми, небо после них.
+   GPU_OPQ.on=false или ?opq=0 — прежний порядок (небо первым, тела с отбросом): A/B на телефоне */
+const GPU_OPQ={on:true};
+try{if(typeof location!=="undefined"&&/[?&]opq=0\b/.test(location.search))GPU_OPQ.on=false;}catch(e){}
 /* ключ воронки: свёртка и тень зависят от сглаживания яруса, сцена несёт его в имени (sky1/sky4) */
 const plnPipeKey=(k,ms)=>"pln."+k+(/^(shadow|sky|body|water|wx|veil)/.test(k)?"":"."+ms);
 /* конвейеры: через воронку движка (непрогретый ключ она строит на месте и пишет в GPU_PIPES.lazy),
@@ -386,8 +394,10 @@ function plnGpuFrame(F){
       :{view:V.hdr,clearValue:bg,loadOp:"clear",storeOp:"store"};
     const p=e.beginRenderPass({colorAttachments:[col],timestampWrites:gpuTs("pln.scene"),
       depthStencilAttachment:{view:V.depth,depthClearValue:0,depthLoadOp:"clear",depthStoreOp:"store"}});
-    p.setBindGroup(0,B.main);p.setPipeline(P["sky"+ms]);p.draw(3);
-    p.setPipeline(P["body"+ms]);some(p,PLN_TO.main,PLN_KIND.body);
+    p.setBindGroup(0,B.main);
+    /* тела первыми и без отброса — телефон отсекает скрытое до шейдера; небо — после, только где тел нет */
+    if(GPU_OPQ.on){p.setPipeline(P["bodyo"+ms]);some(p,PLN_TO.main,PLN_KIND.body);p.setPipeline(P["sky"+ms]);p.draw(3);}
+    else{p.setPipeline(P["sky"+ms]);p.draw(3);p.setPipeline(P["body"+ms]);some(p,PLN_TO.main,PLN_KIND.body);}
     if(F.mirror){p.setPipeline(P["water"+ms]);some(p,PLN_TO.main,PLN_KIND.water);}
     if(F.veil){p.setPipeline(P["veil"+ms]);some(p,PLN_TO.main,PLN_KIND.veil);}
     if(F.wx&&F.wx.n>0){p.setPipeline(P["wx"+ms]);p.draw(F.wx.n*6);calls++;tris+=F.wx.n*2;}

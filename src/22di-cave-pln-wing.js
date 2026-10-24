@@ -111,8 +111,8 @@ function cave3WingFrame(C,F,Fd,x0,x1,cy,go){
   let tris=0,n=0;
   /* ушли целиком (сдвиг больше высоты кадра) — не рисуем */
   for(const [l,k] of vis)if(l===lo&&go<.999){
-    if(k.gd)F.draw.push({geo:k.gd,inst:Q.I[0],lamp:false,sun:false});
-    if(k.gu)F.draw.push({geo:k.gu,inst:Q.I[1],lamp:false,sun:false});
+    if(k.gd)F.draw.push({geo:k.gd,inst:Q.I[0],lamp:false,sun:false,wing:true});   /* wing — вариант с отбросом (22db) */
+    if(k.gu)F.draw.push({geo:k.gu,inst:Q.I[1],lamp:false,sun:false,wing:true});
     tris+=k.tris;n++;
   }
   CAVE3.stat.wings=n;
