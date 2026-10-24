@@ -286,7 +286,7 @@ body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],
 .pads button{-webkit-appearance:none;position:relative;isolation:isolate;
   background:radial-gradient(120% 120% at 50% 12%,rgba(var(--c-phos),.10),rgba(8,14,23,.60) 62%);
   border:0;color:var(--phos);font-family:inherit;font-size:15px;width:var(--padw,56px);height:var(--padw,56px);
-  border-radius:50%;display:grid;place-items:center;backdrop-filter:blur(12px) saturate(1.1);flex:0 0 auto;
+  border-radius:50%;display:grid;place-items:center;backdrop-filter:var(--pl-blur);flex:0 0 auto;
   transition:transform .14s var(--ease),box-shadow .18s var(--ease),color .18s;
   letter-spacing:.02em;line-height:1.1;padding:0 3px;
   box-shadow:var(--lift),inset 0 1px 0 rgba(190,245,255,.12)}
@@ -2356,7 +2356,7 @@ body.onmap #msg{background:rgba(11,11,11,.45);-webkit-backdrop-filter:blur(8px);
 .rail .zoom{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
 .rail .zoom button{background:none;box-shadow:none}
 
-.pads button{background:var(--plate);box-shadow:var(--plate-lift)}
+.pads button{background:rgba(7,11,17,.86);box-shadow:var(--plate-lift)}
 .pads button::before{border-color:var(--hair)}
 /* регистр подписи ставит JS (padCase, 27y): CSS-строчные ломали имена — «К главтрассе» */
 .pads button>span{display:block;letter-spacing:0}
@@ -2440,10 +2440,13 @@ body.mobile .pads button.abil-ok:not(.off)>.abil-hint{display:none}
       справа инструменты, справа снизу действие, по центру снизу связь. */
 :root{
   --face:"Bahnschrift","DIN Alternate","Roboto Condensed","sans-serif-condensed","Arial Narrow",sans-serif;
-  --pl-bg:linear-gradient(180deg,rgba(24,23,22,.80),rgba(12,12,12,.86));
+  /* плита без размытия фона (24.10): под ней каждый кадр новый холст WebGPU, и композитор размывал его заново
+     под каждой плитой — на S23 это 5–7 % пропущенных кадров в полёте. Сквозь .80 размытое было почти ровным
+     тоном; подложка плотнее, чтобы и резкие звёзды сквозь неё не читались */
+  --pl-bg:linear-gradient(180deg,rgba(24,23,22,.90),rgba(12,12,12,.93));
   --pl-edge:rgba(var(--c-edge),.17);
   --pl-cut:12px;
-  --pl-blur:blur(12px) saturate(1.25);
+  --pl-blur:none;
   --pl-cutp:polygon(0 0,calc(100% - var(--pl-cut)) 0,100% var(--pl-cut),100% 100%,var(--pl-cut) 100%,0 calc(100% - var(--pl-cut)));
   --pl-lift:0 12px 28px rgba(0,0,0,.38);
   --ink:#f1ebde;
