@@ -25,7 +25,7 @@
 const R3_MAXI=32,R3_PART=16,R3_MAXL=12,R3_SH=6,R3_SHN=1024;
 /* отладка цены зала на телефоне (24.10): notap — шейдер не читает карты теней (слои рисуются), novol — без дыма,
    nopass — слои не перерисовываются (выборки идут по старым). В игре все нули */
-const R3_DBG={notap:0,novol:0,nopass:0,notwin:0};   /* notwin — тень людей с полной сетки, как до 24.10 */
+const R3_DBG={notap:0,novol:0,nopass:0,notwin:0,sinnoise:0};   /* notwin — тень людей с полной сетки, как до 24.10 */
 /* раскладка формы (числа float32): матрица камеры, камера, небо, пол, дым, акцент, окно, вывеска, кино,
    лампы, матрицы теней, матрицы частей, тон частей */
 const R3U={vp:0,cam:16,sky:20,gnd:24,fog:28,acc:32,win:36,win2:40,sgn:44,sgn2:48,flm:52,flm2:56,lt:60,sv:60+R3_MAXL*16};
@@ -280,7 +280,13 @@ fn vn3t(p:vec3f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);return t
 fn vn2(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
   return mix(mix(h2(i),h2(i+vec2f(1.,0.)),w.x),mix(h2(i+vec2f(0.,1.)),h2(i+vec2f(1.,1.)),w.x),w.y);}
 fn fb2(p:vec2f)->f32{return vn2(p)*.5+vn2(p*2.03+vec2f(5.2,1.3))*.3+vn2(p*4.1+vec2f(2.7,8.1))*.2;}
-fn fb3(p:vec3f)->f32{return vn3(p)*.55+vn3(p*2.07+vec3f(3.1,1.7,5.3))*.3+vn3(p*4.3+vec3f(7.,2.,1.))*.15;}
+/* узор стен, пола, дерева и ткани — по объёму шума (29.10, телефон): октава — одна выборка vn3t вместо восьми синусов
+   хэша, а пол считал две такие суммы на каждом пикселе (48 синусов) ещё до ламп. Шум того же рода: те же узлы-хэши
+   и та же ступень, решётка повторяется через 64 узла (самая мелкая октава пола — через 11 м). sgn2.w = 1 — прежние
+   синусы (R3_DBG.sinnoise, A/B на телефоне) */
+fn fb3(p:vec3f)->f32{
+  if(u.sgn2.w>.5){return vn3(p)*.55+vn3(p*2.07+vec3f(3.1,1.7,5.3))*.3+vn3(p*4.3+vec3f(7.,2.,1.))*.15;}
+  return vn3t(p)*.55+vn3t(p*2.07+vec3f(3.1,1.7,5.3))*.3+vn3t(p*4.3+vec3f(7.,2.,1.))*.15;}
 /* плоские координаты по ведущей оси нормали: стена — xy, боковая — zy, пол и потолок — xz */
 fn pl2(p:vec3f,n:vec3f)->vec2f{let a=abs(n);if(a.z>=a.x&&a.z>=a.y){return p.xy;}if(a.x>=a.y){return p.zy;}return p.xz;}
 fn shadowAt(k:i32,w:vec3f,taps:i32)->f32{
@@ -826,6 +832,7 @@ function r3Frame(cn,S,post,dst){
   if(S.flm)F.set(S.flm,R3U.flm);if(S.flm2)F.set(S.flm2,R3U.flm2);
   const L=S.lights.slice(0,R3_MAXL),SV=[],SL=[];
   F[R3U.sgn2+2]=L.length;   /* число ламп — третье число вывески (её .x — глубина, .y — мигание) */
+  F[R3U.sgn2+3]=R3_DBG.sinnoise?1:0;   /* четвёртое — узор прежними синусами (fb3, для замера) */
   L.forEach((l,k)=>{const o=R3U.lt+k*16;let si=-1;
     if(l.shadow&&SV.length<R3_SH){si=SV.length;SL.push(l);SV.push(r3ShadowVP(l.p,l.d||[0,-1,0],l.spot?l.cosO:-.2,l.range));}
     F.set([l.p[0],l.p[1],l.p[2],l.range, l.c[0],l.c[1],l.c[2],l.spot?1:0, (l.d||[0,-1,0])[0],(l.d||[0,-1,0])[1],(l.d||[0,-1,0])[2],l.spot?l.cosO:-2,
@@ -838,7 +845,8 @@ function r3Frame(cn,S,post,dst){
   let g0=R3.bgs.get(key);
   if(!g0){if(R3.bgs.size>16)R3.bgs.clear();
     g0=d.createBindGroup({layout:R3.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:R3.ub}},{binding:1,resource:R3.smp},
-      {binding:2,resource:R3.shA},{binding:3,resource:R3.cmp},{binding:4,resource:tsg},{binding:5,resource:tfl}]});R3.bgs.set(key,g0);}   /* шум дыма (6, 7) — у прохода дыма (T.vg), основному не нужен */
+      {binding:2,resource:R3.shA},{binding:3,resource:R3.cmp},{binding:4,resource:tsg},{binding:5,resource:tfl},
+      {binding:6,resource:R3.vnV},{binding:7,resource:R3.vns}]});R3.bgs.set(key,g0);}   /* шум (6, 7) — узору (fb3) и проходу дыма (T.vg) */
   const enc=d.createCommandEncoder();
   const draw=(p)=>{for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}};
   /* тени: по слою на лампу; пустые слои не чистятся — их никто не читает (M816c: зал чистил 6 слоёв на 4 лампы).

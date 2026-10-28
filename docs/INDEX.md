@@ -1840,13 +1840,13 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:710
+R3                           src/27f2-room3d.js:716
 R3P                          src/27f2-room3d.js:36
 R3U                          src/27f2-room3d.js:31
 R3_DBG                       src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:689
+R3_DOWN_WGSL                 src/27f2-room3d.js:695
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:880
+R3_POST_WGSL                 src/27f2-room3d.js:888
 R3_SCR                       src/27f2-room3d.js:49
 R3_UN                        src/27f2-room3d.js:34
 R3_VPOOL                     src/27f2-room3d.js:80
@@ -7335,16 +7335,16 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:711-717
-r3Dev                        src/27f2-room3d.js:739-763
-r3DownDesc                   src/27f2-room3d.js:731-735
-r3Drop                       src/27f2-room3d.js:770
-r3Frame                      src/27f2-room3d.js:817-877
-r3Free                       src/27f2-room3d.js:772
+r3Desc                       src/27f2-room3d.js:717-723
+r3Dev                        src/27f2-room3d.js:745-769
+r3DownDesc                   src/27f2-room3d.js:737-741
+r3Drop                       src/27f2-room3d.js:776
+r3Frame                      src/27f2-room3d.js:823-885
+r3Free                       src/27f2-room3d.js:778
 r3Kit                        src/27f2-room3d.js:88-237
 r3Lin                        src/27f2-room3d.js:39
 r3Look                       src/27f2-room3d.js:54-237
-r3MeshR                      src/27f2-room3d.js:816
+r3MeshR                      src/27f2-room3d.js:822
 r3Mix                        src/27f2-room3d.js:40
 r3MixI                       src/27f2-room3d.js:43
 r3Mul                        src/27f2-room3d.js:51
@@ -7355,13 +7355,13 @@ r3Pt                         src/27f2-room3d.js:71
 r3Sc                         src/27f2-room3d.js:41
 r3ScI                        src/27f2-room3d.js:44
 r3Scr                        src/27f2-room3d.js:50
-r3ShDesc                     src/27f2-room3d.js:723-728
-r3ShadowVP                   src/27f2-room3d.js:774-779
+r3ShDesc                     src/27f2-room3d.js:729-734
+r3ShadowVP                   src/27f2-room3d.js:780-785
 r3Step                       src/27f2-room3d.js:45
-r3Targets                    src/27f2-room3d.js:786-814
-r3Up                         src/27f2-room3d.js:765-769
-r3VB                         src/27f2-room3d.js:729
-r3VolDesc                    src/27f2-room3d.js:718-722
+r3Targets                    src/27f2-room3d.js:792-820
+r3Up                         src/27f2-room3d.js:771-775
+r3VB                         src/27f2-room3d.js:735
+r3VolDesc                    src/27f2-room3d.js:724-728
 r3Xf                         src/27f2-room3d.js:60-237
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
@@ -10470,7 +10470,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 83 KB
+## src/27f2-room3d.js · 84 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 31 KB
