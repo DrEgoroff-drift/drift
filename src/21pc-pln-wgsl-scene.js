@@ -318,6 +318,7 @@ override OPQ: bool = false;
     let lp = g.lampPos[i]; let lc = g.lampCol[i];
     if (lc.w <= 0.0) { continue; }
     let d = lp.xyz - in.wpos; let dl = length(d);
+    if (dl >= lp.w) { continue; }   /* дальше дальности свет лампы — ровно ноль */
     /* лампа людей — под козырьком: светит вниз и в стороны, а крону над собой не зажигает */
     let hood = 1.0 - smoothstep(0.2, 1.6, in.wpos.y - lp.y);
     let att = pow(clamp(1.0 - dl / lp.w, 0.0, 1.0), 2.0) * hood;
