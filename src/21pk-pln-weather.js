@@ -261,18 +261,25 @@ fn wxRay(ndc: vec2f) -> vec3f {
   if (shape == 0) { a = pow(max(1.0 - x * x, 0.0), 1.5) * smoothstep(0.0, 0.25, in.uv.y) * (1.0 - smoothstep(0.75, 1.0, in.uv.y)); }
   else if (shape == 1) { a = 1.0 - smoothstep(0.45, 1.0, length(vec2f(x, y))); }
   else if (shape == 2) {
+    /* шум множит огибающую не больше чем на 1.5: где она ниже порога/1.5, шум не нужен — тот же discard (29.10) */
+    let env = pow(max(1.0 - abs(x), 0.0), 1.6) * pow(max(1.0 - abs(y), 0.0), 1.6);
+    if (env < 0.0019) { discard; }
     let n = fbm(in.wpos.xy * 0.05 + vec2f(g.camPos.w * 0.03, 0.0), 31u);
-    a = pow(max(1.0 - abs(x), 0.0), 1.6) * pow(max(1.0 - abs(y), 0.0), 1.6) * (0.1 + 1.4 * smoothstep(0.15, 0.85, n));
+    a = env * (0.1 + 1.4 * smoothstep(0.15, 0.85, n));
   }
   else if (shape == 4) {
-    /* завеса: вертикальное зерно — полосы дождя, сносимые ветром */
+    /* завеса: вертикальное зерно — полосы дождя, сносимые ветром; шум множит не больше чем на 1.35 */
+    let env = pow(max(1.0 - abs(x), 0.0), 1.3) * smoothstep(0.0, 0.3, in.uv.y) * (1.0 - smoothstep(0.75, 1.0, in.uv.y));
+    if (env < 0.0022) { discard; }
     let n = fbm(vec2f(in.wpos.x * 0.03 + g.camPos.w * 0.15, in.wpos.y * 0.0025), 37u);
-    a = pow(max(1.0 - abs(x), 0.0), 1.3) * smoothstep(0.0, 0.3, in.uv.y) * (1.0 - smoothstep(0.75, 1.0, in.uv.y)) * (0.35 + 1.0 * n);
+    a = env * (0.35 + 1.0 * n);
   }
   else if (shape == 5) { a = pow(max(1.0 - x * x, 0.0), mix(0.8, 2.5, in.par.w)); }
   else { a = 1.0 - smoothstep(0.15, 1.0, length(vec2f(x, y))); }
   if (a < 0.003) { discard; }
-  let col = applyFog(in.col.rgb, in.wpos, select(1.0, 0.0, shape == 4 || shape == 2));
+  /* полотна и завесы дымку не берут: доля 0 — цвет тот же, воздух не считаем */
+  var col = in.col.rgb;
+  if (shape != 4 && shape != 2) { col = applyFog(col, in.wpos, 1.0); }
   return vec4f(col, a * in.col.a);
 }
 `;

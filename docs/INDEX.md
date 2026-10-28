@@ -10214,7 +10214,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pj-pln-over.js · 8 KB
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
 
-## src/21pk-pln-weather.js · 20 KB
+## src/21pk-pln-weather.js · 21 KB
   · осадки в воздухе сцены (M626):1
 
 ## src/21pw-pln-water.js · 23 KB
