@@ -6,6 +6,15 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.37 — phone performance, round 11: room patterns from the noise volume, cheaper cave rock
+
+- Room patterns (`27f2`): the wall, floor, wood and cloth patterns built their noise from sines, eight per octave and three octaves per pixel, in the main pass of every station room. They now read the 64³ noise volume that the smoke pass already binds, with one sample per octave. The pattern is the same kind of material, but its layout is new. `R3_DBG.sinnoise=1` brings the old noise back for phone A/B.
+- Cave rock (`22dbw`), material 1:
+  - The facet search visits the centre cell, then the faces, edges and corners, and skips any cell whose box is no nearer than the second point. That is exact: a skipped cell cannot move the first or the second point, so the facets and seams are the same as with the full 27-cell walk.
+  - Each cell's point comes from one hash instead of three, with 10 bits per axis. The facet layout is new.
+  - The rock bumps and the flowstone ribs took their slope by finite differences (four noise reads per layer). They now get the value and its analytic slope in one pass over the same eight corners, so the value is identical.
+  - On a PC the cave scene pass went from 2.25 to 1.80 ms.
+
 ## 0.499.36 — phone performance, round 10: the planet draws only what the lens sees, the sky skips empty noise, belt rocks built ahead
 
 - Planet plants and deposits (`21pia`, `21pi`): every plant and deposit of the landing strip went into every frame, through all four passes (two shadow cascades, the mirror, the scene). In the jungle that was 1.15 M triangles and about 29 ms of a 57 ms frame on the S23, while a dozen bodies are on screen. Records of each kind are now sorted by x, and the frame takes the run the lens sees by binary search, with a margin for height and the sideways shadow.
