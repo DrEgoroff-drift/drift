@@ -6,6 +6,13 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.38 — phone performance, round 12: pixels visit only what reaches them
+
+- Planet ground and grass (`21pe`, `21pc`): every ground and grass pixel multiplied in all the blob shadows of the frame, about 50 of them, and the near grass draws each pixel several times over. The blobs are now sorted by x, and their largest radius goes with them. The shader finds the first blob that can reach the pixel by binary search and stops past the right edge. A blob farther than its radius multiplies by exactly 1, so the frame is the same. On a PC the planet scene pass is 23 % cheaper and the mirror 24 %. `PLN_GPU.blobAll=1` restores the old full window for phone A/B.
+- Room floors (`27f2`): the contact spot under each person was looked up through all 32 instance slots on every floor pixel. The spots now go to the shader as a short list sorted by x, searched the same way. Past three radii the spot multiplies by exactly 1 in float32. `R3_DBG.csall=1` restores the old full window for phone A/B.
+- Room shadows (`27f2`, `27f4a`): the hall redrew all its shadow layers on every frame while walking or while the camera glided between places. Shadow maps do not depend on the camera, so each layer is now kept on its own when its lamp is the same and the walking pilot is out of its reach. Lamps that change with the place under your feet are redrawn at once. The hall keeps the every-other-frame rule in all three states: at rest, gliding, walking.
+- Shadow taps (`22dbw`, `21pc`): the spiral of shadow-map taps is turned once per call instead of computing a sine and cosine for every tap. In the cave that is 16 fewer per pixel, with a bit-identical frame.
+
 ## 0.499.37 — phone performance, round 11: room patterns from the noise volume, cheaper cave rock
 
 - Room patterns (`27f2`): the wall, floor, wood and cloth patterns built their noise from sines, eight per octave and three octaves per pixel, in the main pass of every station room. They now read the 64³ noise volume that the smoke pass already binds, with one sample per octave. The pattern is the same kind of material, but its layout is new. `R3_DBG.sinnoise=1` brings the old noise back for phone A/B.
