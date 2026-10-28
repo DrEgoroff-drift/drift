@@ -319,6 +319,12 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
 
 /* OPQ — порода и вещи главного прохода: без discard телефон отсекает скрытое до шейдера (24.10).
    Кулисы (mat 17) растворяются отбросом — их рисует прежний вариант */
+/* соседи ячейки вороного по близости: центр, шесть граней, двенадцать рёбер, восемь углов (камень, mat 1) */
+const VOR_O = array<vec3i, 27>(
+  vec3i(0, 0, 0), vec3i(0, 0, -1), vec3i(0, -1, 0), vec3i(-1, 0, 0), vec3i(1, 0, 0), vec3i(0, 1, 0), vec3i(0, 0, 1),
+  vec3i(0, -1, -1), vec3i(-1, 0, -1), vec3i(1, 0, -1), vec3i(0, 1, -1), vec3i(-1, -1, 0), vec3i(1, -1, 0), vec3i(-1, 1, 0),
+  vec3i(1, 1, 0), vec3i(0, -1, 1), vec3i(-1, 0, 1), vec3i(1, 0, 1), vec3i(0, 1, 1), vec3i(-1, -1, -1), vec3i(1, -1, -1),
+  vec3i(-1, 1, -1), vec3i(1, 1, -1), vec3i(-1, -1, 1), vec3i(1, -1, 1), vec3i(-1, 1, 1), vec3i(1, 1, 1));
 override OPQ: bool = false;
 @fragment fn fs_main(in: VOut) -> @location(0) vec4f {
   let fx = dpdx(in.wpos); let fy = dpdy(in.wpos);
@@ -455,12 +461,21 @@ override OPQ: bool = false;
       let dp = in.wpos * fsc + vec3f(vn3(wq, 61u), vn3(wq + 3.0, 63u), vn3(wq + 7.0, 65u)) * 1.1;
       let b = vec3i(floor(dp));
       var d1 = 9.0; var d2 = 9.0; var id = b;
-      let kb = hk3(b, 0u); let s91 = hs(91u); let s93 = hs(93u); let s95 = hs(95u);
+      let kb = hk3(b, 0u); let s91 = hs(91u);
+      /* 29.10, телефон: ближние ячейки — первыми, а ячейку, чья коробка не ближе второй точки, не считаем. Точка
+         ячейки лежит в её коробке (hkf < 1), так что ни первую, ни вторую она не сдвинет — грани и швы те же, что при
+         полном обходе, а три хэша угла и ребра пиксель платит редко */
+      let fr = dp - vec3f(b);
       for (var k = 0; k < 27; k++) {
-        let o = vec3i(k % 3 - 1, (k / 3) % 3 - 1, k / 9 - 1);
+        let o = VOR_O[k];
+        var bx = select(vec3f(0.0), vec3f(1.0) - fr, o > vec3i(0));
+        bx = select(bx, fr, o < vec3i(0));
+        if (dot(bx, bx) >= d2) { continue; }
         let c = b + o;
         let kc = kb + u32(o.x) * 374761393u + u32(o.y) * 668265263u + u32(o.z) * 1440662683u;
-        let q = vec3f(c) + vec3f(hkf(kc + s91), hkf(kc + s93), hkf(kc + s95));
+        /* точка ячейки — из одного хэша, по 10 бит на ось: три хэша стоили шесть целых умножений на ячейку */
+        let hq = hashu(kc + s91);
+        let q = vec3f(c) + vec3f(f32(hq & 1023u), f32((hq >> 10u) & 1023u), f32((hq >> 20u) & 1023u)) * (1.0 / 1024.0);
         let d = dot(dp - q, dp - q);
         if (d < d1) { d2 = d1; d1 = d; id = c; } else if (d < d2) { d2 = d; }
       }

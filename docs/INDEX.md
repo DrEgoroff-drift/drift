@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 661 · top-level symbols: 8902
+Files: 661 · top-level symbols: 8903
 
 ## SYMBOLS
 
@@ -2406,6 +2406,7 @@ VOICE_Q                      src/12pa-beacon.js:207
 VOL_BY                       src/12al5-vol.js:27
 VOL_DOCS                     src/12al5-vol.js:16-25
 VOL_FAST                     src/12al5-vol.js:26
+VOR_O                        src/22dbw-cave-pln-wgsl.js:323-640
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16-20
 VSINK                        src/08c-gpu-kit.js:345
@@ -10254,7 +10255,7 @@ zoomTo                       src/15-input.js:358
 ## src/22db-cave-pln-light.js · 19 KB
   · пещера на движке: рендер (M630a):1
 
-## src/22dbw-cave-pln-wgsl.js · 38 KB
+## src/22dbw-cave-pln-wgsl.js · 40 KB
   · пещера на движке: шейдеры (M630a):1
 
 ## src/22dbx-cave-pln-post.js · 10 KB
