@@ -6,6 +6,20 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.36 — phone performance, round 10: the planet draws only what the lens sees, the sky skips empty noise, belt rocks built ahead
+
+- Planet plants and deposits (`21pia`, `21pi`): every plant and deposit of the landing strip went into every frame, through all four passes (two shadow cascades, the mirror, the scene). In the jungle that was 1.15 M triangles and about 29 ms of a 57 ms frame on the S23, while a dozen bodies are on screen. Records of each kind are now sorted by x, and the frame takes the run the lens sees by binary search, with a margin for height and the sideways shadow.
+- Planet shaders (`21pb`, `21pc`), all exact (a skipped term adds exactly zero, the frame is the same):
+  - the cloud warp (four `fbm`) only where a cloud, the horizon bank or the storm cover can be;
+  - the horizon bank only in its band over the horizon;
+  - the galaxy band returns early far from its circle;
+  - cloud shadows compute the plan-band noise only where a band can reach;
+  - the near shade is 1 past z = 3;
+  - the ground strokes stop computing noise past the distance where their weight is zero (1200, 220 and 45 m).
+  - On a PC the planet frame is 26 % cheaper.
+- Belt entry (`24-mode-belt`): the 112 rock meshes were all made in the entry frame (32 ms on the S23). They are now built ahead by the work queue while the ship is in a system with a belt, one rock per step. The entry takes them ready (14.2 → 0.1 ms on a PC) and makes any missing ones itself. The meshes are bit-identical.
+- Pad row (`27z`): the pad row was fitted between the body class toggles, so a mode change recalculated the whole page's style twice and measured the HUD floor twice. It is now fitted after all classes are set, with one floor measure for both changes.
+
 ## 0.499.35 — phone performance, round 9: one frame budget for all building, work ahead after the frame is sent, the room smoke at half resolution
 
 - One build budget per frame (`17a0`, `28-loop`, `21pz`, `23c`, `22da`, `22dc`, `22d`): the mine and cave chunks, the cave dress, the planet ground and planting, and the work-ahead pumps each had their own budget (8, 8, 5, 8 and 3 ms). None of them knew what the others had already taken, so in a cave frame they stacked up to 20 ms on top of the frame itself (tester, round 21). There is now one ledger. `FB.base` is the frame's JS without building, smoothed over past frames. `FB.spent` is what has been built so far in this frame. Every builder takes `fbLeft(lo, hi, goal)` and records what it spent. The planet keeps its lower goal. The hall, planet flora, arrival warm-up and cave pre-build share one queue (`WORK`): ordered by priority, with a turn for a starved worker every 20 frames. It runs after `gpuPresent`, so the GPU draws the frame while the CPU builds ahead.
