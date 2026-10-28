@@ -236,9 +236,13 @@ override OPQ: bool = false;
   if (mat == 0) { ao = ex; lit = smoothstep(mix(-0.10, 0.0, stone), mix(0.45, 0.22, stone), ndl); }
   if (mat == 7) { ao = mix(0.45, 1.0, smoothstep(0.0, 0.7, ex)); }
   if (mat == 0 || mat == 7) {
-    let nb = i32(blobs.n.x);
-    for (var i = 0; i < nb; i++) {
+    /* пятна лежат по x (21pe plnBlobSort), n.w — самый большой радиус: дальше него по x пятно умножает ровно на 1 */
+    let nb = i32(blobs.n.x); let px = in.wpos.x; let R = blobs.n.w;
+    var lo = 0; var hi = nb;
+    while (lo < hi) { let m = (lo + hi) / 2; if (blobs.b[m].x < px - R) { lo = m + 1; } else { hi = m; } }
+    for (var i = lo; i < nb; i++) {
       let b = blobs.b[i];
+      if (b.x > px + R) { break; }
       let d = length(in.wpos.xz - b.xy) / b.z;
       ao *= 1.0 - b.w * (1.0 - smoothstep(0.2, 1.0, d));
     }

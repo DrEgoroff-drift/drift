@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 661 · top-level symbols: 8903
+Files: 661 · top-level symbols: 8905
 
 ## SYMBOLS
 
@@ -1683,6 +1683,7 @@ PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:16
 PLN_BEAST_IDS                src/21piba-pln-gait.js:13
 PLN_BLOB                     src/21pa-pln-mesh.js:70
+PLN_BLOB_T                   src/21pe-pln-gpu.js:369
 PLN_BUILD                    src/21pf-pln-land.js:38
 PLN_CAST                     src/21ph-pln-cast.js:6
 PLN_DEG                      src/21p-pln.js:31
@@ -6778,6 +6779,7 @@ plnBeastUpright              src/21piba-pln-gait.js:139-158
 plnBeastZ                    src/21pib-pln-beast.js:26-29
 plnBez                       src/21pa-pln-mesh.js:195-199
 plnBlob                      src/21pa-pln-mesh.js:71-115
+plnBlobSort                  src/21pe-pln-gpu.js:370-381
 plnBodies                    src/21pz-pln-frame.js:84-110
 plnBox                       src/21pf-pln-land.js:67-74
 plnBoxF                      src/21pf-pln-land.js:82-87
@@ -6833,7 +6835,7 @@ plnGlwRing                   src/21piic-pln-glow.js:27-30
 plnGlwStep                   src/21piic-pln-glow.js:66-79
 plnGlwStrip                  src/21piic-pln-glow.js:16-21
 plnGpuDev                    src/21pe-pln-gpu.js:151-177
-plnGpuFrame                  src/21pe-pln-gpu.js:366-426
+plnGpuFrame                  src/21pe-pln-gpu.js:382-443
 plnGpuPipes                  src/21pe-pln-gpu.js:235-241
 plnGpuReady                  src/21pe-pln-gpu.js:310-314
 plnGpuSize                   src/21pe-pln-gpu.js:250-309
@@ -10077,13 +10079,13 @@ zoomTo                       src/15-input.js:358
 ## src/21pb-pln-wgsl-air.js · 26 KB
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
-## src/21pc-pln-wgsl-scene.js · 19 KB
+## src/21pc-pln-wgsl-scene.js · 20 KB
   · планета: шейдер тел, земли, воды и тени (M610):1
 
 ## src/21pd-pln-wgsl-post.js · 8 KB
   · планета: свёртка кадра (M610):1
 
-## src/21pe-pln-gpu.js · 31 KB
+## src/21pe-pln-gpu.js · 32 KB
   · планета: цели, конвейеры и проходы одного кадра (M610):1
 
 ## src/21pf-pln-land.js · 35 KB

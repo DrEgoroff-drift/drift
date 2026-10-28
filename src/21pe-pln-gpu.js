@@ -363,8 +363,25 @@ function plnGpuWrite(F){
    F.batches — что рисовать: {geo, inst|null, kind, to, ride}; ride — цельная сетка дальнего мира;
    first и count — отрезок записей, когда в одном буфере лежат записи разных тел (21pga).
    Возвращает false, если сдавать кадр некуда */
+/* пятна тени по x (29.10, телефон: земля и трава перебирали все 48 на каждом пикселе, с перекрытием травы — по
+   нескольку раз): шейдер (21pc) делением находит первое, что может достать до пикселя, и кончает за правым краем.
+   n.w — самый большой радиус: дальше него по x пятно умножает ровно на 1, кадр тот же. Q.blobAll — окно на всё (замер) */
+const PLN_BLOB_T=new Float32Array(256),PLN_BLOB_I=[];
+function plnBlobSort(b){
+  const n=Math.min(b[0]|0,64),I=PLN_BLOB_I,T=PLN_BLOB_T;
+  let R=0,ord=true;
+  I.length=n;
+  for(let i=0;i<n;i++){I[i]=i;R=Math.max(R,b[6+4*i]);if(i&&b[4+4*i]<b[4*i])ord=false;}
+  if(!ord){
+    T.set(b.subarray(4,4+4*n));
+    I.sort((x,y)=>T[4*x]-T[4*y]);
+    for(let i=0;i<n;i++)b.set(T.subarray(4*I[i],4*I[i]+4),4+4*i);
+  }
+  b[3]=PLN_GPU.blobAll?1e9:R;
+}
 function plnGpuFrame(F){
   const Q=PLN_GPU,e=GPU.enc,P=Q.P,B=Q.B,V=Q.V,D=Q.D,ms=Q.ms;
+  if(F.blobs)plnBlobSort(F.blobs);
   F.mirror=F.waterY>-1e4&&F.batches.some(b=>b.kind===PLN_KIND.water&&b.geo.n>0);
   F.wing=F.batches.some(b=>b.kind===PLN_KIND.wing&&b.geo.n>0);
   F.veil=F.batches.some(b=>b.kind===PLN_KIND.veil);
