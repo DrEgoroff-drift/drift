@@ -25,13 +25,14 @@
 const R3_MAXI=32,R3_PART=16,R3_MAXL=12,R3_SH=6,R3_SHN=1024;
 /* отладка цены зала на телефоне (24.10): notap — шейдер не читает карты теней (слои рисуются), novol — без дыма,
    nopass — слои не перерисовываются (выборки идут по старым). В игре все нули */
-const R3_DBG={notap:0,novol:0,nopass:0,notwin:0,sinnoise:0};   /* notwin — тень людей с полной сетки, как до 24.10 */
+const R3_DBG={notap:0,novol:0,nopass:0,notwin:0,sinnoise:0,csall:0};   /* notwin — тень людей с полной сетки, как до 24.10; csall — пол перебирает все пятна */
 /* раскладка формы (числа float32): матрица камеры, камера, небо, пол, дым, акцент, окно, вывеска, кино,
    лампы, матрицы теней, матрицы частей, тон частей */
 const R3U={vp:0,cam:16,sky:20,gnd:24,fog:28,acc:32,win:36,win2:40,sgn:44,sgn2:48,flm:52,flm2:56,lt:60,sv:60+R3_MAXL*16};
 R3U.M=R3U.sv+R3_SH*16;R3U.ot=R3U.M+R3_MAXI*R3_PART*16;
 R3U.iv=R3U.ot+R3_MAXI*R3_PART*4;   /* обратная матрица камеры — луч дыма в половине кадра (fsv) */
-const R3_UN=R3U.iv+16;
+R3U.cs=R3U.iv+16;   /* пятна контактной тени: число и окно по x, затем [x, z, радиус] по x */
+const R3_UN=R3U.cs+4+R3_MAXI*4;
 /* узоры: номер — то, что знает шейдер */
 const R3P={none:0,wall:1,floor:2,wood:3,brushed:4,window:5,sign:6,cloth:7,skin:8,hair:9,glass:10,film:11,eye:12,leather:13,hazard:14,screen:15,neon:16,ceil:17,plant:18};
 
@@ -240,7 +241,7 @@ function r3Kit(){
 const R3_WGSL=`diagnostic(off, derivative_uniformity);
 struct Lt{p:vec4f,c:vec4f,d:vec4f,s:vec4f};
 struct U{vp:mat4x4f,cam:vec4f,sky:vec4f,gnd:vec4f,fog:vec4f,acc:vec4f,win:vec4f,win2:vec4f,sgn:vec4f,sgn2:vec4f,flm:vec4f,flm2:vec4f,
-  lt:array<Lt,${R3_MAXL}>,sv:array<mat4x4f,${R3_SH}>,M:array<mat4x4f,${R3_MAXI*R3_PART}>,ot:array<vec4f,${R3_MAXI*R3_PART}>,iv:mat4x4f};
+  lt:array<Lt,${R3_MAXL}>,sv:array<mat4x4f,${R3_SH}>,M:array<mat4x4f,${R3_MAXI*R3_PART}>,ot:array<vec4f,${R3_MAXI*R3_PART}>,iv:mat4x4f,csn:vec4f,cs:array<vec4f,${R3_MAXI}>};
 @group(0) @binding(0) var<uniform> u:U;
 @group(0) @binding(1) var smp:sampler;
 @group(0) @binding(2) var shm:texture_depth_2d_array;
@@ -644,7 +645,11 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
   let io=u.ot[(i.ob/${R3_PART}u)*${R3_PART}u+${R3_PART-1}u];
   if(io.w>0.){c+=(mix(u.gnd.rgb,u.sky.rgb,.8)*u.sky.w+vec3f(.03,.036,.05))*io.w*pow(1.-ndv,3.5)*smoothstep(-.4,.5,n.y);}
   if(n.y>.7&&W.y<.08){var cs=1.;
-    for(var k=0u;k<${R3_MAXI}u;k++){let q=u.ot[k*${R3_PART}u+${R3_PART-1}u];if(q.z<=0.){continue;}
+    /* пятна лежат по x (r3Frame), окно — три самых больших радиуса: дальше трёх радиусов гаусс в float32 умножает ровно
+       на 1. Пол ищет делением первое, что достаёт, и кончает за правым краем (29.10, телефон: перебирал все 32) */
+    let nc=i32(u.csn.x);let R=u.csn.y;var lo=0;var hi=nc;
+    while(lo<hi){let m=(lo+hi)/2;if(u.cs[m].x<W.x-R){lo=m+1;}else{hi=m;}}
+    for(var k=lo;k<nc;k++){let q=u.cs[k];if(q.x>W.x+R){break;}
       let d=length(W.xz-q.xy)/q.z;cs*=1.-.62*exp(-d*d*2.2);}
     c*=cs;}
   c*=1.-ot.y;
@@ -839,6 +844,11 @@ function r3Frame(cn,S,post,dst){
       R3_DBG.notap?-1:si,l.spot?l.cosI:-1,R3_DBG.novol?0:l.vol||0,0],o);});
   SV.forEach((m,k)=>F.set(m,R3U.sv+k*16));
   F.set(S.M,R3U.M);F.set(S.ot,R3U.ot);F.set(plnM4inv(S.vp,R3.ivm||(R3.ivm=new Float32Array(16))),R3U.iv);
+  {const ot=S.ot,cs=R3.cs||(R3.cs=[]);let rm=0;cs.length=0;   /* пятна по x — паспорта экземпляров с радиусом */
+    for(let k=0;k<R3_MAXI;k++){const o=(k*R3_PART+R3_PART-1)*4;if(o+3<ot.length&&ot[o+2]>0){cs.push(o);rm=Math.max(rm,ot[o+2]);}}
+    cs.sort((a,b)=>ot[a]-ot[b]);
+    cs.forEach((o,i)=>{const b=R3U.cs+4+i*4;F[b]=ot[o];F[b+1]=ot[o+1];F[b+2]=ot[o+2];});
+    F[R3U.cs]=cs.length;F[R3U.cs+1]=R3_DBG.csall?1e9:rm*3;}
   d.queue.writeBuffer(R3.ub,0,F);
   const tsg=S.tsg&&S.tsg.view||R3.blank,tfl=S.tfl&&S.tfl.view||R3.blank;
   const key=rpgTexId(tsg)+"|"+rpgTexId(tfl);
