@@ -68,8 +68,8 @@ const BELT_HALF=2000, DUST_HALF=340;
 const AST_N=112, AST_MIN=560;   // ближе AST_MIN не спавним — до руды надо долететь
 const BELT_AVLIM=.042;   // предел скорости поворота — на полном отклонении ~140°/с
 function beltIcy(B){return B.orbit>1500;}
-function enterBelt(){
-  const sys=G.sys,B=sys.belt,r=rng(B.seed);
+/* камни пояса по его зерну: ход rng тот же, что был у входа, — им пользуются и вход, и заготовка; mk лепит сетку */
+function beltAsts(B,r,mk){
   const ast=[];
   for(let i=0;i<AST_N;i++){
     const rad=26+r()*78;
@@ -83,11 +83,40 @@ function enterBelt(){
       if(Math.hypot(x,y,z)>AST_MIN)break;
     }
     const sd=hashi(B.seed,i*131,7);
-    ast.push({x,y,z,r:rad,seed:sd,mesh:makeRock(sd,rad),
+    ast.push({x,y,z,r:rad,seed:sd,mesh:mk(sd,rad),
       res,oreCol:hexRGB(RES[res].col),
       left:8+Math.floor(r()*16),
       rx:r()*TAU,ry:r()*TAU,sx:(r()-.5)*.011,sy:(r()-.5)*.011});
   }
+  return ast;
+}
+/* сетки камней — наперёд (29.10): вход лепил все 112 разом, 32 мс в кадре входа на S23 (тестировщик, круг 22).
+   Пока корабль в системе с поясом, их строит общая очередь заготовок (17a0) по камню за шаг; вход берёт готовые,
+   недостающие лепит сам. Сетка зависит только от зерна и размера; держатся камни одного пояса */
+const BELT_ROCK={seed:null,m:new Map(),plan:null,i:0};
+function beltRockOf(B){
+  const Q=BELT_ROCK;
+  if(Q.seed!==B.seed){Q.seed=B.seed;Q.m=new Map();Q.i=0;Q.plan=[];beltAsts(B,rng(B.seed),(sd,rad)=>{Q.plan.push([sd,rad]);return null;});}
+  return Q;
+}
+function beltRock(sd,rad){
+  const Q=BELT_ROCK,k=sd+"|"+rad;let m=Q.m.get(k);
+  if(!m){m=makeRock(sd,rad);Q.m.set(k,m);}
+  return m;
+}
+function beltRockTick(ms){
+  const Q=beltRockOf(G.sys.belt),t0=wallMs();let t=t0,did=false;
+  while(Q.i<Q.plan.length){
+    const [sd,rad]=Q.plan[Q.i++];beltRock(sd,rad);did=true;
+    const t1=wallMs();if(t1-t0+(t1-t)>=ms)break;t=t1;
+  }
+  return did;
+}
+workAdd("belt",5,()=>G.mode==="system"&&!!(G.sys&&G.sys.belt)&&(BELT_ROCK.seed!==G.sys.belt.seed||BELT_ROCK.i<BELT_ROCK.plan.length),ms=>beltRockTick(ms));
+function enterBelt(){
+  const sys=G.sys,B=sys.belt,r=rng(B.seed);
+  if(BELT_ROCK.seed!==B.seed)beltRockOf(B);   /* чужой пояс в запасе — отпустить его камни */
+  const ast=beltAsts(B,r,beltRock);
   if(typeof farBeltDress==="function")farBeltDress(ast,B);   /* дальние залежи — своим потоком (M466) */
   const dust=[];
   for(let i=0;i<240;i++)

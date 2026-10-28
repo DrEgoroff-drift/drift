@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 661 · top-level symbols: 8897
+Files: 661 · top-level symbols: 8902
 
 ## SYMBOLS
 
@@ -139,6 +139,7 @@ BELT_AVLIM                   src/24-mode-belt.js:69
 BELT_HALF                    src/24-mode-belt.js:67
 BELT_POI                     src/24b-belt-poi.js:14-20
 BELT_RES                     src/02-world.js:160
+BELT_ROCK                    src/24-mode-belt.js:96
 BFX                          src/13z-gpu-combat.js:176
 BG                           src/16-flight.js:3
 BGPU_SKY                     src/24ba-belt-gpu.js:39
@@ -424,7 +425,7 @@ CULT_RACE_LIVE               src/12b3-fx-cult.js:25
 CULT_SERIES                  src/12b3-fx-cult.js:23
 CULT_SER_RU                  src/12b3-fx-cult.js:182
 CUN                          src/22-mode-cave.js:22-32
-CUT_RANGE                    src/24-mode-belt.js:170
+CUT_RANGE                    src/24-mode-belt.js:199
 CVS_RECT                     src/08-state.js:92
 CV_LVL                       src/08c-gpu-kit.js:74
 DEAL_KINDS                   src/27g-deals.js:17-137
@@ -2839,17 +2840,21 @@ beastBias                    src/20f-fauna.js:46-54
 beastFormWord                src/20e-species.js:215-223
 beastTake                    src/21ac2-base-farm.js:45-51
 beastTraitWord               src/20e-species.js:224-233
-beltBasis                    src/24-mode-belt.js:150-160
+beltAsts                     src/24-mode-belt.js:72-92
+beltBasis                    src/24-mode-belt.js:179-189
 beltDots                     src/17gc-sys-belt.js:163-169
 beltDust                     src/24ba-belt-gpu.js:237-259
-beltFwd                      src/24-mode-belt.js:145-148
+beltFwd                      src/24-mode-belt.js:174-177
 beltGpuDraw                  src/24ba-belt-gpu.js:91-233
 beltHangAt                   src/24bc-belt-hud.js:431-439
 beltHudPush                  src/24bc-belt-hud.js:442-456
 beltIcy                      src/24-mode-belt.js:70
-beltImpactDmg                src/24-mode-belt.js:172
+beltImpactDmg                src/24-mode-belt.js:201
 beltMaw                      src/24be-belt-rock-gpu.js:279-284
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:25-101
+beltRock                     src/24-mode-belt.js:102-106
+beltRockOf                   src/24-mode-belt.js:97-101
+beltRockTick                 src/24-mode-belt.js:107-114
 billClose                    src/27ib-bill.js:132-150
 billCollLeave                src/27ib-bill.js:126-130
 billCollector                src/27ib-bill.js:114-125
@@ -3998,7 +4003,7 @@ drawBaseBuilding             src/21c-built.js:142-202
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
 drawBeastAlien               src/20f-fauna.js:68-238
-drawBelt                     src/24-mode-belt.js:372
+drawBelt                     src/24-mode-belt.js:401
 drawBeltRocks                src/17gc-sys-belt.js:71-156
 drawBillboard                src/17k-billboard.js:182-198
 drawBuilt                    src/21c-built.js:64-102
@@ -4188,7 +4193,7 @@ energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
 engineLoop                   src/09-audio.js:342-368
 enterBase                    src/21a-mode-base.js:121-153
-enterBelt                    src/24-mode-belt.js:71-120
+enterBelt                    src/24-mode-belt.js:116-149
 enterCave                    src/22-mode-cave.js:227-242
 enterDig                     src/23-mode-dig.js:51-73
 enterHomeIn                  src/29c-home-in.js:60-68
@@ -4221,7 +4226,7 @@ evacCost                     src/21-mode-surface.js:692
 evacFrom                     src/21-mode-surface.js:693
 exileCandidates              src/12g-mgr-rogue.js:123-130
 exitBase                     src/21a-mode-base.js:154-158
-exitBelt                     src/24-mode-belt.js:161-169
+exitBelt                     src/24-mode-belt.js:190-198
 exitCave                     src/22-mode-cave.js:243-247
 exitDig                      src/23-mode-dig.js:74-84
 exitHomeIn                   src/29c-home-in.js:69-73
@@ -5645,7 +5650,7 @@ keyRow                       src/27-ui-ship.js:9-20
 keyStateOK                   tests/90a-tools.js:711-717
 keys                         src/08-state.js:203
 killPirate                   src/13-pirates.js:323-365
-killRock                     src/24-mode-belt.js:137-144
+killRock                     src/24-mode-belt.js:166-173
 kinoAt                       src/27da-kino.js:39-45
 kinoHere                     src/27da-kino.js:46-49
 kinoSeen                     src/27da-kino.js:36
@@ -8102,7 +8107,7 @@ sfx                          src/09-audio.js:334-340
 sgArr                        src/27f2-room3d.js:86
 sgTake                       src/27f2-room3d.js:85
 sharpWord                    src/21a9-base-laws.js:41-45
-shatter                      src/24-mode-belt.js:122-136
+shatter                      src/24-mode-belt.js:151-165
 shieldFace                   src/05c-arms.js:53-57
 shieldTypeOf                 src/05c-arms.js:59-62
 shiftLogRec                  src/12pa-beacon.js:43-47
@@ -8572,7 +8577,7 @@ unpackPart                   src/05-parts.js:473-479
 updateAllies                 src/12a-crew.js:644-677
 updateBarges                 src/12l-barge.js:170-203
 updateBase                   src/21a-mode-base.js:405-563
-updateBelt                   src/24-mode-belt.js:173-370
+updateBelt                   src/24-mode-belt.js:202-399
 updateCave                   src/22-mode-cave.js:261-446
 updateCaveDeco               src/22a-cave-deco.js:225-248
 updateCombat                 src/13-pirates.js:123-316
@@ -10304,7 +10309,7 @@ zoomTo                       src/15-input.js:358
 ## src/23cf-dig-words.js · 5 KB
   · шахта: слова на вещах (как 22d в пещере, 21ae на базе):1
 
-## src/24-mode-belt.js · 19 KB
+## src/24-mode-belt.js · 20 KB
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
 ## src/24a-mode-raid.js · 27 KB
