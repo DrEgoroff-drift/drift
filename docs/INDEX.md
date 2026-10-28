@@ -2407,7 +2407,7 @@ VOICE_Q                      src/12pa-beacon.js:207
 VOL_BY                       src/12al5-vol.js:27
 VOL_DOCS                     src/12al5-vol.js:16-25
 VOL_FAST                     src/12al5-vol.js:26
-VOR_O                        src/22dbw-cave-pln-wgsl.js:338-653
+VOR_O                        src/22dbw-cave-pln-wgsl.js:342-657
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16-20
 VSINK                        src/08c-gpu-kit.js:345

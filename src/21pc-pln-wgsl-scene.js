@@ -112,10 +112,14 @@ fn turnBy(n: vec3f, i0: vec4f, i1: vec4f) -> vec3f {
 fn shadowTap(uv: vec2f, layer: i32, z: f32, rad: f32, rot: f32) -> f32 {
   var s = textureSampleCompareLevel(shadowTex, shadowSamp, uv, layer, z);
   let nt = i32(g.thru.w);
+  /* направление отвода — поворотом на золотой угол от прежнего (29.10, телефон): синус и косинус раз на вызов,
+     а не на каждый отвод */
+  var dv = vec2f(cos(rot), sin(rot));
+  let st = vec2f(-0.7373667, 0.6754927);   /* cos, sin 2.39996 */
   for (var i = 0; i < nt; i++) {
-    let a = f32(i) * 2.39996 + rot;
     let r = rad * sqrt((f32(i) + 0.5) / f32(nt));
-    s += textureSampleCompareLevel(shadowTex, shadowSamp, uv + vec2f(cos(a), sin(a)) * r, layer, z);
+    s += textureSampleCompareLevel(shadowTex, shadowSamp, uv + dv * r, layer, z);
+    dv = vec2f(dv.x * st.x - dv.y * st.y, dv.x * st.y + dv.y * st.x);
   }
   return s / f32(nt + 1);
 }

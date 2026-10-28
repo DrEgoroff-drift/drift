@@ -248,12 +248,16 @@ struct FOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
   return vec4f(mix(g.fogCol.rgb, sky, up), 1.0);
 }
 
+/* спираль отводов поворачивается раз на вызов (29.10, телефон: синус и косинус на каждый отвод — 16 на пиксель);
+   углы самой спирали — числа цикла постоянной длины, их считает сборщик шейдера */
 fn tap9(t: texture_depth_2d, uv: vec2f, z: f32, rad: f32, rot: f32) -> f32 {
   var s = textureSampleCompareLevel(t, cmpSamp, uv, z);
+  let cr = cos(rot); let sr = sin(rot);
   for (var i = 0; i < 8; i++) {
-    let a = f32(i) * 2.39996 + rot;
+    let a = f32(i) * 2.39996;
     let r = rad * sqrt((f32(i) + 0.5) / 8.0);
-    s += textureSampleCompareLevel(t, cmpSamp, uv + vec2f(cos(a), sin(a)) * r, z);
+    let ca = cos(a); let sa = sin(a);
+    s += textureSampleCompareLevel(t, cmpSamp, uv + vec2f(ca * cr - sa * sr, sa * cr + ca * sr) * r, z);
   }
   return s / 9.0;
 }
