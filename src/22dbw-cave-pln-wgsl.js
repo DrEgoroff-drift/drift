@@ -73,6 +73,21 @@ fn vn3(p: vec3f, s: u32) -> f32 {
   let d = mix(hkf(k + 2108927946u), hkf(k + 2483689339u), u.x);
   return mix(mix(a, b, u.y), mix(c, d, u.y), u.z);
 }
+/* шум и его наклон разом (29.10, телефон): рельеф брал наклон разностью — четыре vn3 на слой, 32 хэша на пиксель
+   камня; здесь те же восемь углов и производная той же ступени. .x — то же значение, что vn3 */
+fn vn3g(p: vec3f, s: u32) -> vec4f {
+  let i = floor(p); let f = p - i;
+  let u = f * f * (3.0 - 2.0 * f); let du = 6.0 * f * (1.0 - f);
+  let k = hk3(vec3i(i), s);
+  let c000 = hkf(k); let c100 = hkf(k + 374761393u); let c010 = hkf(k + 668265263u); let c110 = hkf(k + 1043026656u);
+  let c001 = hkf(k + 1440662683u); let c101 = hkf(k + 1815424076u); let c011 = hkf(k + 2108927946u); let c111 = hkf(k + 2483689339u);
+  let k1 = c100 - c000; let k2 = c010 - c000; let k3 = c001 - c000;
+  let k4 = c000 - c100 - c010 + c110; let k5 = c000 - c010 - c001 + c011; let k6 = c000 - c100 - c001 + c101;
+  let k7 = c100 + c010 + c001 + c111 - c000 - c110 - c101 - c011;
+  let v = c000 + k1 * u.x + k2 * u.y + k3 * u.z + k4 * u.x * u.y + k5 * u.y * u.z + k6 * u.z * u.x + k7 * u.x * u.y * u.z;
+  return vec4f(v, du * vec3f(k1 + k4 * u.y + k6 * u.z + k7 * u.y * u.z, k2 + k5 * u.z + k4 * u.x + k7 * u.z * u.x,
+                             k3 + k6 * u.x + k5 * u.y + k7 * u.x * u.y));
+}
 fn ign(p: vec2f) -> f32 { return fract(52.9829189 * fract(dot(p, vec2f(0.06711056, 0.00583715)))); }
 
 /* фонарь в точке: путь к нему и сколько его света приходит (конус и расстояние) */
@@ -445,11 +460,9 @@ override OPQ: bool = false;
     alb *= 0.76 + 0.26 * n1 + 0.14 * n2 + 0.10 * n3;
     /* мелкий рельеф, которого нет в сетке: бугры в ладонь и зерно — фонарь скользит по ним */
     let bp = in.wpos * 2.2; let bq = in.wpos * 7.0;
-    let b0 = vn3(bp, 31u); let q0 = vn3(bq, 33u);
-    let gb = vec3f(vn3(bp + vec3f(0.07, 0.0, 0.0), 31u), vn3(bp + vec3f(0.0, 0.07, 0.0), 31u), vn3(bp + vec3f(0.0, 0.0, 0.07), 31u)) - b0;
-    let gq = vec3f(vn3(bq + vec3f(0.07, 0.0, 0.0), 33u), vn3(bq + vec3f(0.0, 0.07, 0.0), 33u), vn3(bq + vec3f(0.0, 0.0, 0.07), 33u)) - q0;
+    let bg = vn3g(bp, 31u); let qg = vn3g(bq, 33u); let b0 = bg.x;
     let fin = finish(in.wpos.x);
-    let gr = (gb * 0.10 + gq * 0.10) / 0.07 * (1.0 - 0.7 * fin.z);
+    let gr = (bg.yzw * 0.10 + qg.yzw * 0.10) * (1.0 - 0.7 * fin.z);
     N = normalize(N - (gr - N * dot(gr, N)));
     wet = mix(wet, max(wet, 0.45), fin.z);
     /* камень колется гранями (M623: грани делит свет): плиты по пластам — шире, чем выше; у каждой
@@ -531,8 +544,8 @@ override OPQ: bool = false;
     alb *= 1.0 - 0.3 * smoothstep(0.45, 0.95, N.y) * smoothstep(-0.2, 0.4, vn3(in.wpos * 2.5, 15u));
     /* натёк ребрист: борозды сверху вниз, гребень мокрый и ловит фонарь, ложбина в тени */
     let rp = in.wpos * vec3f(7.0, 0.35, 7.0);
-    let r0 = vn3(rp, 17u);
-    let rg = vec3f(vn3(rp + vec3f(0.08, 0.0, 0.0), 17u) - r0, 0.0, vn3(rp + vec3f(0.0, 0.0, 0.08), 17u) - r0) / 0.08 * 7.0;
+    let rv = vn3g(rp, 17u); let r0 = rv.x;
+    let rg = vec3f(rv.y, 0.0, rv.w) * 7.0;
     let side = 1.0 - smoothstep(0.55, 0.9, abs(N.y));
     N = normalize(N - (rg - N * dot(rg, N)) * (0.09 * side));
     let crest = smoothstep(0.55, 0.8, r0) * side;

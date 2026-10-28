@@ -278,7 +278,7 @@ CAVE3_W                      src/22d-cave-pln.js:416
 CAVE3_WG                     src/22di-cave-pln-wing.js:6
 CAVE3_WGSL_COMMON            src/22dbw-cave-pln-wgsl.js:8
 CAVE3_WGSL_POST              src/22dbx-cave-pln-post.js:4
-CAVE3_WGSL_SCENE             src/22dbw-cave-pln-wgsl.js:143
+CAVE3_WGSL_SCENE             src/22dbw-cave-pln-wgsl.js:158
 CAVE3_Z                      src/22d-cave-pln.js:14
 CAVE3_ZK                     src/22dc-cave-pln-dress.js:15
 CAVE_DECO                    src/22a-cave-deco.js:97
@@ -2406,7 +2406,7 @@ VOICE_Q                      src/12pa-beacon.js:207
 VOL_BY                       src/12al5-vol.js:27
 VOL_DOCS                     src/12al5-vol.js:16-25
 VOL_FAST                     src/12al5-vol.js:26
-VOR_O                        src/22dbw-cave-pln-wgsl.js:323-640
+VOR_O                        src/22dbw-cave-pln-wgsl.js:338-653
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16-20
 VSINK                        src/08c-gpu-kit.js:345
@@ -10255,7 +10255,7 @@ zoomTo                       src/15-input.js:358
 ## src/22db-cave-pln-light.js · 19 KB
   · пещера на движке: рендер (M630a):1
 
-## src/22dbw-cave-pln-wgsl.js · 40 KB
+## src/22dbw-cave-pln-wgsl.js · 41 KB
   · пещера на движке: шейдеры (M630a):1
 
 ## src/22dbx-cave-pln-post.js · 10 KB
