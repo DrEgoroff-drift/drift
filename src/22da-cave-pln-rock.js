@@ -114,16 +114,19 @@ function* cave3FieldGen(C){
   };
   const sd=new Float32Array(N);
   yield* blur(raw,2,sd);
-  /* полуразмер хода: меньший из пробегов пустоты по столбцу и по строке, пополам */
+  /* полуразмер хода: меньший из пробегов пустоты по столбцу и по строке, пополам. Пробеги — по 32 строки и
+     столбца за кусок (29.10, телефон: оба прохода по всей сетке шли одним куском — кусок поля до 12 мс) */
   const run=new Float32Array(N);
   for(let y=0;y<NY;y++){
     let x=0;
     while(x<NX){if(g[y*NX+x]){x++;continue;}let e=x;while(e<NX&&!g[y*NX+e])e++;for(let k=x;k<e;k++)run[y*NX+k]=e-x;x=e;}
+    if((y&31)===31)yield;
   }
   for(let x=0;x<NX;x++){
     let y=0;
     while(y<NY){if(g[y*NX+x]){y++;continue;}let e=y;while(e<NY&&!g[e*NX+x])e++;
       for(let k=y;k<e;k++){const i=k*NX+x;run[i]=Math.min(run[i],e-y);}y=e;}
+    if((x&31)===31)yield;
   }
   yield;
   /* размытие по пустоте ящиком в 11 клеток, дважды: труба меняет глубину плавно */
