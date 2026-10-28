@@ -637,12 +637,6 @@ function hud(){
   document.body.classList.toggle("inrail",G.mode==="rail");
   if(G.mode!=="system"&&typeof abilPadRim==="function")abilPadRim();   /* подпись способности не залипает с полёта (18.09) */   /* в вагоне пэды полёта ни к чему (M473 хвост, 18.09) */
   document.body.classList.toggle("aboard",G.mode==="wanderer");   /* на борту «Сороки» (M343): приёмник и тяга ни к чему */
-  /* состав ряда меняется редко (поставили пушку, вошли в пояс) — пересчитываем
-     ширину кнопок только тогда, а не каждый кадр */
-  {
-    const key=(fireHas?"f":"")+((st.launcher)?"m":"")+(G.mode==="belt"?"b":"")+(G.mode==="system"?"s":"");   /* «s»: ряд штурвала (M360) */
-    if(key!==PAD_KEY){PAD_KEY=key;padsFit();rectsDirty();hudFloorMeasure(true);}
-  }
   /* ── на ногах (релизный вид, проход 1) ──
      Приборы корабля висели над КАЖДЫМ экраном. Правило стиля говорит «над
      миром — только то, что нужно сейчас», и на поверхности, в пещере, в
@@ -670,7 +664,14 @@ function hud(){
      шести узлов: со станции на карту полоса оставалась от вёрстки причала, и ряд адреса ложился на
      счётчик груза (зрение 06.10.2026). Меряем последним делом кадра, когда классы уже стоят */
   const lk=G.mode+"|"+document.body.className+"|"+HUD_MAPROW;
-  if(lk!==HUD_LKEY){HUD_LKEY=lk;rectsDirty();hudFloorMeasure(true);}
+  /* состав ряда меняется редко (поставили пушку, вошли в пояс) — пересчитываем
+     ширину кнопок только тогда, а не каждый кадр. Здесь же, после всех классов тела (29.10, телефон): padsFit
+     спрашивает стиль кнопок, и раньше он делал это между «inbelt» и «afoot/inflight» — страница пересчитывалась
+     целиком дважды за кадр входа в пояс (padsFit 12 мс на S23, тестер, круг 22), и мерка пола шла тоже дважды */
+  const padk=(fireHas?"f":"")+((st.launcher)?"m":"")+(G.mode==="belt"?"b":"")+(G.mode==="system"?"s":"");   /* «s»: ряд штурвала (M360) */
+  const pd=padk!==PAD_KEY;
+  if(pd){PAD_KEY=padk;padsFit();}
+  if(pd||lk!==HUD_LKEY){HUD_LKEY=lk;rectsDirty();hudFloorMeasure(true);}
   if(HUD_MAPBAR_W){HUD_MAPBAR_W=false;hudVar("--mapbar",HUD_MAPBAR+"px");}
 }
 

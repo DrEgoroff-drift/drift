@@ -5474,7 +5474,7 @@ hqScene                      src/29r-rooms-r3.js:307
 hqSel                        src/27c-ui-hq.js:5
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:274-675
+hud                          src/27z-telemetry.js:274-676
 hudFloorMeasure              src/27z-telemetry.js:195-247
 hudMsgPlace                  src/27z-telemetry.js:46-67
 hudNumDirty                  src/08-state.js:101
@@ -10581,7 +10581,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/27y-hud-words.js · 4 KB
 
-## src/27z-telemetry.js · 59 KB
+## src/27z-telemetry.js · 60 KB
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 71 KB
