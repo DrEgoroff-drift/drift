@@ -144,6 +144,8 @@ fn galaxy(rd: vec3f) -> vec3f {
   let U = vec3f(-sin(az0) * sin(el0), cos(el0), -cos(az0) * sin(el0));
   let ng = normalize(cross(P, normalize(E * (cos(psi) * side) + U * sin(psi))));
   let d = dot(rd, ng);
+  /* пояс шириной w ≤ .16: дальше .55 от круга его доля < 1e-5, меньше шага половинной точности неба */
+  if (abs(d) > 0.55) { return vec3f(0.0); }
   let az = atan2(rd.x, rd.z); let el = asin(clamp(rd.y, -1.0, 1.0));
   let w = 0.11 + 0.05 * fbm(vec2f(az * 3.0, el * 4.0) + sd, 51u);
   let band = exp(-d * d / (w * w));
@@ -274,12 +276,26 @@ fn skyCol(rd: vec3f) -> vec3f {
   let az = atan2(rd.x, rd.z); let el = asin(clamp(rd.y, -1.0, 1.0));
   if (el > 0.0) {
     let t = g.camPos.w;
-    let wa = vec2f(fbm(vec2f(az * 38.0, el * 60.0), 11u), fbm(vec2f(az * 38.0 + 9.7, el * 60.0 + 3.1), 12u)) - 0.5;
-    let wb = vec2f(fbm(vec2f(az * 150.0, el * 220.0), 13u), fbm(vec2f(az * 150.0 + 4.1, el * 220.0 + 8.3), 14u)) - 0.5;
-    /* облака сносит ветер мира: с ним быстрее, против него назад */
-    let a2 = az + wa.x * 0.012 + wb.x * 0.003 + t * (0.0002 + 0.0005 * g.world.y);
-    let e2 = el + wa.y * 0.008 + wb.y * 0.002;
     let sd = u32(g.world.x);
+    /* дрожь облаков (четыре fbm) нужна только там, где облако может быть: у гряды (её полоса — ниже), в рамке
+       кучевого, под покровом непогоды. Дрожь сдвигает направление не больше чем на .0075 по азимуту и .005 по
+       высоте — рамки взяты с этим запасом, вне их облака ничего не дают, и кадр тот же (24.10, телефон: небо
+       6–10 мс) */
+    let drift = t * (0.0002 + 0.0005 * g.world.y);
+    var need = g.cloudDark.w > 0.0 || (g.skyHorS.w > 0.0 && el > 0.006 && el < 0.081);
+    let nc = i32(g.world.z);
+    for (var k = 0; k < nc && !need; k++) {
+      let q = g.clouds[k];
+      need = !(abs(az + drift - q.x) > q.z * 1.5 + 0.008 || el < q.y - q.z * 0.2 - 0.006 || el > q.y + q.z * 2.6 + 0.006);
+    }
+    var wa = vec2f(0.0); var wb = vec2f(0.0);
+    if (need) {
+      wa = vec2f(fbm(vec2f(az * 38.0, el * 60.0), 11u), fbm(vec2f(az * 38.0 + 9.7, el * 60.0 + 3.1), 12u)) - 0.5;
+      wb = vec2f(fbm(vec2f(az * 150.0, el * 220.0), 13u), fbm(vec2f(az * 150.0 + 4.1, el * 220.0 + 8.3), 14u)) - 0.5;
+    }
+    /* облака сносит ветер мира: с ним быстрее, против него назад */
+    let a2 = az + wa.x * 0.012 + wb.x * 0.003 + drift;
+    let e2 = el + wa.y * 0.008 + wb.y * 0.002;
     let ci = smoothstep(0.5, 0.8, fbm(vec2f(az * 5.0 + 5.0 + t * 0.002, el * 55.0), 41u + sd)) * smoothstep(0.07, 0.15, el) * g.skyHor.w;
     c = mix(c, g.cloudLit.rgb * 0.9, ci);
     /* облака лепит свет ключа: его сторона и высота, довёрнутые к зрителю */
@@ -288,7 +304,9 @@ fn skyCol(rd: vec3f) -> vec3f {
     let hz = horizonCol(rd);
     let warm = sunSide(rd);
     /* дальняя гряда низко над землёй */
-    if (g.skyHorS.w > 0.0) {
+    /* клуб гряды не выше основания (≤ .034) плюс два своих радиуса (≤ .0196), а ниже основания его гасит
+       край (основание ≥ .014): вне полосы гряда — ноль */
+    if (g.skyHorS.w > 0.0 && e2 > 0.0115 && e2 < 0.076) {
       let b = cloudBank(a2, e2, 0.055, 0.014, 0.034, g.skyHorS.w, 3u + sd, lc);
       if (b.y > 0.0) {
         let l = smoothstep(-0.35, 0.55, b.x);
@@ -299,7 +317,6 @@ fn skyCol(rd: vec3f) -> vec3f {
     }
     /* облака этого неба, расставленные кадром */
     var h = vec4f(0.0, 0.0, -1.0, 0.0);
-    let nc = i32(g.world.z);
     for (var k = 0; k < nc; k++) {
       let q = g.clouds[k];
       h = cloudOne(a2, e2, q.xy, q.z, u32(q.w), lc, h);
@@ -361,10 +378,13 @@ fn cloudLight(p: vec3f) -> f32 {
   var c = mix(0.34, 1.0, smoothstep(lo, lo + 0.17, n));
   /* планы разводит свет: тень лежит в ложбине за дальним берегом и у подножия холмов, гребни
      стоят на солнце; то же между грядой и горами */
-  let e = (fbm(vec2f(q.x * 0.012 + 2.0, q.y * 0.02), 19u) - 0.5) * 70.0;
-  let band = smoothstep(g.bands.x, g.bands.x + 45.0, q.y + e) * (1.0 - smoothstep(g.bands.y - 45.0, g.bands.y, q.y + e));
-  let band2 = smoothstep(g.bands.z, g.bands.z + 250.0, q.y + e * 6.0) * (1.0 - smoothstep(g.bands.w - 500.0, g.bands.w, q.y + e * 6.0));
-  c = min(c, 1.0 - 0.62 * max(band, band2 * 0.8));
+  /* полосы планов: край сдвинут не дальше ±35 м (вторая — ±210); вне досягаемости обеих их доля — ноль */
+  if (!((q.y + 35.0 <= g.bands.x || q.y - 35.0 >= g.bands.y) && (q.y + 210.0 <= g.bands.z || q.y - 210.0 >= g.bands.w))) {
+    let e = (fbm(vec2f(q.x * 0.012 + 2.0, q.y * 0.02), 19u) - 0.5) * 70.0;
+    let band = smoothstep(g.bands.x, g.bands.x + 45.0, q.y + e) * (1.0 - smoothstep(g.bands.y - 45.0, g.bands.y, q.y + e));
+    let band2 = smoothstep(g.bands.z, g.bands.z + 250.0, q.y + e * 6.0) * (1.0 - smoothstep(g.bands.w - 500.0, g.bands.w, q.y + e * 6.0));
+    c = min(c, 1.0 - 0.62 * max(band, band2 * 0.8));
+  }
   let d = length((q - g.hero.xy) * vec2f(1.0, 1.7));
   c = max(c, 1.0 - smoothstep(g.hero.z, g.hero.w, d));
   /* тень затмения идёт по земле с дальнего края: полоса тьмы с мягкими краями, её середина —
@@ -382,6 +402,8 @@ fn cloudLight(p: vec3f) -> f32 {
    У тени очертание крон, и солнце пробивает её пятнами. */
 fn nearShadeZ(z: f32) -> f32 { return mix(0.26, 1.0, smoothstep(-16.0, -3.0, z)); }
 fn nearShade(p: vec3f) -> f32 {
+  /* край кулисы e = z + шум·13 (шум ±.5): при z ≥ 3 он не ниже −3.5, где и тень, и пальцы уже нули */
+  if (p.z >= 3.0) { return 1.0; }
   let n = fbm(p.xz * 0.09 + vec2f(3.1, 7.7), 23u) - 0.5;
   let e = p.z + n * 13.0;
   var s = smoothstep(-12.5, -6.5, e);

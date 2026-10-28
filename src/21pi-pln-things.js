@@ -354,18 +354,18 @@ function plnThingsDeposits(Q,L,S,t0,lim){
       const res=key.slice(0,key.lastIndexOf(".")),sd=plnThingSeed(key);
       Q.geo[key]=plnGeo(plnThingDeposit(res,sd));Q.geo[key+"~"]=plnGeo(plnThingSpoil(res,sd));
     }
-    const first=n;
-    for(const d of by[key]){
+    const first=n,run=by[key].slice().sort((a,b)=>a.x-b.x),xs=[];let zf=0;   /* по x: кадр берёт отрезок вида (plnThingsFrame) */
+    for(const d of run){
       if(n>=PLN_THINGS.cap)break;
       const x=d.x/M,z=plnThingDepZ(d),k=clamp(.45+Math.min(1,(d.left||1)/9)*.55,0,1),hh=hashi(d.i|0,Math.round(d.x),0xD4);
       const pos=[x,plnLandRibAt(L,x,z)-.02,z],yaw=(((hh>>>4)&1023)/1023-.5)*1.3;
       plnRec(Q.a,n,pos,k,yaw,1,n+1);
       /* отвал растёт по мере выработки: свежая залежь — без него */
       plnRec(Q.as,n,pos,clamp((1-k)/.55,0,1)*1.15,yaw,1,n+1);
-      n++;
+      xs.push(x);zf=Math.max(zf,z);n++;
       Q.blots.push([x,z,1.7*k,.45]);
     }
-    if(n>first){Q.parts.push({geo:Q.geo[key],first,count:n-first});Q.parts.push({geo:Q.geo[key+"~"],first,count:n-first,spoil:true});}
+    if(n>first){Q.parts.push({geo:Q.geo[key],first,count:n-first,xs,zf});Q.parts.push({geo:Q.geo[key+"~"],first,count:n-first,spoil:true,xs,zf});}
   }
   if(!Q.inst){Q.inst=plnInst(Q.a,n,PLN_THINGS.cap);Q.instS=plnInst(Q.as,n,PLN_THINGS.cap);}
   else{plnInstSet(Q.inst,Q.a,n);plnInstSet(Q.instS,Q.as,n);}
@@ -402,7 +402,14 @@ function plnThingsFrame(L,F,S,p,ex,V){
   const blot=q=>{if(n<64&&sees(q[0],q[1],q[2])){b.set(q,4+n*4);n++;}};
   const D=Q.dep;
   if(D.inst&&D.inst.n>0){
-    for(const q of D.parts)F.batches.push({geo:q.geo,inst:q.spoil?D.instS:D.inst,first:q.first,count:q.count,kind:B,to:TO});
+    /* залежи всей ленты шли в кадр разом, во все четыре прохода; теперь — отрезок, что видит объектив */
+    for(const q of D.parts){
+      const h=V.hw*(1+q.zf/V.D)+4,xs=q.xs;
+      let a=0,c=xs.length;
+      {let lo=0,hi=c;while(lo<hi){const m=(lo+hi)>>1;if(xs[m]<ex-h)lo=m+1;else hi=m;}a=lo;}
+      {let lo=a,hi=c;while(lo<hi){const m=(lo+hi)>>1;if(xs[m]<=ex+h)lo=m+1;else hi=m;}c=lo;}
+      if(c>a)F.batches.push({geo:q.geo,inst:q.spoil?D.instS:D.inst,first:q.first+a,count:c-a,kind:B,to:TO});
+    }
     for(const q of D.blots)blot(q);
   }
   if(Q.cave&&sees(Q.cave.x,T.caveZ+7,9*T.caveQ)){

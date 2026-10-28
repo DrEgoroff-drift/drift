@@ -391,8 +391,11 @@ function plnHerbs(L,S,p,lim){
     const si=(key/3)|0,sp=by[key][0].sp;
     if(!Q.geo[key])Q.geo[key]=plnGeo(plnHerbMesh(sp,si,key%3));
     const first=n,druse=sp.kind===4;
-    for(const q of by[key]){
+    /* записи вида — по x: кадр берёт из них только отрезок, который видит объектив (plnHerbFrame) */
+    const run=by[key].slice().sort((a,b)=>a.x-b.x),xs=new Float32Array(run.length);let zf=0;
+    for(const q of run){
       const x=q.x/M,z=plnHerbZAt(q,pads),h=Math.max(4,q.h||20)/M,hh=hashi(Math.round(q.x),Math.round(q.h),0x9E11);
+      xs[n-first]=x;zf=Math.max(zf,z);
       const jt=1+(((hh>>>9)&255)/255-.5)*.24,C=plnHerbTone(PLN_TINTS[tint[si]],q.leaf||sp.leaf);
       let top=plnMul(C.top,jt),under=plnMul(C.under,jt);
       if(q.scanned){top=plnMix3(top,T,.5);under=plnMix3(under,plnMul(T,.3),.5);}
@@ -400,7 +403,7 @@ function plnHerbs(L,S,p,lim){
       else plnRec(Q.a,n++,[x,plnLandRibAt(L,x,z)-.03,z],h,((hh>>>3)&255)/255*TAU,1,n,under,2,top);
       if(h>1.2)Q.blots.push([x,z,clamp(h*.45,.6,3.5),.4]);
     }
-    Q.parts.push({geo:Q.geo[key],first,count:n-first,tall:sp.h/M});
+    Q.parts.push({geo:Q.geo[key],first,count:n-first,tall:sp.h/M,xs,zf});
   }
   if(Q.inst&&Q.cap<n){plnInstFree(Q.inst);Q.inst=null;}
   if(!Q.inst){Q.cap=Math.max(16,n);Q.inst=plnInst(Q.a,n,Q.cap);}
@@ -469,7 +472,16 @@ function plnHerbFrame(L,F,S,p,ex,V){
   const Q=plnHerbs(L,S,p),b=F.blobs;
   plnHerbAlgae(L,F,S,p);
   if(!Q.inst||!Q.n)return;
-  for(const q of Q.parts)F.batches.push({geo:q.geo,inst:Q.inst,first:q.first,count:q.count,kind:PLN_KIND.body,to:q.tall>1.5?PLN_TO.all:PLN_TO.near});
+  /* все растения посадки шли в кадр каждым кадром — сотни тел по ~800 треугольников вдоль всей ленты, и вершины
+     каждого считались в четырёх проходах (тени, отражение, кадр), хотя видно десяток. Теперь — отрезок вида, что
+     в кадре, с запасом на рост: тень вбок не длиннее, чем у куртин посадки (21pga plnPlantSees) */
+  for(const q of Q.parts){
+    const h=V.hw*(1+q.zf/V.D)+2+q.tall,xs=q.xs;
+    let a=0,b=xs.length;
+    {let lo=0,hi=b;while(lo<hi){const m=(lo+hi)>>1;if(xs[m]<ex-h)lo=m+1;else hi=m;}a=lo;}
+    {let lo=a,hi=b;while(lo<hi){const m=(lo+hi)>>1;if(xs[m]<=ex+h)lo=m+1;else hi=m;}b=lo;}
+    if(b>a)F.batches.push({geo:q.geo,inst:Q.inst,first:q.first+a,count:b-a,kind:PLN_KIND.body,to:q.tall>1.5?PLN_TO.all:PLN_TO.near});
+  }
   let n=b[0]|0;
   for(const q of Q.blots)if(n<40&&Math.abs(q[0]-ex)<V.hw*(1+q[1]/V.D)+q[2]){b.set(q,4+n*4);n++;}
   b[0]=n;

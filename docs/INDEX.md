@@ -6751,7 +6751,7 @@ plnActVerb                   src/21pif-pln-marks-act.js:97
 plnAdd                       src/21p-pln.js:34
 plnAnomFeed                  src/21pifb-pln-marks-act-move.js:162-165
 plnAnomTable                 src/21pifb-pln-marks-act-move.js:155-160
-plnAtThing                   src/21pi-pln-things.js:432-445
+plnAtThing                   src/21pi-pln-things.js:439-452
 plnBeastCapsule              src/21piba-pln-gait.js:76-101
 plnBeastDrop                 src/21pib-pln-beast.js:250-256
 plnBeastEarth                src/21piba-pln-gait.js:185-198
@@ -6837,12 +6837,12 @@ plnGunLaid                   src/21pifb-pln-marks-act-move.js:281
 plnHandAge                   src/21pz-pln-frame.js:278-288
 plnHandWin                   src/21pz-pln-frame.js:290-293
 plnHash                      src/21p-pln.js:55-59
-plnHerbAlgaMesh              src/21pia-pln-herb.js:417-441
-plnHerbAlgae                 src/21pia-pln-herb.js:442-467
+plnHerbAlgaMesh              src/21pia-pln-herb.js:420-444
+plnHerbAlgae                 src/21pia-pln-herb.js:445-470
 plnHerbBlade                 src/21pia-pln-herb.js:80-92
 plnHerbBranch                src/21pia-pln-herb.js:73-78
-plnHerbDrop                  src/21pia-pln-herb.js:477-484
-plnHerbFrame                 src/21pia-pln-herb.js:468-476
+plnHerbDrop                  src/21pia-pln-herb.js:489-496
+plnHerbFrame                 src/21pia-pln-herb.js:471-488
 plnHerbLeaf                  src/21pia-pln-herb.js:57
 plnHerbMesh                  src/21pia-pln-herb.js:320-355
 plnHerbPads                  src/21pia-pln-herb.js:39
@@ -6855,7 +6855,7 @@ plnHerbStem                  src/21pia-pln-herb.js:59-71
 plnHerbTone                  src/21pia-pln-herb.js:52-55
 plnHerbZ                     src/21pia-pln-herb.js:35
 plnHerbZAt                   src/21pia-pln-herb.js:40-46
-plnHerbs                     src/21pia-pln-herb.js:360-412
+plnHerbs                     src/21pia-pln-herb.js:360-415
 plnHex                       src/21p-pln.js:46-49
 plnHour                      src/21pz-pln-frame.js:181-241
 plnIco                       src/21pa-pln-mesh.js:41-58
@@ -7110,8 +7110,8 @@ plnThingSkin                 src/21pi-pln-things.js:40-50
 plnThingSpoil                src/21pi-pln-things.js:202-208
 plnThings                    src/21pi-pln-things.js:375-396
 plnThingsDeposits            src/21pi-pln-things.js:333-373
-plnThingsDrop                src/21pi-pln-things.js:419-428
-plnThingsFrame               src/21pi-pln-things.js:398-418
+plnThingsDrop                src/21pi-pln-things.js:426-435
+plnThingsFrame               src/21pi-pln-things.js:398-425
 plnThingsSrc                 src/21pga-pln-plant.js:100-104
 plnTinAt                     src/21piia-pln-tin.js:21-32
 plnTinFlat                   src/21piia-pln-tin.js:34-37
@@ -10068,7 +10068,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pa-pln-mesh.js · 12 KB
   · планета: тело и его генераторы (M610):1
 
-## src/21pb-pln-wgsl-air.js · 24 KB
+## src/21pb-pln-wgsl-air.js · 26 KB
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
 ## src/21pc-pln-wgsl-scene.js · 19 KB
@@ -10118,10 +10118,10 @@ zoomTo                       src/15-input.js:358
 ## src/21phc-pln-rig-card.js · 19 KB
   · планета: человек в карточке — один астронавт везде (M801):1
 
-## src/21pi-pln-things.js · 27 KB
+## src/21pi-pln-things.js · 28 KB
   · планета: вещи игры — залежи, вход в пещеру, устье шахты (M611):1
 
-## src/21pia-pln-herb.js · 33 KB
+## src/21pia-pln-herb.js · 34 KB
   · планета: растения игры — двенадцать форм (M611):1
 
 ## src/21pib-pln-beast.js · 18 KB

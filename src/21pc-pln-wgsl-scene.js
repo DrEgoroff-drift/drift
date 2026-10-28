@@ -203,12 +203,15 @@ override OPQ: bool = false;
     /* земля положена кистью: широкие мазки вдоль плана и мелкое зерно вблизи */
     let near = 1.0 - smoothstep(60.0, 220.0, dist);
     let mid = 1.0 - smoothstep(400.0, 1200.0, dist);
-    let s1 = fbm(in.wpos.xz * vec2f(0.045, 0.11) + vec2f(17.0, 3.0), 51u) - 0.5;
-    let s2 = fbm(in.wpos.xz * vec2f(0.55, 1.2) + vec2f(5.0, 9.0), 53u) - 0.5;
+    /* мазок считается, пока его доля не ноль: дальше 1200, 220 и 45 м его вклад и так обнулён */
+    var s1 = 0.0; var s2 = 0.0; var s3 = 0.0;
+    if (mid > 0.0) { s1 = fbm(in.wpos.xz * vec2f(0.045, 0.11) + vec2f(17.0, 3.0), 51u) - 0.5; }
+    if (near > 0.0) { s2 = fbm(in.wpos.xz * vec2f(0.55, 1.2) + vec2f(5.0, 9.0), 53u) - 0.5; }
     alb *= 1.0 + s1 * 0.30 * mid + s2 * 0.20 * near;
     /* у объектива — мелкое зерно: пыль и крошка на тропе (M623) */
-    let s3 = fbm(in.wpos.xz * vec2f(2.4, 4.8) + vec2f(1.0, 2.0), 59u) - 0.5;
-    alb *= 1.0 + s3 * 0.12 * (1.0 - smoothstep(14.0, 45.0, dist));
+    let grain = 1.0 - smoothstep(14.0, 45.0, dist);
+    if (grain > 0.0) { s3 = fbm(in.wpos.xz * vec2f(2.4, 4.8) + vec2f(1.0, 2.0), 59u) - 0.5; }
+    alb *= 1.0 + s3 * 0.12 * grain;
     if (stone > 0.0) {
       var fN = normalize(cross(fx, fy));
       if (dot(fN, V) < 0.0) { fN = -fN; }
