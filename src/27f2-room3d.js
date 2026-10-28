@@ -852,17 +852,27 @@ function r3Frame(cn,S,post,dst){
   /* тени: по слою на лампу; пустые слои не чистятся — их никто не читает (M816c: зал чистил 6 слоёв на 4 лампы).
      В слой идут только тела в радиусе лампы: начало экземпляра (часть 0) ближе range + радиус сетки.
      Кэшировать слой между кадрами в зале нечем: все люди жестикулируют в радиусе своих ламп. S.shKeep — сцена просит
-     оставить прошлые слои (зал в покое — через кадр): можно, только если их писала она же (S.own) и ламп столько же */
+     оставить прошлые слои (зал — через кадр): можно, только если их писала она же (S.own) и ламп столько же.
+     Оставляется каждый слой сам по себе (29.10, телефон: на ходу зал перерисовывал все шесть каждый кадр, 7–9 мс на S23):
+     только той же лампы (матрица слоя сдвинулась меньше 0,02: качнувшаяся лампа — та же, как и при правиле «через кадр»;
+     свет зала меняется с местом под ногами — там матрица другая целиком) и без «горячего» тела в её
+     досягаемости — S.shHot, номер экземпляра, что рисуется каждый кадр (пилот на ходу) */
   const keep=(S.shKeep||R3_DBG.nopass)&&S.own&&R3.shOwn===S.own&&R3.shN===SV.length;
   if(!keep){R3.shOwn=S.own||null;R3.shN=SV.length;}
+  const reach=(l,m0,ii)=>{const m=m0&&m0.sh&&!R3_DBG.notwin?m0.sh:m0;if(!m||!m.n)return false;
+    const o=(ii|0)*R3_PART*16,dx=S.M[o+12]-l.p[0],dy=S.M[o+13]-l.p[1],dz=S.M[o+14]-l.p[2],rr=l.range+r3MeshR(m);
+    return dx*dx+dy*dy+dz*dz<=rr*rr;};
+  const hot=S.shHot!=null?S.draws.find(q=>q[1]===S.shHot):null,SVo=R3.shVP||(R3.shVP=[]);
+  const redo=SV.map((m,k)=>!keep||!R3_DBG.nopass&&(!SVo[k]||m.some((v,i)=>Math.abs(v-SVo[k][i])>.02)||!!hot&&reach(SL[k],hot[0],hot[1])));
   /* люди отбрасывают тень простым двойником (27f3 cpTwinPump): за кадр строится не больше одного, по шагам */
-  if(!keep&&SV.length&&!R3_DBG.notwin){for(const [m] of S.draws)if(m&&m.src&&!m.sh){if(typeof cpTwinPump==="function")cpTwinPump(m,1.5);break;}}
-  for(let k=0;k<(keep?0:SV.length);k++){
+  if(redo.includes(true)&&!R3_DBG.notwin){for(const [m] of S.draws)if(m&&m.src&&!m.sh){if(typeof cpTwinPump==="function")cpTwinPump(m,1.5);break;}}
+  for(let k=0;k<SV.length;k++){
+    if(!redo[k])continue;
+    (SVo[k]||(SVo[k]=new Float32Array(16))).set(SV[k]);
     const l=SL[k],p=enc.beginRenderPass({colorAttachments:[],depthStencilAttachment:{view:R3.shL[k],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"},timestampWrites:gpuTs("r3sh")});
     p.setPipeline(R3.PS);p.setBindGroup(0,R3.g0s);p.setBindGroup(1,R3.skG[k]);
     for(const [m0,ii,cnt] of S.draws){const m=m0&&m0.sh&&!R3_DBG.notwin?m0.sh:m0;if(!m||!m.n)continue;
-      if(!(cnt>1)){const o=(ii|0)*R3_PART*16,dx=S.M[o+12]-l.p[0],dy=S.M[o+13]-l.p[1],dz=S.M[o+14]-l.p[2],rr=l.range+r3MeshR(m);
-        if(dx*dx+dy*dy+dz*dz>rr*rr){R3.shCull=(R3.shCull||0)+1;continue;}}
+      if(!(cnt>1)&&!reach(l,m0,ii)){R3.shCull=(R3.shCull||0)+1;continue;}
       p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}
     p.end();
   }

@@ -291,7 +291,7 @@ function hallScene(L,cam,t){
   /* зал: экземпляр 0; часть 1 — крюк крана или цепь стапеля, качается медленно */
   const hx=T.weld?3.6:2.4,hz=T.weld?-.6:.4;
   M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29),r3Scr()),16);
-  const draws=[[L.room,0,1]];let ii=1;
+  const draws=[[L.room,0,1]];let ii=1,pii=null;
   const gm=hallGoodsUp(L);if(gm)draws.push([gm,0,1]);   /* товар ящиками на стойке (M811) — тот же экземпляр, что зал */
   draws.push([hallBoardUp(L),0,1]);   /* листы доски — объявления плиты (M814) */
   draws.push([hallHoldUp(L),0,1]);   /* карта под стеклом конторы — дом и базы фишками (M814) */
@@ -320,7 +320,7 @@ function hallScene(L,cam,t){
   const pa=hallWalkPilot();   /* M816: на ходу — с линии хода */
   if(pa&&ii<R3_MAXI){hallRigPose(M,ii*R3_PART,r3Xf([pa[0],0,pa[1]],pa[2]),pa[3],t);   /* M814: пилот — риг планеты (27f4j) */
     hallManMark(ii,pa[0],pa[1],typeof pa[3]==="string"&&HALL_RIG_SEAT[pa[3]]!=null?.4:.32,.5);
-    draws.push([hallRigMesh(),ii,1]);ii++;}
+    draws.push([hallRigMesh(),ii,1]);pii=ii;ii++;}
   /* свет смены. ДЕНЬ: ключ — окно и свет дока: холодное небо заливает зал (стены 25–35 % тона, потолок
      отсветом пола 15–20 %), луч окна с пылью кладёт пятно и тени людей; лампы — вторые.
      НОЧЬ: окно тёмно-синее, рассеянный падает вчетверо, ключ — лампы людей: стойка, бра, бар */
@@ -395,7 +395,7 @@ function hallScene(L,cam,t){
   const fog=mixc(mx(mixc(T.wall,[150,165,190],.4),[30,38,64]),r3Lin([34,34,38]),wlk?.55:0);   /* на ходу туман темнее и нейтральнее: кадр не молоко */
   const fd=wlk?.5:1;   /* и вдвое реже: потолок, балки и дальняя стена не растворяются в сером */
   const pl=HALL.orb&&HALL.orbTex?HALL.orb:null;
-  return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
+  return {draws,pii,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
     sky:[...sky,amb],gnd:[...gnd,(T.win===1?.045:dk?.04:.03)*fd],
     fog:[...r3Sc(L.kino?[.09,.085,.08]:fog,.25),(L.kino?.1:T.win===1?.055:dk?.04:.035)*(wlk?.6:1)],acc:[...r3Lin(acc),1],
     win:[HALL_WIN[0],wy[0],HALL_WIN[1],wy[1]],win2:[HALL_B,T.win,L.seed%47,(T.win===1?1.15:1)*(.38+.62*day)],
@@ -584,8 +584,9 @@ function hallFrame(){
   U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL.sharp==null?HALL_SHARP:HALL.sharp,1],52);
   /* на ходу дальний конец зала уходит в темноту, а не режется кромкой: сила и x пилота на экране (M816) */
   if(!W.eng){const pw=hallWalkPilot(),q=pw&&r3Proj(cam.vp,[pw[0],1,pw[1]],sz.cw,sz.ch);U.set([.6*(1-W.fk),q?q[0]/sz.cw:.5,0,1],56);}
-  /* тени в покое зала — через кадр (12 к/с, запаздывания жеста не видно); на ходу и в наезде — каждый кадр */
-  S.own="hall";S.shKeep=!!(HALL.frames&1)&&!hallMoving()&&!hallWalkMoving();
+  /* тени зала — через кадр (запаздывания жеста не видно), и на ходу, и в наезде: камера тени не меняет (29.10, телефон).
+     Каждый кадр — только слои, до которых достаёт идущий пилот (S.shHot), и слои сменившихся ламп (27f2) */
+  S.own="hall";S.shKeep=!!(HALL.frames&1);S.shHot=hallWalkMoving()?S.pii:null;
   HALL.frames++;HALL.S=S;HALL.vp=cam.vp;   /* пределы — hallLimits(HALL.S) по запросу теста, не в кадре (M816c) */
   const k0=L.people[0],pw=hallWalkPilot(),pa=pw?[pw[0],pw[1]]:null,f=sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};

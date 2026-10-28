@@ -1846,7 +1846,7 @@ R3U                          src/27f2-room3d.js:31
 R3_DBG                       src/27f2-room3d.js:28
 R3_DOWN_WGSL                 src/27f2-room3d.js:695
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:888
+R3_POST_WGSL                 src/27f2-room3d.js:898
 R3_SCR                       src/27f2-room3d.js:49
 R3_UN                        src/27f2-room3d.js:34
 R3_VPOOL                     src/27f2-room3d.js:80
@@ -5019,7 +5019,7 @@ hallDrum                     src/27f4b-hall-dress.js:66
 hallEase                     src/27f4a-hall.js:129
 hallFleetList                src/27f4a-hall.js:521-529
 hallFleetWarm                src/27f4a-hall.js:530-533
-hallFrame                    src/27f4a-hall.js:554-594
+hallFrame                    src/27f4a-hall.js:554-595
 hallGlideAt                  src/27f4a-hall.js:131-135
 hallGlint                    src/27f4b-hall-dress.js:35-41
 hallGo                       src/27f4a-hall.js:138-142
@@ -7340,7 +7340,7 @@ r3Desc                       src/27f2-room3d.js:717-723
 r3Dev                        src/27f2-room3d.js:745-769
 r3DownDesc                   src/27f2-room3d.js:737-741
 r3Drop                       src/27f2-room3d.js:776
-r3Frame                      src/27f2-room3d.js:823-885
+r3Frame                      src/27f2-room3d.js:823-895
 r3Free                       src/27f2-room3d.js:778
 r3Kit                        src/27f2-room3d.js:88-237
 r3Lin                        src/27f2-room3d.js:39
@@ -10471,7 +10471,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 84 KB
+## src/27f2-room3d.js · 85 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 31 KB
