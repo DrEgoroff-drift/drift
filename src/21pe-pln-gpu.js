@@ -379,9 +379,24 @@ function plnBlobSort(b){
   }
   b[3]=PLN_GPU.blobAll?1e9:R;
 }
+/* Земля — последней из тел (29.10). Её ленты шли в кадр первыми, трава, куртины и деревья — поверх: под каждой
+   травинкой земля успевала посчитаться целиком. Нарисованное раньше отсекает скрытое до шейдера, поэтому всё, что
+   стоит на земле, идёт первым, а земля (ближние ленты, потом дальние) — за ним. Глубина строгая, картинка та же;
+   порядок внутри обеих групп прежний. Q.landFirst — старый порядок (замер) */
+const PLN_LAND_TMP=[];
+function plnLandLast(B){
+  if(PLN_GPU.landFirst)return;
+  const T=PLN_LAND_TMP;
+  let k=0;
+  T.length=0;
+  for(const b of B){if(b.land)T.push(b);else B[k++]=b;}
+  for(const b of T)B[k++]=b;
+  T.length=0;
+}
 function plnGpuFrame(F){
   const Q=PLN_GPU,e=GPU.enc,P=Q.P,B=Q.B,V=Q.V,D=Q.D,ms=Q.ms;
   if(F.blobs)plnBlobSort(F.blobs);
+  plnLandLast(F.batches);
   F.mirror=F.waterY>-1e4&&F.batches.some(b=>b.kind===PLN_KIND.water&&b.geo.n>0);
   F.wing=F.batches.some(b=>b.kind===PLN_KIND.wing&&b.geo.n>0);
   F.veil=F.batches.some(b=>b.kind===PLN_KIND.veil);

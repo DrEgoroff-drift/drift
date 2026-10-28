@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 661 · top-level symbols: 8905
+Files: 661 · top-level symbols: 8907
 
 ## SYMBOLS
 
@@ -1711,6 +1711,7 @@ PLN_KIND                     src/21pe-pln-gpu.js:26
 PLN_KIT_MS                   src/21pg-pln-flora.js:266
 PLN_LAMP_GREY                src/21pc-pln-wgsl-scene.js:14
 PLN_LAND                     src/21pf-pln-land.js:22
+PLN_LAND_TMP                 src/21pe-pln-gpu.js:386
 PLN_LIFT                     src/21pifc-pln-marks-act-lift.js:12
 PLN_LIFT_GEO                 src/21piec-pln-marks-move.js:9
 PLN_LIFT_OLD_UPD             src/21pifc-pln-marks-act-lift.js:148
@@ -6835,7 +6836,7 @@ plnGlwRing                   src/21piic-pln-glow.js:27-30
 plnGlwStep                   src/21piic-pln-glow.js:66-79
 plnGlwStrip                  src/21piic-pln-glow.js:16-21
 plnGpuDev                    src/21pe-pln-gpu.js:151-177
-plnGpuFrame                  src/21pe-pln-gpu.js:382-443
+plnGpuFrame                  src/21pe-pln-gpu.js:396-458
 plnGpuPipes                  src/21pe-pln-gpu.js:235-241
 plnGpuReady                  src/21pe-pln-gpu.js:310-314
 plnGpuSize                   src/21pe-pln-gpu.js:250-309
@@ -6886,6 +6887,7 @@ plnLandFarRows               src/21pf-pln-land.js:109-114
 plnLandFree                  src/21pf-pln-land.js:546-553
 plnLandGen                   src/21pf-pln-land.js:496-500
 plnLandJobs                  src/21pf-pln-land.js:451-484
+plnLandLast                  src/21pe-pln-gpu.js:387-395
 plnLandLift                  src/21pf-pln-land.js:302
 plnLandMake                  src/21pf-pln-land.js:121-211
 plnLandMove                  src/21pf-pln-land.js:568-574
@@ -10085,7 +10087,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pd-pln-wgsl-post.js · 8 KB
   · планета: свёртка кадра (M610):1
 
-## src/21pe-pln-gpu.js · 32 KB
+## src/21pe-pln-gpu.js · 33 KB
   · планета: цели, конвейеры и проходы одного кадра (M610):1
 
 ## src/21pf-pln-land.js · 35 KB

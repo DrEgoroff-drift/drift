@@ -541,7 +541,7 @@ function plnLandStep(L,ex,V,n,lim){
   return k;
 }
 function plnLandBatches(L,out,ex,V){
-  for(const J of L.jobs)if(J.geo&&plnLandSees(J,ex,V,0))out.push({geo:J.geo,inst:null,kind:J.kind,to:J.to,ride:J.ride});
+  for(const J of L.jobs)if(J.geo&&plnLandSees(J,ex,V,0))out.push({geo:J.geo,inst:null,kind:J.kind,to:J.to,ride:J.ride,land:true});
 }
 function plnLandFree(L){
   for(const J of L.jobs){if(J.geo)plnGeoFree(J.geo);J.geo=null;J.grid=null;J.pl=null;}
