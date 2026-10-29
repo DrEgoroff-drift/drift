@@ -305,7 +305,6 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
-- [ ] **The yard beds have no species (22.10, for planet):** the greenhouse beds in 21pig are one green body  sized by `greenGrow`; the 2D bed painter that drew the species (form, leaf and stem colour, bloom, curl) is  gone. `greenSpecies(name,p)` in 21g is pure data for that: the bodies should read it, or two beds of  different seed look the same (M204's rule «ФОРМА — ВИДОВАЯ»).
 - [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). The day is
   `CEL_DAY` of the sky calendar (`06a-celest`), copied in `21pifa` and `25m-probe`; a longer day moves
   the war chronicle's hashes and the need windows. Decide together with the chronicle, reshoot hashes.
