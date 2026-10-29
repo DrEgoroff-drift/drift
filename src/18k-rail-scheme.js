@@ -218,8 +218,14 @@ function railSchemeDraw(g,cw,ch){
       const x=X(p[0]),y=Y(p[1]);g.beginPath();g.moveTo(x-3.5,y-3.5);g.lineTo(x+3.5,y+3.5);g.moveTo(x+3.5,y-3.5);g.lineTo(x-3.5,y+3.5);g.stroke();}}
   /* «КРАЙ» у самой дальней стоянки линии */
   g.font="bold 7px ui-monospace,monospace";g.fillStyle="#c8281e";g.textAlign="left";
-  {const done=new Set();for(const K of krai){const k=K.s.sx+","+K.s.sy;if(done.has(k))continue;done.add(k);
-    g.fillText("КРАЙ",X(K.s.sx)+5,Y(K.s.sy)+7);}}
+  {const done=new Set(),kw=g.measureText("КРАЙ").width;
+    for(const K of krai){const k=K.s.sx+","+K.s.sy;if(done.has(k))continue;done.add(k);
+    const bx=X(K.s.sx)+5,by=Y(K.s.sy)+3,bh=9;
+    /* та же проверка на наезд, что у подписей остановок: «КРАЙ» не ложится на имя узла */
+    if(placed.some(r=>bx<r.x+r.w+3&&bx+kw>r.x-3&&by<r.y+r.h+2&&by+bh>r.y-2))continue;
+    if(bx+kw>cw-4)continue;
+    placed.push({x:bx,y:by,w:kw,h:bh});
+    g.fillText("КРАЙ",bx,by+4);}}
   /* куда можно отсюда (КУДА ВАМ): тонкое красное кольцо — эти берёт касса */
   if(typeof railDestinations==="function"&&railStation(G.sx,G.sy)){
     g.strokeStyle="rgba(200,40,30,.7)";g.lineWidth=1;
