@@ -4401,7 +4401,7 @@ foeArmFire                   src/13d-loadout.js:51-131
 foeFlak                      src/13a-guns.js:405-429
 foeGun                       src/13d-loadout.js:40-48
 foeMineLay                   src/13d-loadout.js:133-142
-foeTetherTick                src/13d-loadout.js:146-160
+foeTetherTick                src/13d-loadout.js:146-180
 foldBlock                    src/26-ui-station.js:388-403
 folkAll                      src/11ah-offer.js:82-85
 folkHere                     src/12u-folk.js:91-97
@@ -6622,7 +6622,7 @@ pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
 pinch0                       src/15-input.js:404
 pipeWho                      tests/91zzzzzzy4-pipes.js:62-67
-pirateArmTick                src/13d-loadout.js:164-182
+pirateArmTick                src/13d-loadout.js:184-202
 pirateArtOf                  src/12i-pirate-hull.js:238-414
 pirateBaseGpu                src/24a-mode-raid.js:111-186
 pirateBaseOf                 src/24a-mode-raid.js:87-96
@@ -9581,7 +9581,7 @@ zoomTo                       src/15-input.js:358
 ## src/13c-roles.js · 10 KB
   · роли пиратов по рангу (M361, §5):1
 
-## src/13d-loadout.js · 9 KB
+## src/13d-loadout.js · 10 KB
   · снаряжение пирата по рангу (M368, §5):1
 
 ## src/13d-npc.js · 15 KB

@@ -156,7 +156,27 @@ function foeTetherTick(dt){
   sh.vx+=dx/d*k*(his/(mine+his));sh.vy+=dy/d*k*(his/(mine+his));
   p.vx-=dx/d*k*(mine/(mine+his));p.vy-=dy/d*k*(mine/(mine+his));
   const q=Math.pow(.985,dt);sh.vx*=q;sh.vy*=q;   /* привязанный теряет половину хода */
-  beamAdd(sh.x,sh.y,p.x,p.y,"rgba(230,220,180,.55)",1);
+  /* трос не идёт сквозь собственную плашку имени (§10): на её рамке (OVL.lab, CSS) он рвётся.
+     Камера — та, что 17-mode-system оставил в HANG.at.sys; рамка плашки — прошлого кадра */
+  let brk=null;
+  const cam=typeof HANG!=="undefined"&&HANG.at.sys,lab=typeof OVL!=="undefined"&&OVL.lab&&OVL.lab.get("pn"+p.seed);
+  if(cam&&cam.z>0&&lab){
+    const ax=W/2+(sh.x-cam.x)*cam.z,ay=H/2+(sh.y-cam.y)*cam.z,bx=W/2+(p.x-cam.x)*cam.z,by=H/2+(p.y-cam.y)*cam.z;
+    const dx=bx-ax,dy=by-ay;let t0=0,t1=1,ok=true;
+    const pp=[-dx,dx,-dy,dy],qq=[ax-lab.x0+2,lab.x1+2-ax,ay-lab.y0+2,lab.y1+2-ay];
+    for(let i=0;i<4;i++){
+      const P=pp[i],Q=qq[i];
+      if(P===0){if(Q<0){ok=false;break;}}
+      else{const r=Q/P;
+        if(P<0){if(r>t1){ok=false;break;}if(r>t0)t0=r;}
+        else{if(r<t0){ok=false;break;}if(r<t1)t1=r;}}
+    }
+    if(ok&&t0<t1)brk=[t0,t1];
+  }
+  if(brk){
+    if(brk[0]>0)beamAdd(sh.x,sh.y,sh.x+(p.x-sh.x)*brk[0],sh.y+(p.y-sh.y)*brk[0],"rgba(230,220,180,.55)",1);
+    if(brk[1]<1)beamAdd(sh.x+(p.x-sh.x)*brk[1],sh.y+(p.y-sh.y)*brk[1],p.x,p.y,"rgba(230,220,180,.55)",1);
+  }else beamAdd(sh.x,sh.y,p.x,p.y,"rgba(230,220,180,.55)",1);
 }
 /* ── такт снаряжения: один пират, все его повадки ──
    Роль (13c-roles) по-прежнему решает, КАК он ходит и когда даёт основной

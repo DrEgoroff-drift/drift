@@ -297,8 +297,6 @@ Check each against the code before building — some may already hold.
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
   names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
   functions, on touch only; the button family merge; `-Times` for the Node tier.
-- [ ] **The tether crosses the name (22.10):** the veteran's tether line is drawn through his own name
-  plate (`13-pirates` labels against the tether pass) — route the line under the plate or break it there; not touched.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
   the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
