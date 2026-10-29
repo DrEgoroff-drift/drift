@@ -279,10 +279,6 @@ measured on the GPU build first:
 ## 9. Seams to honour when the items above are built
 
 Check each against the code before building — some may already hold.
-- [ ] **Metro board against the fare (Контроль, 28.09; recovered 08.10):** the board says «МЕТРО · Линия 3», but
-  the ticket to «Рациорн» is not at the metro fare and the token does not work on it. Chosen: the fare stays by zone
-  (both ends inside `RAIL_METRO_R`). The board calls a line МЕТРО only when all its stops lie inside the circle,
-  otherwise ЭЛЕКТРИЧКА — today `18f` decides it per station (`S.metro`), not per line.
 - **Replays (0.1, P9):** the fixed step and the seeded entry angle each move every recording and same-hash
   suite once — `91zzzzzbb-samehash` re-based in the same commit, named in the patchnote.
 

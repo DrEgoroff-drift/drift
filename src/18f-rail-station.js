@@ -163,13 +163,16 @@ function railWinShow(){
   if(!w){w=document.createElement("div");w.id="railWin";document.body.appendChild(w);}
   w.classList.add("open");railWinRender();
 }
+/* линия — метро, только если вся она внутри круга: тариф и жетон считаются по зоне обоих
+   концов пути, и табло не должно обещать метро линии, что уходит наружу (§9, Контроль 28.09) */
+function railLineMetro(l){return l.stops.every(s=>Math.hypot(s.sx,s.sy)<=RAIL_METRO_R);}
 function railWinRender(){
   const w=document.getElementById("railWin");if(!w)return;
   const R=railHere();if(!R){railWinClose();return;}
   const by=R.by,S=R.S;
   let h="<div class='rw-head'><b>СТАНЦИЯ «"+R.name.toUpperCase()+"»</b><s>"+S.lines.map(l=>l.ru).join(" · ")+(S.junction?" · ПЕРЕСАДКА":"")+"</s></div>";
   h+="<div class='rw-sec'>ТАБЛО</div><div class='rw-board'>";
-  S.lines.forEach((l,li)=>{h+="<div><span>"+(S.metro?"МЕТРО":"ЭЛЕКТРИЧКА")+" · "+l.ru+"</span><em>"+
+  S.lines.forEach((l,li)=>{h+="<div><span>"+(railLineMetro(l)?"МЕТРО":"ЭЛЕКТРИЧКА")+" · "+l.ru+"</span><em>"+
     railFlap(li,RAIL_WAIT&&RAIL_WAIT.l===l?"ваш · через "+railFmt(Math.ceil(RAIL_WAIT.t)):"через "+railFmt(railWaitNow(G.sx,G.sy)))+"</em></div>";});
   h+="</div>";
   if(RAIL_WAIT){

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 661 · top-level symbols: 8907
+Files: 661 · top-level symbols: 8908
 
 ## SYMBOLS
 
@@ -7457,11 +7457,11 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:228-235
+railBuffet                   src/18f-rail-station.js:231-238
 railBuildLines               src/18e-rail-net.js:55-101
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:213-227
+railBuy                      src/18f-rail-station.js:216-230
 railCarDraw                  src/18gb-rail-car.js:67-76
 railCarLights                src/18gb-rail-car.js:60-65
 railCarMesh                  src/18gb-rail-car.js:18-58
@@ -7493,6 +7493,7 @@ railLifeExit                 src/18i-rail-life.js:104-112
 railLifeHtml                 src/18i-rail-life.js:59-75
 railLifeStop                 src/18i-rail-life.js:95-102
 railLineGpu                  src/18ga-rail-gpu.js:70-106
+railLineMetro                src/18f-rail-station.js:168
 railNearest                  src/18e-rail-net.js:32-42
 railNet                      src/18e-rail-net.js:186-195
 railNetPartial               src/18e-rail-net.js:207-218
@@ -7515,7 +7516,7 @@ railRingBody                 src/18fa-rail-ring.js:68-77
 railRingLights               src/18fa-rail-ring.js:80-90
 railRingMesh                 src/18fa-rail-ring.js:16-66
 railSchemeClose              src/18k-rail-scheme.js:105
-railSchemeDraw               src/18k-rail-scheme.js:140-260
+railSchemeDraw               src/18k-rail-scheme.js:140-266
 railSchemeOpen               src/18k-rail-scheme.js:51-71
 railSchemePick               src/18k-rail-scheme.js:122-139
 railSchemeRedraw             src/18k-rail-scheme.js:87-104
@@ -7532,14 +7533,14 @@ railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:126
 railStopShapes               src/18gb-rail-car.js:79-90
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:237-242
+railTick                     src/18f-rail-station.js:240-245
 railTrainPos                 src/18g-rail-ride.js:38-50
 railUAt                      src/18e-rail-net.js:105-110
 railVisited                  src/18k-rail-scheme.js:110-114
 railWaitNow                  src/18f-rail-station.js:124
 railWinClose                 src/18f-rail-station.js:160
 railWinOpen                  src/18f-rail-station.js:159
-railWinRender                src/18f-rail-station.js:166-212
+railWinRender                src/18f-rail-station.js:169-215
 railWinShow                  src/18f-rail-station.js:161-165
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
@@ -9855,7 +9856,7 @@ zoomTo                       src/15-input.js:358
   · «успеваете скорым» (M507):13
   · компенсационная маршрутка (M510):26
 
-## src/18k-rail-scheme.js · 19 KB
+## src/18k-rail-scheme.js · 20 KB
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
 ## src/18l-map-plate.js · 13 KB
