@@ -31,6 +31,15 @@ TEST_SUITES.push(()=>suite("тела: станции, флот, баржа, по
     ok(bm.frames===6&&bm.n>100&&bm.R<=140,"сетка большой баржи: рам "+bm.frames+", n="+bm.n);
     const wm=h3dBargeWreck(4242);ok(wm&&wm.n>100&&isFinite(wm.R),"остов баржи собран: n="+wm.n);
     ok(!!bodyShuttleMesh([35,43,54]).n,"челнок собран");
+    /* ── великаны: семь разных сеток в прежнем масштабе, без Canvas-мастера ── */
+    for(const D of GIANTS_DEF){
+      const g={k:D.k,seed:hashi(19,D.k.length,0x61A7)},m=h3dGiantMesh(g);
+      ok(m&&m.n>60&&m.n<=60000,"великан «"+D.k+"» собран: "+(m&&m.n)+" вершин");
+      ok(isFinite(m.R)&&m.R>400&&m.R<1200,"великан «"+D.k+"» в масштабе h3d: R="+(m.R|0));
+      ok(m.v.every(isFinite)&&m.st.length>=2&&m.st.length<=16,"у великана «"+D.k+"» конечная сетка и поле тени");
+      ok(m.L.length>0||m.pulse||m.run,"у великана «"+D.k+"» есть живые огни");
+      eq(h3dGiantMesh(g),m,"сетка великана «"+D.k+"» закреплена за зерном");
+    }
     /* ── полоса: целый и не замеченный — нет; свой борт державы — нет; в захвате и раненый — да ── */
     const pir={hull:50,hullMax:50,aware:false},pw={hull:10,hullMax:50,pw:"gt",iff:1};
     G.marks=[];
