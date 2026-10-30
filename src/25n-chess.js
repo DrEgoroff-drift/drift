@@ -245,8 +245,7 @@ const CH_GLYPH={K:"♔",Q:"♕",R:"♖",B:"♗",N:"♘",P:"♙",
 let chSel=-1, chOpen="";
 function chessDraw(cv,ch,flip){
   const g=chessGame(ch);if(!g)return;
-  const c=cv.getContext("2d");
-  chessPaint(c,cv.width,g,ch,flip);
+  panelGpu(cv,352,352,panelNd(),c=>chessPaint(c,352,g,ch,flip));
 }
 /* кисть доски — отдельно от холста: рисует в любой контекст, 2D или GPU-холст (G11).
    Доска деревянная, и дерево это видно: волокно по каждой клетке своё (хэш

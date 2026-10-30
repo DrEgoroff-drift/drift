@@ -3291,11 +3291,11 @@ chebPaintEm                  src/17j-cheburek.js:53-58
 chebSignBake                 src/17j-cheburek.js:61-66
 chebSignMake                 src/17j-cheburek.js:67-77
 chessAll                     src/25n-chess.js:199-203
-chessDraw                    src/25n-chess.js:246-250
+chessDraw                    src/25n-chess.js:246-249
 chessGame                    src/25n-chess.js:204
 chessMove                    src/25n-chess.js:217-226
 chessMyTurn                  src/25n-chess.js:212-216
-chessPaint                   src/25n-chess.js:256-316
+chessPaint                   src/25n-chess.js:255-315
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
 chipDist                     src/17-mode-system.js:741-747
@@ -7650,7 +7650,7 @@ renderBasesTab               src/26a-ui-station-home.js:4-325
 renderBooks                  src/12ub-books.js:157-186
 renderCantina                src/27c-ui-hq.js:68-118
 renderCardBack               src/25i-post-back.js:88-178
-renderChess                  src/25n-chess.js:320-367
+renderChess                  src/25n-chess.js:319-366
 renderDeeds                  src/11-log.js:119-149
 renderDeskTop                src/27ia-desk-top.js:343-364
 renderDiary                  src/29f-winter.js:221-249
