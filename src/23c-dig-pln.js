@@ -98,6 +98,11 @@ function dig3HeadBody(m,F,o,park){
    верхним краем окна (за кадром, как само устье), его разлив виден на стенах ствола, проводниках и
    канате; там, где ещё светит день у устья (dayK), этот свет уступает ему. */
 const DIG3_SHAFT={fall:30,k:5.1,r:9,lamp:[.5,.33,.15]};
+/* налобный луч в штреке (M631c): в пещере стенка далеко, и конус с наклоном к ней (.34) даёт
+   пятно; в штреке задняя стенка в двух метрах — тот же конус бил в неё прожектором, пятно в 2.6 раза
+   светлее стены и ярче ламп штрека. Здесь луч идёт вдоль выработки и вниз — на почву и ближний
+   камень, — и слабее: z — к стенке, k — сила конуса, tilt — наклон вниз */
+const DIG3_BEAM={z:.06,k:.6,tilt:-.42};
 /* сила света устья на глубине d м под ним: квадрат расстояния, смягчённый отскоком от стен ствола */
 function dig3ShaftK(d){return 1/(1+Math.pow(Math.max(0,d)/DIG3_SHAFT.fall,3));}
 function dig3ShaftLight(F,Ls,sY,night,skyLo,dayK,my){
@@ -162,7 +167,7 @@ function dig3Frame(){
   plnManFrame(F,[mx,my,DIG3_Z],face,0,{S,lamp:0});
   /* фонарь на шлеме: туда, куда грызёт (вниз — вниз), иначе по взгляду; поворачивается плавно */
   const kit=typeof kitStat==="function"?kitStat():{lamp:1},reach=cave3Reach(kit.lamp)*.8;
-  const want=dir?plnNorm([dir[0]+(dir[1]?face*.3:0),dir[1]?-dir[1]*1.2:CAVE3_LAMP.tilt,.34]):plnNorm([face,CAVE3_LAMP.tilt,.34]);
+  const B=DIG3_BEAM,want=dir?plnNorm([dir[0]+(dir[1]?face*.3:0),dir[1]?-dir[1]*1.2:B.tilt,B.z]):plnNorm([face,B.tilt,B.z]);
   M.ld=M.ld?plnNorm(plnMix3(M.ld,want,1-Math.exp(-dt/.18))):want;
   const ld=M.ld,lp=[mx+.2*face,my+1.71,DIG3_Z-.17];
   const lampVP=plnM4mul(cave3Persp(CAVE3_K.fov,1,.12,140),plnM4look(lp,[lp[0]+ld[0],lp[1]+ld[1],lp[2]+ld[2]],[0,1,0]));
@@ -230,7 +235,7 @@ function dig3Frame(){
     const core=F.lights.filter(q=>q.core),rest=F.lights.filter(q=>!q.core).sort((a,b)=>w(b)-w(a));
     F.lights=core.concat(rest.slice(0,12-core.length));
   }
-  Object.assign(F,{vp:Ls.vp,eye:Ls.eye,t:(G.t/60)%7200,lamp:{p:lp,d:ld,k:lon},lampVP,reach,near:reach*.45,
+  Object.assign(F,{vp:Ls.vp,eye:Ls.eye,t:(G.t/60)%7200,lamp:{p:lp,d:ld,k:lon*DIG3_BEAM.k},lampVP,reach,near:reach*.45,
     sun,sunVP:day.m,sunRange:day.range,dayK,mouth,lean,surfY:sY,skyLo,skyHi,expo:1,cutZ:0,bed:Fd.bed});
   M.stat.chunks=list.length;M.stat.left=M.ch?M.ch.left:0;M.stat.tris=Math.round(tris);M.stat.lights=F.lights.length;
   M.stat.cpu=+(wallMs()-t0).toFixed(2);
