@@ -93,20 +93,12 @@ function lifeBaked(key,w,h,draw,o){
   let B=LG_BK.get(key);
   if(B&&B.dev===GPU.dev){LG_BK.delete(key);LG_BK.set(key,B);return B;}
   if(B){LG_BK.delete(key);lifeBakeDrop(B);}
-  B=LG_2D?lifeBake2D(w,h,draw):gpuBake(w,h,draw,o);if(!B)return null;
+  B=gpuBake(w,h,draw,o);if(!B)return null;
   B.lid=++LG_ID;LG_BK.set(key,B);
   while(LG_BK.size>LG_CAP){const k=LG_BK.keys().next().value;lifeBakeDrop(LG_BK.get(k));LG_BK.delete(k);}
   return B;
 }
-function lifeBakeDrop(B){if(B.cv)gpuMipDrop(B.cv);else gpuBakeDrop(B);if(GPU.bgs){delete GPU.bgs["life:"+B.lid+"h"];delete GPU.bgs["life:"+B.lid+"o"];}}
-/* выпечка 2D-кистью в свой холст → мастер с мипами (gpuMipTex): та же картинка, что у 2D */
-let LG_2D=false;
-function lifeBake2D(w,h,draw){
-  if(!GPU.dev)return null;
-  const cv=document.createElement("canvas");cv.width=Math.max(1,Math.round(w));cv.height=Math.max(1,Math.round(h));
-  const g=cv.getContext("2d"),prev=ctx;ctx=g;try{draw(g);}finally{ctx=prev;}
-  const M=gpuMipTex(cv);return {view:M.view,w:M.w,h:M.h,n:M.n,dev:M.dev,cv};
-}
+function lifeBakeDrop(B){gpuBakeDrop(B);if(GPU.bgs){delete GPU.bgs["life:"+B.lid+"h"];delete GPU.bgs["life:"+B.lid+"o"];}}
 /* ── свет мира ──
    {lx,ly} — к источнику в экранных осях (y вниз), key/amb — цвета 0..1, k — сила света
    по выпечке, rim — кромка, lit — доля прямого света (падающая тень гребня, затмение),

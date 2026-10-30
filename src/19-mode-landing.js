@@ -198,15 +198,14 @@ function drawDustMotes(camx,camy,p){
 }
 /* проход видеокарты для живого заходa или null — тогда рисует 2D */
 function lgGpu(){return (typeof GPU!=="undefined"&&GPU.ok&&GPU.on&&GPU.enc)?gpuNext():null;}
-/* мягкое пятно цвета col ("r,g,b"): спад 1 → .35 к середине → 0, холст на цвет (зарево захода) */
-const LG_GLOW={};
+/* мягкое пятно цвета col ("r,g,b"): спад 1 → .35 к середине → 0, выпечка на цвет (зарево захода) */
+const LG_GLOW=new Map();
 function lgGlowTex(col){
-  let cn=LG_GLOW[col];if(cn)return cn;
-  cn=document.createElement("canvas");cn.width=cn.height=96;
-  const g=cn.getContext("2d"),gr=g.createRadialGradient(48,48,0,48,48,48);
-  gr.addColorStop(0,"rgba("+col+",1)");gr.addColorStop(.45,"rgba("+col+",.35)");gr.addColorStop(1,"rgba("+col+",0)");
-  g.fillStyle=gr;g.fillRect(0,0,96,96);
-  return LG_GLOW[col]=cn;
+  return gpuBaked(LG_GLOW,col,96,96,g=>{
+    const gr=g.createRadialGradient(48,48,0,48,48,48);
+    gr.addColorStop(0,"rgba("+col+",1)");gr.addColorStop(.45,"rgba("+col+",.35)");gr.addColorStop(1,"rgba("+col+",0)");
+    g.fillStyle=gr;g.fillRect(0,0,96,96);
+  });
 }
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;

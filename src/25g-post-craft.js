@@ -3,21 +3,7 @@
    здесь живут приёмы, которыми она заканчивается, — зерно печати на синем
    шуме и акварельное пятно. Разбор приёмов — docs/DESIGN-craft.md §6–7.
    Правило то же, что у художника: ни G, ни собственной случайности. */
-/* плитка зерна: ранги ниже порога → равномерная россыпь белых точек */
-let PC_GRAIN=null;
-function pcGrainTile(){
-  if(PC_GRAIN)return PC_GRAIN;
-  const S=64,t=blueNoise(),cv=document.createElement("canvas");
-  cv.width=cv.height=S;
-  const g=cv.getContext("2d"),im=g.createImageData(S,S);
-  for(let i=0;i<S*S;i++){
-    im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=255;
-    im.data[i*4+3]=t[i]<.012?255:0;
-  }
-  g.putImageData(im,0,0);
-  return PC_GRAIN=cv;
-}
-/* та же плитка выпечкой — для GPU-холста (альбом, 25g1); потерю устройства переживает сама (gcImg) */
+/* плитка зерна: ранги ниже порога → равномерная россыпь белых точек; потерю устройства переживает сама (gcImg) */
 let PC_GRAIN_B=null;
 function pcGrainBake(){
   if(PC_GRAIN_B)return PC_GRAIN_B;

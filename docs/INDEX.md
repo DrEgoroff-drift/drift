@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 661 · top-level symbols: 8908
+Files: 661 · top-level symbols: 8904
 
 ## SYMBOLS
 
@@ -71,7 +71,7 @@ AI_COST                      src/12f-mgr-ai.js:8
 AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12-18
 ALBUM_FX                     src/25g1-album-fx.js:14-21
-ALBUM_MAX                    src/25g-postcard.js:629
+ALBUM_MAX                    src/25g-postcard.js:628
 ALBUM_VIG                    src/25g1-album-fx.js:28
 ALLY_THR                     src/12a-crew.js:702
 ALL_NAMES                    tests/90-harness.js:94
@@ -85,8 +85,8 @@ ARC_JUMP                     src/13a-guns.js:39
 ARMED_CAP                    src/13-combat.js:12
 ARRW                         src/17h1-arr-warm.js:12
 ARTIFACTS                    src/12h-relic.js:48-63
-ASTRO_BOX                    src/20fa-life-gpu.js:190
-ASTRO_PAL                    src/20fa-life-gpu.js:191
+ASTRO_BOX                    src/20fa-life-gpu.js:182
+ASTRO_PAL                    src/20fa-life-gpu.js:183
 AST_N                        src/24-mode-belt.js:68
 AURORA_HUE                   src/19cb-gpu-sky-bodies.js:323
 AVR_BURN                     src/21a6-base-avral.js:23
@@ -1282,7 +1282,7 @@ KMAP                         src/15-input.js:112
 KMAP_BELT                    src/15-input.js:116
 KP_DAY                       src/26e2-post.js:11
 KP_PK_MAX                    src/26e2-post.js:103
-LAMP_BOX                     src/20fa-life-gpu.js:246
+LAMP_BOX                     src/20fa-life-gpu.js:238
 LAND_ARC                     src/07a-terrain.js:49
 LAND_GY                      src/19f-lander.js:10
 LANE_BUOY                    src/17g-sys-lane.js:72
@@ -1316,7 +1316,6 @@ LGF                          src/19g-landing-gpu.js:250
 LGL                          src/19g-landing-gpu.js:364
 LGR                          src/19g-landing-gpu.js:92
 LGU                          src/19g-landing-gpu.js:191
-LG_2D                        src/20fa-life-gpu.js:103
 LG_BAKE                      src/19g-landing-gpu.js:362
 LG_DUST                      src/19g-landing-gpu.js:193
 LG_E                         src/19g-landing-gpu.js:363
@@ -1326,8 +1325,8 @@ LG_H                         src/19g-landing-gpu.js:24
 LG_ID                        src/20fa-life-gpu.js:90
 LG_LANDER_WGSL               src/19g-landing-gpu.js:249
 LG_N                         src/20fa-life-gpu.js:89
-LG_OID                       src/20fa-life-gpu.js:280
-LG_ON                        src/20fa-life-gpu.js:281
+LG_OID                       src/20fa-life-gpu.js:272
+LG_ON                        src/20fa-life-gpu.js:273
 LG_RIDGE_WGSL                src/19g-landing-gpu.js:55
 LG_UNDER_WGSL                src/19g-landing-gpu.js:120
 LG_WGSL                      src/20fa-life-gpu.js:30
@@ -1608,8 +1607,7 @@ PAX_KEYS                     src/02-world.js:134
 PB_F                         src/17a0-prebake.js:19
 PB_K                         src/24a-mode-raid.js:110
 PB_MS                        src/17a0-prebake.js:18
-PC_GRAIN                     src/25g-post-craft.js:7
-PC_GRAIN_B                   src/25g-post-craft.js:21
+PC_GRAIN_B                   src/25g-post-craft.js:7
 PC_RIG                       src/25g1-album-fx.js:40
 PEACE_SHIPS                  src/17m-peace-fleet.js:63
 PEACE_TUG                    src/17m-peace-fleet.js:131
@@ -1657,7 +1655,7 @@ PLANT_BAKE                   src/20-life.js:217
 PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
 PLANT_KINDS                  src/20-life.js:172
-PLANT_UXQ                    src/20fa-life-gpu.js:398
+PLANT_UXQ                    src/20fa-life-gpu.js:390
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
 PLAN_DENS                    src/27jb-kb.js:47
@@ -2557,7 +2555,7 @@ aiDrift                      src/12f-mgr-ai.js:52-105
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
-albumAll                     src/25g-postcard.js:630
+albumAll                     src/25g-postcard.js:629
 albumBake                    src/25g1-album-fx.js:57
 albumCanvas                  src/25g1-album-fx.js:79-86
 albumClose                   src/25g1-album-fx.js:88
@@ -2565,7 +2563,7 @@ albumDpr                     src/25g1-album-fx.js:87
 albumL                       src/25g1-album-fx.js:23
 albumLightbox                src/25g1-album-fx.js:90-135
 albumM                       src/25g1-album-fx.js:25
-albumOpen                    src/25g-postcard.js:679
+albumOpen                    src/25g-postcard.js:678
 albumPut                     src/25g1-album-fx.js:71-77
 albumRig                     src/25g1-album-fx.js:63-69
 albumSave                    src/25g1-album-fx.js:139-175
@@ -3037,7 +3035,7 @@ c3SignTex                    src/27f4-cant3d.js:236-245
 c3Stool                      src/27f4-cant3d.js:90-99
 c3StoryProp                  src/27f4-cant3d.js:222-234
 camBody                      src/17-mode-system.js:82-91
-camBtnTick                   src/25g-postcard.js:668-672
+camBtnTick                   src/25g-postcard.js:667-671
 camFree                      src/17p-cam-frame.js:11-23
 camOffset                    src/19c-light.js:155-162
 camReach                     src/17p-cam-frame.js:25-30
@@ -4056,7 +4054,7 @@ drawHullMarks                src/03b-hull-paint.js:174-481
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-52
 drawLander                   src/19f-lander.js:56-358
-drawLanding                  src/19-mode-landing.js:211-367
+drawLanding                  src/19-mode-landing.js:210-366
 drawLawRing                  src/12al2-laws.js:136-162
 drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
@@ -4078,7 +4076,7 @@ drawPlanetWorks              src/17e-station-body.js:71-116
 drawPlant                    src/20-life.js:423-431
 drawPlantAlien               src/20-life.js:227-394
 drawPortal                   src/20aa-poi-shapes.js:459-483
-drawPostcard                 src/25g-postcard.js:171-613
+drawPostcard                 src/25g-postcard.js:170-612
 drawRaid                     src/24aa-raid-draw.js:14-612
 drawRail                     src/18g-rail-ride.js:113-147
 drawRailArrive               src/18g-rail-ride.js:18-21
@@ -5785,7 +5783,7 @@ letterState                  src/12k-letters.js:42
 letterTake                   src/12k-letters.js:70-76
 lettersAll                   src/12k-letters.js:41
 lettersBlock                 src/12k-letters.js:99-115
-lgGlowTex                    src/19-mode-landing.js:203-210
+lgGlowTex                    src/19-mode-landing.js:203-209
 lgGpu                        src/19-mode-landing.js:200
 lgHTex                       src/19g-landing-gpu.js:25-37
 lgLander                     src/19g-landing-gpu.js:390-448
@@ -5794,26 +5792,25 @@ lgLanderSb                   src/19g-landing-gpu.js:388
 lgRGB                        src/19g-landing-gpu.js:39
 lgRidges                     src/19g-landing-gpu.js:94-110
 lgUnder                      src/19g-landing-gpu.js:195-234
-lifeAstroAt                  src/20fa-life-gpu.js:268-272
-lifeAstroBake                src/20fa-life-gpu.js:208-214
-lifeAstroGpu                 src/20fa-life-gpu.js:219-244
-lifeAstroPal                 src/20fa-life-gpu.js:192-199
-lifeAstroPose                src/20fa-life-gpu.js:201-207
-lifeBake2D                   src/20fa-life-gpu.js:104-109
+lifeAstroAt                  src/20fa-life-gpu.js:260-264
+lifeAstroBake                src/20fa-life-gpu.js:200-206
+lifeAstroGpu                 src/20fa-life-gpu.js:211-236
+lifeAstroPal                 src/20fa-life-gpu.js:184-191
+lifeAstroPose                src/20fa-life-gpu.js:193-199
 lifeBakeDrop                 src/20fa-life-gpu.js:101
 lifeBaked                    src/20fa-life-gpu.js:92-100
-lifeBeastBox                 src/20fa-life-gpu.js:293-305
-lifeBeastGpu                 src/20fa-life-gpu.js:308-389
-lifeDim                      src/20fa-life-gpu.js:137-140
-lifeHere                     src/20fa-life-gpu.js:263
-lifeId                       src/20fa-life-gpu.js:282
-lifeLampGpu                  src/20fa-life-gpu.js:247-259
-lifeLight                    src/20fa-life-gpu.js:116-134
-lifePeepGpu                  src/20fa-life-gpu.js:443-490
-lifePlantBox                 src/20fa-life-gpu.js:399-404
-lifePlantGpu                 src/20fa-life-gpu.js:408-435
-lifeSprite                   src/20fa-life-gpu.js:146-183
-lifeTint                     src/20fa-life-gpu.js:284-291
+lifeBeastBox                 src/20fa-life-gpu.js:285-297
+lifeBeastGpu                 src/20fa-life-gpu.js:300-381
+lifeDim                      src/20fa-life-gpu.js:129-132
+lifeHere                     src/20fa-life-gpu.js:255
+lifeId                       src/20fa-life-gpu.js:274
+lifeLampGpu                  src/20fa-life-gpu.js:239-251
+lifeLight                    src/20fa-life-gpu.js:108-126
+lifePeepGpu                  src/20fa-life-gpu.js:435-482
+lifePlantBox                 src/20fa-life-gpu.js:391-396
+lifePlantGpu                 src/20fa-life-gpu.js:400-427
+lifeSprite                   src/20fa-life-gpu.js:138-175
+lifeTint                     src/20fa-life-gpu.js:276-283
 lightShafts                  src/19c-light.js:213-246
 lightWalk                    tests/91ql-light.js:8-21
 lightsAll                    src/11g-lights.js:24
@@ -6562,30 +6559,29 @@ passportIssue                src/17i1-passport.js:12-19
 passportOn                   src/17i1-passport.js:11
 payCost                      src/21a-mode-base.js:100
 pbOnScreen                   src/17a0-prebake.js:41
-pcA                          src/25g-postcard.js:150
+pcA                          src/25g-postcard.js:149
 pcBelt                       src/25g-post-void.js:58-221
-pcC                          src/25g-postcard.js:147
+pcC                          src/25g-postcard.js:146
 pcCave                       src/25g-post-under.js:131-234
-pcDeform                     src/25g-post-craft.js:34-46
-pcGrainBake                  src/25g-post-craft.js:22-26
-pcGrainTile                  src/25g-post-craft.js:8-19
+pcDeform                     src/25g-post-craft.js:20-32
+pcGrainBake                  src/25g-post-craft.js:8-12
 pcMan                        src/25g-post-under.js:33-63
 pcMine                       src/25g-post-under.js:251-400
-pcMix                        src/25g-postcard.js:149
-pcNebula                     src/25g-post-craft.js:68-80
+pcMix                        src/25g-postcard.js:148
+pcNebula                     src/25g-post-craft.js:54-66
 pcOre                        src/25g-post-under.js:104-114
-pcPrint                      src/25g-postcard.js:130-145
+pcPrint                      src/25g-postcard.js:130-144
 pcRigAt                      src/25g1-album-fx.js:41-44
 pcRigSky                     src/25g1-album-fx.js:46-50
 pcRigUnder                   src/25g1-album-fx.js:52-55
 pcScoop                      src/25g-post-void.js:399-526
 pcShip                       src/25g-post-void.js:23-47
-pcStar                       src/25g-postcard.js:152-155
+pcStar                       src/25g-postcard.js:151-154
 pcStrata                     src/25g-post-under.js:70-101
 pcSystem                     src/25g-post-void.js:231-389
 pcTestPlanet                 tests/90a-tools.js:750-757
 pcTestSnap                   tests/90a-tools.js:760-764
-pcWash                       src/25g-post-craft.js:47-62
+pcWash                       src/25g-post-craft.js:33-48
 peaceDay                     src/17m-peace-fleet.js:24
 peaceFlag                    src/17m-peace-fleet.js:38-60
 peaceHere                    src/17m-peace-fleet.js:12-19
@@ -7230,7 +7226,7 @@ poiTone                      src/20a-poi.js:176-180
 postAddrs                    src/11e-post.js:47-71
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113-142
-postCanShoot                 src/25g-postcard.js:634-651
+postCanShoot                 src/25g-postcard.js:633-650
 postCaption                  src/25g-postcard.js:114-124
 postChoose                   src/25i-post-back.js:48-51
 postDock                     src/11e-post.js:80-97
@@ -7248,7 +7244,7 @@ postSetForm                  src/25i-post-back.js:44-47
 postSign                     src/25i-post-back.js:35-41
 postSigned                   src/25i-post-back.js:32
 postSnap                     src/25g-postcard.js:65-108
-postTake                     src/25g-postcard.js:652-666
+postTake                     src/25g-postcard.js:651-665
 postTerrain                  src/25g-postcard.js:41-47
 postWorld                    src/25g-postcard.js:49-54
 powCoupOn                    src/12b0-fx-pow.js:26-29
@@ -7643,7 +7639,7 @@ relicRoll                    src/12h-relic.js:104-110
 relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113-121
 relicUnequip                 src/12h-relic.js:87
-renderAlbum                  src/25g-postcard.js:680-704
+renderAlbum                  src/25g-postcard.js:679-703
 renderBarge                  src/12l-barge.js:663-754
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-325
@@ -9939,7 +9935,7 @@ zoomTo                       src/15-input.js:358
 ## src/20f-fauna.js · 17 KB
   · фауна:1
 
-## src/20fa-life-gpu.js · 33 KB
+## src/20fa-life-gpu.js · 32 KB
   · жизнь на видеокарте: двойники кистей ходока, зверя и травы:1
 
 ## src/21-mode-surface.js · 51 KB
@@ -10390,9 +10386,9 @@ zoomTo                       src/15-input.js:358
   · орбита:223
   · атмосфера газового гиганта:391
 
-## src/25g-postcard.js · 44 KB
+## src/25g-postcard.js · 43 KB
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:615
+  · камера и альбом:614
 
 ## src/25g1-album-fx.js · 13 KB
   · альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3):1

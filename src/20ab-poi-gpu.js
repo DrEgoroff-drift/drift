@@ -155,15 +155,15 @@ function bakeRect(B,x,y){const o=lifeHere(0,0),K=o.s;return {x:o.x+x*K,y:o.y+(y+
 function bakePut(pass,B,x,y,blend){gpuImage(pass,B.cn,[bakeRect(B,x,y)],blend?{blend}:undefined);}
 /* выпечка в слой стоящего (21e2): место считается сейчас, по матрице этого кадра */
 function bakeStand(B,x,y){const r=bakeRect(B,x,y);standAdd((ps,bl)=>gpuImage(ps,B.cn,[r],{blend:bl}));}
-/* мягкое пятно тени: радиальный спад, растянутый в эллипс — один холст на всю игру */
+/* мягкое пятно тени: радиальный спад, растянутый в эллипс — одна выпечка на всю игру */
 let POI_SHTEX=null;
 function poiShadowTex(){
   if(POI_SHTEX)return POI_SHTEX;
-  const cn=document.createElement("canvas");cn.width=cn.height=64;
-  const g=cn.getContext("2d"),gr=g.createRadialGradient(32,32,0,32,32,32);
-  gr.addColorStop(0,"rgba(0,0,0,1)");gr.addColorStop(1,"rgba(0,0,0,0)");
-  g.fillStyle=gr;g.fillRect(0,0,64,64);
-  return POI_SHTEX=cn;
+  return POI_SHTEX=gpuBake(64,64,g=>{
+    const gr=g.createRadialGradient(32,32,0,32,32,32);
+    gr.addColorStop(0,"rgba(0,0,0,1)");gr.addColorStop(1,"rgba(0,0,0,0)");
+    g.fillStyle=gr;g.fillRect(0,0,64,64);
+  });
 }
 /* то же место и тот же размах, что groundShadow (19-mode-landing), в пикселях кадра */
 function poiShadowRect(x,y,rx,ry,al,o){
