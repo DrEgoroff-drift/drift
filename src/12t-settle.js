@@ -75,17 +75,18 @@ function drawGlyph(c,i,x,y,s){
   if(op===3){c.beginPath();c.moveTo(-w,h*1.15);c.lineTo(w,h*1.15);c.stroke();}
   c.restore();
 }
-/* канва-знак для DOM: плотность ×DPR×UIK (M221 — растр в панели иначе мылится) */
+/* WebGPU-знак для DOM: плотность ×DPR×UIK (M221 — в панели иначе мылится) */
 function glyphEl(i,ink){
   const px=11,d=Math.min(2,devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
   const cv=document.createElement("canvas");
   cv.width=Math.round(px*.82*d);cv.height=Math.round(px*1.2*d);
   cv.style.width=(px*.82)+"px";cv.style.height=(px*1.2)+"px";
   cv.className="glyphc";
-  const c=cv.getContext("2d");c.scale(d,d);
-  /* чернила: в эфире и журнале — светлые, на бумаге открытки — тёмные */
-  c.strokeStyle=ink||"rgba(210,218,226,.92)";c.lineWidth=1.25;c.lineCap="round";
-  drawGlyph(c,i,0,1,px);
+  panelGpu(cv,px*.82,px*1.2,d,c=>{
+    /* чернила: в эфире и журнале — светлые, на бумаге открытки — тёмные */
+    c.strokeStyle=ink||"rgba(210,218,226,.92)";c.lineWidth=1.25;c.lineCap="round";
+    drawGlyph(c,i,0,1,px);
+  });
   return cv;
 }
 /* строка с рунами → фрагмент: текст остаётся текстом, руны становятся знаками */

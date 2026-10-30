@@ -365,10 +365,10 @@ function nodeIconEl(node,size){
   const dpr=Math.min(window.devicePixelRatio||1,2);
   cn.width=size*dpr;cn.height=size*dpr;
   cn.style.cssText="width:"+size+"px;height:"+size+"px;flex:0 0 auto;line-height:0";
-  const c=cn.getContext("2d");
-  c.setTransform(dpr,0,0,dpr,0,0);
-  c.translate(size/2,size/2);
-  drawNodeIcon(c,node,size);
+  panelGpu(cn,size,size,dpr,c=>{
+    c.translate(size/2,size/2);
+    drawNodeIcon(c,node,size);
+  });
   return cn;
 }
 /* ── венцы на корабле ──

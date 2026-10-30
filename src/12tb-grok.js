@@ -172,9 +172,9 @@ function grokLine(){
    способом и в тот же размер, чтобы в кантине он стоял в одном ряду с людьми. */
 function grokFace(size){
   const S=size||64,cn=document.createElement("canvas");
-  cn.width=S;cn.height=S;
-  const c=cn.getContext("2d");
+  cn.style.width=S+"px";cn.style.height=S+"px";
   const u=S/64;
+  panelGpu(cn,S,S,panelNd(),c=>{
   const hide=[124,118,88], hideD=[68,66,48], hideL=[168,160,118];
   const rgb=a=>"rgb("+a.map(v=>Math.round(v)).join(",")+")";
   c.fillStyle="#171b16";c.fillRect(0,0,S,S);
@@ -342,5 +342,6 @@ function grokFace(size){
   /* пыль на плечах — слоями, как на всём остальном */
   c.fillStyle="rgba(206,186,140,.42)";
   c.fillRect(S*.29,S*.565,S*.42,S*.018);
+  });
   return cn;
 }

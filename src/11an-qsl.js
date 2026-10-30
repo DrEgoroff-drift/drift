@@ -165,13 +165,14 @@ function renderQsl(box){
     const row=document.createElement("div");row.className="row";
     const cv=document.createElement("canvas");
     cv.width=228*2;cv.height=142*2;cv.style.width="228px";cv.style.height="142px";
-    const cc=cv.getContext("2d");cc.scale(2,2);
-    if(qslGot(o.id))qslDraw(cc,10,8,208,124,o,hashi(o.id.length,3,5));
-    else{
-      cc.fillStyle="rgba(255,255,255,.04)";cc.fillRect(10,8,208,124);
-      cc.strokeStyle="rgba(201,181,142,.22)";cc.setLineDash([6,5]);
-      cc.strokeRect(10.5,8.5,207,123);
-    }
+    panelGpu(cv,228,142,2,cc=>{
+      if(qslGot(o.id))qslDraw(cc,10,8,208,124,o,hashi(o.id.length,3,5));
+      else{
+        cc.fillStyle="rgba(255,255,255,.04)";cc.fillRect(10,8,208,124);
+        cc.strokeStyle="rgba(201,181,142,.22)";cc.setLineDash([6,5]);
+        cc.strokeRect(10.5,8.5,207,123);
+      }
+    });
     row.appendChild(cv);
     pack.appendChild(row);
     if(!qslSent(o.id)){

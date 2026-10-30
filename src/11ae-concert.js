@@ -108,7 +108,7 @@ function wallBlock(){
   $body.appendChild(el("div","sec","НА СТЕНЕ"));
   const row=document.createElement("div");row.className="row";
   const cv=document.createElement("canvas");cv.width=460;cv.height=150;cv.style.cssText="width:100%;max-width:460px;height:auto";
-  drawWallPaper(cv.getContext("2d"),460,150);
+  panelGpu(cv,460,150,panelNd(),c=>drawWallPaper(c,460,150));
   row.appendChild(cv);$body.appendChild(row);
   /* заявка: ближайшая другая станция */
   let to=null,best=1e9;
