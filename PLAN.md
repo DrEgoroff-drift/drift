@@ -310,9 +310,10 @@ Check each against the code before building — some may already hold.
 - [x] **Dead code in `23-mode-dig` — done 0.499.99:** `drawDigFauna` stub and its `23c0-dig-hooks` entry removed; the engine draws the beasts and the zap (`23ce`). The ban on editing `23-mode-dig` is lifted.
 - [ ] **Refactor queue, each a commit:** **done (31.10):** `detStuck`'s key law — the silence table `DET_MUTE`
   is in (`90c`, and the law stays strict-zero); a shard that hangs names its suite —
-  `--enable-logging=stderr` + `Last-Suite` give "did not finish … last suite «X»" (`test.ps1`).
-  **Still open:** the source net is line-based and the clock law skips `tests/` (41 raw calls); long
-  functions, on touch only; the button family merge; `-Times` for the Node tier.
+  `--enable-logging=stderr` + `Last-Suite` give "did not finish … last suite «X»" (`test.ps1`);
+  `-Times` for the Node tier is in (`test-node.js --times` prints the `SLOWEST` block).
+  **Still open:** the source net is line-based and the clock law skips `tests/` (41 raw calls);
+  long functions, on touch only; the button family merge.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
   the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
