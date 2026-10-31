@@ -2267,7 +2267,7 @@ STAR_CLASS                   src/02-world.js:192-198
 STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:22
 STAR_MV                      src/16-flight.js:24
-STATE_HASH_SKIP              src/08a-statehash.js:25-30
+STATE_HASH_SKIP              src/08a-statehash.js:25-34
 STAT_SHOW                    src/05-parts.js:426-438
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -2976,8 +2976,8 @@ bodyBb                       src/17c2m-body-bb.js:51-56
 bodyBbMesh                   src/17c2m-body-bb.js:5-50
 bodyBuoy                     src/17c2j-body-buoy.js:63-68
 bodyBuoyMesh                 src/17c2j-body-buoy.js:6-61
-bodyChebMesh                 src/17c2k-body-cheb.js:4-200
-bodyCheburek                 src/17c2k-body-cheb.js:202-208
+bodyChebMesh                 src/17c2k-body-cheb.js:5-57
+bodyCheburek                 src/17c2k-body-cheb.js:59-65
 bodyDot                      src/17c2e-body-kit.js:52-56
 bodyFind                     src/17c2i-body-find.js:416-424
 bodyFindMesh                 src/17c2i-body-find.js:8-414
@@ -8349,8 +8349,8 @@ startLanding                 src/19-mode-landing.js:2-38
 startScoop                   src/19a-mode-scoop.js:51-64
 stat                         src/08-state.js:297-369
 statPreview                  src/05-parts.js:417-425
-stateHash                    src/08a-statehash.js:31-82
-stateHashParts               src/08a-statehash.js:83-91
+stateHash                    src/08a-statehash.js:35-86
+stateHashParts               src/08a-statehash.js:87-95
 stationBuilder               src/17a-station-mod.js:18-23
 stationDeals                 src/27g-deals.js:141-158
 stationFleet                 src/04b-fleet.js:163-191
@@ -9741,7 +9741,7 @@ zoomTo                       src/15-input.js:358
 ## src/17c2j-body-buoy.js · 4 KB
   · бакен полосы телом (G15 / M459):1
 
-## src/17c2k-body-cheb.js · 19 KB
+## src/17c2k-body-cheb.js · 4 KB
   · «Чебуречная» телом (G15 / M462):1
 
 ## src/17c2l-body-gest.js · 4 KB

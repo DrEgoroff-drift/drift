@@ -6,6 +6,11 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.91 — stripLvl out of stateHash; cheb body junk strip
+
+- M441: `strip` / `stripLvl` skipped in `stateHash` — planet unwrap is GPU LOD from screen radius, not world (closes the old `planetStripTick`/wallMs hash leak).
+- G15: «Чебуречная» body mesh cleaned of junk densify.
+
 ## 0.499.90 — Oracle deal probe: rail ≤ ×1.3 jumps credits/min
 
 - M475 / DESIGN-metro §5: `oracleDealProbe` — best round-trip rail vs jumps in credits per minute of play (deal time + ride/wait); suite locks ≤ ×1.3; baggage remains the lever.
