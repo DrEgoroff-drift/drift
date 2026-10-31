@@ -23,10 +23,12 @@ function lawDock(){
   if(doso)socGot("doso",0,1);
   if(by==="co"){
     const sponsor=!!(typeof expAll==="function"&&expAll().pax);   /* попутчик экспедиции (11x) — спонсор */
-    if(sponsor){logAdd("money","Компания: пошлина за стыковку — 0 кр (спонсор на борту™)");return;}
+    if(sponsor){logAdd("money","Компания: пролёт — 0 кр (акция) · спонсор на борту™");return;}
     const fee=Math.min(LAW_FEE,G.credits|0);
     G.credits-=fee;
-    logAdd("money","Компания: сбор за оформление стыковки — "+fee+" кр · спасибо за выбор");
+    /* DESIGN-review borders: «0 кр (акция) + 40 кр за оформление акции» */
+    logAdd("money","Компания: пролёт — 0 кр (акция). Сбор за оформление акции — "+fee+" кр · спасибо за выбор");
+    say("Пролёт — 0 кр (акция)\nоформление — "+fee+" кр",110);
   }
 }
 /* заправка по норме: сколько единиц из need идут по кредиту */

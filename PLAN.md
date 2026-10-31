@@ -258,6 +258,7 @@ measured on the GPU build first:
 - Metro board (0.499.56): «завтра» / «поезд подан»; «Край» 114 stops; полустанок «ждали».
 - 0.499.57: bus «до куда?»; бедная залежь «на обратную дорогу»; HF firmware one path + defer.
 - 0.499.58: полустанок lamp on approach; Коммуна «так красивее» on collect.
+- 0.499.59: Компания dock «пролёт 0 кр (акция) + оформление».
 - Approach joke (0.499.50): the stuck queue ship «с прошлой сводки» — DESIGN-review life column.
 - [ ] **M511 волокита:** the animals the author will invent (his table).
 - **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can say
