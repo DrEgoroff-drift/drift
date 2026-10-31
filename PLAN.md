@@ -217,6 +217,11 @@ thermal 0 logged before, mid-run and after (the author 26.09; a charging phone h
 
 ## 2. The frame on a laptop GPU — levers measured, not cut
 
+> **31.10 — measured on the GPU build, kept.** `g11` at DPR 2 (2560×1600): 223–240 fps in every
+> mode, 0 errors — 4× the 60 Hz target, so the 2D-era levers that remain are not the frame's cost
+> any more. The scoop frame was looked at: the flame follows `lvl=G.mods.engine` (19a1). Nothing is
+> cut here — cutting would change the look for no measurable gain.
+
 Cut only at the same look, or when the picture gets better (the author 23.09: «можно что-то делать
 только если графика лучше будет смотреться»). Method in `docs/DECISIONS.md`. The 2D-era levers — the vignette
 blit, the star's `lighter` sprites, the station rebaked every 18 ticks — went with the 2D frame; what is left is
@@ -299,7 +304,8 @@ Check each against the code before building — some may already hold.
   `T.state().clock` separate; **0.499.91** `strip`/`stripLvl` skipped in `stateHash` (GPU LOD from screen radius; old `planetStripTick` wallMs path gone).
 - [ ] **Watch:** «прогоны: двенадцать путей» flickered once under load.
 - [ ] **The vision flickers on real time (22.10):** the DPR pair (one window at 1 and 3) catches the game mid-motion. Settled in `geoSettle`: the base section lens and the man walking to his cell; the landing assembled over frames (`plnWarmStep`). Still open: after «карта» › «Назад» the system cues («Нейэль I · 760», «Звезда…») sit 5–12 px apart between the two runs, 2 of 16 runs — find what the system view eases on the real clock after the map closes, or make the DPR check skip cues anchored to moving bodies. Seen again 22.10 evening in scene «заход», 2 of 6 runs while neighbours' Chromes loaded the machine (`plnWarmStep` budgets by `wallMs`).
-- [ ] **Nets owed:** `TEST_T0` at local noon; not caught yet — the .55 auto-brake, the money-printing
+- [ ] **Nets owed:** `TEST_T0` at local noon — done (`90-harness`: 12:00 by default, `?hour=` moves it);
+  still not caught: the .55 auto-brake, the money-printing
   counter, idle drones; a per-suite dirty-page check after `fn()`.
 - [x] **Dead code in `23-mode-dig` — done 0.499.99:** `drawDigFauna` stub and its `23c0-dig-hooks` entry removed; the engine draws the beasts and the zap (`23ce`). The ban on editing `23-mode-dig` is lifted.
 - [ ] **Refactor queue, each a commit:** `detStuck`'s key law (fires only on a diff of exactly 0 — soften
