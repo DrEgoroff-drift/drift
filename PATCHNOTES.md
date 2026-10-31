@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.88 — Town giant: winches and roadside crates
+
+- G15: Dawn settlement giant gets winches at the bridges and cargo crates along the rock roads.
+
 ## 0.499.87 — Garden giant: cable trays between dishes
 
 - G15: High-Front garden gets cable trays linking the four large relay dishes.
