@@ -92,7 +92,7 @@ function drawGiantsMap(V,cell){
    сетка h3d, а не Canvas-мастер. Своё зерно строит форму один раз; живые огни идут
    через bodyLights/gpuShapes каждый кадр. Без GPU тела нет, как у станции и баржи. */
 function h3dGiantMesh(g){
-  return bodyMesh("gi:"+g.k+":"+g.seed+":c118",7,()=>{
+  return bodyMesh("gi:"+g.k+":"+g.seed+":c119",7,()=>{
     const K=h3dKit(),C=K.C,r=rng(g.seed),L=[],warm=[255,214,150],cold=[140,220,255];
     const iron=[48,46,43],steel=[138,142,146],dark=[24,23,22];
     let st=[[700,400],[-700,400]],pulse=null,run=null;
@@ -170,6 +170,22 @@ function h3dGiantMesh(g){
         K.box(tx-rr-2,tx+rr+2,ty-rr-2,ty+rr+2,88+hh,88+hh+4,1.5,C([36,32,28]),3,.5);
         K.tube([[tx,ty,88+hh+4],[tx,ty,88+hh+14]],.8,C(iron),3,.5,6);
         rect(tx-2,ty-2,4,3,88+hh+15,[160,48,36],.7);
+      }
+      /* пожарные лестницы на длинных фасадах (kimi house buildFireEscapes) */
+      for(const s of[-1,1]){
+        const y=s*208;
+        for(let bay=0;bay<4;bay++){
+          const x=-300+bay*200;
+          for(let fl=0;fl<4;fl++){
+            const z=10+fl*16;
+            K.box(x-16,x+16,y-1.5,y+1.5,z,z+2,1,C(steel),3,.55);
+            for(const dx of[-14,14])K.tube([[x+dx,y,z],[x+dx,y,z+14]],.5,C(iron),3,.5,5);
+            if(fl<3){
+              const dir=fl%2?1:-1;
+              K.tube([[x-dir*12,y,z+2],[x+dir*12,y,z+16]],1.1,C([36,32,28]),3,.45,5);
+            }
+          }
+        }
       }
       /* пандус для фур + табло «МЕСТ НЕТ» (kimi-giant-house craft) */
       for(let i=0;i<10;i++){
@@ -298,6 +314,16 @@ function h3dGiantMesh(g){
         for(let k=0;k<3;k++){
           const aa=a+k*2.1;
           K.tube([[x,y,40],[x+Math.cos(aa)*20,y+Math.sin(aa)*20,30]],.6,C(iron),3,.4,5);
+        }
+      }
+      /* лотки для бланков на фасадах (kimi customs buildDocumentChutes) */
+      for(let i=0;i<6;i++){
+        const x=-400+i*160,y=200;
+        for(let k=0;k<4;k++){
+          const xx=x-48+k*32;
+          K.box(xx-5,xx+5,y-3,y+3,28,68,2,C([36,32,28]),3,.5);
+          K.box(xx-3,xx+3,y+2,y+5,32,64,1,C([220,210,190]),3,.35);
+          for(let s=0;s<4;s++)K.box(xx-4,xx+4,y+4,y+6,36+s*8,38+s*8,.4,C([160,48,36]),3,.55);
         }
       }
       /* архивные стеллажи (kimi customs buildArchiveStacks) */

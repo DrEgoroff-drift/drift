@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.97 — House fire escapes; customs form chutes
+
+- House long facades get zigzag fire stairs. Customs block faces get document chutes. Mesh cache key `c119`.
+
 ## 0.499.96 — Town elevators / mooring lights; customs archive stacks
 
 - Town: utility elevator shafts and belt-edge mooring lamps from HTML. Customs: archive shelf stacks between the stamp towers.
