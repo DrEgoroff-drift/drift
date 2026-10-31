@@ -1,7 +1,11 @@
 /* ══════════════ M474: Орднунг — два нажатия на кассе ══════════════
-   Если сердце метро станет землёй Орднунга, одно нажатие только декларирует.
-   railBuyBoard всегда доводит до ожидания поезда. */
+   Хозяин земли станции — Орднунг: одно нажатие только декларирует трюм.
+   railBuyBoard всегда доводит до ожидания поезда (наборы и боты берут его). */
 TEST_SUITES.push(()=>suite("железная: Орднунг — декларация и посадка",()=>{
+  ok(typeof railEnsure==="function","railEnsure на месте");
+  ok(typeof railBuy==="function","railBuy на месте");
+  ok(typeof railBuyBoard==="function","railBuyBoard на месте");
+  ok(typeof railDeclare==="function","railDeclare на месте");
   resetWorld();
   railEnsure(G.sx|0,G.sy|0);
   /* любая станция метро в круге */
@@ -18,22 +22,39 @@ TEST_SUITES.push(()=>suite("железная: Орднунг — деклара�
   const D=railDestinations();
   ok(D.length>0,"касса продаёт хоть куда-то");
   if(!D.length)return;
-  const t=D[0],own0=stampOwnerAt,cred0=G.credits;
+  const t=D[0],own0=stampOwnerAt,cred0=G.credits,key=t.l.id+":"+t.i1;
   G.credits=Math.max(G.credits,500);
   RAIL_DECL="";RAIL_WAIT=null;
   try{
-    stampOwnerAt=()=>"or";
-    /* одно нажатие — только декларация */
+    /* не Орднунг: одно нажатие сажает */
+    stampOwnerAt=()=>"gt";
+    RAIL_DECL="";RAIL_WAIT=null;
+    const cGt=G.credits;
     railBuy(t,false,false);
-    ok(!RAIL_WAIT&&RAIL_DECL===t.l.id+":"+t.i1,"Орднунг: первое нажатие — декларация, без поезда");
+    ok(!!RAIL_WAIT,"не Орднунг: одно нажатие — ожидание поезда");
+    ok(G.credits<cGt,"не Орднунг: билет списал кредиты");
+    ok(RAIL_WAIT.to&&RAIL_WAIT.t>0,"ожидание: есть назначение и таймер");
+
+    /* Орднунг: первое — декларация, второе — посадка */
+    stampOwnerAt=()=>"or";
+    RAIL_DECL="";RAIL_WAIT=null;G.credits=Math.max(G.credits,500);
+    const cOr=G.credits;
+    railBuy(t,false,false);
+    ok(!RAIL_WAIT,"Орднунг: первое нажатие — без поезда");
+    eq(RAIL_DECL,key,"Орднунг: декларация записана по ключу рейса");
+    ok(G.credits===cOr,"Орднунг: декларация кредиты не берёт");
     ok(/ДЕКЛАРИРУЮ/.test(G.msg||""),"голос: «ДЕКЛАРИРУЮ…»");
-    /* второе — билет */
     railBuy(t,false,false);
     ok(!!RAIL_WAIT,"Орднунг: второе нажатие — ожидание поезда");
-    /* railBuyBoard с чистого листа — сразу до посадки */
+    ok(G.credits<cOr,"Орднунг: второе нажатие списывает билет");
+
+    /* railBuyBoard с чистого листа — оба нажатия внутри */
     RAIL_DECL="";RAIL_WAIT=null;G.credits=Math.max(G.credits,500);
+    const cBo=G.credits;
     railBuyBoard(t,false,false);
-    ok(!!RAIL_WAIT,"railBuyBoard: два нажатия внутри, поезд ждёт");
+    ok(!!RAIL_WAIT,"railBuyBoard: доводит до ожидания поезда");
+    ok(G.credits<cBo,"railBuyBoard: билет списан");
+    ok(RAIL_WAIT.l&&RAIL_WAIT.l.id===t.l.id,"railBuyBoard: тот же рейс");
   }finally{
     stampOwnerAt=own0;G.credits=cred0;RAIL_DECL="";RAIL_WAIT=null;
   }
