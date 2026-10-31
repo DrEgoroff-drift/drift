@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.49";
+const VER="0.499.50";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -48379,6 +48379,7 @@ const SAVE_EPHEMERAL={
   logNewBy:"кадр",     /* непрочитанное по разделам — пара к logNew, который тоже кадр */
   giantRum:"кадр",     /* какой слух великана уже записан — после загрузки его запишут ещё раз, не беда (M464) */
   spaTip:"кадр",       /* подсказка посадки «САНАТОРИЙ» с стойки гостиницы — на сессию, не в сейв (M461) */
+  _laneWait:"кадр",    /* плашка «с прошлой сводки» у очереди на подлёте — раз за визит в систему */
 };
 
 /* ══════════════ провод войны (M376, §13, §16.4) ══════════════
@@ -62246,8 +62247,13 @@ function drawSysLaneShips(zx,zy,Z){
   const onEll=w=>{const ex=Math.cos(w)*150,ey=Math.sin(w)*70*P.side;
     return {x:P.hx+ex*ca-ey*sa,y:P.hy+ex*sa+ey*ca}};
   for(let i=0;i<n;i++){
-    const w=ts*TAU/40+i/n*TAU+P.ph*TAU,p=onEll(w),p2=onEll(w+.02);
-    laneShip(P.queue[i],zx(p.x),zy(p.y),Math.atan2(p2.y-p.y,p2.x-p.x),1,Z);
+    /* нулевой — стоит с прошлой сводки (DESIGN-review life): остальные кружат */
+    const w=i===0?(P.ph*2.17):(ts*TAU/40+i/n*TAU+P.ph*TAU),p=onEll(w),p2=onEll(w+(i===0?0:.02));
+    const a=i===0?Math.atan2(P.st.y-p.y,P.st.x-p.x):Math.atan2(p2.y-p.y,p2.x-p.x);
+    laneShip(P.queue[i],zx(p.x),zy(p.y),a,1,Z);
+    if(!i&&Z>.35&&typeof hangSay==="function"&&Math.hypot(G.ship.x-p.x,G.ship.y-p.y)<240){
+      const id="laneWait:"+G.sx+","+G.sy;if(G._laneWait!==id){G._laneWait=id;
+        hangSay(id,["Он тут с прошлой сводки.","Ждёт."],"sys",220,{obj:{x:p.x,y:p.y,radius:36}});}}
   }
   /* садится: с эллипса к доку за десять секунд, у дока гаснет — вошёл */
   {

@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.50 — the queue ship that never docks
+
+- Approach queue (M459 / DESIGN-review life): the first ship in the holding ellipse sits still facing the dock — «Он тут с прошлой сводки. Ждёт.» once per system visit. The rest keep circling.
+
 ## 0.499.49 — billboard neon tints the hull (Law 2)
 
 - M460: within ~380 of a lane sign the ship's hull picks up the power's neon as a soft additive wash (squared falloff) — DESIGN-life Law 2, the colour that fills the approach.

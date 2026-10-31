@@ -175,8 +175,13 @@ function drawSysLaneShips(zx,zy,Z){
   const onEll=w=>{const ex=Math.cos(w)*150,ey=Math.sin(w)*70*P.side;
     return {x:P.hx+ex*ca-ey*sa,y:P.hy+ex*sa+ey*ca}};
   for(let i=0;i<n;i++){
-    const w=ts*TAU/40+i/n*TAU+P.ph*TAU,p=onEll(w),p2=onEll(w+.02);
-    laneShip(P.queue[i],zx(p.x),zy(p.y),Math.atan2(p2.y-p.y,p2.x-p.x),1,Z);
+    /* нулевой — стоит с прошлой сводки (DESIGN-review life): остальные кружат */
+    const w=i===0?(P.ph*2.17):(ts*TAU/40+i/n*TAU+P.ph*TAU),p=onEll(w),p2=onEll(w+(i===0?0:.02));
+    const a=i===0?Math.atan2(P.st.y-p.y,P.st.x-p.x):Math.atan2(p2.y-p.y,p2.x-p.x);
+    laneShip(P.queue[i],zx(p.x),zy(p.y),a,1,Z);
+    if(!i&&Z>.35&&typeof hangSay==="function"&&Math.hypot(G.ship.x-p.x,G.ship.y-p.y)<240){
+      const id="laneWait:"+G.sx+","+G.sy;if(G._laneWait!==id){G._laneWait=id;
+        hangSay(id,["Он тут с прошлой сводки.","Ждёт."],"sys",220,{obj:{x:p.x,y:p.y,radius:36}});}}
   }
   /* садится: с эллипса к доку за десять секунд, у дока гаснет — вошёл */
   {

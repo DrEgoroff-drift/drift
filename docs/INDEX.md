@@ -2098,7 +2098,7 @@ S1                           src/01-core.js:183
 S2                           src/01-core.js:184
 SAME_FRAMES                  tests/91zzzzzbb-samehash.js:21
 SAVE_BUDGET                  src/14-save.js:126
-SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-58
+SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-59
 SAVE_KEY                     src/14-save.js:6
 SBELT_ARC                    src/17gc-sys-belt.js:9
 SBELT_BAS                    src/17gc-sys-belt.js:42
@@ -4118,7 +4118,7 @@ drawSurfaceHud               src/21e-surface-draw.js:40-143
 drawSurvey                   src/12w-survey.js:63-81
 drawSysHud                   src/17-mode-system.js:753-1102
 drawSysLane                  src/17g-sys-lane.js:112-137
-drawSysLaneShips             src/17g-sys-lane.js:167-195
+drawSysLaneShips             src/17g-sys-lane.js:167-200
 drawSysRail                  src/18f-rail-station.js:61-69
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawSystem                   src/17-mode-system.js:558-741
