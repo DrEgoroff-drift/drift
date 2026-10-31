@@ -80,18 +80,30 @@ async function g11Run(){
       roadAudio=function(){if(!RD)return;RD.kmh=60;RD.energy=.7;RD.bright=.5;
         for(let k=0;k<28;k++)RD.wave[k]=.25+.2*Math.sin(k);};
     }]];
+  /* промежутки кадров: среднее — не главное; долгие кадры (p90, max, ≥45 мс) и
+     задержка перехода (от нажатия до первого кадра нового режима) — вот что меряем */
+  const iv2=sec=>new Promise(res=>{const d=[];let t0=0,tp=0;
+    const tick=t=>{if(!t0)t0=tp=t;else{d.push(t-tp);tp=t;}
+      if(t-t0<sec*1000){requestAnimationFrame(tick);return;}
+      const s=d.slice().sort((x,y)=>x-y);const q=k=>+(s[Math.min(s.length-1,Math.floor(s.length*k))]||0).toFixed(1);
+      res({fps:Math.round(d.length/((t-t0)/1000)),p50:q(.5),p90:q(.9),max:+(s[s.length-1]||0).toFixed(1),n45:d.filter(x=>x>=45).length});};
+    requestAnimationFrame(tick);});
+  const det={};
   for(const st of steps){
     try{
+      const tSwitch=wallMs();
       st[1]();
+      const delay=Math.round(await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(t=>r(wallMs()-tSwitch)))));
       await sleep(4000);                 /* кэши пекутся — меряем крейсер, не старт */
-      out[st[0]]=await g11Fps(2.5);
-      put(st[0]+" "+out[st[0]]);
+      const iv=await iv2(2.5);
+      out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,switchMs:delay};
+      put(st[0]+" "+iv.fps+" · p90 "+iv.p90+" · max "+iv.max+" · ≥45 "+iv.n45+" · переход "+delay+" мс");
     }catch(e){err.push(st[0]+": "+(e&&e.message||e));put(st[0]+" СБОЙ");}
   }
   put("ГОТОВО "+JSON.stringify(out));
   /* стенд слушает только на localhost; на проде этот POST тихо умрёт — и пусть */
   try{await fetch("/shot?n=g11",{method:"POST",
-    body:btoa(unescape(encodeURIComponent(JSON.stringify({dpr:devicePixelRatio,fps:out,err,ua:navigator.userAgent.slice(0,80)}))))});}catch(e){}
+    body:btoa(unescape(encodeURIComponent(JSON.stringify({dpr:devicePixelRatio,fps:out,det,err,ua:navigator.userAgent.slice(0,80)}))))});}catch(e){}
 }
 /* ── глубокий разбор: ?g11=deep ──
    Меряет базу, затем глушит рисующие проходы ПО ОДНОМУ (function-объявления —
