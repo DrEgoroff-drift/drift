@@ -7,9 +7,9 @@ TEST_SUITES.push(()=>suite("чертёж: числа M478",()=>{
   const npcId="npcFix478";
   NPC_SHIPS[npcId]={name:npcId,seed:0x47801,hcls:"courier",col:"#8899aa",thr:1,turn:1,fuel:100,cargo:40,hull:100};
   const uo={by:"gt",cls:"ore",size:1,l:1,w:1,seed:0x47801,no:478,st:"проба"};
-  const uid=typeof stapelId==="function"?stapelId(uo):"spFix478";
-  if(typeof stapelShip==="function"){G.uniqueShips[uid]=stapelShip(uo);G.owned[uid]=true;}
-  const ids=["strizh",fleetId,npcId].concat(G.uniqueShips[uid]?[uid]:[]);
+  const uid=stapelId(uo);
+  G.uniqueShips[uid]=stapelShip(uo);G.owned[uid]=true;
+  const ids=["strizh",fleetId,npcId,uid];
   const same=(a,b)=>a===b||(Number.isNaN(a)&&Number.isNaN(b));
   for(const id of ids){
     G.shipId=id;G.owned[id]=true;G.fit[id]=G.fit[id]||{};

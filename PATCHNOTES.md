@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.76 — fix typeof guards in M476 plan suite
+
+- CI net: drop `typeof stapelId/stapelShip` soft-guards in `чертёж: числа M478` (call them directly).
+
 ## 0.499.75 — M476 fixpoint covers ordered unique hulls
 
 - M476: plan-factors suite also plants a СТАПЕЛЬ unique (`stapelShip`) — no-draft / typical stay ×1 with fleet and NPC.
