@@ -2,6 +2,8 @@
    Стриж, серийный флот, NPC и заказной unique: без чертежа и с типовым — ×1. */
 TEST_SUITES.push(()=>suite("чертёж: числа M478",()=>{
   resetWorld();
+  G.mods.tank=2;G.mods.hold=1;G.mods.armor=3;
+  ok(Math.abs(planModDens("tank")-(1+.3*2))<1e-9&&Math.abs(planModDens("hold")-(1+.32))<1e-9&&Math.abs(planModDens("armor")-(1+.2*3))<1e-9,"ступени hold/tank/armor — плотность на клетку");
   const fleetId=Object.keys(FLEET)[0];
   ok(!!fleetId,"есть серийный корпус");
   const npcId="npcFix478";

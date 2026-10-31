@@ -404,7 +404,13 @@ function kbDraw(c,s,d){
    типовой, потолок ×1.4); тяга/поворот от массы плана (.8…1.1); бак /
    энергия — клетки mtank / mweapon (котёл) к типовым; обзор — приборы
    (util) в носовой трети; корпус — броня/обшивка на борту и в носу.
-   Плотности дальним грузом — planDens. */
+   Плотности дальним грузом — planDens. Ступени hold/tank/armor — плотность
+   на клетку (таблица ниже); engine/hyper/drill остаются апгрейдами станции. */
+const PLAN_MOD_DENS={hold:.32,tank:.3,armor:.2};
+function planModDens(k){
+  const mods=(typeof planMods==="function")?planMods(G.mods):G.mods;
+  return 1+(PLAN_MOD_DENS[k]||0)*((mods[k]|0));
+}
 const PLAN_F={key:"",v:{cargo:1,mass:1,fuel:1,energy:1,see:1,hull:1}};
 function planFactors(){
   const one={cargo:1,mass:1,fuel:1,energy:1,see:1,hull:1};

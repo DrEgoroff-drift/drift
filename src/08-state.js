@@ -331,9 +331,9 @@ function stat(){
        вмешивается в арифметику (12s-wear) */
     thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr"))*wearMul()*PF.mass*(typeof abilMul==="function"?abilMul("thr"):1),
     turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul()*WT.turn*PF.mass*SC.turn*(typeof abilMul==="function"?abilMul("turn"):1),
-    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)*(PF.fuel||1)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel")+WT.fuel)),
-    cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*PF.cargo*SC.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
-    hullMax:Math.max(20,Math.round(PD.hull*(PF.hull||1)*(gunList.some(a=>a.g&&a.g.fx==="ram")?1.35:1)*(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0)))),
+    fuelMax:Math.max(20,Math.round(S.fuel*planModDens("tank")*(PF.fuel||1)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel")+WT.fuel)),
+    cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*PF.cargo*SC.cargo*planModDens("hold")*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
+    hullMax:Math.max(20,Math.round(PD.hull*(PF.hull||1)*(gunList.some(a=>a.g&&a.g.fx==="ram")?1.35:1)*(S.hull*planModDens("armor")+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0)))),
     drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
     jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")+WT.jump+((PF.fuel||1)-1)*.5),

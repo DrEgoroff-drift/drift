@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 677 · top-level symbols: 8916
+Files: 677 · top-level symbols: 8918
 
 ## SYMBOLS
 
@@ -1674,9 +1674,10 @@ PLAN_COL                     src/05e-plan.js:131
 PLAN_DENS                    src/27jb-kb.js:47
 PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:408
+PLAN_F                       src/27jb-kb.js:414
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
+PLAN_MOD_DENS                src/27jb-kb.js:409
 PLAN_WANT                    src/05e-plan.js:78
 PLAYHOUR_HOOKS               src/28v-playhour.js:18-29
 PLN                          src/21p-pln.js:15
@@ -6672,11 +6673,12 @@ planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
 planExposure                 src/05e-plan.js:217-230
-planFactors                  src/27jb-kb.js:409-432
+planFactors                  src/27jb-kb.js:415-438
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
+planModDens                  src/27jb-kb.js:410-413
 planMods                     src/27jb-kb.js:76-81
 planN                        src/05e-plan.js:21
 planNow                      src/05e-plan.js:125-129
