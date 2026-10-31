@@ -52,6 +52,10 @@ async function g11Run(){
   put("едем, ~30 секунд…");
   const el=document.getElementById("startEasy");if(el)el.click();
   await sleep(1800);
+  /* прогрев getSystem: иначе switchMs первого режима меряет холодную генерацию
+     сотен систем (800–900 мс), а не переход игры (нашёл ?g11=near, 01.11) */
+  try{for(let r0=0;r0<16;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++){
+    if(Math.max(Math.abs(x),Math.abs(y))!==r0)continue;getSystem(x,y);}}catch(e){}
   const steps=[
     ["system",()=>{G.mode="system";G.ap=null;}],
     ["belt",()=>{jump(find(s=>s.belt));enterBelt();}],
@@ -148,9 +152,13 @@ async function g11RunNear(){
   document.body.appendChild(box);
   const put=t=>{box.textContent+=t+"\n";};
   try{
-    nearOn();
     const el=document.getElementById("startEasy");if(el)el.click();
     await sleep(2500);
+    /* прогрев getSystem до nearOn: find() холодно зовёт getSystem для сотен систем
+       (800–900 мс), и это время падало в gap первого перехода — замер врал, а не игра */
+    try{for(let r0=0;r0<16;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++){
+      if(Math.max(Math.abs(x),Math.abs(y))!==r0)continue;getSystem(x,y);}}catch(e){}
+    nearOn();
     const runs=[
       ["system",()=>{G.mode="system";G.ap=null;}],
       ["landing-cold",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
