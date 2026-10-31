@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.95";
+const VER="0.499.96";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -66066,6 +66066,19 @@ function h3dGiantMesh(g){
           K.tube([[x,y,40],[x+Math.cos(aa)*20,y+Math.sin(aa)*20,30]],.6,C(iron),3,.4,5);
         }
       }
+      /* архивные стеллажи (kimi customs buildArchiveStacks) */
+      for(let i=0;i<8;i++){
+        const x=-420+i*110;
+        for(let row=0;row<2;row++){
+          const y=-80+row*100;
+          K.box(x-32,x+32,y-22,y+22,-5,6,3,C([70,64,56]),3,.4);
+          for(let shelf=0;shelf<4;shelf++){
+            const z=10+shelf*14;
+            K.box(x-28,x+28,y-18,y+18,z,z+2,1,C(steel),3,.55);
+            for(let b=0;b<5;b++)K.box(x-24+b*10,x-16+b*10,y-8,y+8,z+2,z+10,1.2,C(b%2?[220,210,190]:[36,32,28]),3,.4);
+          }
+        }
+      }
       st=[[650,400],[-650,400]];
     }else if(g.k==="dock"){
       K.box(-650,650,-190,190,-35,-5,6,C([42,39,35]),3,.45);
@@ -66195,6 +66208,30 @@ function h3dGiantMesh(g){
       for(let i=0;i<8;i++){
         const bx=(r()-.5)*900,by=(r()-.5)*500;
         K.box(bx-12,bx+12,by-10,by+10,0,14,2,C([70,62,52]),3,.4);
+      }
+      /* шахты лифтов между домами (kimi town buildUtilityElevators) */
+      for(const [tx,ty,hh] of [[-400,160,110],[-120,-180,150],[280,140,180],[460,-100,130]]){
+        for(const s of[-1,1]){
+          K.tube([[tx+s*10,ty,0],[tx+s*10,ty,hh]],1.4,C([36,32,28]),3,.5,6);
+          for(let z=8;z<hh;z+=18)K.box(tx+s*10-2.5,tx+s*10+2.5,ty-6,ty+6,z,z+3,1,C(steel),3,.55);
+        }
+        for(let z=0;z<hh;z+=22)K.tube([[tx-10,ty,z],[tx+10,ty,z]],.8,C(iron),3,.45,5);
+        const cz=hh*.42;
+        K.box(tx-12,tx+12,ty+4,ty+22,cz-14,cz+14,3,C([160,48,36]),3,.5);
+        K.box(tx-14,tx+14,ty+2,ty+24,cz+14,cz+18,1.5,C([36,32,28]),3,.5);
+        rect(tx-6,ty+20,12,10,cz+3,warm,.7);
+        K.box(tx-16,tx+16,ty-10,ty+14,hh,hh+10,2,C([36,32,28]),3,.5);
+        K.lathe(tx,ty,hh+10,[[0,2],[4,6],[7,4]],C(steel),3,.55,0,10,null,null);
+      }
+      /* фонари швартовки у кромки пояса (kimi town buildMooringLightPosts) */
+      for(const [tx,ty] of [[-480,-280],[-480,-120],[480,-280],[480,-120],[-620,220],[620,220]]){
+        K.box(tx-7,tx+7,ty-7,ty+7,0,6,1.5,C([36,32,28]),3,.5);
+        K.lathe(tx,ty,6,[[0,2],[4,4],[6,3]],C([160,48,36]),3,.55,0,8,null,null);
+        K.tube([[tx,ty,10],[tx,ty,42]],1.2,C(steel),3,.5,6);
+        for(const s of[-1,1]){
+          K.box(tx+s*8-2,tx+s*8+2,ty-2,ty+2,36,42,1,C([36,32,28]),3,.5);
+          rect(tx+s*8-1.5,ty-1,3,2,43,warm,.8);
+        }
       }
       st=[[650,400],[-650,400]];
     }else if(g.k==="garden"){

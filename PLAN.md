@@ -270,8 +270,9 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
   garden dishes (hotel wings stripped from assembly).
 - **0.499.93:** customs weighbridges + border beacons from HTML; plaza junk furniture pad stripped.
 - **0.499.94:** house motel cabins + roof tanks; house/cyl densify junk stripped.
-- **0.499.95:** dock scaffolds / keel blocks / plate stacks / bollards. Further `17o` open (town
-  elevators, garden cable trays, customs archive stacks).
+- **0.499.95:** dock scaffolds / keel blocks / plate stacks / bollards.
+- **0.499.96:** town elevators + mooring lights; customs archive stacks. Further `17o` open
+  (garden mast grid densify, town bridges polish).
 
 ## 9. Seams to honour when the items above are built
 

@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.96 — Town elevators / mooring lights; customs archive stacks
+
+- Town: utility elevator shafts and belt-edge mooring lamps from HTML. Customs: archive shelf stacks between the stamp towers.
+
 ## 0.499.95 — Dock giant: scaffolds, keel blocks, plate stacks, bollards
 
 - Ported scaffold frames, keel blocks, plate stacks and quay bollards from `kimi-giant-dock` into `17o` (hotel wings stay stripped).
