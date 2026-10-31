@@ -7443,9 +7443,9 @@ railBuildLines               src/18e-rail-net.js:55-101
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-34
 railBuy                      src/18f-rail-station.js:216-230
-railCarDraw                  src/18gb-rail-car.js:393-402
-railCarLights                src/18gb-rail-car.js:386-391
-railCarMesh                  src/18gb-rail-car.js:18-384
+railCarDraw                  src/18gb-rail-car.js:67-76
+railCarLights                src/18gb-rail-car.js:60-65
+railCarMesh                  src/18gb-rail-car.js:18-58
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:25-31
 railCut                      src/18h-rail-powers.js:22
@@ -7512,7 +7512,7 @@ railSpurSig                  src/18e-rail-net.js:153-159
 railStation                  src/18e-rail-net.js:197-202
 railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:126
-railStopShapes               src/18gb-rail-car.js:405-416
+railStopShapes               src/18gb-rail-car.js:79-90
 railStopsOf                  src/18e-rail-net.js:122-146
 railTick                     src/18f-rail-station.js:240-245
 railTrainPos                 src/18g-rail-ride.js:38-50
@@ -9842,7 +9842,7 @@ zoomTo                       src/15-input.js:358
 ## src/18ga-rail-gpu.js · 6 KB
   · поездка: свет видеокартой (G12):1
 
-## src/18gb-rail-car.js · 42 KB
+## src/18gb-rail-car.js · 9 KB
 
 ## src/18h-rail-powers.js · 6 KB
   · шесть железных дорог (M474, DESIGN-metro §6):1
