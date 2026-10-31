@@ -350,6 +350,45 @@ function h3dGiantMesh(g){
         K.box(x-55,x+55,195,265,45,55,2,C(iron),3,.5);
         for(let w=0;w<3;w++)rect(x-35+w*28,248,18,14,46,warm,.5+r()*.4);
       }
+      /* леса вдоль борта (kimi dock buildScaffoldFrames) */
+      for(let bay=0;bay<8;bay++){
+        const x=-450+bay*100;
+        for(const s of[-1,1]){
+          const y=s*140;
+          K.tube([[x,y,-5],[x,y,110]],2.5,C(steel),3,.5,6);
+          K.tube([[x+36,y,-5],[x+36,y,110]],2.5,C(steel),3,.5,6);
+          for(let z=0;z<=110;z+=28){
+            K.tube([[x,y,z],[x+36,y,z]],1.4,C(iron),3,.45,5);
+            K.tube([[x,y,z],[x,y+s*35,z]],1.1,C(iron),3,.4,5);
+          }
+          for(let z=0;z<110;z+=28){
+            K.tube([[x,y,z],[x+36,y,z+28]],.9,C([36,32,28]),3,.4,5);
+            K.tube([[x+36,y,z],[x,y,z+28]],.9,C([36,32,28]),3,.4,5);
+          }
+        }
+        K.tube([[x, -140,100],[x,140,100]],2.2,C(steel),3,.5,5);
+      }
+      /* кильблоки под остовом (kimi dock buildKeelBlocks) */
+      for(let i=0;i<10;i++){
+        const x=-450+i*90;
+        K.box(x-20,x+20,-40,40,-35,-22,3,C([70,64,56]),3,.4);
+        K.box(x-15,x+15,-30,30,-22,-12,2,C(steel),3,.5);
+        for(const s of[-1,1])K.tube([[x+s*12,s*28,-20],[x+s*12,s*36,15]],1.1,C(iron),3,.45,5);
+      }
+      /* штабеля листов у борта (kimi dock buildPlateStacks) */
+      for(let i=0;i<6;i++){
+        const x=-480+i*140,y=230;
+        for(let k=0;k<5;k++)K.box(x-35,x+35,y-20,y+20,-8+k*7,-2+k*7,2,C(k%2?steel:iron),3,.5);
+      }
+      /* кнехты на причале (kimi dock buildBollardsAndCleats) */
+      for(let i=0;i<12;i++){
+        const x=-580+i*100;
+        for(const s of[-1,1]){
+          const y=s*185;
+          K.lathe(x,y,-5,[[0,3],[6,5],[10,4]],C(steel),3,.55,0,8,null,null);
+          K.box(x-7,x+7,y-7,y+7,-12,-5,1.5,C([36,32,28]),3,.5);
+        }
+      }
       st=[[650,230],[-650,230]];
     }else if(g.k==="town"){
       for(let i=0;i<26;i++){const bx=(r()-.5)*1100,by=(r()-.5)*700,br=40+r()*110,n=6+(r()*4|0),RR=[];
