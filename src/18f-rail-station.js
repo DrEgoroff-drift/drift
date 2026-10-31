@@ -42,7 +42,8 @@ function railGpu(pass,R,x,y,s,col,ts,fast,zx,zy){
   for(let i=0;i+1<n;i++){const p=sp[i],q=sp[i+1],u=nr(i),v=nr(i+1);
     gpuQuad(SH,[p[0]-u[0],p[1]-u[1]],[p[0]+u[0],p[1]+u[1]],[q[0]+v[0],q[1]+v[1]],[q[0]-v[0],q[1]-v[1]],sc,(i>0?1:0)|(i+2<n?4:0));}
   gpuShapes(pass,SH);SH.length=0;
-  railRingBody(pass,R,x,y,s,col,ts,fast);
+  const near=!!G.ship&&Math.hypot(G.ship.x-R.x,G.ship.y-R.y)<RAIL_HAIL_R;
+  railRingBody(pass,R,x,y,s,col,ts,fast,near);
   /* глиссада: огонь бежит к кольцу; у полустанка — три лампы */
   const nL=R.S.halt?3:9;
   for(let i=0;i<nL;i++){

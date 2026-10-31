@@ -1912,7 +1912,7 @@ RAIL_CREAM                   src/18gb-rail-car.js:13
 RAIL_DECL                    src/18h-rail-powers.js:14
 RAIL_DOCK                    src/18f-rail-station.js:22
 RAIL_EXPRESS_MUL             src/18h-rail-powers.js:13
-RAIL_FLAP_PREV               src/18f-rail-station.js:117
+RAIL_FLAP_PREV               src/18f-rail-station.js:118
 RAIL_FORK                    src/18e-rail-net.js:22
 RAIL_FX_U                    src/18ga-rail-gpu.js:55
 RAIL_FX_WGSL                 src/18ga-rail-gpu.js:18
@@ -2252,10 +2252,10 @@ STAMP_ORDER                  src/17i-stamp.js:11
 STAMP_POEM                   src/17i-stamp.js:15
 STAMP_RU                     src/17i-stamp.js:12
 STAPEL_KEYS                  src/26e2-stapel-draw.js:336
-STAPEL_PV                    src/26e1-stapel.js:164
+STAPEL_PV                    src/26e1-stapel.js:167
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
-STAPEL_UI                    src/26e1-stapel.js:165
+STAPEL_UI                    src/26e1-stapel.js:168
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 STAR_CLASS                   src/02-world.js:192-198
 STAR_COLS                    src/16-flight.js:2
@@ -4120,7 +4120,7 @@ drawSurvey                   src/12w-survey.js:63-81
 drawSysHud                   src/17-mode-system.js:756-1105
 drawSysLane                  src/17g-sys-lane.js:112-137
 drawSysLaneShips             src/17g-sys-lane.js:167-200
-drawSysRail                  src/18f-rail-station.js:61-69
+drawSysRail                  src/18f-rail-station.js:62-70
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawSystem                   src/17-mode-system.js:560-744
 drawTapes                    src/12s1-tape.js:66-81
@@ -7454,14 +7454,14 @@ raidSprDesc                  src/24aa1-raid-gpu.js:76-82
 raidUp                       src/24aa-raid-draw.js:8-12
 railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
-railBoardEta                 src/18f-rail-station.js:171-179
+railBoardEta                 src/18f-rail-station.js:172-180
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:250-257
+railBuffet                   src/18f-rail-station.js:251-258
 railBuildLines               src/18e-rail-net.js:55-101
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-36
-railBuy                      src/18f-rail-station.js:230-249
+railBuy                      src/18f-rail-station.js:231-250
 railCarDraw                  src/18gb-rail-car.js:67-76
 railCarLights                src/18gb-rail-car.js:60-65
 railCarMesh                  src/18gb-rail-car.js:18-58
@@ -7469,22 +7469,22 @@ railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:25-31
 railCut                      src/18h-rail-powers.js:22
 railDeclare                  src/18h-rail-powers.js:33-43
-railDestinations             src/18f-rail-station.js:132-149
+railDestinations             src/18f-rail-station.js:133-150
 railDestinationsVia          src/18k-rail-scheme.js:17-41
-railDocked                   src/18f-rail-station.js:103-113
+railDocked                   src/18f-rail-station.js:104-114
 railExit                     src/18g-rail-ride.js:107-119
 railExpressDraw              src/18h-rail-powers.js:72-81
-railFare                     src/18f-rail-station.js:150-161
-railFlap                     src/18f-rail-station.js:118-123
-railFmt                      src/18f-rail-station.js:128
+railFare                     src/18f-rail-station.js:151-162
+railFlap                     src/18f-rail-station.js:119-124
+railFmt                      src/18f-rail-station.js:129
 railFrontShut                src/18h-rail-powers.js:18
 railFx                       src/18ga-rail-gpu.js:58-66
-railGpu                      src/18f-rail-station.js:35-60
-railHeadingIn                src/18f-rail-station.js:71-75
+railGpu                      src/18f-rail-station.js:35-61
+railHeadingIn                src/18f-rail-station.js:72-76
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:45-48
-railInteract                 src/18f-rail-station.js:77-102
-railInterval                 src/18f-rail-station.js:125
+railInteract                 src/18f-rail-station.js:78-103
+railInterval                 src/18f-rail-station.js:126
 railKrai                     src/18k-rail-scheme.js:115-120
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:76-81
@@ -7493,7 +7493,7 @@ railLifeExit                 src/18i-rail-life.js:111-119
 railLifeHtml                 src/18i-rail-life.js:59-75
 railLifeStop                 src/18i-rail-life.js:95-109
 railLineGpu                  src/18ga-rail-gpu.js:70-106
-railLineMetro                src/18f-rail-station.js:182
+railLineMetro                src/18f-rail-station.js:183
 railNearest                  src/18e-rail-net.js:32-42
 railNet                      src/18e-rail-net.js:186-195
 railNetPartial               src/18e-rail-net.js:207-218
@@ -7512,8 +7512,8 @@ railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRect                     src/08-state.js:150-156
 railRideStart                src/18g-rail-ride.js:22-34
-railRingBody                 src/18fa-rail-ring.js:68-77
-railRingLights               src/18fa-rail-ring.js:80-90
+railRingBody                 src/18fa-rail-ring.js:68-79
+railRingLights               src/18fa-rail-ring.js:82-93
 railRingMesh                 src/18fa-rail-ring.js:16-66
 railSchemeClose              src/18k-rail-scheme.js:105
 railSchemeDraw               src/18k-rail-scheme.js:140-266
@@ -7530,18 +7530,18 @@ railSpurLine                 src/18e-rail-net.js:160-169
 railSpurSig                  src/18e-rail-net.js:153-159
 railStation                  src/18e-rail-net.js:197-202
 railStep                     src/18e-rail-net.js:43
-railStopName                 src/18f-rail-station.js:129
+railStopName                 src/18f-rail-station.js:130
 railStopShapes               src/18gb-rail-car.js:79-90
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:259-266
+railTick                     src/18f-rail-station.js:260-267
 railTrainPos                 src/18g-rail-ride.js:40-52
 railUAt                      src/18e-rail-net.js:105-110
 railVisited                  src/18k-rail-scheme.js:110-114
-railWaitNow                  src/18f-rail-station.js:127
-railWinClose                 src/18f-rail-station.js:163
-railWinOpen                  src/18f-rail-station.js:162
-railWinRender                src/18f-rail-station.js:183-229
-railWinShow                  src/18f-rail-station.js:164-169
+railWaitNow                  src/18f-rail-station.js:128
+railWinClose                 src/18f-rail-station.js:164
+railWinOpen                  src/18f-rail-station.js:163
+railWinRender                src/18f-rail-station.js:184-230
+railWinShow                  src/18f-rail-station.js:165-170
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -8295,9 +8295,9 @@ stampText                    src/17i-stamp.js:28-41
 standAdd                     src/21e2-surface-gpu.js:54-57
 standPass                    src/20ab-poi-gpu.js:134-137
 stapelAll                    src/26e1-stapel.js:27-32
-stapelBlock                  src/26e1-stapel.js:167-237
+stapelBlock                  src/26e1-stapel.js:170-240
 stapelClosedWhy              src/26e1-stapel.js:96-101
-stapelCollect                src/26e1-stapel.js:151-162
+stapelCollect                src/26e1-stapel.js:151-165
 stapelDelta                  src/26e2-stapel-draw.js:337-347
 stapelDraft                  src/26e2-stapel-draw.js:196-228
 stapelFx                     src/26e2-stapel-draw.js:349-357
@@ -8311,7 +8311,7 @@ stapelPen                    src/26e2-stapel-draw.js:13-19
 stapelReady                  src/26e1-stapel.js:102
 stapelRestore                src/26e1-stapel.js:75-78
 stapelSheet                  src/26e2-stapel-draw.js:20-190
-stapelSheetW                 src/26e1-stapel.js:166
+stapelSheetW                 src/26e1-stapel.js:169
 stapelShip                   src/26e1-stapel.js:59-67
 stapelStats                  src/26e1-stapel.js:42-57
 stapelStrip                  src/26e1-stapel.js:70-74
@@ -9854,7 +9854,7 @@ zoomTo                       src/15-input.js:358
 ## src/18f-rail-station.js · 20 KB
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
-## src/18fa-rail-ring.js · 7 KB
+## src/18fa-rail-ring.js · 8 KB
 
 ## src/18g-rail-ride.js · 12 KB
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1

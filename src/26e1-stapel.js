@@ -158,6 +158,9 @@ function stapelCollect(viaPost){
   G.uniqueShips[id]=sh;G.owned[id]=true;
   if(typeof regBought==="function")regBought(id,o.by);   /* чужой стапель — транзитные номера (M513) */
   logAdd("good","Со стапеля сошёл «"+sh.ru+"» — "+sh.cls+" · в ангаре");
+  /* Коммуна (DESIGN-review shipyard): изгиб, которого не заказывали */
+  if(o.by==="km"){say("«Так красивее»\nизгиб, которого вы не заказывали",140);
+    logAdd("dim","Коммуна: на корпусе изгиб · «так красивее»");}
   return id;
 }
 /* ── живой чертёж: временная запись, кэш корпуса сбрасываем на каждый сдвиг (лист, 26e2) ── */

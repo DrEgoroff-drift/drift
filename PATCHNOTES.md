@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.58 — halt lamp on approach, Коммуна «так красивее»
+
+- Полустанок: platform lamp wakes when you enter hail range (DESIGN-review metro kindness). Коммуна hull off the slip: «Так красивее» — the unordered curve.
+
 ## 0.499.57 — «до куда?», poor deposit, one HF firmware path
 
 - Рассвет bus: «До куда?» — «Ну поехали.» Poor far take: «на обратную дорогу». HF firmware: only `yardFirmware` nudges (defer via `G.hfFw`); dropped the duplicate tick.

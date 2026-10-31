@@ -65,24 +65,27 @@ function railRingMesh(kind){
     m.L=L;m.P=P;return m;});
 }
 /* тело кольца на экран: x,y — центр кольца, s — мерка кадра системы, свет — от звезды к точке мира */
-function railRingBody(pass,R,x,y,s,col,ts,fast){
+function railRingBody(pass,R,x,y,s,col,ts,fast,near){
   if(!pass||!bodyGpu())return false;
   const T=bodyT0();if(!T)return false;
-  const m=railRingMesh(R.S.halt?"halt":R.S.metro?"metro":"st"),a=Math.atan2(R.uy,R.ux),[lx,ly]=sysLightDir(R.x,R.y);
+  const halt=!!R.S.halt,m=railRingMesh(halt?"halt":R.S.metro?"metro":"st"),a=Math.atan2(R.uy,R.ux),[lx,ly]=sysLightDir(R.x,R.y);
   const c=Math.cos(a),n=Math.sin(a),TP=(u,v)=>[x+(u*c-v*n)*s,y+(u*n+v*c)*s];
-  for(const p of m.P){const [px,py]=TP(p[0],p[1]);gpuLight(px,py,px,py,p[3][0],p[3][1],p[3][2],p[2]*s,p[4]);}
+  /* полустанок (DESIGN-review): фонарь платформы загорается на подлёте */
+  const lit=halt?(near?1:.08):1;
+  for(const p of m.P){const [px,py]=TP(p[0],p[1]);gpuLight(px,py,px,py,p[3][0],p[3][1],p[3][2],p[2]*s,p[4]*lit);}
   if(!h3dRun(m,T,x,y,a,s,0,lx,ly,null,0))return false;
-  railRingLights(pass,m,TP,s,col,ts,fast);
+  railRingLights(pass,m,TP,s,col,ts,fast,halt,near);
   return true;
 }
 /* огни сетки: фонари полосы бегут по ободу (медленно всегда, быстро — когда поезд вот-вот), прочие горят
    или мигают своим k */
-function railRingLights(pass,m,TP,s,col,ts,fast){
-  const D=[],A=[],amp=fast>1?.4:.15,sp=fast>1?1.5:.25;
+function railRingLights(pass,m,TP,s,col,ts,fast,halt,near){
+  const D=[],A=[],amp=fast>1?.4:.15,sp=fast>1?1.5:.25,plat=halt?(near?1:.1):1;
   for(const q of m.L){
     if(q.k&&Math.sin(G.t/60*q.k*TAU+(q.ph||0)*TAU)<=.2)continue;
     const [px,py]=TP(q.x,q.y),r=Math.max(.7,q.r*s);let cc=q.c,on=.9;
     if(q.lane){cc=col;on=.55+amp*Math.max(0,Math.cos((ts*sp-q.i/12)*TAU));}
+    else on*=plat;   /* тёплый фонарь полустанка — только на подлёте */
     D.push([1,px,py,r,0,0,0,cc[0],cc[1],cc[2],on]);
     A.push([1,px,py,r*.5,0,0,r*2.2,cc[0],cc[1],cc[2],.4*on]);
   }
