@@ -64,11 +64,13 @@ the steady-state 240 fps the `?g11` steady window shows.
   (`Graphics.Pipeline` p99 3.91).
 - **The compositor's `DrawFrame` is where frames are lost**: p90 16.64 ms, p99 19.28 ms,
   204 gaps > 16.7 ms (9.3 %), 2200 draws for 3700 BeginFrames.
-- **Why**: in the window before a long `DrawFrame` gap the **main thread has 37.6 ms of
-  `RunTask` work over ~98 tasks**, versus **6.7 ms over ~32 tasks** before a short (4.2 ms) gap —
-  a 5.6× difference; the GPU work in the same windows is ~1.1 ms either way. The renderer's
-  `BeginMainFrame` itself stays p90 4.31, so the compositor is asking on time but the main thread
-  is not free to answer — `Commit` p99 rises to 11.95 and the draw is skipped.
+- **Why**: the flame breakdown of the long-gap windows shows the **game's JS (`FunctionCall`) at
+  571 ms over 1051 calls — 0.54 ms/frame**, and the `CrRendererMain` busy only ~17 % of the time.
+  (The earlier 37.6 ms figure summed `RunTask` across *all* threads, including the IO/compositor —
+  corrected here.) The GPU does 3.7–4.0 ms. So **neither the main thread nor the GPU is
+  saturated**: the compositor simply **presents at ~60 Hz (`DrawFrame` p50 16.65) while rAF runs
+  at ~240 Hz** — the rAF number is 4× the presented number, which is exactly the trap the brief
+  warns about.
 - **The jank is NOT headless-only**: the windowed Chrome shows the same 240 fps rAF with the same
   stalls (max 29–58 ms) and the same long tasks (max 96 ms). Config 2 (software compositing) is
   60 Hz by construction — a different ceiling, not a fix.
