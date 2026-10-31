@@ -298,7 +298,7 @@ function geoHookOvl(){
     try{const P=tgt(),q=!P&&GEO.on&&geoOvQ(Q);
       if(r&&(P||q)){const f=/(\d*\.?\d+)px/.exec(font);
         (P||GEO.ov[q]).push({L:q||"dock",k:"t",s:String(text),r:geoR(r.x0,r.y0,r.x1,r.y1),px:f?+f[1]*(sc||1):0,col:geoCol(col),a:al==null?1:al,sq:1,an:[x,y],
-          z:q?GEO_Z[q]:3,g:0,hang:geoHang(),hside:geoHangSide(),hurg:geoHangUrg(),n:P?++GEO.xn:GEO.n++});}}catch(e){}
+          z:q?GEO_Z[q]:3,g:0,mv:q==="chip"?1:0,hang:geoHang(),hside:geoHangSide(),hurg:geoHangUrg(),n:P?++GEO.xn:GEO.n++});}}catch(e){}
     return r;};
   ovText.__g=true;
   ovPush=function(Q,x0,y0,x1,y1,c,m){
