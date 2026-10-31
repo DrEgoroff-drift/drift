@@ -266,8 +266,8 @@ function dig3Draw(){
   let ok=false;
   if(G.dig&&G.dig.p){
     try{
-      plnQualAuto();
-      ok=cave3GpuReady()&&dig3Frame();
+      {const _t=NEAR.on?wallMs():0;plnQualAuto();if(NEAR.on)NEAR.dg.qual=Math.round((wallMs()-_t)*10)/10;}
+      {const _t=NEAR.on?wallMs():0;ok=cave3GpuReady()&&dig3Frame();if(NEAR.on)NEAR.dg.frame=Math.round((wallMs()-_t)*10)/10;}
       if(ok)DIG3.bad=0;
     }catch(e){
       DIG3.bad++;DIG3.err=String((e&&e.stack)||e).slice(0,600);plnLog("шахта: кадр: "+DIG3.err);
@@ -277,7 +277,7 @@ function dig3Draw(){
   }
   DIG3.live=ok;
   if(!ok){DIG3.D=null;return;}
-  withScale(G.viewK,dig3Over);   /* LIFE_XF → lifeHere, без scale на MAIN_CTX */
+  {const _t=NEAR.on?wallMs():0;withScale(G.viewK,dig3Over);if(NEAR.on)NEAR.dg.over=Math.round((wallMs()-_t)*10)/10;}   /* LIFE_XF → lifeHere, без scale на MAIN_CTX */
 }
 /* тычок по клетке: та клетка, что показана, — окно кадра лежит на плоскости человека */
 const DIG3_OLD_WALK=mouseWalkAt;

@@ -14,22 +14,24 @@ function startLanding(p){
       ? planetSpinFrame(p)/PLANET_SPIN*TAU : 0;
     lon=app-spin;
   }
+  const _t0=NEAR.on?wallMs():0;
   const tr=genTerrain(p,lon),r=rng(p.seed^0x77);
+  if(NEAR.on)NEAR.sl.gen=Math.round((wallMs()-_t0)*10)/10;
   tr.lon=lon;
   /* достопримечательности вписываются в рельеф до того, как по нему расставят
      залежи и флору: они выравнивают под собой грунт (20a-poi) */
-  genPOI(tr,p);
+  {const _t=NEAR.on?wallMs():0;genPOI(tr,p);if(NEAR.on)NEAR.sl.poi=Math.round((wallMs()-_t)*10)/10;}
   /* средний масштаб раскладывается после построек: он обходит их стороной,
      а рельеф под ними к этому моменту уже выровнен (21b-surface-deco) */
-  genDeco(tr,p);
+  {const _t=NEAR.on?wallMs():0;genDeco(tr,p);if(NEAR.on)NEAR.sl.deco=Math.round((wallMs()-_t)*10)/10;}
   G.ap=null;
-  skyReroll(p);           /* состав неба — свой на каждую посадку (19ca) */
+  {const _t=NEAR.on?wallMs():0;skyReroll(p);if(NEAR.on)NEAR.sl.sky=Math.round((wallMs()-_t)*10)/10;}           /* состав неба — свой на каждую посадку (19ca) */
   const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
   /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
-  G.land.pre=surfGen(tr,p);
+  {const _t=NEAR.on?wallMs():0;G.land.pre=surfGen(tr,p);if(NEAR.on)NEAR.sl.pre=Math.round((wallMs()-_t)*10)/10;}
   G.mode="landing";
   /* заход и тяготение — табличкой на корабле (M803, drawLanding), без слоя — строкой #msg */
   G.land.hi=150;

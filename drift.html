@@ -70758,22 +70758,24 @@ function startLanding(p){
       ? planetSpinFrame(p)/PLANET_SPIN*TAU : 0;
     lon=app-spin;
   }
+  const _t0=NEAR.on?wallMs():0;
   const tr=genTerrain(p,lon),r=rng(p.seed^0x77);
+  if(NEAR.on)NEAR.sl.gen=Math.round((wallMs()-_t0)*10)/10;
   tr.lon=lon;
   /* достопримечательности вписываются в рельеф до того, как по нему расставят
      залежи и флору: они выравнивают под собой грунт (20a-poi) */
-  genPOI(tr,p);
+  {const _t=NEAR.on?wallMs():0;genPOI(tr,p);if(NEAR.on)NEAR.sl.poi=Math.round((wallMs()-_t)*10)/10;}
   /* средний масштаб раскладывается после построек: он обходит их стороной,
      а рельеф под ними к этому моменту уже выровнен (21b-surface-deco) */
-  genDeco(tr,p);
+  {const _t=NEAR.on?wallMs():0;genDeco(tr,p);if(NEAR.on)NEAR.sl.deco=Math.round((wallMs()-_t)*10)/10;}
   G.ap=null;
-  skyReroll(p);           /* состав неба — свой на каждую посадку (19ca) */
+  {const _t=NEAR.on?wallMs():0;skyReroll(p);if(NEAR.on)NEAR.sl.sky=Math.round((wallMs()-_t)*10)/10;}           /* состав неба — свой на каждую посадку (19ca) */
   const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
   /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
-  G.land.pre=surfGen(tr,p);
+  {const _t=NEAR.on?wallMs():0;G.land.pre=surfGen(tr,p);if(NEAR.on)NEAR.sl.pre=Math.round((wallMs()-_t)*10)/10;}
   G.mode="landing";
   /* заход и тяготение — табличкой на корабле (M803, drawLanding), без слоя — строкой #msg */
   G.land.hi=150;
@@ -76512,8 +76514,11 @@ function surfGen(tr,p){
 }
 function enterSurface(){
   const L=G.land,tr=L.tr,p=L.p;
+  const _t0=NEAR.on?wallMs():0;
   const g=L.pre&&L.pre.tr===tr?L.pre:surfGen(tr,p);
+  if(NEAR.on)NEAR.sg.gen=Math.round((wallMs()-_t0)*10)/10;
   const {deposits,plants,fauna,peep}=g,caveMouth=g.cave;
+  const _t1=NEAR.on?wallMs():0;
   const offX=L.x+shipZoneR()+26;
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:offX,y:groundAt(tr,offX)-10,t0:G.t,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
@@ -76522,15 +76527,17 @@ function enterSurface(){
   if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   if(typeof smenaLand==="function")smenaLand(p);   // «Смена»: следующая глава — в новом месте (P15)
   if(typeof traceAsk==="function")traceAsk();     // не оставил ли здесь знак другой живой человек (11ag)
+  if(NEAR.on)NEAR.sg.setup=Math.round((wallMs()-_t1)*10)/10;
   G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
   /* посадки на планету считаются так же, как на станцию: условиям историй
      нужно «который раз здесь» (11c) */
   if(typeof visitsAll==="function"){const V=visitsAll(),k=G.sys.key+"/"+p.idx;V[k]=(V[k]|0)+1;}
   /* строка истории к посадке (11c): то, что замечаешь, выйдя из корабля */
+  const _t2=NEAR.on?wallMs():0;
   let sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
   /* три света (11g): календарь заводится первым приходом, ставни — единственный знак */
-  if(typeof lightsArrive==="function"){lightsArrive();if(!sl)sl=lightsGroundLine();}
+  if(typeof lightsArrive==="function"){const _t=NEAR.on?wallMs():0;lightsArrive();if(NEAR.on)NEAR.sg.lights=Math.round((wallMs()-_t)*10)/10;if(!sl)sl=lightsGroundLine();}
   if(!sl&&typeof hoursGroundLine==="function")sl=hoursGroundLine();   // уезд часов (11h)
   if(!sl&&typeof glowGroundLine==="function")sl=glowGroundLine();      // уезд света (11i)
   if(!sl&&typeof countyGroundLine==="function")sl=countyGroundLine();  // большой уезд (11l)
@@ -76539,13 +76546,14 @@ function enterSurface(){
   if(!sl&&typeof grownGroundLine==="function")sl=grownGroundLine();    // другое взросление (11q)
   if(!sl&&typeof planGroundLine==="function")sl=planGroundLine();      // план (11r)
   if(!sl&&typeof retGroundLine==="function")sl=retGroundLine();        // возвращение (11s)
+  if(NEAR.on)NEAR.sg.lines=Math.round((wallMs()-_t2)*10)/10;
   if(sl)logAdd("dim",sl);
   /* Имя планеты и её тип сюда не повторяем: они стоят в сводке места, у
      правой верхней кромки, и стоят там всё время, пока мы здесь. Пока приборы
      гасли до трети, дубль был незаметен; вернувшись наверх, сводка стала
      читаться — и на кадре оказалось, что игра дважды в одном экране называет
      одно и то же. Сообщение говорит только то, чего в сводке нет. */
-  say("залежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
+  {const _t=NEAR.on?wallMs():0;say("залежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);if(NEAR.on)NEAR.sg.say=Math.round((wallMs()-_t)*10)/10;}
 }
 let SIGN_HOLD=0;   /* удержание ДЕЙСТВИЯ над знаком, кадров (вид ввода, мимо сейва) */
 function updateSurface(dt){
@@ -102051,8 +102059,8 @@ function dig3Draw(){
   let ok=false;
   if(G.dig&&G.dig.p){
     try{
-      plnQualAuto();
-      ok=cave3GpuReady()&&dig3Frame();
+      {const _t=NEAR.on?wallMs():0;plnQualAuto();if(NEAR.on)NEAR.dg.qual=Math.round((wallMs()-_t)*10)/10;}
+      {const _t=NEAR.on?wallMs():0;ok=cave3GpuReady()&&dig3Frame();if(NEAR.on)NEAR.dg.frame=Math.round((wallMs()-_t)*10)/10;}
       if(ok)DIG3.bad=0;
     }catch(e){
       DIG3.bad++;DIG3.err=String((e&&e.stack)||e).slice(0,600);plnLog("шахта: кадр: "+DIG3.err);
@@ -102062,7 +102070,7 @@ function dig3Draw(){
   }
   DIG3.live=ok;
   if(!ok){DIG3.D=null;return;}
-  withScale(G.viewK,dig3Over);   /* LIFE_XF → lifeHere, без scale на MAIN_CTX */
+  {const _t=NEAR.on?wallMs():0;withScale(G.viewK,dig3Over);if(NEAR.on)NEAR.dg.over=Math.round((wallMs()-_t)*10)/10;}   /* LIFE_XF → lifeHere, без scale на MAIN_CTX */
 }
 /* тычок по клетке: та клетка, что показана, — окно кадра лежит на плоскости человека */
 const DIG3_OLD_WALK=mouseWalkAt;
@@ -128580,7 +128588,7 @@ function frame(now){
     nearFrame({t:now,gap:(framePrev?now-framePrev:0),js:FRAME_JS,mode:G.mode,prev:pm,
       sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
       warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
-      asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,
+      asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,sl:NEAR.sl,sg:NEAR.sg,dg:NEAR.dg,
       pipes:NEAR.pipes,cave:NEAR.cave});}
   tactWork(FRAME_JS);   /* средняя работа кадра решает, можно ли 120 (0.1b) */
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
@@ -131865,7 +131873,7 @@ else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout
 const NEAR_MAX = 240;
 const NEAR = {on:false, blocks:[], cur:null, n:0, frameN:0,
   marks:{}, work:{}, warm:0, bakeN:0, bakeS:0, pipes:0, cave:0,
-  sw:0, gf:0, dw:0, hud:0, gp:0, wp:0, maxFrames:NEAR_MAX};
+  sw:0, gf:0, dw:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, maxFrames:NEAR_MAX};
 function nearOn(){ NEAR.on = true; }
 function nearBlock(mode, prev){
   if(!NEAR.on) return;

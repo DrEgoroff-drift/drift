@@ -172,8 +172,11 @@ function surfGen(tr,p){
 }
 function enterSurface(){
   const L=G.land,tr=L.tr,p=L.p;
+  const _t0=NEAR.on?wallMs():0;
   const g=L.pre&&L.pre.tr===tr?L.pre:surfGen(tr,p);
+  if(NEAR.on)NEAR.sg.gen=Math.round((wallMs()-_t0)*10)/10;
   const {deposits,plants,fauna,peep}=g,caveMouth=g.cave;
+  const _t1=NEAR.on?wallMs():0;
   const offX=L.x+shipZoneR()+26;
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:offX,y:groundAt(tr,offX)-10,t0:G.t,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
@@ -182,15 +185,17 @@ function enterSurface(){
   if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   if(typeof smenaLand==="function")smenaLand(p);   // «Смена»: следующая глава — в новом месте (P15)
   if(typeof traceAsk==="function")traceAsk();     // не оставил ли здесь знак другой живой человек (11ag)
+  if(NEAR.on)NEAR.sg.setup=Math.round((wallMs()-_t1)*10)/10;
   G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
   /* посадки на планету считаются так же, как на станцию: условиям историй
      нужно «который раз здесь» (11c) */
   if(typeof visitsAll==="function"){const V=visitsAll(),k=G.sys.key+"/"+p.idx;V[k]=(V[k]|0)+1;}
   /* строка истории к посадке (11c): то, что замечаешь, выйдя из корабля */
+  const _t2=NEAR.on?wallMs():0;
   let sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
   /* три света (11g): календарь заводится первым приходом, ставни — единственный знак */
-  if(typeof lightsArrive==="function"){lightsArrive();if(!sl)sl=lightsGroundLine();}
+  if(typeof lightsArrive==="function"){const _t=NEAR.on?wallMs():0;lightsArrive();if(NEAR.on)NEAR.sg.lights=Math.round((wallMs()-_t)*10)/10;if(!sl)sl=lightsGroundLine();}
   if(!sl&&typeof hoursGroundLine==="function")sl=hoursGroundLine();   // уезд часов (11h)
   if(!sl&&typeof glowGroundLine==="function")sl=glowGroundLine();      // уезд света (11i)
   if(!sl&&typeof countyGroundLine==="function")sl=countyGroundLine();  // большой уезд (11l)
@@ -199,13 +204,14 @@ function enterSurface(){
   if(!sl&&typeof grownGroundLine==="function")sl=grownGroundLine();    // другое взросление (11q)
   if(!sl&&typeof planGroundLine==="function")sl=planGroundLine();      // план (11r)
   if(!sl&&typeof retGroundLine==="function")sl=retGroundLine();        // возвращение (11s)
+  if(NEAR.on)NEAR.sg.lines=Math.round((wallMs()-_t2)*10)/10;
   if(sl)logAdd("dim",sl);
   /* Имя планеты и её тип сюда не повторяем: они стоят в сводке места, у
      правой верхней кромки, и стоят там всё время, пока мы здесь. Пока приборы
      гасли до трети, дубль был незаметен; вернувшись наверх, сводка стала
      читаться — и на кадре оказалось, что игра дважды в одном экране называет
      одно и то же. Сообщение говорит только то, чего в сводке нет. */
-  say("залежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
+  {const _t=NEAR.on?wallMs():0;say("залежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);if(NEAR.on)NEAR.sg.say=Math.round((wallMs()-_t)*10)/10;}
 }
 let SIGN_HOLD=0;   /* удержание ДЕЙСТВИЯ над знаком, кадров (вид ввода, мимо сейва) */
 function updateSurface(dt){

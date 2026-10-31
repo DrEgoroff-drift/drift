@@ -10,7 +10,7 @@
 const NEAR_MAX = 240;
 const NEAR = {on:false, blocks:[], cur:null, n:0, frameN:0,
   marks:{}, work:{}, warm:0, bakeN:0, bakeS:0, pipes:0, cave:0,
-  sw:0, gf:0, dw:0, hud:0, gp:0, wp:0, maxFrames:NEAR_MAX};
+  sw:0, gf:0, dw:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, maxFrames:NEAR_MAX};
 function nearOn(){ NEAR.on = true; }
 function nearBlock(mode, prev){
   if(!NEAR.on) return;

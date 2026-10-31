@@ -1341,7 +1341,7 @@ LG_BAKE                      src/19g-landing-gpu.js:362
 LG_DUST                      src/19g-landing-gpu.js:193
 LG_E                         src/19g-landing-gpu.js:363
 LG_FIRE                      src/19g-landing-gpu.js:192
-LG_GLOW                      src/19-mode-landing.js:188
+LG_GLOW                      src/19-mode-landing.js:190
 LG_H                         src/19g-landing-gpu.js:24
 LG_ID                        src/20fa-life-gpu.js:90
 LG_LANDER_WGSL               src/19g-landing-gpu.js:249
@@ -2200,7 +2200,7 @@ SHOVE_V                      src/13a-guns.js:36
 SHUT_LINES                   src/11ah-offer.js:302-307
 SHUT_N                       src/17f-sys-traffic.js:71
 SH_DX                        src/03b-hull-paint.js:115
-SIGN_HOLD                    src/21-mode-surface.js:210
+SIGN_HOLD                    src/21-mode-surface.js:216
 SKIPPED_NODE                 tests/90-harness.js:88
 SKIPPED_PROBE                tests/90-harness.js:60
 SKIPPED_SKIP                 tests/90-harness.js:66
@@ -2639,7 +2639,7 @@ assignToBase                 src/12a-crew.js:181-190
 audioHush                    src/09-audio.js:12-18
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
-autoLandInputs               src/19-mode-landing.js:49-72
+autoLandInputs               src/19-mode-landing.js:51-74
 autosave                     src/14a-cloud.js:68-71
 avrHands                     src/21a6-base-avral.js:59-73
 avrLose                      src/21a6-base-avral.js:112-131
@@ -4053,7 +4053,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:161-173
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
-drawDustMotes                src/19-mode-landing.js:181-184
+drawDustMotes                src/19-mode-landing.js:183-186
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:90-112
 drawFactRoute                src/13b-occupy.js:303-346
@@ -4083,7 +4083,7 @@ drawHullMarks                src/03b-hull-paint.js:124-431
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-50
 drawLander                   src/19f-lander.js:54-285
-drawLanding                  src/19-mode-landing.js:196-317
+drawLanding                  src/19-mode-landing.js:198-319
 drawLawRing                  src/12al2-laws.js:139-147
 drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
@@ -4119,7 +4119,7 @@ drawScoop                    src/19a-mode-scoop.js:185-232
 drawSeal                     src/03d-hull-marks.js:174-185
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:72-104
-drawSkyLayer                 src/19-mode-landing.js:176-179
+drawSkyLayer                 src/19-mode-landing.js:178-181
 drawSpa                      src/29rd-spa-r3.js:234-237
 drawStation                  src/17c-system-draw.js:192-209
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -4225,7 +4225,7 @@ enterDig                     src/23-mode-dig.js:51-73
 enterHomeIn                  src/29c-home-in.js:60-68
 enterRaid                    src/24a-mode-raid.js:194-250
 enterSpa                     src/29h-spa.js:51-66
-enterSurface                 src/21-mode-surface.js:173-209
+enterSurface                 src/21-mode-surface.js:173-215
 enterWinter                  src/29f-winter.js:112-119
 env                          src/09-audio.js:72-77
 epiAdd                       src/12ap-notebook.js:56-83
@@ -4248,8 +4248,8 @@ ethTick                      src/25l-post-ether.js:59-104
 etherLine                    src/11-log.js:42-53
 etherTick                    src/11b-speech.js:39-82
 etherWho                     src/11-log.js:38-41
-evacCost                     src/21-mode-surface.js:692
-evacFrom                     src/21-mode-surface.js:693
+evacCost                     src/21-mode-surface.js:698
+evacFrom                     src/21-mode-surface.js:699
 exileCandidates              src/12g-mgr-rogue.js:123-130
 exitBase                     src/21a-mode-base.js:154-158
 exitBelt                     src/24-mode-belt.js:190-198
@@ -4889,7 +4889,7 @@ groundChunkPaint             src/19-mode-landing-ground.js:251-269
 groundChunkStore             src/19-mode-landing-ground.js:238-249
 groundClip                   src/20ab-poi-gpu.js:85-90
 groundGrassGpu               src/21e3-surface-stand-gpu.js:12-36
-groundShadow                 src/19-mode-landing.js:153-173
+groundShadow                 src/19-mode-landing.js:155-175
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30-36
 groveDepthHere               src/11j-grove.js:37
@@ -5750,7 +5750,7 @@ labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 labelW                       src/12ai-fleet.js:134
 landOnTestPlanet             tests/90-harness.js:424-430
-landStartY                   src/19-mode-landing.js:43-48
+landStartY                   src/19-mode-landing.js:45-50
 landerGearTick               src/19f-lander.js:15-23
 landerLen                    src/19f-lander.js:11
 laneBuoyPaint                src/17g-sys-lane.js:77-95
@@ -5767,8 +5767,8 @@ lateAll                      src/11aq-late.js:52-55
 lateBlock                    src/11aq-late.js:118-138
 lateLeft                     src/11aq-late.js:57-61
 lateSit                      src/11aq-late.js:65-113
-launch                       src/21-mode-surface.js:717-732
-launchHold                   src/21-mode-surface.js:672
+launch                       src/21-mode-surface.js:723-738
+launchHold                   src/21-mode-surface.js:678
 lawDock                      src/12al2-laws.js:19-35
 lawLunch                     src/12al2-laws.js:44-48
 lawLunchRow                  src/12al2-laws.js:50-53
@@ -5813,8 +5813,8 @@ letterState                  src/12k-letters.js:42
 letterTake                   src/12k-letters.js:70-76
 lettersAll                   src/12k-letters.js:41
 lettersBlock                 src/12k-letters.js:99-115
-lgGlowTex                    src/19-mode-landing.js:189-195
-lgGpu                        src/19-mode-landing.js:186
+lgGlowTex                    src/19-mode-landing.js:191-197
+lgGpu                        src/19-mode-landing.js:188
 lgHTex                       src/19g-landing-gpu.js:25-37
 lgLander                     src/19g-landing-gpu.js:390-448
 lgLanderBake                 src/19g-landing-gpu.js:367-387
@@ -8360,7 +8360,7 @@ starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:25-34
 starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:637-645
-startLanding                 src/19-mode-landing.js:2-38
+startLanding                 src/19-mode-landing.js:2-40
 startScoop                   src/19a-mode-scoop.js:51-64
 stat                         src/08-state.js:297-369
 statPreview                  src/05-parts.js:417-425
@@ -8523,7 +8523,7 @@ thingAdd                     src/27i-ui-table.js:72-79
 thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
 tickDrones                   src/12-economy.js:358-452
-tickLaunchHold               src/21-mode-surface.js:673-686
+tickLaunchHold               src/21-mode-surface.js:679-692
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
 tierOf                       src/04b-fleet.js:157
@@ -8563,7 +8563,7 @@ toldOf                       src/11aj-told.js:36-39
 toldOffBlock                 src/11ar-doors.js:53-67
 toldWorked                   src/11aj-told.js:41-45
 toldWorth                    src/11aj-told.js:49-54
-totalLoss                    src/21-mode-surface.js:695-716
+totalLoss                    src/21-mode-surface.js:701-722
 towShare                     src/03f-hull-role.js:87-89
 traceAll                     src/11ag-trace.js:48
 traceAsk                     src/11ag-trace.js:88-103
@@ -8622,13 +8622,13 @@ updateCaveDeco               src/22a-cave-deco.js:225-248
 updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
-updateLanding                src/19-mode-landing.js:73-145
+updateLanding                src/19-mode-landing.js:75-147
 updateMap                    src/18-mode-map.js:706-720
 updateRaid                   src/24a-mode-raid.js:276-408
 updateRail                   src/18g-rail-ride.js:53-105
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
-updateSurface                src/21-mode-surface.js:211-671
+updateSurface                src/21-mode-surface.js:217-677
 updateSystem                 src/17-mode-system.js:106-519
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29rc-winter-r3.js:295-299
@@ -9929,7 +9929,7 @@ zoomTo                       src/15-input.js:358
 ## src/19-mode-landing-ground.js · 27 KB
   · посадка: разрез грунта:1
 
-## src/19-mode-landing.js · 21 KB
+## src/19-mode-landing.js · 22 KB
   · посадка:1
 
 ## src/19a-mode-scoop.js · 16 KB
@@ -10006,9 +10006,9 @@ zoomTo                       src/15-input.js:358
 ## src/20fa-life-gpu.js · 22 KB
   · жизнь на видеокарте: двойники кистей ходока, зверя и травы:1
 
-## src/21-mode-surface.js · 51 KB
+## src/21-mode-surface.js · 52 KB
   · поверхность:1
-  · навигатор и подсказки сверху:733
+  · навигатор и подсказки сверху:739
 
 ## src/21a-mode-base.js · 39 KB
   · база на планете: вид в разрезе:1
