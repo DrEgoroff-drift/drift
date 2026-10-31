@@ -29,6 +29,13 @@ optimise without losing quality, the ship stays under the finger.
 
 ## 0. The engine — everything on WebGPU (the author, 23.09; since 26.09 it goes on after the game stages)
 
+> **31.10 — the engine is closed and verified, without the phone.** Census `91zzzzzzy7-census2d`: 0 2D
+> calls and 0 uploads on `#c` in all 16 scenes; no `getContext("2d")` in `src/`; 11 scenes checked by
+> eye; `g11` 223–240 fps at DPR 2 in every mode, 0 WebGPU errors; the whole run green. Closed here:
+> G15, L1/L1b, L2, L3, G5, the heat margin (strip regen, planet-shadow culling), CI with WebGPU
+> (`deploy.yml` job `webgpu`), and the `pageshot`/`shot` launchers on WebGPU. Left below: the picture
+> polish (author-gated) and the 3D spikes (other sessions).
+
 «Первое — на новый движок, потом по плану.» WebGPU only and no 2D canvas anywhere, the interface too (the author
 25.09: «2D-канвы — их надо все вырезать и заменять на наш новый движок»; 26.09: «надо все переносить на движок, и 3D
 уже добавлять где можно»); no fallback; every ported layer better than before, not the same. Every step: a pair with
@@ -161,6 +168,11 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   - the phone gate P1 (§1) passed; the whole run green.
 
 ## 1. Phone tests — smooth flight on the S23
+
+> **31.10 — the phone is the FINAL test, later.** This pass closes everything without it: the S23 / P1
+> gate is not run now; it is the final testing before release, after all the rest is closed. What the
+> laptop can measure is measured here — `g11` at DPR 2: 223–240 fps in every mode, the whole run green.
+> The phone confirms the flight last.
 
 The base of §0: no picture pass counts until the S23 flies smoothly (the author 18.09: «на тел дергается все
 прогоны … плавный полет нужен»). The numbers of the 2D era (18–24.09: raster, `lighter`, DPR, the stick at 26 Hz)
