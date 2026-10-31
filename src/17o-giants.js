@@ -54,6 +54,14 @@ function giantsAll(){
 function giantAt(sx,sy){for(const g of giantsAll())if(g.sx===sx&&g.sy===sy)return g;return null;}
 /* в системе: далеко от звезды, по зерну */
 function giantPos(g){const a=(g.seed%628)/100,R=2600;return {x:Math.cos(a)*R,y:Math.sin(a)*R,a};}
+/* оборот вокруг своей оси (как planetSpin): цилиндр быстрее — O'Neill, дом/док медленнее */
+const GIANT_SPIN={moon:220000,house:280000,cyl:90000,customs:260000,dock:300000,town:240000,garden:200000};
+function giantPeriod(g){return (GIANT_SPIN[g.k]||240000)*(.85+((g.seed>>>5)&15)/15*.3);}
+function giantSpin(g){
+  const per=giantPeriod(g),dir=((g.seed>>>3)&1)?1:-1;
+  const t=(typeof G!=="undefined"&&typeof G.t==="number")?G.t*16.7:now();
+  return t/per*TAU*dir;
+}
 /* ── карта: у каждого великана свой значок (D26) ── */
 function giantMapGlyph(k,x,y,r,col){   /* пером карты (17z4), обвод 1.3 */
   const w=1.3;
@@ -679,20 +687,22 @@ function h3dGiantMesh(g){
 function bodyGiant(g,x,y,S){
   if(!bodyGpu())return false;
   const P=giantPos(g),m=h3dGiantMesh(g);if(m.len*S<BODY.LOD){bodyDot(x,y,[100,92,78],P.x,P.y,1);return true;}
-  const pass=gpuScene();
+  const pass=gpuScene(),a=giantSpin(g),ca=Math.cos(a),sa=Math.sin(a);
   /* «Гнездо»: шар тем же путём, что планеты (терминатор, лимб), поверх — жерло h3d */
   if(g.k==="moon"&&pass&&typeof gplBody==="function"){
     const [lx,ly]=sysLightDir(P.x,P.y),rr=520*S;
     const pal=[[48,42,36],[78,70,58],[108,96,80],[138,122,100],[158,142,118]];
     gplBody(pass,"gim"+g.seed,x,y,rr,null,{sx:lx||.6,sy:ly||-.3,rimK:.22,rim:[150,138,120],
       base:pal[2],sun:(typeof gplSun==="function")?gplSun():[1,.95,.85],seed:g.seed%97,kind:1,
-      hi:pal[3],lo:pal[0],wet:0,pal,cloud:0,lights:0});
+      hi:pal[3],lo:pal[0],wet:0,pal,cloud:0,lights:0,turn:a/TAU});
   }
-  if(!bodyRun(m,x,y,0,S,P.x,P.y,g.k==="moon"?.05:.15))return g.k==="moon";
-  bodyLights(m,x,y,0,S,1);if(!pass)return true;
-  if(m.pulse){const q=m.pulse,on=.3+.6*(.5+.5*Math.sin(G.t/60*1.3)),px=x+q.x*S,py=y+q.y*S,rr=Math.max(1.5,q.r*S);
+  if(!bodyRun(m,x,y,a,S,P.x,P.y,g.k==="moon"?.05:.15))return g.k==="moon";
+  bodyLights(m,x,y,a,S,1);if(!pass)return true;
+  if(m.pulse){const q=m.pulse,on=.3+.6*(.5+.5*Math.sin(G.t/60*1.3));
+    const px=x+(q.x*ca-q.y*sa)*S,py=y+(q.x*sa+q.y*ca)*S,rr=Math.max(1.5,q.r*S);
     gpuShapes(pass,[[1,px,py,rr,0,0,0,q.c[0],q.c[1],q.c[2],on]]);gpuShapes(pass,[[1,px,py,rr*1.8,0,0,rr,q.c[0],q.c[1],q.c[2],on*.35]],{blend:"add"});}
-  if(m.run){const q=m.run,u=(G.t/60*.15)%1,px=x+(q.x0+q.w*u)*S,py=y+q.y*S;
+  if(m.run){const q=m.run,u=(G.t/60*.15)%1,rx=q.x0+q.w*u,ry=q.y;
+    const px=x+(rx*ca-ry*sa)*S,py=y+(rx*sa+ry*ca)*S;
     gpuShapes(pass,[[0,px,py,px+Math.max(2,24*S),py+Math.max(1,4*S),0,0,47,111,208,.85]]);}
   return true;
 }

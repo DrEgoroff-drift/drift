@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.67 — giants spin on their axis
+
+- M464: every giant turns around its own axis (`giantSpin` / `giantPeriod`) — moon sphere via `gplBody.turn`, h3d mesh + lights rotate together. Cylinder faster (O'Neill), house/dock slower. Kimi craft queue for the six non-moon bodies: `_scratch/kimi-giant-prompt.txt`.
+
 ## 0.499.66 — Компания КБ: квитанция в ПОЧТУ
 
 - M480: paying cell moves at a Компания yard leaves a ПОЧТА line and a «Квитанция · Компания™» thing (ВЕЩИ). Foreign-yard fee itself was already wired.

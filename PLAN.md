@@ -267,7 +267,9 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 ## 8. Stage 7 — the giants
 
 - Hollow moon «Гнездо» (0.499.48): planet sphere + nest mouth, orbit/dock like planets.
-- Other giants still flat/h3d only — open if a pair reads better as a body (author call).
+- **0.499.67:** all seven spin on their own axis (`giantSpin`) — no more static stickers.
+- Other six still need denser bodies (author/Kimi craft): prompt `_scratch/kimi-giant-prompt.txt` →
+  `site/kimi-giant-{house,cyl,customs,dock,town,garden}.html`, then port zones into `17o-giants.js`.
 
 ## 9. Seams to honour when the items above are built
 
