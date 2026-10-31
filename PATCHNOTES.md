@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.44 — yard buy price readable when you cannot afford it
+
+- Station yard (G15 / Контроль 26.09): a disabled gold buy button keeps a cream-amber price (`#f0c090`) on graphite so the figure still reads at contrast ≥ 3; the cool disabled act is lifted the same way.
+
 ## 0.499.43 — hotel spa tip reaches the landing cue
 
 - After the porter names the ocean branch, the system remembers `G.spaTip`. Near that ocean world with a voucher the land line reads «САНАТОРИЙ · … · ПУТЁВКА С СОБОЙ» instead of a plain landing. Entering the spa clears the tip.

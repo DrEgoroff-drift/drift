@@ -671,13 +671,14 @@ nav.tabs.solo{display:none}
   box-shadow:0 0 20px rgba(var(--c-phos),.22),var(--glass-hi)}
 /* disabled без opacity на всю кнопку (G15, Контроль 26.09): цена на ЗАКАЗАТЬ
    при нехватке кредитов должна читаться, contrast ≥ 3 — сурик/фосфор гаснут цветом */
-.act:disabled{opacity:1;box-shadow:none;cursor:default;color:rgba(var(--c-phos),.58);
-  border-color:rgba(255,255,255,.14);
-  background:linear-gradient(180deg,rgba(var(--c-phos),.07),rgba(var(--c-phos),.025))}
+.act:disabled{opacity:1;box-shadow:none;cursor:default;color:rgba(210,228,220,.78);
+  border-color:rgba(255,255,255,.18);
+  background:linear-gradient(180deg,rgba(var(--c-phos),.09),rgba(var(--c-phos),.03))}
 .act.gold{border-color:rgba(var(--c-acc),.5);color:var(--amber);
   background:linear-gradient(180deg,rgba(var(--c-acc),.16),rgba(var(--c-acc),.05))}
-.act.gold:disabled{color:rgba(var(--c-acc),.78);border-color:rgba(var(--c-acc),.32);
-  background:linear-gradient(180deg,rgba(var(--c-acc),.10),rgba(var(--c-acc),.035))}
+/* верфь: цена на ЗАКАЗАТЬ без денег — светлее сурика, contrast ≥ 3 на графите (Контроль 26.09) */
+.act.gold:disabled{color:#f0c090;border-color:rgba(var(--c-acc),.42);
+  background:linear-gradient(180deg,rgba(var(--c-acc),.14),rgba(var(--c-acc),.05))}
 .act.gold:active{background:linear-gradient(180deg,rgba(var(--c-acc),.28),rgba(var(--c-acc),.10));
   box-shadow:0 0 20px rgba(var(--c-acc),.26),var(--glass-hi)}
 .act.gold:disabled:active{transform:none;box-shadow:none;
