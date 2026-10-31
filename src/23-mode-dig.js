@@ -333,6 +333,3 @@ function digFauna(dt,st){
       "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
   }
 }
-function drawDigFauna(){
-  throw new Error("2D: drawDigFauna снят — зверей и импульс рисует движок (23ce)");
-}

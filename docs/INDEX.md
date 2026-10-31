@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 684 · top-level symbols: 8928
+Files: 684 · top-level symbols: 8927
 
 ## SYMBOLS
 
@@ -484,7 +484,7 @@ DIG3_CM                      src/23ca-dig-pln-rock.js:18
 DIG3_DR                      src/23cb-dig-pln-dress.js:8
 DIG3_HAND                    src/23cd-dig-pln-top.js:18
 DIG3_HF                      src/23c-dig-pln.js:45
-DIG3_HOOKS                   src/23c0-dig-hooks.js:6-10
+DIG3_HOOKS                   src/23c0-dig-hooks.js:5-7
 DIG3_LENS                    src/23c-dig-pln.js:17
 DIG3_LIP                     src/23ca-dig-pln-rock.js:26
 DIG3_NOSCENE                 src/23cd-dig-pln-top.js:380
@@ -4048,7 +4048,6 @@ drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrystalForest            src/20aa-poi-shapes.js:114-140
 drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:161-173
-drawDigFauna                 src/23-mode-dig.js:336-338
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
 drawDustMotes                src/19-mode-landing.js:181-184
