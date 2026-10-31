@@ -1,0 +1,17 @@
+{
+  "trace_events": 1808663,
+  "direct_composition": true,
+  "trace": "temp/drift_trace.json",
+  "headless": "--headless=new",
+  "os": "Windows NT 10.0.26200 (Windows 11)",
+  "chrome": "156.0.8078.76",
+  "devices": [
+    "NVIDIA GeForce RTX 5070",
+    "AMD Radeon(TM) Graphics",
+    "Microsoft Basic Render Driver"
+  ],
+  "webgpu": "enabled",
+  "angle": "ANGLE_D3D11",
+  "gpu_compositing": "enabled",
+  "ps": "7.6.9"
+}
