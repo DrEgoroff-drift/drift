@@ -345,7 +345,7 @@ function hallScene(L,cam,t){
   {const gl=hallGoodsLight();if(gl)lights.push(gl);}   /* строка таблицы под мышью — её ящик горит */
   {const bl=hallBoardLight();if(bl)lights.push(bl);}   /* и строка доски — её лист (M814) */
   {const hl=hallHoldLight();if(hl)lights.push(hl);}   /* и строка ВЛАДЕНИЙ — её фишка на карте (M814) */
-  {const pl=hallPlaceHotLight();if(pl)lights.push(pl);}   /* ховер места на ходу — тёплый ореол у вещи */
+  /* ореол ховера места — только табличка (.ht.hot): отдельная лампа меняла набор теней и мигала пол */
   /* рабочая лампа у окна: днём вторая после окна, ночью — ключ места у верстака; третьей в списке — предел ламп её не срежет */
   /* ночью (M814) полный луч лампы — на весь ряд приборов: внутренний конус шире, ось — в передний край верстака */
   {const wy0=hallWorkY(T);lights.push({p:[HALL_WORK[0],wy0,HALL_WORK[1]],range:5.2,c:r3Sc(key,(dk?2.6:3.2)*(.4+1.6*nk)),spot:1,
@@ -598,10 +598,10 @@ function hallFrame(){
   {const pw=hallWalkPilot(),q=pw&&r3Proj(cam.vp,[pw[0],1,pw[1]],sz.cw,sz.ch);
     if(W.eng||W.fk>0){const cx=sz.wide?hallWalkFree(sz.cw)*.5:(q?q[0]/sz.cw:.5);U.set([.32*W.fk,cx,0,1],56);}
     else U.set([.6,q?q[0]/sz.cw:.5,0,1],56);}
-  /* тени зала — кэш слоёв (27f2): каждый кадр только слои у идущего пилота (S.shHot) и сменившихся ламп.
-     Через кадр (frames&1) мигал пол и потолок — жест людей крошечный, а чередование карты тени видно.
-     Камера тени не меняет (29.10, телефон) */
-  S.own="hall";S.shKeep=true;S.shHot=hallWalkMoving()?S.pii:null;
+  /* тени зала: в покое — кэш слоёв (лампа та же); на ходу — каждый кадр целиком.
+     Частичный shHot оставлял дальние слои застывшими, а ближние обновлялись — пол мигал на границе ламп.
+     Через кадр (frames&1) мигал ещё сильнее. Камера тени не меняет (29.10) */
+  S.own="hall";S.shKeep=!hallWalkMoving();S.shHot=null;
   HALL.frames++;HALL.S=S;HALL.vp=cam.vp;   /* пределы — hallLimits(HALL.S) по запросу теста, не в кадре (M816c) */
   const k0=L.people[0],pw=hallWalkPilot(),pa=pw?[pw[0],pw[1]]:null,f=sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};

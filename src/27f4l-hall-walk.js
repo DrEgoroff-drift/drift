@@ -55,12 +55,7 @@ function hallWalkInit(){
     t0:wallMs(),cx:null,fk:0,bf:null,bg0:0,in0:same?0:wallMs(),act:false};
   hallWalkDom();
 }
-/* тёплый ореол у вещи места под мышью — читается зона до клика */
-function hallPlaceHotLight(){
-  const W=HALL.walk;if(!W||!W.hot||W.eng)return null;
-  const p=HALL_PLACES.find(q=>q.id===W.hot);if(!p)return null;
-  const t=p.tag;return{p:[t[0],Math.max(1.1,t[1]-.15),t[2]],range:2.4,c:r3Sc(r3Lin([255,214,170]),1.35),vol:0,place:p.id};
-}
+/* ховер места — табличка .ht.hot и курсор .phit; лампу сюда не ставим (мигание теней) */
 function hallWalkNear(W){const P=hallPlacesHere();let b=null,d=1e9;for(const p of P){const e=Math.abs(p.x-W.x);if(e<d){d=e;b=p;}}return b&&d<1.25?b:null;}
 /* шаг: клавиши ведут, цель (тап, полоса, 1–7) — тоже; у цели — встать и, если просили, войти */
 function hallWalkStep(dt){
@@ -88,10 +83,11 @@ function hallWalkTo(id,engage){
 }
 /* позы рига на ходу: углы костей от фазы шага (таз, корпус, голова, ближняя нога ×3, дальняя ×3, руки ×2 ×2) */
 function hallWalkPose(W){
-  const v=Math.abs(W.v),a=clamp(v/HALL_WALK_V,0,1.35),p=W.ph,s=Math.sin(p),s2=Math.sin(p+Math.PI);
-  const st=HALL_RIG_POSE.stand,m=Math.min(1,a);
-  const leg=(q)=>[.48*a*Math.sin(q),-.1-.7*a*Math.max(0,Math.sin(q+1.9)),.06+.18*a*Math.sin(q-.6)];
-  const n=leg(p),f=leg(p+Math.PI),A=[0,.05*a,-.04, ...n, ...f, .16-.42*a*s,.45+.18*a, .12-.42*a*s2,.40+.18*a];
+  /* шаг читается в скафандре: бедро ±.7, колено до .95 — иначе «коньки на прямых» (автор 31.10) */
+  const v=Math.abs(W.v),a=clamp(v/HALL_WALK_V,0,1.4),p=W.ph,s=Math.sin(p),s2=Math.sin(p+Math.PI);
+  const st=HALL_RIG_POSE.stand,m=Math.min(1,a*.95+.05);
+  const leg=(q)=>[.70*a*Math.sin(q),-.14-.95*a*Math.max(0,Math.sin(q+1.9)),.10+.28*a*Math.sin(q-.6)];
+  const n=leg(p),f=leg(p+Math.PI),A=[0,.06*a,-.05, ...n, ...f, .18-.55*a*s,.48+.22*a, .14-.55*a*s2,.42+.22*a];
   return A.map((v2,i)=>st[i]+(v2-st[i])*m);
 }
 /* пилот на линии: x, z, разворот, поза (массив углов или имя) */
@@ -113,7 +109,12 @@ function hallWalkPilot(){
   W.yaw=W.yaw==null||W.fk>=1?yaw:W.yaw+Math.atan2(Math.sin(yaw-W.yaw),Math.cos(yaw-W.yaw))*.22;
   /* доска и контора: ближний вид — глаза самого пилота (M814), на подходе он уходит в объектив */
   if(sp&&k>.6&&HALL_WALK_POV[W.eng||W.at])return null;
-  if(sp)return [W.x+(sp[0]-W.x)*k,HALL_WZ+(sp[1]-HALL_WZ)*k,W.yaw,k>.85?sp[3]:"stand"];
+  if(sp){
+    const x=W.x+(sp[0]-W.x)*k,z=HALL_WZ+(sp[1]-HALL_WZ)*k;
+    /* наезд двигает тело к вещи при v=0 — со «stand» это коньки на прямых ногах; пока k<.85 — шаг */
+    if(k>.85)return [x,z,W.yaw,sp[3]||"stand"];
+    return [x,z,W.yaw,hallWalkPose({v:HALL_WALK_V*.75*(1-k),ph:W.ph,face:W.face})];
+  }
   return [W.x,HALL_WZ,W.yaw,mv||Math.abs(W.v)>.001?hallWalkPose(W):"stand"];
 }
 /* объектив хода: следом за пилотом с задержкой τ .45 с, в пределах зала (кромка кадра не уходит за торцы) */
@@ -147,6 +148,8 @@ function hallWalkCam(L,sz,c0){
   const wl=hallWalkLens(L,sz,dt),ph=!sz.wide,asp=sz.cw/Math.max(1,sz.ch);
   /* вход .45 с / выход .55 с — как в DESIGN-station-walk (§5), не рывок .16 */
   const fk=W.eng?1:0;W.fk+=(fk-W.fk)*(1-Math.exp(-dt/(W.eng?.45:.55)));if(Math.abs(W.fk-fk)<.002)W.fk=fk;
+  /* фаза шага на подходе к вещи (v=0, тело едет через fk) — иначе прямые ноги */
+  if(W.eng&&W.fk>0&&W.fk<.85)W.ph+=HALL_WALK_V*.55*dt*(Math.PI/.72);
   const k=hallEase(W.fk);
   /* место: станция камеры (её наезд и линза строк — прежние); на телефоне поле шире под узкий кадр */
   /* телефон: станции камер сняты под ПК (полкадра потолка) — у места свой ближний вид, hallWalkPhCam */
@@ -263,7 +266,7 @@ function hallWalkUi(force){
   if($st)$st.classList.toggle("phit",!!W.hot&&!W.eng);
 }
 /* жест ведения: точка касания, время, было ли ведение; мёртвая зона и отвод до полного шага — в CSS px */
-const HALL_DRAG={id:null,x0:0,y0:0,t0:0,moved:false,hit:null},HALL_DRAG_DZ=12,HALL_DRAG_FULL=60,HALL_HIT_R=1.55,HALL_HIT_PX=52;
+const HALL_DRAG={id:null,x0:0,y0:0,t0:0,moved:false,hit:null},HALL_DRAG_DZ=12,HALL_DRAG_FULL=60,HALL_HIT_PX=44;
 function hallDragEnd(){HALL_DRAG.id=null;HALL_DRAG.moved=false;HALL_DRAG.hit=null;const W=HALL.walk;if(W)W.drv=0;}
 /* мир-x под пальцем/мышью — тем же объективом хода, что тап по полу */
 function hallWalkWorldX(clientX){
@@ -273,19 +276,16 @@ function hallWalkWorldX(clientX){
   const half=(hallWide()?HALL_WALK_D.pc:HALL_WALK_D.ph)*Math.tan(HALL_WALK_D.fy/2)*w/Math.max(1,r.height*ui);
   return c.tgt[0]+(sx/w-.5)*2*half;
 }
-/* место под курсором: сначала экранная близость к табличке, иначе мир-x у вещи */
+/* место под курсором — только у таблички/вещи на экране (≤ 44 CSS-px). Мир-x убран:
+   при R≈1.5 м любая точка пола попадала в «место», и клик по залу открывал карточку
+   вместо хода (0.499.40, автор 31.10) */
 function hallWalkHitAt(clientX,clientY){
   const P=hallPlacesHere(),ui=(typeof UIK==="number"&&UIK>0)?UIK:1;
-  if(HALL.vp&&typeof $st!=="undefined"&&$st&&clientY!=null){
-    const r=$st.getBoundingClientRect(),sx=(clientX-r.left)*ui,sy=(clientY-r.top)*ui,cw=r.width*ui,ch=r.height*ui;
-    let b=null,d=HALL_HIT_PX*ui;
-    for(const p of P){const q=r3Proj(HALL.vp,p.tag,cw,ch);if(!q||!(q[2]>0))continue;
-      const e=Math.hypot(q[0]-sx,q[1]-sy);if(e<d){d=e;b=p;}}
-    if(b)return b.id;
-  }
-  const wx=hallWalkWorldX(clientX);if(wx==null)return null;
-  let b=null,d=HALL_HIT_R;
-  for(const p of P){const e=Math.min(Math.abs(p.x-wx),Math.abs(p.tag[0]-wx));if(e<d){d=e;b=p;}}
+  if(!HALL.vp||typeof $st==="undefined"||!$st||clientY==null)return null;
+  const r=$st.getBoundingClientRect(),sx=(clientX-r.left)*ui,sy=(clientY-r.top)*ui,cw=r.width*ui,ch=r.height*ui;
+  let b=null,d=HALL_HIT_PX*ui;
+  for(const p of P){const q=r3Proj(HALL.vp,p.tag,cw,ch);if(!q||!(q[2]>0))continue;
+    const e=Math.hypot(q[0]-sx,q[1]-sy);if(e<d){d=e;b=p;}}
   return b?b.id:null;
 }
 function hallWalkHot(id){

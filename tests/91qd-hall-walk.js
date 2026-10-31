@@ -23,6 +23,11 @@ TEST_SUITES.push(()=>suite("станция пешком: места, ход, к�
   const miss=P.filter(p=>!seen[p.id]).map(p=>p.id);
   ok(!miss.length,"клавишами до каждого места"+(miss.length?": не дошёл до "+miss.join(","):""));
   hallWalkStep(.05);ok(Math.abs(W.v)<HALL_WALK_V,"клавиши отпущены — шаг гаснет");
+  /* зона места — только у таблички на экране, не полоса пола (0.499.46) */
+  ok(typeof hallWalkHitAt==="function"&&typeof HALL_HIT_R==="undefined","мир-полоса HIT_R снята — клик по полу снова ход");
+  const pose=hallWalkPose({v:HALL_WALK_V,ph:1.1,face:1});
+  ok(Array.isArray(pose)&&pose.length===HALL_RIG_POSE.stand.length,"поза шага — массив углов рига");
+  ok(Math.abs(pose[3]-HALL_RIG_POSE.stand[3])>.15||Math.abs(pose[4]-HALL_RIG_POSE.stand[4])>.2,"шаг гнёт ногу, не прямые «коньки»");
 
   /* полоса: тап зовёт к месту бегом и входит по приходу */
   hallWalkTo(P[1].id,true);

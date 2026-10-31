@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 673 · top-level symbols: 8883
+Files: 673 · top-level symbols: 8882
 
 ## SYMBOLS
 
@@ -981,13 +981,13 @@ HALL_BOARD_SKIP              src/27f4h-hall-board.js:15
 HALL_BULB_R                  src/27f4a-hall.js:560
 HALL_CA                      src/27f4a-hall.js:98
 HALL_CAMS                    src/27f4a-hall.js:77-85
-HALL_CARD_MIN                src/27f4l-hall-walk.js:104
+HALL_CARD_MIN                src/27f4l-hall-walk.js:100
 HALL_COST                    src/27f4k-hall-phone.js:26
 HALL_COUNTER                 src/27f4b-hall-dress.js:185-193
 HALL_DAY_MS                  src/27f4a-hall.js:60
 HALL_DIAL_BOX                src/27f4g-hall-instr.js:25
 HALL_DIAL_KEY                src/27f4g-hall-instr.js:27
-HALL_DRAG                    src/27f4l-hall-walk.js:266
+HALL_DRAG                    src/27f4l-hall-walk.js:269
 HALL_DRESS                   src/27f4b-hall-dress.js:263-369
 HALL_F                       src/27f4a-hall.js:31
 HALL_FCUT                    src/27f4a-hall.js:32
@@ -1037,8 +1037,8 @@ HALL_TABMEM                  src/27f4l-hall-walk.js:19
 HALL_TL                      src/27f4l-hall-walk.js:324
 HALL_TYPES                   src/27f4a-hall.js:65-73
 HALL_WALK_D                  src/27f4l-hall-walk.js:17
-HALL_WALK_POV                src/27f4l-hall-walk.js:101
-HALL_WALK_SPOT               src/27f4l-hall-walk.js:100
+HALL_WALK_POV                src/27f4l-hall-walk.js:97
+HALL_WALK_SPOT               src/27f4l-hall-walk.js:96
 HALL_WALK_V                  src/27f4l-hall-walk.js:16
 HALL_WIN                     src/27f4a-hall.js:419
 HALL_WIN_FW                  src/27f4b-hall-dress.js:24
@@ -4997,7 +4997,7 @@ hallBones                    src/27f4b-hall-dress.js:70-183
 hallBulbU                    src/27f4a-hall.js:561-565
 hallCage                     src/27f4d-hall-props.js:38-47
 hallCam                      src/27f4a-hall.js:117-123
-hallCamFr                    src/27f4l-hall-walk.js:132-135
+hallCamFr                    src/27f4l-hall-walk.js:133-136
 hallCantPrep                 src/27f4a-hall.js:244-266
 hallCanvas                   src/27f4a-hall.js:460-466
 hallClk                      src/27f4k-hall-phone.js:25
@@ -5011,7 +5011,7 @@ hallCrop                     src/27f4a-hall.js:484
 hallDialSvg                  src/27f4g-hall-instr.js:167-263
 hallDoor                     src/27f4a-hall.js:125-128
 hallDpr                      src/27f4a-hall.js:470
-hallDragEnd                  src/27f4l-hall-walk.js:267
+hallDragEnd                  src/27f4l-hall-walk.js:270
 hallDrawW                    src/27f4a-hall.js:473
 hallDrum                     src/27f4b-hall-dress.js:66
 hallEase                     src/27f4a-hall.js:129
@@ -5084,7 +5084,6 @@ hallOrbPlace                 src/27f4c-hall-sky.js:31-36
 hallOrbUp                    src/27f4c-hall-sky.js:61-72
 hallPilotAt                  src/27f4a-hall.js:101
 hallPipe                     src/27f4d-hall-props.js:21-28
-hallPlaceHotLight            src/27f4l-hall-walk.js:59-63
 hallPlaceOf                  src/27f4a-hall.js:111
 hallPlacesHere               src/27f4l-hall-walk.js:36-39
 hallPlanet                   src/27f4c-hall-sky.js:16-21
@@ -5116,31 +5115,31 @@ hallTablePose                src/27f4a-hall.js:55
 hallTagList                  src/27f4a-hall.js:431-440
 hallTagsDraw                 src/27f4a-hall.js:441-457
 hallTradeLine                src/27f4l-hall-walk.js:325-331
-hallWalkBack                 src/27f4l-hall-walk.js:177-180
-hallWalkCam                  src/27f4l-hall-walk.js:145-159
-hallWalkCls                  src/27f4l-hall-walk.js:197-203
-hallWalkDom                  src/27f4l-hall-walk.js:205-251
-hallWalkEngage               src/27f4l-hall-walk.js:162-176
-hallWalkFree                 src/27f4l-hall-walk.js:105
-hallWalkHitAt                src/27f4l-hall-walk.js:277-290
+hallWalkBack                 src/27f4l-hall-walk.js:180-183
+hallWalkCam                  src/27f4l-hall-walk.js:146-162
+hallWalkCls                  src/27f4l-hall-walk.js:200-206
+hallWalkDom                  src/27f4l-hall-walk.js:208-254
+hallWalkEngage               src/27f4l-hall-walk.js:165-179
+hallWalkFree                 src/27f4l-hall-walk.js:101
+hallWalkHitAt                src/27f4l-hall-walk.js:282-290
 hallWalkHot                  src/27f4l-hall-walk.js:291-295
 hallWalkInit                 src/27f4l-hall-walk.js:51-57
-hallWalkLens                 src/27f4l-hall-walk.js:120-130
-hallWalkMoving               src/27f4l-hall-walk.js:160
-hallWalkNear                 src/27f4l-hall-walk.js:64
-hallWalkPhCam                src/27f4l-hall-walk.js:138-143
-hallWalkPilot                src/27f4l-hall-walk.js:107-118
-hallWalkPlaceCam             src/27f4l-hall-walk.js:183-188
-hallWalkPose                 src/27f4l-hall-walk.js:90-96
+hallWalkLens                 src/27f4l-hall-walk.js:121-131
+hallWalkMoving               src/27f4l-hall-walk.js:163
+hallWalkNear                 src/27f4l-hall-walk.js:59
+hallWalkPhCam                src/27f4l-hall-walk.js:139-144
+hallWalkPilot                src/27f4l-hall-walk.js:103-119
+hallWalkPlaceCam             src/27f4l-hall-walk.js:186-191
+hallWalkPose                 src/27f4l-hall-walk.js:85-92
 hallWalkSettle               src/27f4l-hall-walk.js:42-49
-hallWalkSpot                 src/27f4l-hall-walk.js:106
-hallWalkStep                 src/27f4l-hall-walk.js:66-81
-hallWalkTabs                 src/27f4l-hall-walk.js:190-196
+hallWalkSpot                 src/27f4l-hall-walk.js:102
+hallWalkStep                 src/27f4l-hall-walk.js:61-76
+hallWalkTabs                 src/27f4l-hall-walk.js:193-199
 hallWalkTagList              src/27f4l-hall-walk.js:314-320
 hallWalkTapAt                src/27f4l-hall-walk.js:297-301
-hallWalkTo                   src/27f4l-hall-walk.js:83-88
-hallWalkUi                   src/27f4l-hall-walk.js:253-264
-hallWalkWorldX               src/27f4l-hall-walk.js:269-275
+hallWalkTo                   src/27f4l-hall-walk.js:78-83
+hallWalkUi                   src/27f4l-hall-walk.js:256-267
+hallWalkWorldX               src/27f4l-hall-walk.js:272-278
 hallWall                     src/27f4b-hall-dress.js:16-21
 hallWide                     src/27f4a-hall.js:114
 hallWinY                     src/27f4a-hall.js:420
@@ -10525,7 +10524,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/27f4k-hall-phone.js · 4 KB
 
-## src/27f4l-hall-walk.js · 28 KB
+## src/27f4l-hall-walk.js · 29 KB
   · M816 станция пешком (docs/DESIGN-station-walk.md):1
 
 ## src/27f5-portrait3d.js · 9 KB
@@ -10764,7 +10763,7 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qd-hall-phone.js · 2 KB
 
-## tests/91qd-hall-walk.js · 6 KB
+## tests/91qd-hall-walk.js · 7 KB
   · станция пешком (M816):1
 
 ## tests/91qd1-hull-plane.js · 4 KB
