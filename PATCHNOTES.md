@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.54 — talking traps and «я первый» at the halt
+
+- Resources voice (DESIGN-review): antimatter traps without feed count down aloud each game minute — «до потери груза — N минут». After a ЖИЛА rumour, three ships at a rail stop each claim they were first.
+
 ## 0.499.53 — border gesture: paint and «служебная»
 
 - M452 rest (DESIGN-review borders): Рассвет tug offers one panel for 5 кр when the hull is whole — «тебе к лицу …»; soft wash on the flank for three minutes. Орднунг pad: торг / транзит / иное — all resolve to «служебная».

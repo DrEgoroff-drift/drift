@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.53";
+const VER="0.499.54";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -10574,17 +10574,23 @@ function farCargoHit(){
   }
   return false;
 }
-/* ловушки: питание от реактора или процент в минуту */
-let FAR_TRAP_BANK=0,FAR_TRAP_SAID=0;
+/* ловушки: питание от реактора или процент в минуту; без питания трюм считает
+   вслух «до потери груза — N минут» (DESIGN-review resources — единственный груз, что говорит) */
+let FAR_TRAP_BANK=0,FAR_TRAP_SAID=0,FAR_TRAP_CD=0;
 function farTrapTick(dt){
-  const n=G.cargo.antimatter|0;if(n<=0){FAR_TRAP_BANK=0;return;}
+  const n=G.cargo.antimatter|0;if(n<=0){FAR_TRAP_BANK=0;FAR_TRAP_CD=0;return;}
   const fed=((G.mods&&G.mods.weapon)|0)>0&&(G.energy||0)>1;
-  if(fed){G.energy-=.004*dt;return;}
+  if(fed){G.energy-=.004*dt;FAR_TRAP_CD=0;return;}
   FAR_TRAP_BANK+=n*.01*dt/3600;                   /* один процент за минуту игры */
+  /* обратный отсчёт раз в игровую минуту: сколько минут до следующей единицы потери */
+  FAR_TRAP_CD+=dt/3600;
+  if(FAR_TRAP_CD>=1){FAR_TRAP_CD=0;
+    const leftMin=Math.max(1,Math.ceil((1-FAR_TRAP_BANK)/(n*.01)));
+    say("До потери груза — "+leftMin+" "+pl3(leftMin,"минута","минуты","минут")+"\nловушки без питания · "+n+" ед.",100);}
   if(FAR_TRAP_BANK>=1){
     const k=Math.floor(FAR_TRAP_BANK);FAR_TRAP_BANK-=k;G.cargo.antimatter=Math.max(0,n-k);
     if(now()-FAR_TRAP_SAID>60000){FAR_TRAP_SAID=now();
-      say("Ловушки без питания\nминус процент в минуту · осталось "+(G.cargo.antimatter|0)+" ед.",120);}
+      say("Ловушки без питания\nминус процент · осталось "+(G.cargo.antimatter|0)+" ед.",120);}
   }
 }
 
@@ -70552,6 +70558,13 @@ function railLifeStop(R){
     peopleLine("Чай, пожалуйста. Подстаканник вернёте. "+(L.length?"А говорят, есть "+L[hashi(R.seq[0],R.seg,0x7EA)%L.length].short:"Ничего не говорят, пейте горячим."),"проводница",true);
   }
   if(RAIL_LIFE.pax&&R.seg===1&&!RAIL_LIFE.pax.said){RAIL_LIFE.pax.said=1;peopleLine(RAIL_LIFE.pax.talk,RAIL_LIFE.pax.who,false);}
+  /* жила прогремела (DESIGN-review resources): на полустанке трое — и каждый был первым */
+  if(!R.veinSaid&&R.seg===1&&typeof farVeinRumour==="function"&&farVeinRumour()&&typeof peopleLine==="function"){
+    R.veinSaid=1;
+    peopleLine("Я к жиле первым подошёл. Ещё до сводки.","борт у кольца",false);
+    peopleLine("Нет — мы раньше. С прошлой смены стояли.","второй борт",false);
+    peopleLine("Оба вруте. Я первый.","третий",false);
+  }
 }
 /* ── выход: посылка сдана, попутчик сошёл, пломба снята ── */
 function railLifeExit(s){

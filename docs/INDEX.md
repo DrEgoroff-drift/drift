@@ -633,7 +633,7 @@ FAR_ROLL                     src/02-world.js:142
 FAR_SALT                     src/06d-far.js:20
 FAR_STALL_R                  src/12-economy.js:88
 FAR_TAKE_SALT                src/06e-far-take.js:14
-FAR_TRAP_BANK                src/06f-far-props.js:33
+FAR_TRAP_BANK                src/06f-far-props.js:34
 FAR_UNITS                    src/06d-far.js:23
 FAR_VOICE                    src/12-economy.js:47-59
 FAR_W                        src/06f-far-props.js:11
@@ -4315,7 +4315,7 @@ farStall                     src/12-economy.js:89-97
 farStallBuy                  src/12-economy.js:98-108
 farTake                      src/06e-far-take.js:26-34
 farTakenAll                  src/06e-far-take.js:15
-farTrapTick                  src/06f-far-props.js:34-44
+farTrapTick                  src/06f-far-props.js:35-50
 farVein                      src/06e-far-take.js:74-83
 farVeinCompany               src/06e-far-take.js:197-200
 farVeinRumour                src/06e-far-take.js:182-195
@@ -7486,9 +7486,9 @@ railKrai                     src/18k-rail-scheme.js:115-120
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:76-81
 railLifeBoard                src/18i-rail-life.js:87-93
-railLifeExit                 src/18i-rail-life.js:104-112
+railLifeExit                 src/18i-rail-life.js:111-119
 railLifeHtml                 src/18i-rail-life.js:59-75
-railLifeStop                 src/18i-rail-life.js:95-102
+railLifeStop                 src/18i-rail-life.js:95-109
 railLineGpu                  src/18ga-rail-gpu.js:70-106
 railLineMetro                src/18f-rail-station.js:168
 railNearest                  src/18e-rail-net.js:32-42
@@ -7519,8 +7519,8 @@ railSchemePick               src/18k-rail-scheme.js:122-139
 railSchemeRedraw             src/18k-rail-scheme.js:87-104
 railSchemeScope              src/18k-rail-scheme.js:76-82
 railSchemeZoom               src/18k-rail-scheme.js:83-86
-railSealDock                 src/18i-rail-life.js:114-118
-railSealPirates              src/18i-rail-life.js:122-127
+railSealDock                 src/18i-rail-life.js:121-125
+railSealPirates              src/18i-rail-life.js:129-134
 railSegDur                   src/18g-rail-ride.js:35-38
 railSpurApply                src/18e-rail-net.js:170-185
 railSpurLine                 src/18e-rail-net.js:160-169
@@ -9019,7 +9019,7 @@ zoomTo                       src/15-input.js:358
 ## src/06e-far-take.js · 12 KB
   · дальние залежи в игре: выемка, прибор, ЖИЛА (M466, DESIGN-resources §3):1
 
-## src/06f-far-props.js · 3 KB
+## src/06f-far-props.js · 4 KB
   · свойства дальних товаров: одно на товар (M468, DESIGN-resources §2, law 4):1
 
 ## src/07-planet.js · 7 KB
@@ -9864,7 +9864,7 @@ zoomTo                       src/15-input.js:358
 ## src/18h-rail-powers.js · 6 KB
   · шесть железных дорог (M474, DESIGN-metro §6):1
 
-## src/18i-rail-life.js · 10 KB
+## src/18i-rail-life.js · 11 KB
   · жизнь на железной дороге (M499–M502, M508; PLAN «new mechanics»):1
 
 ## src/18j-rail-rush.js · 3 KB

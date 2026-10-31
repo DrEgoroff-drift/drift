@@ -29,16 +29,22 @@ function farCargoHit(){
   }
   return false;
 }
-/* ловушки: питание от реактора или процент в минуту */
-let FAR_TRAP_BANK=0,FAR_TRAP_SAID=0;
+/* ловушки: питание от реактора или процент в минуту; без питания трюм считает
+   вслух «до потери груза — N минут» (DESIGN-review resources — единственный груз, что говорит) */
+let FAR_TRAP_BANK=0,FAR_TRAP_SAID=0,FAR_TRAP_CD=0;
 function farTrapTick(dt){
-  const n=G.cargo.antimatter|0;if(n<=0){FAR_TRAP_BANK=0;return;}
+  const n=G.cargo.antimatter|0;if(n<=0){FAR_TRAP_BANK=0;FAR_TRAP_CD=0;return;}
   const fed=((G.mods&&G.mods.weapon)|0)>0&&(G.energy||0)>1;
-  if(fed){G.energy-=.004*dt;return;}
+  if(fed){G.energy-=.004*dt;FAR_TRAP_CD=0;return;}
   FAR_TRAP_BANK+=n*.01*dt/3600;                   /* один процент за минуту игры */
+  /* обратный отсчёт раз в игровую минуту: сколько минут до следующей единицы потери */
+  FAR_TRAP_CD+=dt/3600;
+  if(FAR_TRAP_CD>=1){FAR_TRAP_CD=0;
+    const leftMin=Math.max(1,Math.ceil((1-FAR_TRAP_BANK)/(n*.01)));
+    say("До потери груза — "+leftMin+" "+pl3(leftMin,"минута","минуты","минут")+"\nловушки без питания · "+n+" ед.",100);}
   if(FAR_TRAP_BANK>=1){
     const k=Math.floor(FAR_TRAP_BANK);FAR_TRAP_BANK-=k;G.cargo.antimatter=Math.max(0,n-k);
     if(now()-FAR_TRAP_SAID>60000){FAR_TRAP_SAID=now();
-      say("Ловушки без питания\nминус процент в минуту · осталось "+(G.cargo.antimatter|0)+" ед.",120);}
+      say("Ловушки без питания\nминус процент · осталось "+(G.cargo.antimatter|0)+" ед.",120);}
   }
 }

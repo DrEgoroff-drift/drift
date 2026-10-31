@@ -99,6 +99,13 @@ function railLifeStop(R){
     peopleLine("Чай, пожалуйста. Подстаканник вернёте. "+(L.length?"А говорят, есть "+L[hashi(R.seq[0],R.seg,0x7EA)%L.length].short:"Ничего не говорят, пейте горячим."),"проводница",true);
   }
   if(RAIL_LIFE.pax&&R.seg===1&&!RAIL_LIFE.pax.said){RAIL_LIFE.pax.said=1;peopleLine(RAIL_LIFE.pax.talk,RAIL_LIFE.pax.who,false);}
+  /* жила прогремела (DESIGN-review resources): на полустанке трое — и каждый был первым */
+  if(!R.veinSaid&&R.seg===1&&typeof farVeinRumour==="function"&&farVeinRumour()&&typeof peopleLine==="function"){
+    R.veinSaid=1;
+    peopleLine("Я к жиле первым подошёл. Ещё до сводки.","борт у кольца",false);
+    peopleLine("Нет — мы раньше. С прошлой смены стояли.","второй борт",false);
+    peopleLine("Оба вруте. Я первый.","третий",false);
+  }
 }
 /* ── выход: посылка сдана, попутчик сошёл, пломба снята ── */
 function railLifeExit(s){
