@@ -19,6 +19,7 @@ const PB_MS=4,PB_PX=1<<19,PB_CAP=64,PB_KEEP=6,PB_STALE=120,PB=new Map(),PB_MAX={
 let PB_F=-1,PB_T=0,PB_N=0,PB_SYNC=0,PB_PX0=0,PB_B0=0;
 function prebakeDrop(key){const J=PB.get(key);if(!J)return;PB.delete(key);try{J.it.return();}catch(e){}}
 function prebake(key,make,sync){
+  if(NEAR.on)nearBake(!!sync);
   if(GPU.frameNo!==PB_F){PB_F=GPU.frameNo;PB_T=0;PB_N=0;PB_PX0=GC_PX;PB_B0=GPU.bakeN|0;
     for(const [k,J] of [...PB])if(PB_F-J.f>PB_STALE)prebakeDrop(k);}
   let J=PB.get(key);
@@ -72,6 +73,7 @@ function workPump(){
     if(left<WORK_LO&&WORK_F-w.f<WORK_STARVE)continue;
     const a=wallMs(),go=w.step(Math.max(left,WORK_LO)),dt=wallMs()-a;
     left-=dt;
+    if(NEAR.on)nearWork(w.name,dt);
     if(go){w.f=WORK_F;if(!(WORK_MAX[w.name]>=dt))WORK_MAX[w.name]=dt;}
   }
   WORK_T=wallMs()-t0;fbSpend(WORK_T);

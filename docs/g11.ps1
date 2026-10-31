@@ -11,12 +11,12 @@
 #    троттлинга продолжают рисовать в фоне и топят любой следующий прогон;
 #  * свой профиль (--user-data-dir), и убиваем только процессы с ним:
 #    браузер пользователя трогать нельзя.
-param([int]$WaitSec = 240, [switch]$Deep, [switch]$Stable, [switch]$EnableGpu)
+param([int]$WaitSec = 240, [switch]$Deep, [switch]$Stable, [switch]$EnableGpu, [switch]$Near)
 
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $root = Split-Path -Parent $here
-$name = if ($Deep) { "g11deep" } else { "g11" }
+$name = if ($Deep) { "g11deep" } elseif ($Near) { "g11near" } else { "g11" }
 $out  = Join-Path $root ("docs\shots\" + $name + ".png")
 $prof = Join-Path $env:TEMP "drift-g11-profile"
 
@@ -29,6 +29,7 @@ if (-not $chrome) { throw "no headless browser found" }
 
 $url  = "http://localhost:8777/drift.html?g11"
 if ($Deep) { $url = $url + "=deep" }
+if ($Near) { $url = $url + "=near" }
 # -Stable: софт-композит на 60 Гц — интервалы ровные (16.7 мс), без всплесков 33–79 мс.
 # По умолчанию GPU-композит на 240 Гц: крейсер 4.2 мс, но headless изредка пропускает такты
 # (почему — записано в 28z-fps-probe: это среда, не игра). Работа самой игры — в p50/p90, jsMax.

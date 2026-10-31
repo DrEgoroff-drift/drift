@@ -357,7 +357,7 @@ function plnSurface(S,o){
      посадкам — остаток, но не меньше половины low */
   const B=PLN_BUILD,tb=wallMs();
   const lim=L.first?fbLeft(B.low,B.ms,B.frame):B.first;   /* общий счёт стройки кадра (17a0 FB) */
-  if(fly&&o.warm&&!PLN.rush&&!L.warmDone&&plnWarmStep(L,S,p,C,V))return "warm";
+  if(fly&&o.warm&&!PLN.rush&&!L.warmDone){const tw=wallMs();const rw=plnWarmStep(L,S,p,C,V);if(NEAR.on)nearWarm(wallMs()-tw);if(rw)return "warm";}
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */

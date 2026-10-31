@@ -134,7 +134,7 @@ function gpuPipesLate(){
     const key=it[0],r=it[1],c=GPU_PIPES.warm.get(key);
     if(c&&c.p){next();return;}
     const w={p:null,code:r.code};GPU_PIPES.warm.set(key,w);L.asked++;
-    d.createRenderPipelineAsync(r.desc).then(p=>{if(GPU_PIPES.dev===d){w.p=p;L.n++;}},()=>{L.bad.push(key);})
+    d.createRenderPipelineAsync(r.desc).then(p=>{if(GPU_PIPES.dev===d){w.p=p;L.n++;if(NEAR.on)nearPipe();}},()=>{L.bad.push(key);})
       .then(()=>{last=wallMs();setTimeout(next,GPU_LATE_GAP);});
   };
   next();

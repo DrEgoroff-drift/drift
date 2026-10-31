@@ -587,7 +587,7 @@ function frameBodyIn(now){
     /* мир шагает ОДИН раз за кадр, как и до 0.1; квантуется внутри только
        корабль — см. WORLD_SUB (08-state) и updateSystem */
     WORLD_SUB=Math.max(1,Math.round(steps*QUANT_MS/SUB_MS));
-    try{stepWorld(dt);}finally{WORLD_SUB=1;}
+    try{const t0=wallMs();stepWorld(dt);if(NEAR.on)NEAR.sw=wallMs()-t0;}finally{WORLD_SUB=1;}
     hullHeldTick();   /* корпус до беды (R5b) */
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
@@ -602,19 +602,19 @@ function frameBodyIn(now){
     if(G.mode==="barge"&&!scrOpen())G.mode="system";
     audioTick(dt);
     /* кадр рисует видеокарта (08b); пока устройства нет — мир шагает без картинки */
-    const drew=gpuFrame();
+    const tg=wallMs();const drew=gpuFrame();if(NEAR.on)NEAR.gf=wallMs()-tg;
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой игрок повернулся.
        Она — очередь слоя #ovl, а слой сливается в конце мира: потому зовётся ДО него */
-    if(drew){if(typeof rackDraw==="function")rackDraw();drawWorld();if(typeof drawHitFx==="function")drawHitFx(dt);}   /* хроматика после попадания (M325) */
-    hud();
-    if(drew)gpuPresent();
+    {const t0=wallMs();if(drew){if(typeof rackDraw==="function")rackDraw();drawWorld();if(typeof drawHitFx==="function")drawHitFx(dt);}if(NEAR.on)NEAR.dw=wallMs()-t0;}   /* хроматика после попадания (M325) */
+    {const t0=wallMs();hud();if(NEAR.on)NEAR.hud=wallMs()-t0;}
+    {const t0=wallMs();if(drew)gpuPresent();if(NEAR.on)NEAR.gp=wallMs()-t0;}
   }else{
     G.t=tReal*.06;
     if(gpuFrame()){gpuSpaceTitle(tReal*.004);gpuWorld(0,false,false);gpuPresent();}
   }
   /* заготовки наперёд — зал, флора, вход цели, пещера — общим бюджетом кадра (17a0), ПОСЛЕ отправки кадра:
      видеокарта рисует его, пока они идут, а не ждёт их. Им нужно только устройство, кадр им не нужен */
-  workPump();
+  {const t0=wallMs();workPump();if(NEAR.on)NEAR.wp=wallMs()-t0;}
 }
 /* ══════════════ кадр, который не убивает игру (M234) ══════════════
    Одно исключение внутри кадра рвало цепочку rAF навсегда: кнопки живы,
@@ -728,6 +728,13 @@ function frame(now){
   try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
   viewOut();
   FRAME_JS=wallMs()-fb0;
+  /* ?g11=near: кадр перехода в буфер (диагностика, в обычной игре NEAR.on=false) */
+  if(NEAR.on){const pm=NEAR.cur?NEAR.cur.mode:"";
+    nearBlock(G.mode,pm);
+    nearFrame({t:now,gap:(framePrev?now-framePrev:0),js:FRAME_JS,mode:G.mode,prev:pm,
+      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
+      warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
+      pipes:NEAR.pipes,cave:NEAR.cave});}
   tactWork(FRAME_JS);   /* средняя работа кадра решает, можно ли 120 (0.1b) */
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
   requestAnimationFrame(frame);

@@ -133,6 +133,43 @@ async function g11Run(){
   try{await fetch("/shot?n=g11",{method:"POST",
     body:btoa(unescape(encodeURIComponent(JSON.stringify({dpr:devicePixelRatio,fps:out,det,err,ua:navigator.userAgent.slice(0,80)}))))});}catch(e){}
 }
+/* ── ?g11=near: первые 240 кадров ПОСЛЕ каждой смены режима (диагностика) ──
+   Холодный system→landing, landing→surface, surface→dig, surface→cave, тёплый повтор.
+   Кадры пишет NEAR (28zn) из frame(); здесь только переходы и выгрузка. Пауз после
+   входа НЕТ — ровно те кадры, что раньше пропускались (P0 аудита). */
+async function g11RunNear(){
+  const err=[],sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const find=pred=>{for(let r0=0;r0<16;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++){
+    if(Math.max(Math.abs(x),Math.abs(y))!==r0)continue;const s=getSystem(x,y);if(pred(s))return s;}return null;};
+  const jump=s=>{G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;G.orbit=null;};
+  const box=document.createElement("div");
+  box.style.cssText="position:fixed;left:8px;top:8px;z-index:99;color:#7fe6d8;"+
+    "font:12px ui-monospace,monospace;background:rgba(0,0,0,.65);padding:8px;white-space:pre;pointer-events:none";
+  document.body.appendChild(box);
+  const put=t=>{box.textContent+=t+"\n";};
+  try{
+    nearOn();
+    const el=document.getElementById("startEasy");if(el)el.click();
+    await sleep(2500);
+    const runs=[
+      ["system",()=>{G.mode="system";G.ap=null;}],
+      ["landing-cold",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
+        startLanding(s.planets.find(p=>p.type!=="gas"));}],
+      ["surface",()=>{const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
+        jump(s);const p=s.planets.find(p=>p.type==="jungle")||s.planets.find(p=>p.type!=="gas");
+        const tr=genTerrain(p);G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};enterSurface();}],
+      ["dig",()=>{enterDig();}],
+      ["cave",()=>{G.mode="surface";enterCave();}],
+      ["landing-warm",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
+        startLanding(s.planets.find(p=>p.type!=="gas"));}]
+    ];
+    for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}await sleep(3000);put(r[0]+" · кадров "+NEAR.n);}
+  }catch(e){err.push(""+(e&&e.message||e));}
+  const J=nearJSON();J.err=err;J.ua=navigator.userAgent.slice(0,80);
+  put("готово: "+J.blocks.length+" блоков, кадров "+J.blocks.reduce((s,b)=>s+b.frames,0));
+  try{await fetch("/shot?n=g11near",{method:"POST",
+    body:btoa(unescape(encodeURIComponent(JSON.stringify(J))))});}catch(e){}
+}
 /* ── глубокий разбор: ?g11=deep ──
    Меряет базу, затем глушит рисующие проходы ПО ОДНОМУ (function-объявления —
    свойства window, их можно подменять) и меряет дельту: чей noop поднимает
@@ -375,4 +412,5 @@ async function g11RunDeep(){
 }
 if(location.search.indexOf("g11=deeptour")>=0)addEventListener("load",()=>setTimeout(g11RunDeep,1200));
 else if(location.search.indexOf("g11=deep")>=0)addEventListener("load",()=>setTimeout(g11RunDeepHere,1200));
+else if(location.search.indexOf("g11=near")>=0)addEventListener("load",()=>setTimeout(g11RunNear,1200));
 else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout(g11Run,1200));

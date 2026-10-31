@@ -130,7 +130,7 @@ function cave3PipesAhead(){
     const [key,desc]=todo.shift();
     if(GPU_PIPES.warm.get(key)){next();return;}   /* готов или уже строится поздним прогревом */
     const w={p:null};GPU_PIPES.warm.set(key,w);
-    d.createRenderPipelineAsync(desc).then(p=>{if(GPU_PIPES.dev===d)w.p=p;},()=>{if(GPU_PIPES.warm.get(key)===w)GPU_PIPES.warm.delete(key);}).then(next);
+    d.createRenderPipelineAsync(desc).then(p=>{if(GPU_PIPES.dev===d)w.p=p;if(NEAR.on)nearCave();},()=>{if(GPU_PIPES.warm.get(key)===w)GPU_PIPES.warm.delete(key);}).then(next);
   };
   next();
 }

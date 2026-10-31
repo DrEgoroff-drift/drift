@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 684 · top-level symbols: 8929
+Files: 685 · top-level symbols: 8942
 
 ## SYMBOLS
 
@@ -640,7 +640,7 @@ FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
 FAUCET_FLOOR                 src/12ab-hold.js:154
 FAUNA_RES                    src/02-world.js:137
-FB                           src/17a0-prebake.js:62
+FB                           src/17a0-prebake.js:63
 FG_MAN                       src/21b-surface-deco.js:220
 FIGHT_HOOKS                  src/28r-fight.js:129-157
 FIGHT_LENS                   src/17p-cam-frame.js:32
@@ -706,8 +706,8 @@ FWD_PAY_EVERY                src/21b6-base-forward.js:23
 FW_HOOKS                     src/28o-firstwatch.js:81-87
 FW_URG_MIN                   src/28o-firstwatch.js:17
 G                            src/08-state.js:207-293
-G11_CPU                      src/28z-fps-probe.js:227
-G11_GPU_KILL                 src/28z-fps-probe.js:252-283
+G11_CPU                      src/28z-fps-probe.js:264
+G11_GPU_KILL                 src/28z-fps-probe.js:289-320
 G11_LT                       src/28z-fps-probe.js:29
 GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:20
@@ -1485,6 +1485,8 @@ NAT_SWARM                    src/12az-fx-nat.js:11
 NAT_SWARM_DMG                src/12az-fx-nat.js:14
 NAT_SWARM_SP                 src/12az-fx-nat.js:15
 NAT_SWARM_WARN               src/12az-fx-nat.js:48
+NEAR                         src/28zn-near.js:11
+NEAR_MAX                     src/28zn-near.js:10
 NEED_WIN                     src/12aa-need.js:23
 NEON                         src/17k0-neon.js:8
 NET_FROM                     tests/90-harness.js:483
@@ -2515,8 +2517,8 @@ WIN_RU                       src/29f-winter.js:30
 WIN_USE                      src/29f-winter.js:29
 WIN_WALL_EARLY               src/29f-winter.js:46-53
 WIN_WALL_LATE                src/29f-winter.js:54-61
-WORK                         src/17a0-prebake.js:54
-WORK_F                       src/17a0-prebake.js:55
+WORK                         src/17a0-prebake.js:55
+WORK_F                       src/17a0-prebake.js:56
 WORLD_MOOD                   src/10-music.js:39-52
 WORLD_SPREAD                 src/10-music.js:99
 WORLD_SUB                    src/08-state.js:202
@@ -3680,7 +3682,7 @@ cvs                          src/08-state.js:2
 cvsRect                      src/08-state.js:107-110
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:792-862
+dbg                          src/28-loop.js:799-869
 dcLensEq                     tests/91qc-descent.js:15-18
 dcWorld                      tests/91qc-descent.js:6-14
 dcol                         src/21b-surface-deco.js:155-160
@@ -4339,9 +4341,9 @@ farmTalk                     src/21ac2-base-farm.js:75-78
 farmWanted                   src/21ac2-base-farm.js:40-43
 faucetPrice                  src/12ab-hold.js:155-158
 faunaOf                      src/20e-species.js:249-265
-fbBegin                      src/17a0-prebake.js:63
-fbLeft                       src/17a0-prebake.js:64
-fbSpend                      src/17a0-prebake.js:65
+fbBegin                      src/17a0-prebake.js:64
+fbLeft                       src/17a0-prebake.js:65
+fbSpend                      src/17a0-prebake.js:66
 fbm1                         src/01-core.js:117
 fbm2                         src/01-core.js:124
 fbm3                         src/24ba-belt-gpu.js:32-36
@@ -4444,7 +4446,7 @@ forkSt                       src/28q-fork.js:19-22
 forkTick                     src/28q-fork.js:56-81
 forkWage                     src/28q-fork.js:48-55
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:686-734
+frame                        src/28-loop.js:686-741
 frameBody                    src/28-loop.js:476-482
 frameBodyIn                  src/28-loop.js:483-618
 frameCapNow                  src/28-loop.js:263-267
@@ -4481,9 +4483,9 @@ fwdLine                      src/21b6-base-forward.js:76-82
 fwdLineOf                    src/21b6-base-forward.js:118-124
 fwdMissing                   src/21b6-base-forward.js:42-52
 fwdStep                      src/21b6-base-forward.js:99-116
-g11CpuHook                   src/28z-fps-probe.js:228-233
+g11CpuHook                   src/28z-fps-probe.js:265-270
 g11Fps                       src/28z-fps-probe.js:19-26
-g11Iv                        src/28z-fps-probe.js:234-245
+g11Iv                        src/28z-fps-probe.js:271-282
 g11LongTasks                 src/28z-fps-probe.js:30-32
 galArmD                      src/17z1-galaxy.js:25-29
 galArmPt                     src/17z2-galaxy-names.js:14
@@ -4827,7 +4829,7 @@ gpuResize                    src/08b-gpu.js:408-453
 gpuScene                     src/08b-gpu.js:581-594
 gpuScene3D                   src/08b-gpu.js:598-606
 gpuScr                       src/08c-gpu-kit.js:144
-gpuSeg                       src/28z-fps-probe.js:179-182
+gpuSeg                       src/28z-fps-probe.js:216-219
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:318-329
 gpuShock                     src/08b-gpu.js:479
@@ -4841,9 +4843,9 @@ gpuSubmitFrame               src/08b-gpu.js:663-668
 gpuSysUnder                  src/17g-gpu-system.js:519-525
 gpuTakeSnap                  src/08b-gpu.js:30-37
 gpuTrail                     src/16ga-gpu-trail.js:61-108
-gpuTs                        src/28z-fps-probe.js:168-175
-gpuTsAround                  src/28z-fps-probe.js:185-189
-gpuTsResolve                 src/28z-fps-probe.js:191-209
+gpuTs                        src/28z-fps-probe.js:205-212
+gpuTsAround                  src/28z-fps-probe.js:222-226
+gpuTsResolve                 src/28z-fps-probe.js:228-246
 gpuUni                       src/08b-gpu.js:546-560
 gpuWake                      src/16ga-gpu-trail.js:117-150
 gpuWeatherFar                src/19cc-gpu-air.js:265-293
@@ -6242,6 +6244,17 @@ natSwarmHere                 src/12az-fx-nat.js:39
 natSwarmTick                 src/12az-fx-nat.js:50-65
 navAction                    src/15-input.js:286-303
 near                         tests/90-harness.js:197
+nearBake                     src/28zn-near.js:27
+nearBlock                    src/28zn-near.js:15-22
+nearCave                     src/28zn-near.js:29
+nearFrame                    src/28zn-near.js:30-35
+nearJSON                     src/28zn-near.js:42-60
+nearMark                     src/28zn-near.js:23
+nearOn                       src/28zn-near.js:14
+nearPipe                     src/28zn-near.js:28
+nearStat                     src/28zn-near.js:36-41
+nearWarm                     src/28zn-near.js:26
+nearWork                     src/28zn-near.js:24
 nearestPOI                   src/20a-poi.js:200-205
 nearestStation               src/12-economy.js:304-319
 needAll                      src/12aa-need.js:25
@@ -6582,7 +6595,7 @@ passportDue                  src/17i1-passport.js:7-10
 passportIssue                src/17i1-passport.js:12-19
 passportOn                   src/17i1-passport.js:11
 payCost                      src/21a-mode-base.js:100
-pbOnScreen                   src/17a0-prebake.js:41
+pbOnScreen                   src/17a0-prebake.js:42
 pcA                          src/25g-postcard.js:149
 pcBelt                       src/25g-post-void.js:58-221
 pcC                          src/25g-postcard.js:146
@@ -7289,7 +7302,7 @@ powerRu                      src/12al-powers.js:88
 prButtons                    tests/90a-tools.js:729
 prSpoke                      tests/90a-tools.js:728
 prState                      tests/90a-tools.js:727
-prebake                      src/17a0-prebake.js:21-39
+prebake                      src/17a0-prebake.js:21-40
 prebakeDrop                  src/17a0-prebake.js:20
 prevAct                      src/08-state.js:205
 priceBestOf                  src/12aa-need.js:249-258
@@ -7316,7 +7329,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:754-781
+prof                         src/28-loop.js:761-788
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
@@ -8891,8 +8904,8 @@ winWall                      src/29f-winter.js:162-172
 windOf                       src/19c-light.js:42-48
 withFrame                    src/18c-chunks.js:49-54
 withScale                    src/18c-chunks.js:35-46
-workAdd                      src/17a0-prebake.js:66
-workPump                     src/17a0-prebake.js:67-78
+workAdd                      src/17a0-prebake.js:67
+workPump                     src/17a0-prebake.js:68-80
 worldCovered                 src/08-state.js:438
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
@@ -9703,7 +9716,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/17a0-prebake.js · 8 KB
   · печь заранее: общий планировщик (GPU-3, 25.09, DESIGN-gpu):1
-  · заготовки наперёд: общий бюджет кадра (24.10):43
+  · заготовки наперёд: общий бюджет кадра (24.10):44
 
 ## src/17b-finds.js · 18 KB
   · находки в полёте:1
@@ -10647,7 +10660,7 @@ zoomTo                       src/15-input.js:358
 ## src/27z-telemetry.js · 60 KB
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 71 KB
+## src/28-loop.js · 72 KB
   · авария:1
   · звук по кадрам:48
   · цикл:106
@@ -10656,8 +10669,8 @@ zoomTo                       src/15-input.js:358
   · РОВНЫЙ ТАКТ (0.1b):357
   · развилка режимов — одна на всех (M238):413
   · кадр, который не убивает игру (M234):619
-  · prof() — на что уходит кадр:742
-  · dbg() — что держит корабль:783
+  · prof() — на что уходит кадр:749
+  · dbg() — что держит корабль:790
 
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
@@ -10705,8 +10718,11 @@ zoomTo                       src/15-input.js:358
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
 
-## src/28z-fps-probe.js · 27 KB
+## src/28z-fps-probe.js · 29 KB
   · пробник G11: ?g11:1
+
+## src/28zn-near.js · 4 KB
+  · ?g11=near: кадры ПЕРЕХОДА (диагностика, не игра):1
 
 ## src/29c-home-in.js · 16 KB
   · дом изнутри: по нему ходят:1

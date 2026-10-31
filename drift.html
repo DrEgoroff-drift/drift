@@ -12331,7 +12331,7 @@ function gpuPipesLate(){
     const key=it[0],r=it[1],c=GPU_PIPES.warm.get(key);
     if(c&&c.p){next();return;}
     const w={p:null,code:r.code};GPU_PIPES.warm.set(key,w);L.asked++;
-    d.createRenderPipelineAsync(r.desc).then(p=>{if(GPU_PIPES.dev===d){w.p=p;L.n++;}},()=>{L.bad.push(key);})
+    d.createRenderPipelineAsync(r.desc).then(p=>{if(GPU_PIPES.dev===d){w.p=p;L.n++;if(NEAR.on)nearPipe();}},()=>{L.bad.push(key);})
       .then(()=>{last=wallMs();setTimeout(next,GPU_LATE_GAP);});
   };
   next();
@@ -54903,6 +54903,7 @@ const PB_MS=4,PB_PX=1<<19,PB_CAP=64,PB_KEEP=6,PB_STALE=120,PB=new Map(),PB_MAX={
 let PB_F=-1,PB_T=0,PB_N=0,PB_SYNC=0,PB_PX0=0,PB_B0=0;
 function prebakeDrop(key){const J=PB.get(key);if(!J)return;PB.delete(key);try{J.it.return();}catch(e){}}
 function prebake(key,make,sync){
+  if(NEAR.on)nearBake(!!sync);
   if(GPU.frameNo!==PB_F){PB_F=GPU.frameNo;PB_T=0;PB_N=0;PB_PX0=GC_PX;PB_B0=GPU.bakeN|0;
     for(const [k,J] of [...PB])if(PB_F-J.f>PB_STALE)prebakeDrop(k);}
   let J=PB.get(key);
@@ -54956,6 +54957,7 @@ function workPump(){
     if(left<WORK_LO&&WORK_F-w.f<WORK_STARVE)continue;
     const a=wallMs(),go=w.step(Math.max(left,WORK_LO)),dt=wallMs()-a;
     left-=dt;
+    if(NEAR.on)nearWork(w.name,dt);
     if(go){w.f=WORK_F;if(!(WORK_MAX[w.name]>=dt))WORK_MAX[w.name]=dt;}
   }
   WORK_T=wallMs()-t0;fbSpend(WORK_T);
@@ -96346,7 +96348,7 @@ function plnSurface(S,o){
      посадкам — остаток, но не меньше половины low */
   const B=PLN_BUILD,tb=wallMs();
   const lim=L.first?fbLeft(B.low,B.ms,B.frame):B.first;   /* общий счёт стройки кадра (17a0 FB) */
-  if(fly&&o.warm&&!PLN.rush&&!L.warmDone&&plnWarmStep(L,S,p,C,V))return "warm";
+  if(fly&&o.warm&&!PLN.rush&&!L.warmDone){const tw=wallMs();const rw=plnWarmStep(L,S,p,C,V);if(NEAR.on)nearWarm(wallMs()-tw);if(rw)return "warm";}
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
@@ -98028,7 +98030,7 @@ function cave3PipesAhead(){
     const [key,desc]=todo.shift();
     if(GPU_PIPES.warm.get(key)){next();return;}   /* готов или уже строится поздним прогревом */
     const w={p:null};GPU_PIPES.warm.set(key,w);
-    d.createRenderPipelineAsync(desc).then(p=>{if(GPU_PIPES.dev===d)w.p=p;},()=>{if(GPU_PIPES.warm.get(key)===w)GPU_PIPES.warm.delete(key);}).then(next);
+    d.createRenderPipelineAsync(desc).then(p=>{if(GPU_PIPES.dev===d)w.p=p;if(NEAR.on)nearCave();},()=>{if(GPU_PIPES.warm.get(key)===w)GPU_PIPES.warm.delete(key);}).then(next);
   };
   next();
 }
@@ -128431,7 +128433,7 @@ function frameBodyIn(now){
     /* мир шагает ОДИН раз за кадр, как и до 0.1; квантуется внутри только
        корабль — см. WORLD_SUB (08-state) и updateSystem */
     WORLD_SUB=Math.max(1,Math.round(steps*QUANT_MS/SUB_MS));
-    try{stepWorld(dt);}finally{WORLD_SUB=1;}
+    try{const t0=wallMs();stepWorld(dt);if(NEAR.on)NEAR.sw=wallMs()-t0;}finally{WORLD_SUB=1;}
     hullHeldTick();   /* корпус до беды (R5b) */
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
@@ -128446,19 +128448,19 @@ function frameBodyIn(now){
     if(G.mode==="barge"&&!scrOpen())G.mode="system";
     audioTick(dt);
     /* кадр рисует видеокарта (08b); пока устройства нет — мир шагает без картинки */
-    const drew=gpuFrame();
+    const tg=wallMs();const drew=gpuFrame();if(NEAR.on)NEAR.gf=wallMs()-tg;
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой игрок повернулся.
        Она — очередь слоя #ovl, а слой сливается в конце мира: потому зовётся ДО него */
-    if(drew){if(typeof rackDraw==="function")rackDraw();drawWorld();if(typeof drawHitFx==="function")drawHitFx(dt);}   /* хроматика после попадания (M325) */
-    hud();
-    if(drew)gpuPresent();
+    {const t0=wallMs();if(drew){if(typeof rackDraw==="function")rackDraw();drawWorld();if(typeof drawHitFx==="function")drawHitFx(dt);}if(NEAR.on)NEAR.dw=wallMs()-t0;}   /* хроматика после попадания (M325) */
+    {const t0=wallMs();hud();if(NEAR.on)NEAR.hud=wallMs()-t0;}
+    {const t0=wallMs();if(drew)gpuPresent();if(NEAR.on)NEAR.gp=wallMs()-t0;}
   }else{
     G.t=tReal*.06;
     if(gpuFrame()){gpuSpaceTitle(tReal*.004);gpuWorld(0,false,false);gpuPresent();}
   }
   /* заготовки наперёд — зал, флора, вход цели, пещера — общим бюджетом кадра (17a0), ПОСЛЕ отправки кадра:
      видеокарта рисует его, пока они идут, а не ждёт их. Им нужно только устройство, кадр им не нужен */
-  workPump();
+  {const t0=wallMs();workPump();if(NEAR.on)NEAR.wp=wallMs()-t0;}
 }
 /* ══════════════ кадр, который не убивает игру (M234) ══════════════
    Одно исключение внутри кадра рвало цепочку rAF навсегда: кнопки живы,
@@ -128572,6 +128574,13 @@ function frame(now){
   try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
   viewOut();
   FRAME_JS=wallMs()-fb0;
+  /* ?g11=near: кадр перехода в буфер (диагностика, в обычной игре NEAR.on=false) */
+  if(NEAR.on){const pm=NEAR.cur?NEAR.cur.mode:"";
+    nearBlock(G.mode,pm);
+    nearFrame({t:now,gap:(framePrev?now-framePrev:0),js:FRAME_JS,mode:G.mode,prev:pm,
+      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
+      warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
+      pipes:NEAR.pipes,cave:NEAR.cave});}
   tactWork(FRAME_JS);   /* средняя работа кадра решает, можно ли 120 (0.1b) */
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
   requestAnimationFrame(frame);
@@ -131561,6 +131570,43 @@ async function g11Run(){
   try{await fetch("/shot?n=g11",{method:"POST",
     body:btoa(unescape(encodeURIComponent(JSON.stringify({dpr:devicePixelRatio,fps:out,det,err,ua:navigator.userAgent.slice(0,80)}))))});}catch(e){}
 }
+/* ── ?g11=near: первые 240 кадров ПОСЛЕ каждой смены режима (диагностика) ──
+   Холодный system→landing, landing→surface, surface→dig, surface→cave, тёплый повтор.
+   Кадры пишет NEAR (28zn) из frame(); здесь только переходы и выгрузка. Пауз после
+   входа НЕТ — ровно те кадры, что раньше пропускались (P0 аудита). */
+async function g11RunNear(){
+  const err=[],sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const find=pred=>{for(let r0=0;r0<16;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++){
+    if(Math.max(Math.abs(x),Math.abs(y))!==r0)continue;const s=getSystem(x,y);if(pred(s))return s;}return null;};
+  const jump=s=>{G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;G.orbit=null;};
+  const box=document.createElement("div");
+  box.style.cssText="position:fixed;left:8px;top:8px;z-index:99;color:#7fe6d8;"+
+    "font:12px ui-monospace,monospace;background:rgba(0,0,0,.65);padding:8px;white-space:pre;pointer-events:none";
+  document.body.appendChild(box);
+  const put=t=>{box.textContent+=t+"\n";};
+  try{
+    nearOn();
+    const el=document.getElementById("startEasy");if(el)el.click();
+    await sleep(2500);
+    const runs=[
+      ["system",()=>{G.mode="system";G.ap=null;}],
+      ["landing-cold",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
+        startLanding(s.planets.find(p=>p.type!=="gas"));}],
+      ["surface",()=>{const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
+        jump(s);const p=s.planets.find(p=>p.type==="jungle")||s.planets.find(p=>p.type!=="gas");
+        const tr=genTerrain(p);G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};enterSurface();}],
+      ["dig",()=>{enterDig();}],
+      ["cave",()=>{G.mode="surface";enterCave();}],
+      ["landing-warm",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
+        startLanding(s.planets.find(p=>p.type!=="gas"));}]
+    ];
+    for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}await sleep(3000);put(r[0]+" · кадров "+NEAR.n);}
+  }catch(e){err.push(""+(e&&e.message||e));}
+  const J=nearJSON();J.err=err;J.ua=navigator.userAgent.slice(0,80);
+  put("готово: "+J.blocks.length+" блоков, кадров "+J.blocks.reduce((s,b)=>s+b.frames,0));
+  try{await fetch("/shot?n=g11near",{method:"POST",
+    body:btoa(unescape(encodeURIComponent(JSON.stringify(J))))});}catch(e){}
+}
 /* ── глубокий разбор: ?g11=deep ──
    Меряет базу, затем глушит рисующие проходы ПО ОДНОМУ (function-объявления —
    свойства window, их можно подменять) и меряет дельту: чей noop поднимает
@@ -131803,7 +131849,69 @@ async function g11RunDeep(){
 }
 if(location.search.indexOf("g11=deeptour")>=0)addEventListener("load",()=>setTimeout(g11RunDeep,1200));
 else if(location.search.indexOf("g11=deep")>=0)addEventListener("load",()=>setTimeout(g11RunDeepHere,1200));
+else if(location.search.indexOf("g11=near")>=0)addEventListener("load",()=>setTimeout(g11RunNear,1200));
 else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout(g11Run,1200));
+
+/* ══════════════ ?g11=near: кадры ПЕРЕХОДА (диагностика, не игра) ══════════════
+   Пишет первые NEAR_MAX кадров после каждой смены G.mode в буфер и один раз выгружает
+   (POST /shot?n=g11near). В консоль не пишет, в обычной игре молчит: всё под `if(NEAR.on)`.
+   ЧЕГО НЕ МЕРИТ и не должен: presented-кадр. `gpuPresent()` — это постановка команд, а не
+   отрисовка на экране; поле `rest` — это ОСТАТОК gap−js (растр/композитор/ожидание), а НЕ
+   время GPU. Для presented нужен Chrome performance trace (см. diagnostics/frame-pacing/).
+   Метки: `nearMark("name")` ставит wallMs() в NEAR.marks; `nearFrame(rec)` кладёт кадр.
+   Сводка — p50/p90/p95/p99/max по gap и js, счётчики >20/25/33/50 мс и js >8/12/16/25,
+   худшие кадры с режимом и активными задачами, макс. время каждой активной очереди. */
+const NEAR_MAX = 240;
+const NEAR = {on:false, blocks:[], cur:null, n:0, frameN:0,
+  marks:{}, work:{}, warm:0, bakeN:0, bakeS:0, pipes:0, cave:0,
+  sw:0, gf:0, dw:0, hud:0, gp:0, wp:0, maxFrames:NEAR_MAX};
+function nearOn(){ NEAR.on = true; }
+function nearBlock(mode, prev){
+  if(!NEAR.on) return;
+  if(!NEAR.cur || NEAR.cur.mode !== mode){
+    NEAR.cur = {mode, prev, fr:[]};
+    NEAR.blocks.push(NEAR.cur);
+    NEAR.n = 0; NEAR.work = {}; NEAR.warm = 0; NEAR.bakeN = 0; NEAR.bakeS = 0;
+  }
+}
+function nearMark(k){ if(NEAR.on) NEAR.marks[k] = wallMs(); }
+function nearWork(name, dt){ if(NEAR.on && dt > 0){ const w = NEAR.work;
+  const cur = w[name]; if(!cur || dt > cur) w[name] = Math.round(dt * 10) / 10; } }
+function nearWarm(ms){ if(NEAR.on && ms > NEAR.warm) NEAR.warm = Math.round(ms * 10) / 10; }
+function nearBake(sync){ if(NEAR.on){ NEAR.bakeN++; if(sync) NEAR.bakeS++; } }
+function nearPipe(){ if(NEAR.on) NEAR.pipes++; }
+function nearCave(){ if(NEAR.on) NEAR.cave++; }
+function nearFrame(rec){
+  if(!NEAR.on || !NEAR.cur || NEAR.n >= NEAR.maxFrames) return;
+  NEAR.n++; NEAR.frameN++;
+  rec.i = NEAR.frameN;
+  NEAR.cur.fr.push(rec);
+}
+function nearStat(a){
+  const s = a.slice().sort((x, y) => x - y), n = s.length;
+  return {n, p50: +((s[n >> 1] || 0)).toFixed(2), p90: +((s[Math.floor(n * .9)] || 0)).toFixed(2),
+    p95: +((s[Math.floor(n * .95)] || 0)).toFixed(2), p99: +((s[Math.floor(n * .99)] || 0)).toFixed(2),
+    max: +((s[n - 1] || 0)).toFixed(2)};
+}
+function nearJSON(){
+  const blocks = NEAR.blocks.filter(b => b.fr.length).map(b => {
+    const g = b.fr.map(f => f.gap), j = b.fr.map(f => f.js);
+    const long = {g20:0, g25:0, g33:0, g50:0}, jsLong = {j8:0, j12:0, j16:0, j25:0};
+    for(const f of b.fr){
+      if(f.gap > 20) long.g20++; if(f.gap > 25) long.g25++;
+      if(f.gap > 33) long.g33++; if(f.gap > 50) long.g50++;
+      if(f.js > 8) jsLong.j8++; if(f.js > 12) jsLong.j12++;
+      if(f.js > 16) jsLong.j16++; if(f.js > 25) jsLong.j25++;
+    }
+    const work = {};
+    for(const f of b.fr) for(const k in (f.work || {})) if(!(work[k] >= f.work[k])) work[k] = f.work[k];
+    return {mode:b.mode, prev:b.prev, frames:b.fr.length,
+      gap:nearStat(g), js:nearStat(j), long, jsLong, work,
+      worst:b.fr.slice().sort((a, z) => z.gap - a.gap).slice(0, 8)};
+  });
+  return {dpr:devicePixelRatio, maxFrames:NEAR.maxFrames, blocks,
+    pipes:NEAR.pipes, cave:NEAR.cave};
+}
 
 /* ══════════════ дом изнутри: по нему ходят ══════════════
    M170, по просьбе автора: «дом должен быть на планете, до него можно дойти,
