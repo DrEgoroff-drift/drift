@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 674 · top-level symbols: 8897
+Files: 674 · top-level symbols: 8904
 
 ## SYMBOLS
 
@@ -125,11 +125,11 @@ BAZ_CUT                      src/17n-bazaar.js:88
 BAZ_HULLS                    src/17n-bazaar.js:86
 BAZ_SIGN                     src/17n-bazaar.js:108
 BAZ_THROWN_MAX               src/17n-bazaar.js:12
-BB_BAKE                      src/17k-billboard.js:98
+BB_BAKE                      src/17k-billboard.js:111
 BB_CACHE                     src/17k-billboard.js:12
-BB_NEON                      src/17k-billboard.js:97
-BB_NEWS                      src/17k-billboard.js:40
-BB_TINT_R                    src/17k-billboard.js:192
+BB_NEON                      src/17k-billboard.js:110
+BB_NEWS                      src/17k-billboard.js:50
+BB_TINT_R                    src/17k-billboard.js:205
 BB_TITLE                     src/17k-billboard.js:11
 BDUST_WGSL                   src/24be-belt-rock-gpu.js:109
 BEACON_COOL                  src/23-mode-dig.js:89
@@ -172,7 +172,7 @@ BLOCK_GOODS                  src/13b1-blockade.js:7
 BLOCK_LINES                  src/13b1-blockade.js:8
 BLOG                         src/21a1-base-life.js:50-114
 BLOOM_K                      src/19c-light.js:287
-BLUEPRINTS                   src/12c-mgr-core.js:669-675
+BLUEPRINTS                   src/12c-mgr-core.js:684-690
 BLUE_TAB                     src/01-core.js:135
 BMGR_BY                      src/21b2-base-mgr.js:32
 BMGR_DUE                     src/21b2-base-mgr.js:34
@@ -207,7 +207,7 @@ BOSS_WIN                     src/12av-boss.js:28
 BOXES                        src/12ue-boxes.js:16-37
 BOXES_BY                     src/12ue-boxes.js:38
 BPOI_L                       src/24bb-belt-poi-gpu.js:12
-BP_KEYS                      src/12c-mgr-core.js:676
+BP_KEYS                      src/12c-mgr-core.js:691
 BROCK                        src/24be-belt-rock-gpu.js:191
 BROCK_BLEND                  src/24be-belt-rock-gpu.js:130
 BROCK_LAY_WGSL               src/24be-belt-rock-gpu.js:162
@@ -391,9 +391,9 @@ CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_JOBS                      src/27f3-person3d.js:326
+CP_JOBS                      src/27f3-person3d.js:330
 CP_KIT                       src/27f3-person3d.js:126
-CP_MESH                      src/27f3-person3d.js:299
+CP_MESH                      src/27f3-person3d.js:302
 CP_SO                        src/27f3a-face3d.js:85
 CP_TEMPER                    src/27f6-face-live.js:25
 CP_TORSO                     src/27f3-person3d.js:97
@@ -1195,7 +1195,7 @@ HOTEL_LIT                    src/17l-hotel.js:123
 HOTEL_LOD                    src/17l-hotel.js:51
 HOTEL_NIGHT                  src/17l-hotel.js:16
 HOTEL_RIM                    src/17l-hotel.js:193
-HOTEL_SHOP_N                 src/17l-hotel.js:324
+HOTEL_SHOP_N                 src/17l-hotel.js:329
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
 HOTEL_T                      src/17l-hotel.js:17
@@ -1429,7 +1429,7 @@ MGR_JOBS                     src/12e-mgr-jobs.js:90-224
 MGR_PERKS                    src/12c-mgr-core.js:60-129
 MGR_ROLES                    src/12c-mgr-core.js:9-18
 MGR_ROLE_KEYS                src/12c-mgr-core.js:19
-MGR_RULES                    src/12c-mgr-core.js:378-407
+MGR_RULES                    src/12c-mgr-core.js:388-417
 MGR_TRAITS                   src/12c-mgr-core.js:23-46
 MGR_XP                       src/12c-mgr-core.js:138
 MINE                         src/23cc-mine-play.js:17
@@ -2416,9 +2416,11 @@ VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MALE                   src/12pa-beacon.js:196
 VOICE_MAX                    src/09-audio.js:5
 VOICE_Q                      src/12pa-beacon.js:207
-VOL_BY                       src/12al5-vol.js:27
-VOL_DOCS                     src/12al5-vol.js:16-25
-VOL_FAST                     src/12al5-vol.js:26
+VOL_BY                       src/12al5-vol.js:50
+VOL_DOCS                     src/12al5-vol.js:23-32
+VOL_FAST                     src/12al5-vol.js:49
+VOL_KIND                     src/12al5-vol.js:34-47
+VOL_KIND_BY                  src/12al5-vol.js:48
 VOR_O                        src/22dbw-cave-pln-wgsl.js:342-657
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16-20
@@ -2608,7 +2610,7 @@ appetitePrice                src/12ab-hold.js:117
 applyCrewEvent               src/12b-crew-events.js:227-236
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:216-625
+applySave                    src/14-save.js:216-626
 applySaveRest                src/14a1-save-rest.js:15-393
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
@@ -2831,23 +2833,23 @@ bazPartBase                  src/17n-bazaar.js:34
 bazRumour                    src/17n-bazaar.js:184-192
 bazSign                      src/17n-bazaar.js:109-117
 bazThrow                     src/17n-bazaar.js:28-33
-bbAhead                      src/17k-billboard.js:184-190
+bbAhead                      src/17k-billboard.js:197-203
 bbAll                        src/17k-billboard.js:16-25
 bbCount                      src/17k-billboard.js:14
-bbDeal                       src/17k-billboard.js:28-38
-bbDrawGpu                    src/17k-billboard.js:151-181
+bbDeal                       src/17k-billboard.js:30-48
+bbDrawGpu                    src/17k-billboard.js:164-194
 bbHere                       src/17k-billboard.js:26
-bbHold                       src/17k-billboard.js:49-62
-bbHullPaint                  src/17k-billboard.js:202-207
-bbHullTint                   src/17k-billboard.js:193-201
-bbKeep                       src/17k-billboard.js:102-108
-bbLine                       src/17k-billboard.js:63-86
-bbNews                       src/17k-billboard.js:41-47
-bbPanelBake                  src/17k-billboard.js:110-113
-bbPanelKey                   src/17k-billboard.js:109
-bbPanelMake                  src/17k-billboard.js:114-138
-bbStripBake                  src/17k-billboard.js:140-150
-bbTitle                      src/17k-billboard.js:88-92
+bbHold                       src/17k-billboard.js:59-72
+bbHullPaint                  src/17k-billboard.js:215-220
+bbHullTint                   src/17k-billboard.js:206-214
+bbKeep                       src/17k-billboard.js:115-121
+bbLine                       src/17k-billboard.js:73-99
+bbNews                       src/17k-billboard.js:51-57
+bbPanelBake                  src/17k-billboard.js:123-126
+bbPanelKey                   src/17k-billboard.js:122
+bbPanelMake                  src/17k-billboard.js:127-151
+bbStripBake                  src/17k-billboard.js:153-163
+bbTitle                      src/17k-billboard.js:101-105
 bdustDraw                    src/24be-belt-rock-gpu.js:285-292
 beaconCool                   src/23-mode-dig.js:90
 beaconTick                   src/23-mode-dig.js:117-128
@@ -3019,9 +3021,9 @@ boxFind                      src/12ue-boxes.js:43-58
 boxHas                       src/12ue-boxes.js:40
 boxRoll                      src/12ue-boxes.js:60-64
 boxesBlock                   src/12ue-boxes.js:66-82
-bpMul                        src/12c-mgr-core.js:680-684
-bpRecheck                    src/12c-mgr-core.js:747-760
-bpState                      src/12c-mgr-core.js:677
+bpMul                        src/12c-mgr-core.js:695-699
+bpRecheck                    src/12c-mgr-core.js:762-775
+bpState                      src/12c-mgr-core.js:692
 bpoiLit                      src/24bb-belt-poi-gpu.js:13-24
 bq630Same                    tests/91qj-build.js:6-11
 brockBegin                   src/24be-belt-rock-gpu.js:176-184
@@ -3535,12 +3537,12 @@ cpBand                       src/27f3-person3d.js:111-119
 cpBasis                      src/27f3-person3d.js:89-93
 cpBeardG                     src/27f3a-face3d.js:398-413
 cpBody                       src/27f3-person3d.js:128
-cpBodyGen                    src/27f3-person3d.js:129-296
+cpBodyGen                    src/27f3-person3d.js:129-299
 cpCloth                      src/27f3-person3d.js:46-51
 cpClump                      src/27f3a-face3d.js:389-396
 cpEmoMix                     src/27f6-face-live.js:56-58
 cpEmote                      src/27f6-face-live.js:43-46
-cpFace                       src/27f6-face-live.js:60-89
+cpFace                       src/27f6-face-live.js:60-93
 cpFaceAt                     src/27f3a-face3d.js:54
 cpFaceRig                    src/27f3a-face3d.js:71-78
 cpFaceState                  src/27f6-face-live.js:47-54
@@ -3552,10 +3554,10 @@ cpHead                       src/27f3a-face3d.js:190
 cpHeadAI                     src/27f3a-face3d.js:415-425
 cpHeadFn                     src/27f3a-face3d.js:18-52
 cpHeadGen                    src/27f3a-face3d.js:191-300
-cpMesh                       src/27f3-person3d.js:308-314
-cpMeshKey                    src/27f3-person3d.js:300-302
-cpMeshPump                   src/27f3-person3d.js:327-342
-cpMeshPut                    src/27f3-person3d.js:303-307
+cpMesh                       src/27f3-person3d.js:312-318
+cpMeshKey                    src/27f3-person3d.js:303-306
+cpMeshPump                   src/27f3-person3d.js:331-346
+cpMeshPut                    src/27f3-person3d.js:307-311
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:23-29
 cpPose                       src/27f3-person3d.js:53-87
@@ -3566,7 +3568,7 @@ cpSkin                       src/27f3a-face3d.js:166-169
 cpSkinZ                      src/27f3a-face3d.js:171
 cpTeeth                      src/27f3a-face3d.js:174-186
 cpTorsoAt                    src/27f3-person3d.js:100-109
-cpTwinPump                   src/27f3-person3d.js:319-324
+cpTwinPump                   src/27f3-person3d.js:323-328
 cpUn                         src/27f3a-face3d.js:87
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
@@ -4030,7 +4032,7 @@ drawBaseBuilding             src/21c-built.js:112-169
 drawBazaar                   src/17n-bazaar.js:118-174
 drawBelt                     src/24-mode-belt.js:401
 drawBeltRocks                src/17gc-sys-belt.js:58-123
-drawBillboard                src/17k-billboard.js:208-224
+drawBillboard                src/17k-billboard.js:221-237
 drawBuilt                    src/21c-built.js:64-72
 drawCave                     src/22d-cave-pln.js:378-395
 drawCheburek                 src/17j-cheburek.js:78-109
@@ -5435,9 +5437,9 @@ homeWash                     src/21f-home-out.js:298-323
 homingStep                   src/13a-guns.js:470-477
 hotelAngD                    src/17l-hotel.js:85
 hotelArc                     src/17l-hotel.js:190
-hotelDesk                    src/17l-hotel.js:287-305
+hotelDesk                    src/17l-hotel.js:287-310
 hotelDock                    src/17l-hotel.js:223-266
-hotelDoors                   src/17l-hotel.js:307-320
+hotelDoors                   src/17l-hotel.js:312-325
 hotelDrop                    src/17l-hotel.js:60
 hotelGet                     src/17l-hotel.js:113-121
 hotelHere                    src/17l-hotel.js:18-23
@@ -5456,7 +5458,7 @@ hotelNeonDraw                src/17l-hotel.js:143-146
 hotelNightPrice              src/17l-hotel.js:283-286
 hotelPoly                    src/17l-hotel.js:188
 hotelRim                     src/17l-hotel.js:194
-hotelShop                    src/17l-hotel.js:325-331
+hotelShop                    src/17l-hotel.js:330-336
 hotelStar                    src/17l-hotel.js:268
 hotelType                    src/17l-hotel.js:24
 hotelUp                      src/17l-hotel.js:84
@@ -6040,7 +6042,7 @@ mercFee                      src/12a-crew.js:218
 mergeKeyMap                  src/15-input.js:126-135
 mgrBearLine                  src/21b3-base-hunt.js:89-94
 mgrBearing                   src/21b3-base-hunt.js:75-86
-mgrBestLeg                   src/12c-mgr-core.js:587-608
+mgrBestLeg                   src/12c-mgr-core.js:602-623
 mgrBuildDiscount             src/12c-mgr-core.js:224
 mgrCandidatesHere            src/21b3-base-hunt.js:137-142
 mgrCmdCut                    src/12c-mgr-core.js:211-217
@@ -6049,9 +6051,12 @@ mgrCrewXp                    src/12c-mgr-core.js:218
 mgrCrewYield                 src/12c-mgr-core.js:204-208
 mgrCut                       src/12c-mgr-core.js:174-182
 mgrDefect                    src/12c-mgr-core.js:349-356
-mgrDomain                    src/12c-mgr-core.js:518-528
+mgrDomain                    src/12c-mgr-core.js:533-543
 mgrDomainLine                src/27c-ui-hq.js:512-531
 mgrDroneRate                 src/12c-mgr-core.js:220-223
+mgrFatBucket                 src/12c-mgr-core.js:382
+mgrFatOf                     src/12c-mgr-core.js:381
+mgrFatRest                   src/12c-mgr-core.js:383
 mgrFee                       src/12c-mgr-core.js:300
 mgrHas                       src/12c-mgr-core.js:48
 mgrHead                      src/27c-ui-hq.js:24-42
@@ -6064,33 +6069,33 @@ mgrLevel                     src/12c-mgr-core.js:139-142
 mgrNext                      src/12c-mgr-core.js:143
 mgrOf                        src/12c-mgr-core.js:200
 mgrPay                       src/12c-mgr-core.js:169-173
-mgrPayroll                   src/12c-mgr-core.js:478-516
+mgrPayroll                   src/12c-mgr-core.js:493-531
 mgrPerk                      src/12c-mgr-core.js:134
 mgrPerkList                  src/12c-mgr-core.js:130-133
 mgrPerkOf                    src/12c-mgr-core.js:201
 mgrPoints                    src/12c-mgr-core.js:144
-mgrRouteMax                  src/12c-mgr-core.js:581
-mgrRouteVisit                src/12c-mgr-core.js:569-580
-mgrRule                      src/12c-mgr-core.js:415
+mgrRouteMax                  src/12c-mgr-core.js:596
+mgrRouteVisit                src/12c-mgr-core.js:584-595
+mgrRule                      src/12c-mgr-core.js:425
 mgrRumour                    src/21b3-base-hunt.js:119-134
-mgrSamples                   src/12c-mgr-core.js:686-689
-mgrSay                       src/12c-mgr-core.js:369-373
+mgrSamples                   src/12c-mgr-core.js:701-704
+mgrSay                       src/12c-mgr-core.js:370-379
 mgrSeverance                 src/12c-mgr-core.js:321
-mgrSlots                     src/12c-mgr-core.js:408-414
+mgrSlots                     src/12c-mgr-core.js:418-424
 mgrTake                      src/12c-mgr-core.js:191-199
 mgrTaken                     src/12c-mgr-core.js:301
-mgrTick                      src/12c-mgr-core.js:425-473
-mgrToggleRule                src/12c-mgr-core.js:416-421
+mgrTick                      src/12c-mgr-core.js:435-488
+mgrToggleRule                src/12c-mgr-core.js:426-431
 mgrTrait                     src/12c-mgr-core.js:47
 mgrTraitAdd                  src/12c-mgr-core.js:53-56
 mgrTraitMul                  src/12c-mgr-core.js:49-52
 mgrUltCost                   src/12e-mgr-jobs.js:285
 mgrUltimatum                 src/12c-mgr-core.js:327-345
 mgrWhere                     src/21b3-base-hunt.js:53-67
-mgrWorkCmd                   src/12c-mgr-core.js:531-552
-mgrWorkFact                  src/12c-mgr-core.js:609-665
-mgrWorkKeep                  src/12c-mgr-core.js:555-564
-mgrWorkSci                   src/12c-mgr-core.js:690-745
+mgrWorkCmd                   src/12c-mgr-core.js:546-567
+mgrWorkFact                  src/12c-mgr-core.js:624-680
+mgrWorkKeep                  src/12c-mgr-core.js:570-579
+mgrWorkSci                   src/12c-mgr-core.js:705-760
 midiHz                       src/10-music.js:106
 mineActWord                  src/23cc-mine-play.js:315-318
 mineBite                     src/23cc-mine-play.js:94-132
@@ -8658,19 +8663,21 @@ voiceOpts                    src/12pa-beacon.js:186-190
 voicePick                    src/12pa-beacon.js:198-206
 voiceSay                     src/12pa-beacon.js:217-228
 voiceTick                    src/12pa-beacon.js:253-255
-volAll                       src/12al5-vol.js:28
-volAnimals                   src/12al5-vol.js:30-35
-volBlocked                   src/12al5-vol.js:111-114
-volBorder                    src/12al5-vol.js:124-132
-volFast                      src/12al5-vol.js:101-109
-volHere                      src/12al5-vol.js:54-57
-volNext                      src/12al5-vol.js:46-53
-volOf                        src/12al5-vol.js:36-43
-volOk                        src/12al5-vol.js:44
-volPage                      src/12al5-vol.js:134-168
-volRail                      src/12al5-vol.js:116-122
-volSign                      src/12al5-vol.js:70-99
-volWhy                       src/12al5-vol.js:59-69
+volAll                       src/12al5-vol.js:51
+volAnimals                   src/12al5-vol.js:71-80
+volBeastKind                 src/12al5-vol.js:53-68
+volBlocked                   src/12al5-vol.js:160-163
+volBorder                    src/12al5-vol.js:173-181
+volFast                      src/12al5-vol.js:150-158
+volHere                      src/12al5-vol.js:103-106
+volKindOf                    src/12al5-vol.js:69
+volNext                      src/12al5-vol.js:92-102
+volOf                        src/12al5-vol.js:81-89
+volOk                        src/12al5-vol.js:90
+volPage                      src/12al5-vol.js:183-217
+volRail                      src/12al5-vol.js:165-171
+volSign                      src/12al5-vol.js:119-148
+volWhy                       src/12al5-vol.js:108-118
 voteBlock                    src/12at-vote.js:108-146
 voteCast                     src/12at-vote.js:58-67
 voteCourse                   src/12at-vote.js:53-57
@@ -9318,7 +9325,7 @@ zoomTo                       src/15-input.js:358
 ## src/12al4-soc.js · 11 KB
   · общества и льготы (M512, PLAN «new mechanics», st. 5):1
 
-## src/12al5-vol.js · 11 KB
+## src/12al5-vol.js · 16 KB
   · волокита — бумаги на животное (M511, PLAN st. 7):1
 
 ## src/12am-chron-agents.js · 17 KB
@@ -9381,10 +9388,10 @@ zoomTo                       src/15-input.js:358
 ## src/12b3-fx-cult.js · 22 KB
   · семья механик: НАУКА И КУЛЬТУРА (M388, §15.1):1
 
-## src/12c-mgr-core.js · 49 KB
+## src/12c-mgr-core.js · 50 KB
   · управляющие: домен вместо приказов:1
-  · стоящие приказы:374
-  · ленивый тик домена:422
+  · стоящие приказы:384
+  · ленивый тик домена:432
 
 ## src/12d-mgr-face.js · 2 KB
   · портреты управляющих:1
@@ -9765,7 +9772,7 @@ zoomTo                       src/15-input.js:358
 ## src/17j-cheburek.js · 10 KB
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
-## src/17k-billboard.js · 14 KB
+## src/17k-billboard.js · 15 KB
   · рекламные щиты на подъезде (M460, DESIGN-life §3.2, review §4.2):1
 
 ## src/17k0-neon.js · 4 KB
@@ -9774,7 +9781,7 @@ zoomTo                       src/15-input.js:358
 ## src/17k1-gosplan.js · 4 KB
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 28 KB
+## src/17l-hotel.js · 29 KB
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17l1-hotel-kosmos.js · 27 KB

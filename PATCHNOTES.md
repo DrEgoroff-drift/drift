@@ -6,6 +6,12 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.60 — stale billboards, manager fatigue, ПАЛАТА fauna table
+
+- **M460 B:** ~38 % of approach billboards lie — a price from past сводки, shown as a route-style fork, often better than the neighbour's real tag.
+- **M461 B:** one fatigue axis on domain managers only (faces already exist): accumulates at work, eases idle, hotel night clears half; heavier lids, dropped shoulders, shorter log lines — never a number.
+- **M511:** ПАЛАТА animal registry table (12 classes from planet fauna + bird with a callsign); papers lead with the class's own forms; xeno kinds need more stamps.
+
 ## 0.499.59 — Компания dock: «пролёт 0 кр (акция)»
 
 - Borders voice: docking fee log/say matches the review — «Пролёт — 0 кр (акция). Сбор за оформление акции — N кр».

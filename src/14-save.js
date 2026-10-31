@@ -601,6 +601,7 @@ function applySave(s){
     relic:(m.relic&&ARTIFACTS[m.relic])?m.relic:null,
     rent:(m.rent&&typeof RENT_TIERS!=="undefined"&&RENT_TIERS[m.rent.tier])?{tier:m.rent.tier,n:m.rent.n|0,spared:m.rent.spared?1:0}:null,   /* ядро в аренду (M488) */
     cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),pool:Math.max(0,+m.pool||0),
+    fat:clamp(+m.fat||0,0,1),   /* усталость (M461): ось тела, не число в UI */
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
     /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
        (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */

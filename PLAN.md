@@ -250,12 +250,12 @@ DESIGN-review life / borders / metro / resources / shipyard voice columns are la
 (0.499.50–59): queue ship, hotels/board, yard «сынок», metro doors/board/Край/ждали/bus,
 ЖИЛА/traps, HF firmware, Компания акции, Коммуна curve, Рассвет paint, Орднунг «служебная».
 
-Still open (author):
-- [ ] **M460 billboards — stale prices as a fork** (1–3 signs + hull tint already in).
-- [ ] **M461 hotels — fatigue axis** (story-craft §3); craft pass on `_scratch/hotel-pairs/`.
-- [ ] **M511 волокита:** the animals the author will invent (his table).
+Still open (author craft only):
+- [ ] **M461 hotels — craft pass** on `_scratch/hotel-pairs/` (fatigue axis shipped 0.499.60 on managers).
 - **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can say
   afterwards which institution the joke was on — never a person.
+
+Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue on managers; M511 fauna registry table.
 
 ## 7. Stage 6 — the story and the rest
 

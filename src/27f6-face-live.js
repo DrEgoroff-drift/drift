@@ -60,8 +60,12 @@ function cpEmoMix(A,B,w){
 function cpFace(m,base){
   if(!m||m.ai)return null;
   const F=cpFaceState(m),t=wallMs(),dt=F.t?Math.min(.25,(t-F.t)/1000):1;F.t=t;
-  const md=cpMood(m),T=md.T||{bk:.3,sac:1,lid:0};
+  const md=cpMood(m);let T=md.T||{bk:.3,sac:1,lid:0};
+  /* усталость (M461): веки тяжелее, взгляд реже — без числа на лице */
+  const fat=typeof mgrFatOf==="function"?mgrFatOf(m):(m.fat||0);
+  if(fat>.05)T={bk:T.bk*(1-fat*.4),sac:T.sac*(1-fat*.3),lid:(T.lid||0)+fat*.34,k:T.k,w:T.w};
   let tg=cpEmoMix(CP_EMO.calm,CP_EMO[md.k],md.w);
+  if(fat>.7)tg=cpEmoMix(tg,CP_EMO.sad,.35*fat);
   if(F.ev){const e=(t-F.ev.t0)/F.ev.dur;
     if(e>=1)F.ev=null;
     else{const env=Math.min(1,e*8)*Math.min(1,(1-e)*4);tg=cpEmoMix(tg,CP_EMO[F.ev.k],env);}}

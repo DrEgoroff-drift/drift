@@ -250,7 +250,7 @@ function genMgr(seed,rolePool){
   const m={id:"m"+seed,seed,name:genName(r),role,traits,
     lv0:1,xp:0,perks:[],rules:[],loy:55+Math.floor(r()*20),
     tMs:0,earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],
-    log:[]};
+    fat:0,log:[]};
   m.fee=Math.round((1400+r()*2600)*(1+MGR_ROLES[role].cut*4));
   return m;
 }
@@ -365,12 +365,22 @@ function fireMgr(m){
   say("Расчёт с "+m.name+"\n−"+cost.toLocaleString("ru")+" кр");
   return true;
 }
-/* короткая личная лента: по ней читается и работа домена, и настроение */
+/* короткая личная лента: по ней читается и работа домена, и настроение.
+   Усталость (M461): ответ короче — ось в фигуре и в голосе, без числа. */
 function mgrSay(m,s,k){
+  s=String(s||"");
+  if((m.fat||0)>.55&&s.length>40){
+    const cut=s.split(/\s*[·—.]\s*/)[0].trim();
+    s=(cut.length>=8&&cut.length<s.length)?cut+"…":s.slice(0,38)+"…";
+  }
   m.log=m.log||[];
   m.log.unshift({t:now(),k:k||"",s});
   if(m.log.length>8)m.log.length=8;
 }
+/* усталость 0…1: копится работой домена, сходит простоем и ночью в гостинице; в лицо — cpFace */
+function mgrFatOf(m){return m&&!m.ai?clamp(+m.fat||0,0,1):0;}
+function mgrFatBucket(m){const f=mgrFatOf(m);return f>.7?2:f>.35?1:0;}
+function mgrFatRest(m,q){if(!m||m.ai)return;m.fat=Math.max(0,(+m.fat||0)-(q||.4));}
 /* ══════════════ стоящие приказы ══════════════ */
 /* Это и есть «снимает рутину», выраженное механикой: правило «условие → действие»
    кладётся в слот один раз. Слотов всегда меньше, чем правил, — игрок выбирает,
@@ -457,6 +467,11 @@ function mgrTick(){
       if(m.gone){G.mgrs.splice(i,1);continue;}
     }
     if(m.rent&&now-(m.rent.t||0)>=HOLD_SHIFT/4){m.rent.t=now;rentSay(m);}   /* реклама и мнения по тарифу (M488) */
+    /* усталость (M461 B): только управляющие со лицом; число нигде не пишется */
+    if(!m.ai){
+      if(work>0)m.fat=Math.min(1,(+m.fat||0)+min*.007);
+      else m.fat=Math.max(0,(+m.fat||0)-min*(m.stalled?.012:.004));
+    }
     if(work>0){
       m.xp=(m.xp||0)+work*mgrTraitMul(m,"xp");
       const lv=mgrLevel(m);

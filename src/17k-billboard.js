@@ -9,7 +9,7 @@
    Щиты у людной станции (жизнь ≥ .45), сбоку полосы у второй пары бакенов: 1–3 по жизни
    (M460 rest). Строка пересчитывается раз в десять секунд игры. */
 const BB_TITLE={gt:"ТРАССА — ДЕЛО КАЖДОГО",co:"ЗОНА ПАРТНЁРА™",or:"ОРДНУНГ · ПОРЯДОК",km:"LA COMMUNE",ra:"РАССВЕТ · СВОИ",hf:"HIGH-FRONT"};
-const BB_CACHE={key:"",line:""};
+const BB_CACHE=new Map();   /* ключ sx,sy,i,тик → строка; щиты врут порознь */
 /* сколько щитов: жизнь .45 → 1, .65 → 2, .85 → 3 (бюджет DESIGN-life §4) */
 function bbCount(life){return life>=.85?3:life>=.65?2:life>=.45?1:0;}
 /* все щиты подъезда; bbHere — первый (план ГЛАВТРАССЫ, 17k1) */
@@ -24,8 +24,10 @@ function bbAll(){
   return out;
 }
 function bbHere(){const L=bbAll();return L.length?L[0]:null;}
-/* лучшая цена у соседей: товар, станция, сколько секторов */
-function bbDeal(){
+/* лучшая цена у соседей: товар, станция, сколько секторов.
+   i — номер щита на подъезде: часть врёт (M460 fork B) — цена с прошлых сводок /
+   сдвинутая; вилка как у записей маршрута (12r), и нередко «выгоднее, чем есть». */
+function bbDeal(i){
   let best=null;
   for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){
     if(!dx&&!dy)continue;const sx=G.sx+dx,sy=G.sy+dy;
@@ -34,7 +36,15 @@ function bbDeal(){
     const M=s.station.prices||{};
     for(const k of TRADE_KEYS){if(!M[k])continue;const v=M[k]/Math.max(1,RES[k].price);if(!best||v>best.v)best={v,k,p:M[k],st:s.station.name,d:Math.max(Math.abs(dx),Math.abs(dy))};}
   }
-  return best;
+  if(!best||i==null)return best;
+  /* ~38 % щитов: семя места и номера, не жизни — иначе все три врали бы разом */
+  if(((hashi(G.sx,G.sy,(i|0)+0xBBAD)>>>0)%100)>=38)return best;
+  const r=rng(hashi(G.sx,G.sy,(i|0)*19+7,Math.floor(G.t/(HOLD_SHIFT||1800))|0));
+  const age=1+Math.floor(r()*6),fork=Math.min(.4,age*.03);
+  /* чаще вверх: реклама обещает лучше, чем стоит у соседа сейчас */
+  const bait=r()<.62,mid=bait?(1+fork*(.45+r()*.55)):(1+(r()-.5)*2*fork);
+  const p=Math.max(1,Math.round(best.p*mid));
+  return {v:best.v*mid,k:best.k,p,st:best.st,d:best.d,lie:1,age,fork};
 }
 /* строка сводки голосом хозяина (M460): последнее, что рассказывают, не старше смены */
 const BB_NEWS={gt:"СВОДКА: ",co:"НОВОСТИ ПАРТНЁРА™: ",or:"ЦИРКУЛЯР № ",km:"ГАЗЕТА «КОММУНА»: ",ra:"ГОВОРЯТ: ",hf:"FEED // "};
@@ -60,10 +70,10 @@ function bbHold(by){
     by==="hf"?nm+" // FUEL:OK":
     "СТАНЦИЯ «"+nm+"» — ТОПЛИВО ЕСТЬ"+(best.d?" · "+best.d+" "+pl3(best.d,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"):" · ВЫ ЗДЕСЬ");
 }
-function bbLine(by){
-  const key=G.sx+","+G.sy+","+Math.floor(G.t/600);
-  if(BB_CACHE.key===key)return BB_CACHE.line;
-  const D=bbDeal();let L;
+function bbLine(by,i){
+  const key=G.sx+","+G.sy+","+(i|0)+","+Math.floor(G.t/600);
+  if(BB_CACHE.has(key))return BB_CACHE.get(key);
+  const D=bbDeal(i);let L;
   /* ГЛАВТРАССА через раз вешает план (M503) */
   const gp=(by==="gt"&&(Math.floor(G.t/600)&1)&&typeof gosBbLine==="function")?gosBbLine():null;
   /* три строки по очереди (M460): цена, сводка, ваше владение — пустая уступает цене */
@@ -74,14 +84,17 @@ function bbLine(by){
   else if(!D)L="СВОБОДНОЕ МЕСТО ДЛЯ ВАШЕЙ РЕКЛАМЫ";
   else{
     const g=RES[D.k].ru.toUpperCase(),n=D.d+" "+pl3(D.d,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ");
-    L=by==="co"?g+" "+D.p+" У ПАРТНЁРА В "+D.d+" "+pl3(D.d,"ПРЫЖКЕ","ПРЫЖКАХ","ПРЫЖКАХ")+" — ВЫГОДНО КАК НИКОГДА™ · ДО КОНЦА АКЦИИ 00:00:03":
-      by==="or"?"ЦЕНА НА "+g+": "+D.p+" КР · «"+D.st.toUpperCase()+"» · "+n+" · ПРОВЕРЕНО":
-      by==="km"?g+" — "+D.p+", НО ДЕЛО НЕ В ЦЕНЕ · «"+D.st.toUpperCase()+"» · ОБЕД С 13 ДО 14":
-      by==="ra"?"БРАТ! "+g+" ПО "+D.p+" НА «"+D.st.toUpperCase()+"» — ЗАХОДИ":
-      by==="hf"?g+":"+D.p+" @"+D.st.toUpperCase()+" Δ"+D.d+" // РЕКОМЕНДОВАНО":
-      "ТОВАРИЩ! "+g+" — "+D.p+" КР НА «"+D.st.toUpperCase()+"» · "+n;
+    /* врёт — вилка записей (как 12r), без слова «врёт»: щит не сознаётся */
+    const px=(D.lie&&typeof routeForkTxt==="function")?routeForkTxt(D.p,D.fork):String(D.p);
+    L=by==="co"?g+" "+px+" У ПАРТНЁРА В "+D.d+" "+pl3(D.d,"ПРЫЖКЕ","ПРЫЖКАХ","ПРЫЖКАХ")+" — ВЫГОДНО КАК НИКОГДА™ · ДО КОНЦА АКЦИИ 00:00:03":
+      by==="or"?"ЦЕНА НА "+g+": "+px+" КР · «"+D.st.toUpperCase()+"» · "+n+" · ПРОВЕРЕНО":
+      by==="km"?g+" — "+px+", НО ДЕЛО НЕ В ЦЕНЕ · «"+D.st.toUpperCase()+"» · ОБЕД С 13 ДО 14":
+      by==="ra"?"БРАТ! "+g+" ПО "+px+" НА «"+D.st.toUpperCase()+"» — ЗАХОДИ":
+      by==="hf"?g+":"+px+" @"+D.st.toUpperCase()+" Δ"+D.d+" // РЕКОМЕНДОВАНО":
+      "ТОВАРИЩ! "+g+" — "+px+" КР НА «"+D.st.toUpperCase()+"» · "+n;
   }
-  BB_CACHE.key=key;BB_CACHE.line=L;
+  if(BB_CACHE.size>24)BB_CACHE.clear();
+  BB_CACHE.set(key,L);
   return L;
 }
 /* заголовок щита; у ГЛАВТРАССЫ одна буква мертва (пробел — трубка без газа) */
@@ -173,7 +186,7 @@ function bbDrawGpu(pass,B,x,y,s,col,rd,Z){
   neonDraw(pass,N,x,y-ph*.18,rd,BB_NEON*buzz*rd);
   if(GP)return;
   /* бегущая строка: окно (x-pw/2+4 … +pw-8) показывает полосу с отступа off, по кругу */
-  const S=bbStripBake(bbLine(B.by)+"   ·   ",Math.round(8*s),col,true);if(!S||S.P<2)return;
+  const S=bbStripBake(bbLine(B.by,B.i)+"   ·   ",Math.round(8*s),col,true);if(!S||S.P<2)return;
   const ww=pw-8,off=(G.t*.6*s)%S.P,yc=px(y+ph*.25-S.h/2)+S.h/2,R=[];
   let u=off,xx=x-pw/2+4,rem=ww;
   while(rem>.01&&R.length<8){const len=Math.min(S.P-u,rem);R.push({x:xx+len/2,y:yc,w:len,h:S.h,a:BB_TICK*rd,u0:u/S.P,u1:(u+len)/S.P});xx+=len;rem-=len;u=0;}
@@ -186,7 +199,7 @@ function bbAhead(B,s,col){
   if(!bbPanelBake(s,GP,false))return;
   const F=Math.round(11*s),T=bbTitle(B.by),full=BB_TITLE[B.by]||BB_TITLE.gt;
   neonAhead(T,full,F,col,"middle");
-  if(!GP)bbStripBake(bbLine(B.by)+"   ·   ",Math.round(8*s),col,false);
+  if(!GP)bbStripBake(bbLine(B.by,B.i)+"   ·   ",Math.round(8*s),col,false);
 }
 /* корпус ловит цвет щита (Law 2, DESIGN-life §3.2): в R неон ложится на обшивку */
 const BB_TINT_R=380;

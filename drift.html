@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.59";
+const VER="0.499.60";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -28228,7 +28228,14 @@ function socPage(box){
    Доброта: последний чиновник подписывает не глядя — «ну сколько ж можно,
    летай уже» — на любой станции, и только у этой подписи есть имя.
    Без бумаг: проводник не пускает в вагон; пикет на границе штрафует (первый
-   раз — машет рукой). G.vol = {a:{key:{need,docs:[{by,st,cp,lunch,fast}],hint,fast,fine,done,wave}}}. */
+   раз — машет рукой). G.vol = {a:{key:{need,docs:[{by,st,cp,lunch,fast}],hint,fast,fine,done,wave}}}.
+
+   Таблица животных (M511, 31.10) — три прохода по игре:
+   1) «клетка + попугай» — уже возили; шутка бумаг есть, видов у ПАЛАТЫ нет.
+   2) один в один beastFormWord (ползун/ходун…) — сканер и реестр говорят одно,
+      бюрократия не добавляет голоса.
+   3) классы РЕЕСТРА: те же тела 20e, но казённые имена; чужие — отдельная
+      стопка; птица с позывным — свой класс. Выбран 3. */
 const VOL_DOCS=[
   {ru:"справка о прививках",             off:"ветеринар при станции"},
   {ru:"акт о некусаемости",              off:"комиссия по некусаемости"},
@@ -28239,33 +28246,75 @@ const VOL_DOCS=[
   {ru:"характеристика от участкового",   off:"участковый"},
   {ru:"копия копии",                     off:"архив"}
 ];
+/* класс реестра: id, казённое имя, слово сканера (word), чужой?, укус?, доп. бумаги вперёд, сдвиг N */
+const VOL_KIND=[
+  {id:"callbird",ru:"птица с позывным",     word:null,        xeno:0,bite:0,extra:[{ru:"справка о позывном",off:"радиоузел"},{ru:"акт о некусаемости клювом",off:"комиссия по некусаемости"}],need:0},
+  {id:"crawl",   ru:"объект ползучий П-4",  word:"ползун",     xeno:0,bite:1,extra:[{ru:"схема волочения по палубе",off:"техник ангара"}],need:0},
+  {id:"hop",     ru:"скачущий без учёта",   word:"прыгун",     xeno:0,bite:0,extra:[{ru:"расчёт высоты прыжка",off:"инженер"}],need:1},
+  {id:"hex",     ru:"многоножка учтённая",  word:"шестиног",   xeno:0,bite:1,extra:[{ru:"перечень конечностей",off:"регистратор фауны"}],need:1},
+  {id:"walk",    ru:"прямоходящий образец", word:"прямоход",   xeno:0,bite:0,extra:[],need:0},
+  {id:"seg",     ru:"членистое, форма 3-Ч", word:"членистый",  xeno:0,bite:1,extra:[{ru:"акт о сегментации",off:"биолог"}],need:1},
+  {id:"blob",    ru:"округлое без учёта ног",word:"круглыш",   xeno:0,bite:0,extra:[{ru:"справка «ног не имеет»",off:"окно 7"}],need:0},
+  {id:"jelly",   ru:"гидроид внеземной",    word:"медузоид",   xeno:1,bite:0,extra:[{ru:"заключение ксенолога",off:"лаборатория"},{ru:"запрет на осушение",off:"эколог"}],need:2},
+  {id:"strider", ru:"ходульный ксено",      word:"ходун",      xeno:1,bite:0,extra:[{ru:"габарит по высоте",off:"техник ангара"},{ru:"заключение ксенолога",off:"лаборатория"}],need:2},
+  {id:"crystal", ru:"минералоид живой",     word:"кристаллид", xeno:1,bite:0,extra:[{ru:"справка «не руда»",off:"товаровед"},{ru:"заключение ксенолога",off:"лаборатория"}],need:2},
+  {id:"manta",   ru:"летун плоскокрылый",   word:"мантовый",   xeno:1,bite:0,extra:[{ru:"разрешение на висение",off:"диспетчер"},{ru:"заключение ксенолога",off:"лаборатория"}],need:2},
+  {id:"shell",   ru:"панцирное, броня≠оружие",word:"панцирник",xeno:1,bite:1,extra:[{ru:"акт «панцирь не оружие»",off:"комиссия по некусаемости"},{ru:"заключение ксенолога",off:"лаборатория"}],need:2}
+];
+const VOL_KIND_BY={};for(const K of VOL_KIND)VOL_KIND_BY[K.id]=K;
 const VOL_FAST=60,VOL_FINE=40,VOL_MIN=2,VOL_MAX=10;
 const VOL_BY=["gt","co","or","km","ra","hf"];
 function volAll(){const V=G.vol||(G.vol={});V.a=V.a||{};return V;}
-/* животные на борту: ключ, имя, семя */
+/* класс зверя в клетке: сначала вид планеты, иначе слово в имени */
+function volBeastKind(beast){
+  if(!beast)return VOL_KIND_BY.blob;
+  const sys=typeof getSystem==="function"?getSystem(beast.sx,beast.sy):null;
+  const p=sys&&sys.planets&&sys.planets[beast.idx|0];
+  if(p&&typeof faunaOf==="function"){
+    const list=faunaOf(p),sp=list.find(s=>s.name===beast.sp)||list[0];
+    if(sp){
+      if(sp.alien&&VOL_KIND_BY[sp.alien])return VOL_KIND_BY[sp.alien];
+      const w=typeof beastFormWord==="function"?beastFormWord(sp):"";
+      for(const K of VOL_KIND)if(K.word&&K.word===w)return K;
+    }
+  }
+  const nm=String(beast.sp||"");
+  for(const K of VOL_KIND)if(K.word&&nm.indexOf(K.word)>=0)return K;
+  return VOL_KIND_BY.blob;
+}
+function volKindOf(a){return (a&&a.kind)||VOL_KIND_BY.blob;}
+/* животные на борту: ключ, имя, семя, класс реестра */
 function volAnimals(){
   const out=[];
-  if(typeof parrotHas==="function"&&parrotHas())out.push({key:"parrot",ru:"трепло «"+G.parrot.name+"»",seed:G.parrot.seed>>>0});
-  if(G.beast)out.push({key:"beast:"+(G.beast.seed>>>0),ru:G.beast.sp+" (в клетке)",seed:G.beast.seed>>>0});
+  if(typeof parrotHas==="function"&&parrotHas())
+    out.push({key:"parrot",ru:"трепло «"+G.parrot.name+"»",seed:G.parrot.seed>>>0,kind:VOL_KIND_BY.callbird});
+  if(G.beast){
+    const K=volBeastKind(G.beast);
+    out.push({key:"beast:"+(G.beast.seed>>>0),ru:G.beast.sp+" (в клетке) · "+K.ru,seed:G.beast.seed>>>0,kind:K});
+  }
   return out;
 }
 function volOf(a){
   const V=volAll();
   if(!V.a[a.key]){
-    const r=rng(hashi(a.seed,0xB0B,0x511));
-    V.a[a.key]={need:VOL_MIN+Math.floor(r()*(VOL_MAX-VOL_MIN+1)),docs:[],hint:0,fast:0,fine:0,done:0,wave:0};
+    const r=rng(hashi(a.seed,0xB0B,0x511)),K=volKindOf(a);
+    const need=clamp(VOL_MIN+Math.floor(r()*(VOL_MAX-VOL_MIN+1))+(K.need|0),VOL_MIN,VOL_MAX+2);
+    V.a[a.key]={need,docs:[],hint:0,fast:0,fine:0,done:0,wave:0,kid:K.id};
   }
   return V.a[a.key];
 }
 function volOk(a){return !!volOf(a).done;}
-/* следующий документ: какой и чей. Последний — доброта, подписывают везде */
+/* следующий документ: сначала доп. класса, потом общая стопка. Последний — доброта */
 function volNext(a){
   const P=volOf(a),i=P.docs.length;
   if(P.done)return null;
   const last=i===P.need-1;
-  const D=VOL_DOCS[i%VOL_DOCS.length],r=rng(hashi(a.seed,i*7+1,0x0D0C));
+  const K=volKindOf(a),ex=K.extra||[];
+  const D=i<ex.length?ex[i]:VOL_DOCS[(i-ex.length)%VOL_DOCS.length];
+  const r=rng(hashi(a.seed,i*7+1,0x0D0C));
   const by=VOL_BY[Math.floor(r()*VOL_BY.length)],st=ST_TYPES[Math.floor(r()*ST_TYPES.length)].id;
-  return {i,ru:i>=VOL_DOCS.length?D.ru+" копии":D.ru,off:D.off,by,st,last};
+  const copy=i>=ex.length+(VOL_DOCS.length)&&!last;
+  return {i,ru:copy?D.ru+" копии":D.ru,off:D.off,by,st,last};
 }
 function volHere(){
   if(G.mode!=="dock"||!G.st)return null;
@@ -32923,7 +32972,7 @@ function genMgr(seed,rolePool){
   const m={id:"m"+seed,seed,name:genName(r),role,traits,
     lv0:1,xp:0,perks:[],rules:[],loy:55+Math.floor(r()*20),
     tMs:0,earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],
-    log:[]};
+    fat:0,log:[]};
   m.fee=Math.round((1400+r()*2600)*(1+MGR_ROLES[role].cut*4));
   return m;
 }
@@ -33038,12 +33087,22 @@ function fireMgr(m){
   say("Расчёт с "+m.name+"\n−"+cost.toLocaleString("ru")+" кр");
   return true;
 }
-/* короткая личная лента: по ней читается и работа домена, и настроение */
+/* короткая личная лента: по ней читается и работа домена, и настроение.
+   Усталость (M461): ответ короче — ось в фигуре и в голосе, без числа. */
 function mgrSay(m,s,k){
+  s=String(s||"");
+  if((m.fat||0)>.55&&s.length>40){
+    const cut=s.split(/\s*[·—.]\s*/)[0].trim();
+    s=(cut.length>=8&&cut.length<s.length)?cut+"…":s.slice(0,38)+"…";
+  }
   m.log=m.log||[];
   m.log.unshift({t:now(),k:k||"",s});
   if(m.log.length>8)m.log.length=8;
 }
+/* усталость 0…1: копится работой домена, сходит простоем и ночью в гостинице; в лицо — cpFace */
+function mgrFatOf(m){return m&&!m.ai?clamp(+m.fat||0,0,1):0;}
+function mgrFatBucket(m){const f=mgrFatOf(m);return f>.7?2:f>.35?1:0;}
+function mgrFatRest(m,q){if(!m||m.ai)return;m.fat=Math.max(0,(+m.fat||0)-(q||.4));}
 /* ══════════════ стоящие приказы ══════════════ */
 /* Это и есть «снимает рутину», выраженное механикой: правило «условие → действие»
    кладётся в слот один раз. Слотов всегда меньше, чем правил, — игрок выбирает,
@@ -33130,6 +33189,11 @@ function mgrTick(){
       if(m.gone){G.mgrs.splice(i,1);continue;}
     }
     if(m.rent&&now-(m.rent.t||0)>=HOLD_SHIFT/4){m.rent.t=now;rentSay(m);}   /* реклама и мнения по тарифу (M488) */
+    /* усталость (M461 B): только управляющие со лицом; число нигде не пишется */
+    if(!m.ai){
+      if(work>0)m.fat=Math.min(1,(+m.fat||0)+min*.007);
+      else m.fat=Math.max(0,(+m.fat||0)-min*(m.stalled?.012:.004));
+    }
     if(work>0){
       m.xp=(m.xp||0)+work*mgrTraitMul(m,"xp");
       const lv=mgrLevel(m);
@@ -47728,6 +47792,7 @@ function applySave(s){
     relic:(m.relic&&ARTIFACTS[m.relic])?m.relic:null,
     rent:(m.rent&&typeof RENT_TIERS!=="undefined"&&RENT_TIERS[m.rent.tier])?{tier:m.rent.tier,n:m.rent.n|0,spared:m.rent.spared?1:0}:null,   /* ядро в аренду (M488) */
     cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),pool:Math.max(0,+m.pool||0),
+    fat:clamp(+m.fat||0,0,1),   /* усталость (M461): ось тела, не число в UI */
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
     /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
        (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
@@ -64380,7 +64445,7 @@ function chebInteract(sh){
    Щиты у людной станции (жизнь ≥ .45), сбоку полосы у второй пары бакенов: 1–3 по жизни
    (M460 rest). Строка пересчитывается раз в десять секунд игры. */
 const BB_TITLE={gt:"ТРАССА — ДЕЛО КАЖДОГО",co:"ЗОНА ПАРТНЁРА™",or:"ОРДНУНГ · ПОРЯДОК",km:"LA COMMUNE",ra:"РАССВЕТ · СВОИ",hf:"HIGH-FRONT"};
-const BB_CACHE={key:"",line:""};
+const BB_CACHE=new Map();   /* ключ sx,sy,i,тик → строка; щиты врут порознь */
 /* сколько щитов: жизнь .45 → 1, .65 → 2, .85 → 3 (бюджет DESIGN-life §4) */
 function bbCount(life){return life>=.85?3:life>=.65?2:life>=.45?1:0;}
 /* все щиты подъезда; bbHere — первый (план ГЛАВТРАССЫ, 17k1) */
@@ -64395,8 +64460,10 @@ function bbAll(){
   return out;
 }
 function bbHere(){const L=bbAll();return L.length?L[0]:null;}
-/* лучшая цена у соседей: товар, станция, сколько секторов */
-function bbDeal(){
+/* лучшая цена у соседей: товар, станция, сколько секторов.
+   i — номер щита на подъезде: часть врёт (M460 fork B) — цена с прошлых сводок /
+   сдвинутая; вилка как у записей маршрута (12r), и нередко «выгоднее, чем есть». */
+function bbDeal(i){
   let best=null;
   for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){
     if(!dx&&!dy)continue;const sx=G.sx+dx,sy=G.sy+dy;
@@ -64405,7 +64472,15 @@ function bbDeal(){
     const M=s.station.prices||{};
     for(const k of TRADE_KEYS){if(!M[k])continue;const v=M[k]/Math.max(1,RES[k].price);if(!best||v>best.v)best={v,k,p:M[k],st:s.station.name,d:Math.max(Math.abs(dx),Math.abs(dy))};}
   }
-  return best;
+  if(!best||i==null)return best;
+  /* ~38 % щитов: семя места и номера, не жизни — иначе все три врали бы разом */
+  if(((hashi(G.sx,G.sy,(i|0)+0xBBAD)>>>0)%100)>=38)return best;
+  const r=rng(hashi(G.sx,G.sy,(i|0)*19+7,Math.floor(G.t/(HOLD_SHIFT||1800))|0));
+  const age=1+Math.floor(r()*6),fork=Math.min(.4,age*.03);
+  /* чаще вверх: реклама обещает лучше, чем стоит у соседа сейчас */
+  const bait=r()<.62,mid=bait?(1+fork*(.45+r()*.55)):(1+(r()-.5)*2*fork);
+  const p=Math.max(1,Math.round(best.p*mid));
+  return {v:best.v*mid,k:best.k,p,st:best.st,d:best.d,lie:1,age,fork};
 }
 /* строка сводки голосом хозяина (M460): последнее, что рассказывают, не старше смены */
 const BB_NEWS={gt:"СВОДКА: ",co:"НОВОСТИ ПАРТНЁРА™: ",or:"ЦИРКУЛЯР № ",km:"ГАЗЕТА «КОММУНА»: ",ra:"ГОВОРЯТ: ",hf:"FEED // "};
@@ -64431,10 +64506,10 @@ function bbHold(by){
     by==="hf"?nm+" // FUEL:OK":
     "СТАНЦИЯ «"+nm+"» — ТОПЛИВО ЕСТЬ"+(best.d?" · "+best.d+" "+pl3(best.d,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"):" · ВЫ ЗДЕСЬ");
 }
-function bbLine(by){
-  const key=G.sx+","+G.sy+","+Math.floor(G.t/600);
-  if(BB_CACHE.key===key)return BB_CACHE.line;
-  const D=bbDeal();let L;
+function bbLine(by,i){
+  const key=G.sx+","+G.sy+","+(i|0)+","+Math.floor(G.t/600);
+  if(BB_CACHE.has(key))return BB_CACHE.get(key);
+  const D=bbDeal(i);let L;
   /* ГЛАВТРАССА через раз вешает план (M503) */
   const gp=(by==="gt"&&(Math.floor(G.t/600)&1)&&typeof gosBbLine==="function")?gosBbLine():null;
   /* три строки по очереди (M460): цена, сводка, ваше владение — пустая уступает цене */
@@ -64445,14 +64520,17 @@ function bbLine(by){
   else if(!D)L="СВОБОДНОЕ МЕСТО ДЛЯ ВАШЕЙ РЕКЛАМЫ";
   else{
     const g=RES[D.k].ru.toUpperCase(),n=D.d+" "+pl3(D.d,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ");
-    L=by==="co"?g+" "+D.p+" У ПАРТНЁРА В "+D.d+" "+pl3(D.d,"ПРЫЖКЕ","ПРЫЖКАХ","ПРЫЖКАХ")+" — ВЫГОДНО КАК НИКОГДА™ · ДО КОНЦА АКЦИИ 00:00:03":
-      by==="or"?"ЦЕНА НА "+g+": "+D.p+" КР · «"+D.st.toUpperCase()+"» · "+n+" · ПРОВЕРЕНО":
-      by==="km"?g+" — "+D.p+", НО ДЕЛО НЕ В ЦЕНЕ · «"+D.st.toUpperCase()+"» · ОБЕД С 13 ДО 14":
-      by==="ra"?"БРАТ! "+g+" ПО "+D.p+" НА «"+D.st.toUpperCase()+"» — ЗАХОДИ":
-      by==="hf"?g+":"+D.p+" @"+D.st.toUpperCase()+" Δ"+D.d+" // РЕКОМЕНДОВАНО":
-      "ТОВАРИЩ! "+g+" — "+D.p+" КР НА «"+D.st.toUpperCase()+"» · "+n;
+    /* врёт — вилка записей (как 12r), без слова «врёт»: щит не сознаётся */
+    const px=(D.lie&&typeof routeForkTxt==="function")?routeForkTxt(D.p,D.fork):String(D.p);
+    L=by==="co"?g+" "+px+" У ПАРТНЁРА В "+D.d+" "+pl3(D.d,"ПРЫЖКЕ","ПРЫЖКАХ","ПРЫЖКАХ")+" — ВЫГОДНО КАК НИКОГДА™ · ДО КОНЦА АКЦИИ 00:00:03":
+      by==="or"?"ЦЕНА НА "+g+": "+px+" КР · «"+D.st.toUpperCase()+"» · "+n+" · ПРОВЕРЕНО":
+      by==="km"?g+" — "+px+", НО ДЕЛО НЕ В ЦЕНЕ · «"+D.st.toUpperCase()+"» · ОБЕД С 13 ДО 14":
+      by==="ra"?"БРАТ! "+g+" ПО "+px+" НА «"+D.st.toUpperCase()+"» — ЗАХОДИ":
+      by==="hf"?g+":"+px+" @"+D.st.toUpperCase()+" Δ"+D.d+" // РЕКОМЕНДОВАНО":
+      "ТОВАРИЩ! "+g+" — "+px+" КР НА «"+D.st.toUpperCase()+"» · "+n;
   }
-  BB_CACHE.key=key;BB_CACHE.line=L;
+  if(BB_CACHE.size>24)BB_CACHE.clear();
+  BB_CACHE.set(key,L);
   return L;
 }
 /* заголовок щита; у ГЛАВТРАССЫ одна буква мертва (пробел — трубка без газа) */
@@ -64544,7 +64622,7 @@ function bbDrawGpu(pass,B,x,y,s,col,rd,Z){
   neonDraw(pass,N,x,y-ph*.18,rd,BB_NEON*buzz*rd);
   if(GP)return;
   /* бегущая строка: окно (x-pw/2+4 … +pw-8) показывает полосу с отступа off, по кругу */
-  const S=bbStripBake(bbLine(B.by)+"   ·   ",Math.round(8*s),col,true);if(!S||S.P<2)return;
+  const S=bbStripBake(bbLine(B.by,B.i)+"   ·   ",Math.round(8*s),col,true);if(!S||S.P<2)return;
   const ww=pw-8,off=(G.t*.6*s)%S.P,yc=px(y+ph*.25-S.h/2)+S.h/2,R=[];
   let u=off,xx=x-pw/2+4,rem=ww;
   while(rem>.01&&R.length<8){const len=Math.min(S.P-u,rem);R.push({x:xx+len/2,y:yc,w:len,h:S.h,a:BB_TICK*rd,u0:u/S.P,u1:(u+len)/S.P});xx+=len;rem-=len;u=0;}
@@ -64557,7 +64635,7 @@ function bbAhead(B,s,col){
   if(!bbPanelBake(s,GP,false))return;
   const F=Math.round(11*s),T=bbTitle(B.by),full=BB_TITLE[B.by]||BB_TITLE.gt;
   neonAhead(T,full,F,col,"middle");
-  if(!GP)bbStripBake(bbLine(B.by)+"   ·   ",Math.round(8*s),col,false);
+  if(!GP)bbStripBake(bbLine(B.by,B.i)+"   ·   ",Math.round(8*s),col,false);
 }
 /* корпус ловит цвет щита (Law 2, DESIGN-life §3.2): в R неон ложится на обшивку */
 const BB_TINT_R=380;
@@ -65006,6 +65084,11 @@ function hotelDesk(Ht){
     Ht.by==="ra"?"«Ложись где свободно, брат.»":"«Ваш номер рассчитан.»";
   logAdd("good",Ht.name+": ночь в номере"+(free?" — даром, «потом заплатите»":" · −"+price+" кр")+" · корпус +"+heal+" за ночь стоянки");
   say(greet+(free?"\n«…потом заплатите»":""),150);
+  /* ночь снимает усталость управляющих (M461): ось только на них, лица уже есть */
+  if(G.mgrs&&typeof mgrFatRest==="function")for(const m of G.mgrs){
+    if(m.ai)continue;const was=mgrFatOf(m);mgrFatRest(m,.5);
+    if(was>.4&&typeof cpEmote==="function")cpEmote(m,"glad",1800);
+  }
   hotelShop(Ht);
   hotelDoors(Ht);   /* двери тихих мест: кино, санаторий по путёвке, слух кантины (M461 rest) */
 }
@@ -118609,7 +118692,10 @@ const CP_KIT={cmd:{jac:[50,56,64],mix:.1,coll:1},keep:{jac:[62,78,70],mix:.16,co
   sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[142,140,132],mix:.04,coll:1,vest:[40,44,52]}};
 function cpBody(m,lod,poseK){return cpRun(cpBodyGen(m,lod,poseK));}
 function* cpBodyGen(m,lod,poseK){
-  const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=cpPose(poseK);
+  const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=Object.assign({},cpPose(poseK));
+  /* усталость (M461): плечи опускаются — lean и ниже локти; корзина fat в ключе сетки */
+  const fb=typeof mgrFatBucket==="function"?mgrFatBucket(m):0;
+  if(fb){J.lean=(J.lean||0)+fb*.055;if(J.elb)J.elb=J.elb.map(e=>[e[0],e[1]-fb*.035,e[2]]);}
   const wB=.86+(g.build-.7)*.36,hs=g.hs,pel=[0,J.pel,0],ln=J.lean;
   const ai=g.ai,rc=m.acc||(g.role?hex2rgb(g.role.col):[150,160,170]),rk=!ai&&m.role&&CP_KIT[m.role]?m.role:"",KT=rk?CP_KIT[rk]:null;
   if(KT)cl.jacket=mixc(KT.jac,rc,KT.mix);
@@ -118780,7 +118866,8 @@ function* cpBodyGen(m,lod,poseK){
    играет cpRig */
 const CP_MESH=new Map();
 function cpMeshKey(m,pose,lod){
-  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"")+(m.style!=null?"|s"+m.style:"");
+  const fb=typeof mgrFatBucket==="function"?mgrFatBucket(m):0;
+  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"")+(m.style!=null?"|s"+m.style:"")+(fb?"|f"+fb:"");
 }
 function cpMeshPut(key,M){
   if(CP_MESH.size>=128){   /* зал + кантина + портреты: 48 вытесняли друг друга по кругу; +32 — двойники теней (24.10) */
@@ -121999,8 +122086,12 @@ function cpEmoMix(A,B,w){
 function cpFace(m,base){
   if(!m||m.ai)return null;
   const F=cpFaceState(m),t=wallMs(),dt=F.t?Math.min(.25,(t-F.t)/1000):1;F.t=t;
-  const md=cpMood(m),T=md.T||{bk:.3,sac:1,lid:0};
+  const md=cpMood(m);let T=md.T||{bk:.3,sac:1,lid:0};
+  /* усталость (M461): веки тяжелее, взгляд реже — без числа на лице */
+  const fat=typeof mgrFatOf==="function"?mgrFatOf(m):(m.fat||0);
+  if(fat>.05)T={bk:T.bk*(1-fat*.4),sac:T.sac*(1-fat*.3),lid:(T.lid||0)+fat*.34,k:T.k,w:T.w};
   let tg=cpEmoMix(CP_EMO.calm,CP_EMO[md.k],md.w);
+  if(fat>.7)tg=cpEmoMix(tg,CP_EMO.sad,.35*fat);
   if(F.ev){const e=(t-F.ev.t0)/F.ev.dur;
     if(e>=1)F.ev=null;
     else{const env=Math.min(1,e*8)*Math.min(1,(1-e)*4);tg=cpEmoMix(tg,CP_EMO[F.ev.k],env);}}

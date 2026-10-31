@@ -300,6 +300,11 @@ function hotelDesk(Ht){
     Ht.by==="ra"?"«Ложись где свободно, брат.»":"«Ваш номер рассчитан.»";
   logAdd("good",Ht.name+": ночь в номере"+(free?" — даром, «потом заплатите»":" · −"+price+" кр")+" · корпус +"+heal+" за ночь стоянки");
   say(greet+(free?"\n«…потом заплатите»":""),150);
+  /* ночь снимает усталость управляющих (M461): ось только на них, лица уже есть */
+  if(G.mgrs&&typeof mgrFatRest==="function")for(const m of G.mgrs){
+    if(m.ai)continue;const was=mgrFatOf(m);mgrFatRest(m,.5);
+    if(was>.4&&typeof cpEmote==="function")cpEmote(m,"glad",1800);
+  }
   hotelShop(Ht);
   hotelDoors(Ht);   /* двери тихих мест: кино, санаторий по путёвке, слух кантины (M461 rest) */
 }

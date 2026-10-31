@@ -12,7 +12,14 @@
    Доброта: последний чиновник подписывает не глядя — «ну сколько ж можно,
    летай уже» — на любой станции, и только у этой подписи есть имя.
    Без бумаг: проводник не пускает в вагон; пикет на границе штрафует (первый
-   раз — машет рукой). G.vol = {a:{key:{need,docs:[{by,st,cp,lunch,fast}],hint,fast,fine,done,wave}}}. */
+   раз — машет рукой). G.vol = {a:{key:{need,docs:[{by,st,cp,lunch,fast}],hint,fast,fine,done,wave}}}.
+
+   Таблица животных (M511, 31.10) — три прохода по игре:
+   1) «клетка + попугай» — уже возили; шутка бумаг есть, видов у ПАЛАТЫ нет.
+   2) один в один beastFormWord (ползун/ходун…) — сканер и реестр говорят одно,
+      бюрократия не добавляет голоса.
+   3) классы РЕЕСТРА: те же тела 20e, но казённые имена; чужие — отдельная
+      стопка; птица с позывным — свой класс. Выбран 3. */
 const VOL_DOCS=[
   {ru:"справка о прививках",             off:"ветеринар при станции"},
   {ru:"акт о некусаемости",              off:"комиссия по некусаемости"},
@@ -23,33 +30,75 @@ const VOL_DOCS=[
   {ru:"характеристика от участкового",   off:"участковый"},
   {ru:"копия копии",                     off:"архив"}
 ];
+/* класс реестра: id, казённое имя, слово сканера (word), чужой?, укус?, доп. бумаги вперёд, сдвиг N */
+const VOL_KIND=[
+  {id:"callbird",ru:"птица с позывным",     word:null,        xeno:0,bite:0,extra:[{ru:"справка о позывном",off:"радиоузел"},{ru:"акт о некусаемости клювом",off:"комиссия по некусаемости"}],need:0},
+  {id:"crawl",   ru:"объект ползучий П-4",  word:"ползун",     xeno:0,bite:1,extra:[{ru:"схема волочения по палубе",off:"техник ангара"}],need:0},
+  {id:"hop",     ru:"скачущий без учёта",   word:"прыгун",     xeno:0,bite:0,extra:[{ru:"расчёт высоты прыжка",off:"инженер"}],need:1},
+  {id:"hex",     ru:"многоножка учтённая",  word:"шестиног",   xeno:0,bite:1,extra:[{ru:"перечень конечностей",off:"регистратор фауны"}],need:1},
+  {id:"walk",    ru:"прямоходящий образец", word:"прямоход",   xeno:0,bite:0,extra:[],need:0},
+  {id:"seg",     ru:"членистое, форма 3-Ч", word:"членистый",  xeno:0,bite:1,extra:[{ru:"акт о сегментации",off:"биолог"}],need:1},
+  {id:"blob",    ru:"округлое без учёта ног",word:"круглыш",   xeno:0,bite:0,extra:[{ru:"справка «ног не имеет»",off:"окно 7"}],need:0},
+  {id:"jelly",   ru:"гидроид внеземной",    word:"медузоид",   xeno:1,bite:0,extra:[{ru:"заключение ксенолога",off:"лаборатория"},{ru:"запрет на осушение",off:"эколог"}],need:2},
+  {id:"strider", ru:"ходульный ксено",      word:"ходун",      xeno:1,bite:0,extra:[{ru:"габарит по высоте",off:"техник ангара"},{ru:"заключение ксенолога",off:"лаборатория"}],need:2},
+  {id:"crystal", ru:"минералоид живой",     word:"кристаллид", xeno:1,bite:0,extra:[{ru:"справка «не руда»",off:"товаровед"},{ru:"заключение ксенолога",off:"лаборатория"}],need:2},
+  {id:"manta",   ru:"летун плоскокрылый",   word:"мантовый",   xeno:1,bite:0,extra:[{ru:"разрешение на висение",off:"диспетчер"},{ru:"заключение ксенолога",off:"лаборатория"}],need:2},
+  {id:"shell",   ru:"панцирное, броня≠оружие",word:"панцирник",xeno:1,bite:1,extra:[{ru:"акт «панцирь не оружие»",off:"комиссия по некусаемости"},{ru:"заключение ксенолога",off:"лаборатория"}],need:2}
+];
+const VOL_KIND_BY={};for(const K of VOL_KIND)VOL_KIND_BY[K.id]=K;
 const VOL_FAST=60,VOL_FINE=40,VOL_MIN=2,VOL_MAX=10;
 const VOL_BY=["gt","co","or","km","ra","hf"];
 function volAll(){const V=G.vol||(G.vol={});V.a=V.a||{};return V;}
-/* животные на борту: ключ, имя, семя */
+/* класс зверя в клетке: сначала вид планеты, иначе слово в имени */
+function volBeastKind(beast){
+  if(!beast)return VOL_KIND_BY.blob;
+  const sys=typeof getSystem==="function"?getSystem(beast.sx,beast.sy):null;
+  const p=sys&&sys.planets&&sys.planets[beast.idx|0];
+  if(p&&typeof faunaOf==="function"){
+    const list=faunaOf(p),sp=list.find(s=>s.name===beast.sp)||list[0];
+    if(sp){
+      if(sp.alien&&VOL_KIND_BY[sp.alien])return VOL_KIND_BY[sp.alien];
+      const w=typeof beastFormWord==="function"?beastFormWord(sp):"";
+      for(const K of VOL_KIND)if(K.word&&K.word===w)return K;
+    }
+  }
+  const nm=String(beast.sp||"");
+  for(const K of VOL_KIND)if(K.word&&nm.indexOf(K.word)>=0)return K;
+  return VOL_KIND_BY.blob;
+}
+function volKindOf(a){return (a&&a.kind)||VOL_KIND_BY.blob;}
+/* животные на борту: ключ, имя, семя, класс реестра */
 function volAnimals(){
   const out=[];
-  if(typeof parrotHas==="function"&&parrotHas())out.push({key:"parrot",ru:"трепло «"+G.parrot.name+"»",seed:G.parrot.seed>>>0});
-  if(G.beast)out.push({key:"beast:"+(G.beast.seed>>>0),ru:G.beast.sp+" (в клетке)",seed:G.beast.seed>>>0});
+  if(typeof parrotHas==="function"&&parrotHas())
+    out.push({key:"parrot",ru:"трепло «"+G.parrot.name+"»",seed:G.parrot.seed>>>0,kind:VOL_KIND_BY.callbird});
+  if(G.beast){
+    const K=volBeastKind(G.beast);
+    out.push({key:"beast:"+(G.beast.seed>>>0),ru:G.beast.sp+" (в клетке) · "+K.ru,seed:G.beast.seed>>>0,kind:K});
+  }
   return out;
 }
 function volOf(a){
   const V=volAll();
   if(!V.a[a.key]){
-    const r=rng(hashi(a.seed,0xB0B,0x511));
-    V.a[a.key]={need:VOL_MIN+Math.floor(r()*(VOL_MAX-VOL_MIN+1)),docs:[],hint:0,fast:0,fine:0,done:0,wave:0};
+    const r=rng(hashi(a.seed,0xB0B,0x511)),K=volKindOf(a);
+    const need=clamp(VOL_MIN+Math.floor(r()*(VOL_MAX-VOL_MIN+1))+(K.need|0),VOL_MIN,VOL_MAX+2);
+    V.a[a.key]={need,docs:[],hint:0,fast:0,fine:0,done:0,wave:0,kid:K.id};
   }
   return V.a[a.key];
 }
 function volOk(a){return !!volOf(a).done;}
-/* следующий документ: какой и чей. Последний — доброта, подписывают везде */
+/* следующий документ: сначала доп. класса, потом общая стопка. Последний — доброта */
 function volNext(a){
   const P=volOf(a),i=P.docs.length;
   if(P.done)return null;
   const last=i===P.need-1;
-  const D=VOL_DOCS[i%VOL_DOCS.length],r=rng(hashi(a.seed,i*7+1,0x0D0C));
+  const K=volKindOf(a),ex=K.extra||[];
+  const D=i<ex.length?ex[i]:VOL_DOCS[(i-ex.length)%VOL_DOCS.length];
+  const r=rng(hashi(a.seed,i*7+1,0x0D0C));
   const by=VOL_BY[Math.floor(r()*VOL_BY.length)],st=ST_TYPES[Math.floor(r()*ST_TYPES.length)].id;
-  return {i,ru:i>=VOL_DOCS.length?D.ru+" копии":D.ru,off:D.off,by,st,last};
+  const copy=i>=ex.length+(VOL_DOCS.length)&&!last;
+  return {i,ru:copy?D.ru+" копии":D.ru,off:D.off,by,st,last};
 }
 function volHere(){
   if(G.mode!=="dock"||!G.st)return null;

@@ -127,7 +127,10 @@ const CP_KIT={cmd:{jac:[50,56,64],mix:.1,coll:1},keep:{jac:[62,78,70],mix:.16,co
   sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[142,140,132],mix:.04,coll:1,vest:[40,44,52]}};
 function cpBody(m,lod,poseK){return cpRun(cpBodyGen(m,lod,poseK));}
 function* cpBodyGen(m,lod,poseK){
-  const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=cpPose(poseK);
+  const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=Object.assign({},cpPose(poseK));
+  /* усталость (M461): плечи опускаются — lean и ниже локти; корзина fat в ключе сетки */
+  const fb=typeof mgrFatBucket==="function"?mgrFatBucket(m):0;
+  if(fb){J.lean=(J.lean||0)+fb*.055;if(J.elb)J.elb=J.elb.map(e=>[e[0],e[1]-fb*.035,e[2]]);}
   const wB=.86+(g.build-.7)*.36,hs=g.hs,pel=[0,J.pel,0],ln=J.lean;
   const ai=g.ai,rc=m.acc||(g.role?hex2rgb(g.role.col):[150,160,170]),rk=!ai&&m.role&&CP_KIT[m.role]?m.role:"",KT=rk?CP_KIT[rk]:null;
   if(KT)cl.jacket=mixc(KT.jac,rc,KT.mix);
@@ -298,7 +301,8 @@ function* cpBodyGen(m,lod,poseK){
    играет cpRig */
 const CP_MESH=new Map();
 function cpMeshKey(m,pose,lod){
-  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"")+(m.style!=null?"|s"+m.style:"");
+  const fb=typeof mgrFatBucket==="function"?mgrFatBucket(m):0;
+  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"")+(m.style!=null?"|s"+m.style:"")+(fb?"|f"+fb:"");
 }
 function cpMeshPut(key,M){
   if(CP_MESH.size>=128){   /* зал + кантина + портреты: 48 вытесняли друг друга по кругу; +32 — двойники теней (24.10) */
