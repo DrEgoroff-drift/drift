@@ -11,7 +11,7 @@
 #    троттлинга продолжают рисовать в фоне и топят любой следующий прогон;
 #  * свой профиль (--user-data-dir), и убиваем только процессы с ним:
 #    браузер пользователя трогать нельзя.
-param([int]$WaitSec = 240, [switch]$Deep, [switch]$Stable)
+param([int]$WaitSec = 240, [switch]$Deep, [switch]$Stable, [switch]$EnableGpu)
 
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -32,7 +32,7 @@ if ($Deep) { $url = $url + "=deep" }
 # -Stable: софт-композит на 60 Гц — интервалы ровные (16.7 мс), без всплесков 33–79 мс.
 # По умолчанию GPU-композит на 240 Гц: крейсер 4.2 мс, но headless изредка пропускает такты
 # (почему — записано в 28z-fps-probe: это среда, не игра). Работа самой игры — в p50/p90, jsMax.
-$extra = @(); if ($Stable) { $extra += "--disable-gpu-compositing" }
+$extra = @(); if ($Stable) { $extra += "--disable-gpu-compositing" }; if ($EnableGpu) { $extra += "--enable-gpu" }
 $argv = @("--headless=new", "--no-sandbox", "--window-size=1280,800",
           "--force-device-scale-factor=2", "--user-data-dir=$prof",
           "--no-first-run", "--no-default-browser-check",
