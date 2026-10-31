@@ -40,6 +40,24 @@ the BeginFrames. `ShouldThrottleSendBeginMainFrame` appears 8913 times.
 | 3 | headless + `--enable-gpu` | 226–240 | 4.2 | 4.2 | 37 (system), 75 (landing) | 1–4, max 102 ms |
 | 4 | **windowed Chrome** | 229–240 | 4.2 | 4.2 | **46 (system), 58 (landing), 29 (raid)** | 2–4, max 96 ms |
 
+## Probe-detached run (game alone, no `?g11`)
+
+9 s trace of the game right after «начать» (system view), no probe in the page:
+
+| stage | n | p50 | p90 | p99 | gaps > 16.7 ms |
+|---|---:|---:|---:|---:|---:|
+| `BeginFrame` | 2188 | 4.17 | 4.18 | 4.25 | **0 (0.0 %)** |
+| `ProxyMain::BeginMainFrame` | 2150 | 4.16 | 4.33 | 7.30 | 2 (0.1 %) |
+| `Commit` | 2150 | 4.18 | 5.58 | 9.37 | 3 (0.1 %) |
+| **`DrawFrame`** | 541 | **16.65** | 17.56 | 21.86 | **245 (45.4 %)** |
+| `Graphics.Pipeline` | 12473 | 0.08 | 3.74 | 3.97 | 2 (0.0 %) |
+
+The long `DrawFrame` gaps (17.6 ms mean) sit on **24.9 ms of main-thread `RunTask` over ~88
+tasks**; the GPU does 3.7–4.0 ms. So even with the probe gone the **game's own main thread
+saturates the frame**, while BeginFrame is a metronome and the GPU is idle. Caveat: this run is
+the game's first ~13 s (the first-hour intro), where the DOM/text work is heaviest — it is not
+the steady-state 240 fps the `?g11` steady window shows.
+
 ## Conclusion
 
 - **The BeginFrame scheduler is not the cause** (p99 4.28 ms). **The GPU is not the cause**
