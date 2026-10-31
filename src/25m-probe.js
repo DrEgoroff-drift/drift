@@ -89,7 +89,7 @@ function probeShot(p){
   if(!q)return null;
   const tr=(typeof genTerrain==="function")?genTerrain(q,null):null;
   const r=rng(p.seed^0x5057);
-  const per=CEL_DAY*(6+((q.seed>>>7)&3));
+  const per=CEL_DAY*(54+((q.seed>>>7)&3)*6);
   return {v:POST_V,m:"l",sx:p.tsx,sy:p.tsy,pi:q.idx,mi:-1,
     lon:tr?+tr.lon.toFixed(3):null,
     cx:tr?Math.round(120+r()*Math.max(240,tr.W-240)):0,

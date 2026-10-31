@@ -22,7 +22,7 @@ function lightWalk(p,wl,t0,n,step){
 TEST_SUITES.push(()=>suite("свет: солнце и небо идут без рывков",{tier:"node"},()=>{
   resetWorld();
   const p=landOnTestPlanet(),L=plnLandMake(G.surf.tr,p,G.sx),t0=G.t;
-  const day=CEL_DAY*(6+((p.seed>>>7)&3));
+  const day=CEL_DAY*(54+((p.seed>>>7)&3)*6);
   /* сутки по кадру — дорого; берём восемь окон по 600 кадров (10 с), они накрывают рассвет, день, закат и ночь */
   let R=[];
   for(let w=0;w<8;w++)R=R.concat(lightWalk(p,L.wl,t0+Math.round(day*w/8),600,1));

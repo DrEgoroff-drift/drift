@@ -35,7 +35,7 @@ function celDayF(t){return (t===undefined?G.t:t)/CEL_DAY;}
    хранится: всё от G.t и семени, как и остальной календарь. */
 function celSun(p,t){
   const seed=(p&&p.seed)|0;
-  const period=CEL_DAY*(6+((seed>>>7)&3));
+  const period=CEL_DAY*(54+((seed>>>7)&3)*6);
   const ph=(((t===undefined?G.t:t)/period)+(seed%100)/100)%1;
   return {ph,alt:Math.sin(ph*TAU),az:Math.cos(ph*TAU)};
 }

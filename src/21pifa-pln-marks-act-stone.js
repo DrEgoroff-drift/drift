@@ -240,7 +240,7 @@ function plnObsSky(c){
   let ecl="затмений не будет сегодня";
   const p=c.p;
   if(p&&typeof celEclipse==="function"&&!celEclipse(p,G.t)){
-    const per=CEL_DAY*(6+(((p.seed|0)>>>7)&3)),t0=G.t||0;
+    const per=CEL_DAY*(54+(((p.seed|0)>>>7)&3)*6),t0=G.t||0;
     for(let dt=per/96;dt<per;dt+=per/96)if(celEclipse(p,t0+dt)){ecl="затмение через "+Math.max(1,Math.round(dt/per*24))+" ч";break;}
   }else if(p&&typeof celEclipse==="function")ecl="затмение идёт сейчас";
   G.data+=12;

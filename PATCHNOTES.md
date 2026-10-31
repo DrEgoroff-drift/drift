@@ -7,6 +7,10 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 
+## 0.499.100 — The day is an hour, not a minute
+
+- The surface sun's day is now `CEL_DAY × (54–72)` (was `6–9`) — ~an hour per full day instead of ~6–10 minutes, the author's «солнце очень быстро» (15.10). The same period feeds the stone's marks act (`21pifa`), the probe (`25m-probe`) and the light test (`91ql-light`), so they stay in step. `CEL_DAY` itself — the calendar day, the war chronicle, the need windows — is untouched.
+
 ## 0.499.99 — The dig's 2D stub out; launchers on WebGPU; the plan's phone is the final test
 
 - `23-mode-dig`: the dead `drawDigFauna` stub and its `23c0-dig-hooks` entry are gone — the engine draws the beasts and the zap (`23ce`); the ban on editing `23-mode-dig` is lifted.
