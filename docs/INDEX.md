@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 677 · top-level symbols: 8918
+Files: 678 · top-level symbols: 8920
 
 ## SYMBOLS
 
@@ -608,7 +608,7 @@ ETH_CATCH                    src/25l-post-ether.js:28
 ETH_H0                       src/25l-post-ether.js:27
 ETH_HOLD                     src/25l-post-ether.js:29
 ETH_LO                       src/25l-post-ether.js:26
-EXPO_REAR_WEAR               src/05e-plan.js:216
+EXPO_REAR_WEAR               src/05e-plan.js:227
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
 EXP_PAX_LINES                src/11x-expedition.js:112
@@ -1636,7 +1636,7 @@ PENN_DAYS                    src/21h-pennant.js:22
 PEOPLE_GAP_MS                src/12a-crew.js:384
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
-PGX                          src/12i-pirate-hull.js:442
+PGX                          src/12i-pirate-hull.js:451
 PHONE_DPR                    src/08-state.js:12
 PI                           src/21pb-pln-wgsl-air.js:54
 PI                           src/22dbw-cave-pln-wgsl.js:38
@@ -1650,7 +1650,7 @@ PIRATE_RANKS                 src/13-pirates.js:13-18
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
-PIR_LOD                      src/12i-pirate-hull.js:424
+PIR_LOD                      src/12i-pirate-hull.js:433
 PIR_SS                       src/12i-pirate-hull.js:17
 PL                           src/11va-places-lit.js:19
 PLACE3                       src/21piig-pln-places.js:12
@@ -1670,13 +1670,13 @@ PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
 PLANT_KINDS                  src/20-life.js:136
 PLAN_CACHE                   src/05e-plan.js:20
-PLAN_COL                     src/05e-plan.js:131
+PLAN_COL                     src/05e-plan.js:142
 PLAN_DENS                    src/27jb-kb.js:47
 PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
 PLAN_F                       src/27jb-kb.js:414
-PLAN_ITEM_COL                src/05e-plan.js:132
-PLAN_LETTER                  src/05e-plan.js:136
+PLAN_ITEM_COL                src/05e-plan.js:143
+PLAN_LETTER                  src/05e-plan.js:147
 PLAN_MOD_DENS                src/27jb-kb.js:409
 PLAN_WANT                    src/05e-plan.js:78
 PLAYHOUR_HOOKS               src/28v-playhour.js:18-29
@@ -4096,7 +4096,7 @@ drawPOI                      src/20a-poi.js:195-198
 drawPeaceFleet               src/17m-peace-fleet.js:66-129
 drawPirateBase               src/24a-mode-raid.js:187-193
 drawPirateSkin               src/03d-hull-marks.js:99-126
-drawPlan                     src/05e-plan.js:137-173
+drawPlan                     src/05e-plan.js:148-184
 drawPlanetWorks              src/17e-station-body.js:71-116
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:170-612
@@ -4814,8 +4814,8 @@ gpuPipes                     src/08b-gpu.js:378-399
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesLate                 src/08b0-gpu-pipe.js:122-141
 gpuPipesWarm                 src/08b0-gpu-pipe.js:66-78
-gpuPirateBody                src/12i-pirate-hull.js:425-436
-gpuPirateLive                src/12i-pirate-hull.js:443-489
+gpuPirateBody                src/12i-pirate-hull.js:434-445
+gpuPirateLive                src/12i-pirate-hull.js:452-498
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
 gpuPreEnc                    src/08b-gpu.js:660
 gpuPresent                   src/08b-gpu.js:706-719
@@ -6407,8 +6407,8 @@ opisPartCard                 src/27j-ui-opis.js:555-584
 opisPartHtml                 src/27j-ui-opis.js:533-554
 opisPhone                    src/27j-ui-opis.js:71
 opisPileCard                 src/27j-ui-opis.js:605-626
-opisPlanBlock                src/05e-plan.js:175-190
-opisPlanOnly                 src/05e-plan.js:191-209
+opisPlanBlock                src/05e-plan.js:186-201
+opisPlanOnly                 src/05e-plan.js:202-220
 opisPriceCue                 src/27j-ui-opis.js:586-595
 opisRender                   src/27j-ui-opis.js:718-946
 opisRerender                 src/27j-ui-opis.js:74-84
@@ -6634,10 +6634,10 @@ pickStType                   src/06-galaxy.js:72-78
 pinch0                       src/15-input.js:404
 pipeWho                      tests/91zzzzzzy4-pipes.js:62-67
 pirateArmTick                src/13d-loadout.js:184-202
-pirateArtOf                  src/12i-pirate-hull.js:238-414
+pirateArtOf                  src/12i-pirate-hull.js:247-423
 pirateBaseGpu                src/24a-mode-raid.js:111-186
 pirateBaseOf                 src/24a-mode-raid.js:87-96
-pirateBuild                  src/12i-pirate-hull.js:54-231
+pirateBuild                  src/12i-pirate-hull.js:54-240
 pirateClass                  src/12i-pirate-hull.js:47-52
 pirateFellTo                 src/13-combat.js:76-84
 pirateHas                    src/13d-loadout.js:34-37
@@ -6672,7 +6672,7 @@ planDepthAt                  src/11r-plan.js:28-33
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
-planExposure                 src/05e-plan.js:217-230
+planExposure                 src/05e-plan.js:228-241
 planFactors                  src/27jb-kb.js:415-438
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
@@ -6682,6 +6682,8 @@ planModDens                  src/27jb-kb.js:410-413
 planMods                     src/27jb-kb.js:76-81
 planN                        src/05e-plan.js:21
 planNow                      src/05e-plan.js:125-129
+planNpcFit                   src/05e-plan.js:133-137
+planNpcOf                    src/05e-plan.js:138-140
 planOf                       src/05e-plan.js:31-70
 planPack                     src/05e-plan.js:82-123
 planPtIn                     src/05e-plan.js:22-29
@@ -9431,7 +9433,7 @@ zoomTo                       src/15-input.js:358
 ## src/12h-relic.js · 8 KB
   · артефакты и лаборатория:1
 
-## src/12i-pirate-hull.js · 31 KB
+## src/12i-pirate-hull.js · 32 KB
   · пиратский корпус:1
 
 ## src/12j-home.js · 16 KB
@@ -10944,6 +10946,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzzk8-plan-factors.js · 2 KB
   · M478/M476: числа от чертежа — неподвижная точка:1
+
+## tests/91zzzzk9-plan-npc.js · 2 KB
+  · M483: упаковщик для NPC и пиратов:1
 
 ## tests/91zzzzy-play.js · 18 KB
   · глубокие сценарии (M331):1

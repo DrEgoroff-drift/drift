@@ -51,7 +51,7 @@ function pirateClass(seed,rogue){
   return v<.36?"fast":v<.74?"raid":"heavy";
 }
 /* ── сборка: список полигонов и навески в местных единицах корпуса ── */
-function pirateBuild(seed,cls,rank){
+function pirateBuild(seed,cls,rank,id){
   const K=PIR_CLASS[cls],r=rng(hashi(seed,0x51D3,11));
   const L=K.len*(.9+r()*.25), hw=L*K.bw;
   const nose=L*.55, tail=-L*.45;
@@ -212,20 +212,29 @@ function pirateBuild(seed,cls,rank){
   /* метки сбитых: короткие насечки на носовой плите, число — по seed */
   const kills=Math.floor(r()*7);
   for(let i=0;i<kills;i++)lines.push([nose*.45-i*L*.03,-hw*.35,nose*.45-i*L*.03,-hw*.12,1]);
-  /* ── стволы снаряжения: по одному месту на семейство ── */
+  /* ── стволы снаряжения: клетки чертежа (M483), иначе прежний lerp ── */
   const guns=[];
   const LOAD=(typeof PIRATE_LOADOUT!=="undefined")?
     PIRATE_LOADOUT[clamp(rank|0,0,PIRATE_LOADOUT.length-1)]:null;
+  let gunCells=[];
+  if(id&&typeof planNpcOf==="function"&&typeof hullOf==="function"){
+    try{
+      const pk=planNpcOf(id),h=hullOf(id),sx=L/Math.max(8,h.len),sy=hw/Math.max(4,h.bw||h.len*.22);
+      gunCells=pk.items.filter(it=>it.kind==="gun").flatMap(it=>it.cells)
+        .map(q=>({x:q.x*sx,y:q.y*sy,kind:q.kind}));
+    }catch(e){gunCells=[];}
+  }
   if(LOAD)for(let i=0;i<LOAD.guns.length;i++){
     const fam=LOAD.guns[i],A=PIR_GUNART[fam]||PIR_GUNART.auto;
     const t=LOAD.guns.length>1?i/(LOAD.guns.length-1):0;
     const sg=i%2?1:-1;
+    const q=(!A.aft&&!A.dish)?gunCells[i%Math.max(1,gunCells.length)]:null;
     guns.push({fam,
-      x:A.aft?tail*.8:lerp(nose*.6,tail*.15,t),
-      y:A.dish?0:sg*hw*(.5+(i%3)*.16),
-      a:A.aft?Math.PI:(sg*.12),
+      x:A.aft?tail*.8:(q?q.x:lerp(nose*.6,tail*.15,t)),
+      y:A.dish?0:(q?q.y:sg*hw*(.5+(i%3)*.16)),
+      a:A.aft?Math.PI:(q?(q.y<0?-1:1)*.12:sg*.12),
       len:A.len||1,w:A.w||.12,n:A.n||1,
-      dish:A.dish?1:0,hook:A.hook?1:0,ring:A.ring?1:0});
+      dish:A.dish?1:0,hook:A.hook?1:0,ring:A.ring?1:0,fromPlan:q?1:0});
   }
   return {L,hw,nose,tail,polys,lines,rust,eng,turrets,guns,cls,kills,top:bodyTop,coreN};
 }
@@ -245,7 +254,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
   const cls=pirateClass(S.seed,rogue);
-  const B=pirateBuild(S.seed,cls,rank);
+  const B=pirateBuild(S.seed,cls,rank,id);
   const by=(typeof makerOf==="function")?makerOf(id,S):"gt";
   /* грунт завода проступает из-под краски банды: цвет владельца остаётся,
      но он теперь поверх чужой обшивки, а не вместо неё */

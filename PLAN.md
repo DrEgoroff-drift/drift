@@ -234,9 +234,9 @@ measured on the GPU build first:
 
 ## 5. Stage 4 — the ship
 
-- [ ] **M476 the plan (rest):** **0.499.74** fleet+NPC; **0.499.75** ordered unique in the fixpoint suite. Still open: fused hulls (release run).
-- [ ] **M478 numbers from the plan (rest):** **0.499.70** fuel/energy/sight; **0.499.72** hull; **0.499.74–75** fixpoint; **0.499.77** hold/tank/armor as `planModDens`. Still open: fused hulls, weapon→energy densify beyond cell ratio. `engine`/`hyper`/`drill` stay station upgrades.
-- [ ] **M483 the fast path (rest):** NPC and pirate ships built by the packer, their plan read in the silhouette.
+- [ ] **M476 the plan (rest):** **0.499.74** fleet+NPC; **0.499.75** ordered unique; **0.499.79** fused in the fixpoint suite. Open: release-run polish only.
+- [ ] **M478 numbers from the plan (rest):** **0.499.70** fuel/energy/sight; **0.499.72** hull; **0.499.74–75** fixpoint; **0.499.77** hold/tank/armor as `planModDens`; **0.499.79** fused. Still open: weapon→energy densify beyond cell ratio. `engine`/`hyper`/`drill` stay station upgrades.
+- [ ] **M483 the fast path (rest):** **0.499.79** `planNpcOf` + pirate barrels from plan cells. Still open: ПРОЕКТЫ; new-part mark on the plan.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a warship
   stripped of hold both fly under the finger the same (the P8 meter); the blueprint gets its almanac issue.
 

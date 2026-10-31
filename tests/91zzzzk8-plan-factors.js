@@ -11,7 +11,10 @@ TEST_SUITES.push(()=>suite("чертёж: числа M478",()=>{
   const uo={by:"gt",cls:"ore",size:1,l:1,w:1,seed:0x47801,no:478,st:"проба"};
   const uid=stapelId(uo);
   G.uniqueShips[uid]=stapelShip(uo);G.owned[uid]=true;
-  const ids=["strizh",fleetId,npcId,uid];
+  const fid="fFix478";
+  G.uniqueShips[fid]=Object.assign(genUniqueShip(0x478F1),{fused:1,cls:"лабораторный сплав",by:"gt"});
+  G.owned[fid]=true;
+  const ids=["strizh",fleetId,npcId,uid,fid];
   const same=(a,b)=>a===b||(Number.isNaN(a)&&Number.isNaN(b));
   for(const id of ids){
     G.shipId=id;G.owned[id]=true;G.fit[id]=G.fit[id]||{};

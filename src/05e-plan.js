@@ -127,6 +127,17 @@ function planNow(){
   if(typeof draftOf==="function"&&G.draft&&G.draft[G.shipId]){const d=draftOf(G.shipId);return {P:d.P,items:d.items,hold:d.hold,empty:[]};}
   return planPack(G.shipId,G.fit[G.shipId]||{},G.mods||{});
 }
+/* ── M483: упаковщик для чужих корпусов (NPC / пират) ──
+   У них нет G.fit — виртуальная оснастка по слотам корпуса, тот же planPack.
+   Силуэт читает клетки (стволы пирата — из side/nose), а не отдельную таблицу. */
+function planNpcFit(id){
+  const slots=slotsOf(id),fit={};
+  for(let i=0;i<slots.length;i++)fit[i]="np:"+id+":"+i;
+  return fit;
+}
+function planNpcOf(id){
+  return planPack(id,planNpcFit(id),{});
+}
 /* ── нарисовать чертёж (вид ОПИСИ, синька в M477): нос вверх ── */
 const PLAN_COL={nose:"#e8b35a",side:"#c9924a",spine:"#9ab6d6",stern:"#e07a50",deck:"#3a5068"};
 const PLAN_ITEM_COL={gun:"#f2b25c",shield:"#7fe6d8",engine:"#ff8f6a",hull:"#b9a58a",core:"#c58ae0",util:"#8fd08a",missile:"#ff6a6a",mod:"#d9dde3"};
