@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.94 — House/cyl giants: motel cabins and roof tanks; junk pad out
+
+- House: lower motel cabins + roof tanks/vents from `kimi-giant-house`; stripped repeated hatch/chimney/rivet densify. Cyl: same junk strip, kept COMPANY strip and end locks.
+
 ## 0.499.93 — Customs giant: weighbridges and border beacons
 
 - Ported `buildWeighbridges` / `buildBorderBeacons` from `kimi-giant-customs` into `17o`; stripped the plaza furniture pad (flagpoles/benches/urns loops) that was densify junk.
