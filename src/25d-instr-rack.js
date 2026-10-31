@@ -339,7 +339,7 @@ function rackBottom(on){
    ovFlush: щит, табличка или прицел, положенные миром позже, иначе ложились бы на неё */
 function rackDraw(){
   RACK_K=Math.max(1,(typeof UIK==="number"&&UIK>0)?UIK:1);
-  rackBottom(rackOpen()&&G.running&&!scrOpen());
+  {const _t=NEAR.on?wallMs():0;rackBottom(rackOpen()&&G.running&&!scrOpen());if(NEAR.on)NEAR.rackB=Math.round((wallMs()-_t)*10)/10;}
   RACK.late=false;
   if(!rackOpen()||!G.running){RACK.fade=0;return;}
   if(scrOpen())return;
@@ -348,7 +348,7 @@ function rackDraw(){
      координаты на ovNd), печь берёт ту же плотность — мастер ложится текстель в пиксель */
   const nd0=OVL.nd,K=RACK_K;OVL.nd=ovNd()*K;
   try{
-    const T=rackTex(),g=RACK.geo;
+    const _t=NEAR.on?wallMs():0;const T=rackTex(),g=RACK.geo;if(NEAR.on)NEAR.rackT=Math.round((wallMs()-_t)*10)/10;
     if(T.P&&T.S&&g&&!g.hide){
       const R={x0:g.x*K,y0:g.y*K,x1:(g.x+g.w)*K,y1:(g.y+g.h)*K};OVL.hushR=R;
       const d=nd0||ovNd()/K;
@@ -359,7 +359,7 @@ function rackDraw(){
 function rackLate(){
   if(!RACK.late)return;RACK.late=false;
   const nd0=OVL.nd;OVL.nd=ovNd()*RACK_K;
-  try{rackDrawK();}finally{OVL.nd=nd0;}
+  try{const _t=NEAR.on?wallMs():0;rackDrawK();if(NEAR.on)NEAR.rackF=Math.round((wallMs()-_t)*10)/10;}finally{OVL.nd=nd0;}
 }
 function rackDrawK(){
   const T=rackTex(), g0=RACK.geo;

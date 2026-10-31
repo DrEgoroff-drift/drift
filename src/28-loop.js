@@ -733,7 +733,7 @@ function frame(now){
     nearBlock(G.mode,pm);
     nearFrame({raf:now,start:fb0,end:fb0+FRAME_JS,js:FRAME_JS,gap:(framePrev?now-framePrev:0),
       vis:(typeof document!=="undefined"&&document.visibilityState)||"?",mode:G.mode,prev:pm,
-      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
+      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,rackB:NEAR.rackB,rackT:NEAR.rackT,rackF:NEAR.rackF,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
       warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
       asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,sl:NEAR.sl,sg:NEAR.sg,dg:NEAR.dg,gw:NEAR.gw,
       pipes:NEAR.pipes,cave:NEAR.cave});}

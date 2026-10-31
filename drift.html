@@ -107819,7 +107819,7 @@ function rackBottom(on){
    ovFlush: щит, табличка или прицел, положенные миром позже, иначе ложились бы на неё */
 function rackDraw(){
   RACK_K=Math.max(1,(typeof UIK==="number"&&UIK>0)?UIK:1);
-  rackBottom(rackOpen()&&G.running&&!scrOpen());
+  {const _t=NEAR.on?wallMs():0;rackBottom(rackOpen()&&G.running&&!scrOpen());if(NEAR.on)NEAR.rackB=Math.round((wallMs()-_t)*10)/10;}
   RACK.late=false;
   if(!rackOpen()||!G.running){RACK.fade=0;return;}
   if(scrOpen())return;
@@ -107828,7 +107828,7 @@ function rackDraw(){
      координаты на ovNd), печь берёт ту же плотность — мастер ложится текстель в пиксель */
   const nd0=OVL.nd,K=RACK_K;OVL.nd=ovNd()*K;
   try{
-    const T=rackTex(),g=RACK.geo;
+    const _t=NEAR.on?wallMs():0;const T=rackTex(),g=RACK.geo;if(NEAR.on)NEAR.rackT=Math.round((wallMs()-_t)*10)/10;
     if(T.P&&T.S&&g&&!g.hide){
       const R={x0:g.x*K,y0:g.y*K,x1:(g.x+g.w)*K,y1:(g.y+g.h)*K};OVL.hushR=R;
       const d=nd0||ovNd()/K;
@@ -107839,7 +107839,7 @@ function rackDraw(){
 function rackLate(){
   if(!RACK.late)return;RACK.late=false;
   const nd0=OVL.nd;OVL.nd=ovNd()*RACK_K;
-  try{rackDrawK();}finally{OVL.nd=nd0;}
+  try{const _t=NEAR.on?wallMs():0;rackDrawK();if(NEAR.on)NEAR.rackF=Math.round((wallMs()-_t)*10)/10;}finally{OVL.nd=nd0;}
 }
 function rackDrawK(){
   const T=rackTex(), g0=RACK.geo;
@@ -128179,7 +128179,7 @@ function frame(now){
     nearBlock(G.mode,pm);
     nearFrame({raf:now,start:fb0,end:fb0+FRAME_JS,js:FRAME_JS,gap:(framePrev?now-framePrev:0),
       vis:(typeof document!=="undefined"&&document.visibilityState)||"?",mode:G.mode,prev:pm,
-      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
+      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,rackB:NEAR.rackB,rackT:NEAR.rackT,rackF:NEAR.rackF,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
       warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
       asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,sl:NEAR.sl,sg:NEAR.sg,dg:NEAR.dg,gw:NEAR.gw,
       pipes:NEAR.pipes,cave:NEAR.cave});}
@@ -131200,6 +131200,7 @@ async function g11RunNear(){
     nearOn();
     const runs=[
       ["system",()=>{G.mode="system";G.ap=null;}],
+      ["rack",()=>{G.rack={on:true};G.running=true;}],
       ["landing-cold",()=>{const _t=NEAR.on?wallMs():0;const s=find(s=>s.planets.some(p=>p.type!=="gas"));if(NEAR.on)NEAR.runs.find=Math.round((wallMs()-_t)*10)/10;jump(s);
         const _t2=NEAR.on?wallMs():0;startLanding(s.planets.find(p=>p.type!=="gas"));if(NEAR.on)NEAR.runs.start=Math.round((wallMs()-_t2)*10)/10;}],
       ["surface",()=>{const _t=NEAR.on?wallMs():0;const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
@@ -131211,7 +131212,7 @@ async function g11RunNear(){
       ["landing-warm",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
         startLanding(s.planets.find(p=>p.type!=="gas"));}]
     ];
-    for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}await sleep(3000);put(r[0]+" · кадров "+NEAR.n);}
+    for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}await sleep(50);put(r[0]+" · кадров "+NEAR.n);}
   }catch(e){err.push(""+(e&&e.message||e));}
   const J=nearJSON();J.err=err;J.ua=navigator.userAgent.slice(0,80);
   put("готово: "+J.blocks.length+" блоков, кадров "+J.blocks.reduce((s,b)=>s+b.frames,0));
@@ -131475,7 +131476,7 @@ else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout
 const NEAR_MAX = 240;
 const NEAR = {on:false, blocks:[], cur:null, n:0, frameN:0,
   marks:{}, work:{}, warm:0, bakeN:0, bakeS:0, pipes:0, cave:0,
-  sw:0, gf:0, dw:0, rack:0, hit:0, dwAll:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, runs:{}, gw:{}, maxFrames:NEAR_MAX};
+  sw:0, gf:0, dw:0, rack:0, hit:0, dwAll:0, rackB:0, rackT:0, rackF:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, runs:{}, gw:{}, maxFrames:NEAR_MAX};
 function nearOn(){ NEAR.on = true; }
 function nearBlock(mode, prev){
   if(!NEAR.on) return;

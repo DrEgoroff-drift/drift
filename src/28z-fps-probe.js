@@ -161,6 +161,7 @@ async function g11RunNear(){
     nearOn();
     const runs=[
       ["system",()=>{G.mode="system";G.ap=null;}],
+      ["rack",()=>{G.rack={on:true};G.running=true;}],
       ["landing-cold",()=>{const _t=NEAR.on?wallMs():0;const s=find(s=>s.planets.some(p=>p.type!=="gas"));if(NEAR.on)NEAR.runs.find=Math.round((wallMs()-_t)*10)/10;jump(s);
         const _t2=NEAR.on?wallMs():0;startLanding(s.planets.find(p=>p.type!=="gas"));if(NEAR.on)NEAR.runs.start=Math.round((wallMs()-_t2)*10)/10;}],
       ["surface",()=>{const _t=NEAR.on?wallMs():0;const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
@@ -172,7 +173,7 @@ async function g11RunNear(){
       ["landing-warm",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
         startLanding(s.planets.find(p=>p.type!=="gas"));}]
     ];
-    for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}await sleep(3000);put(r[0]+" · кадров "+NEAR.n);}
+    for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}await sleep(50);put(r[0]+" · кадров "+NEAR.n);}
   }catch(e){err.push(""+(e&&e.message||e));}
   const J=nearJSON();J.err=err;J.ua=navigator.userAgent.slice(0,80);
   put("готово: "+J.blocks.length+" блоков, кадров "+J.blocks.reduce((s,b)=>s+b.frames,0));
