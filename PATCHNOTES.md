@@ -6,6 +6,11 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.72 — M478 hull from rim armour; rail fare foothold
+
+- M478: `planFactors.hull` from armour/hull cells on side/nose vs typical; `hullMax` reads it. Fixpoint suite covers hull.
+- Oracle foothold: suite `миры: тарифы трассы` locks metro 5 / outer 2×dist / baggage ×3 for heavy. Full rail≤×1.3 jump line still open.
+
 ## 0.499.71 — Дом водителя: пандус и «МЕСТ НЕТ»
 
 - G15/M464: road-house giant gets a truck ramp with rails and a red «МЕСТ НЕТ» board (from `site/kimi-giant-house.html` craft). Spin and rest of the six giants unchanged.

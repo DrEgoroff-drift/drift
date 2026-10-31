@@ -224,8 +224,7 @@ measured on the GPU build first:
 
 ## 4. Stage 3 — far, and back with a hold
 
-- [ ] **Oracle lines** (`91zzzzzzzzz-worlds`): the best rail round trip ≤ ×1.3 of the best jumps in credits
-  per minute of play (baggage is the lever); the stripped hauler's best one-hop deal (for M478).
+- [ ] **Oracle lines** (`91zzzzzzzzza-worlds`): **0.499.72** — fare laws (metro 5, outer 2×dist, heavy baggage ×3). Still open: best rail round trip ≤ ×1.3 of best jumps in credits/min (baggage lever); stripped hauler's best one-hop deal (M478).
 - [ ] **M474 six railways (rest):** the net past r 60, built lazily per region (M470 rest; whole build is 146 ms
   to r 60). Test fragility: the ride suite picks the first heart metro station — if its land ever turns
   Орднунг, the suite needs the double press.
@@ -236,7 +235,7 @@ measured on the GPU build first:
 ## 5. Stage 4 — the ship
 
 - [ ] **M476 the plan (rest):** unique, fused and NPC hulls in the fixpoint suite (release run).
-- [ ] **M478 numbers from the plan (rest):** **0.499.70** — fuel/energy/sight factors in `planFactors` (tank / reactor / nose util vs typical). Still open: hull from armour parts, module tiers as densities (`hold`/`tank`/`weapon`/`armor` per cell), mapping table, fixpoint suite for unique/fused/NPC. `engine`/`hyper`/`drill` stay station upgrades.
+- [ ] **M478 numbers from the plan (rest):** **0.499.70** fuel/energy/sight; **0.499.72** hull from rim armour. Still open: module tiers as densities (`hold`/`tank`/`weapon`/`armor` per cell), mapping table, fixpoint suite for unique/fused/NPC. `engine`/`hyper`/`drill` stay station upgrades.
 - [ ] **M483 the fast path (rest):** NPC and pirate ships built by the packer, their plan read in the silhouette.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a warship
   stripped of hold both fly under the finger the same (the P8 meter); the blueprint gets its almanac issue.

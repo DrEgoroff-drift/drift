@@ -403,10 +403,11 @@ function kbDraw(c,s,d){
    старого сейва ни одно число не сдвинулось. Правка двигает: трюм (hold /
    типовой, потолок ×1.4); тяга/поворот от массы плана (.8…1.1); бак /
    энергия — клетки mtank / mweapon (котёл) к типовым; обзор — приборы
-   (util) в носовой трети к типовым. Плотности дальним грузом — planDens. */
-const PLAN_F={key:"",v:{cargo:1,mass:1,fuel:1,energy:1,see:1}};
+   (util) в носовой трети; корпус — броня/обшивка на борту и в носу.
+   Плотности дальним грузом — planDens. */
+const PLAN_F={key:"",v:{cargo:1,mass:1,fuel:1,energy:1,see:1,hull:1}};
 function planFactors(){
-  const one={cargo:1,mass:1,fuel:1,energy:1,see:1};
+  const one={cargo:1,mass:1,fuel:1,energy:1,see:1,hull:1};
   const id=G.shipId,D=G.draft&&G.draft[id];
   if(!D)return one;
   const key=id+"|"+JSON.stringify(D)+"|"+JSON.stringify(G.fit[id]||{})+"|"+JSON.stringify(G.mods||{});
@@ -422,6 +423,10 @@ function planFactors(){
   /* обзор: только util в nose3 — упаковщик кладёт туда, сдвиг в корму режет зрение */
   const nose=(pk)=>pk.items.filter(x=>x.kind==="util").reduce((a,x)=>a+x.cells.filter(q=>q.nose3).length,0);
   const see=ratio(nose(d),nose(t));
-  PLAN_F.key=key;PLAN_F.v={cargo,mass:m,fuel,energy,see};
+  /* корпус: клетки брони/обшивки на борту и в носу (не в трюме) */
+  const rim=(pk)=>pk.items.filter(x=>x.kind==="hull"||x.kind==="armor")
+    .reduce((a,x)=>a+x.cells.filter(q=>q.kind==="side"||q.kind==="nose").length,0);
+  const hull=ratio(rim(d),rim(t));
+  PLAN_F.key=key;PLAN_F.v={cargo,mass:m,fuel,energy,see,hull};
   return PLAN_F.v;
 }
