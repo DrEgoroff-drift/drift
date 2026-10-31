@@ -34,14 +34,14 @@
 </head>
 <body>
 <div id="backdrop"></div>
-<canvas id="scene" tabindex="0" aria-label="Трёхмерная модель гостиницы Сухой док Коммуны. Вращение левой кнопкой мыши, дистанция колесом.">Для просмотра нужен WebGPU.</canvas>
+<canvas id="scene" tabindex="0" aria-label="Трёхмерная модель сухого дока Коммуны Коммуны. Вращение левой кнопкой мыши, дистанция колесом.">Для просмотра нужен WebGPU.</canvas>
 <div class="vignette"></div>
 <div class="hud top"><div class="name">Сухой док Коммуны</div><div class="rule"></div><div class="meta">Коммуна · стапель · остов · леса размером со станцию<br><b id="parts">—</b> элементов · <span id="spin">поворот 000°</span></div></div>
 <div class="hud right">рендерер = <span id="renderer">пуск</span><br><b>ось: да</b> · 64 секунды</div>
 <button id="reset" type="button">[ исходный ракурс ]</button>
 <div class="hud bottom"><span>лкм</span> орбита &nbsp; <span>колесо</span> дистанция<br><span>двойной щелчок</span> исходный ракурс</div>
 <div class="hud serial">трасса открыта / места есть<br>фурам — нижний пандус</div>
-<!-- scaffold from house; densify body next -->
+<!-- dry-dock body injected; hotel wings kept as yard halls -->
 <script>
 (()=>{
 'use strict';
@@ -199,7 +199,7 @@ function facade(section,side){
   return multiply(translation(section.x-section.w/2-.4,0,0),rotationY(-PI/2));
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildHotelBody(){
   cube([0,-112,0],[1240,42,318],C.dark);
   cube([0,-89,0],[1224,8,302],C.red2);
@@ -250,7 +250,7 @@ function buildHotelBody(){
   }
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildBodyServiceDetail(){
   for(const s of SECTIONS.slice(1,4)){
     for(const side of[0,2]){
@@ -675,7 +675,7 @@ function buildRepairPlates(){
   }
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildRoofMachinery(){
   for(const s of SECTIONS){
     const y=s.base+s.h+13;
@@ -746,7 +746,7 @@ function buildRampFineHardware(){
   }
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildRoadHouseEntrances(){
   for(const s of[SECTIONS[1],SECTIONS[2],SECTIONS[3]]){
     const M=facade(s,0),y=s.base+17;
@@ -768,7 +768,7 @@ function buildRoadHouseEntrances(){
   }
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildLobbyGalleries(){
   for(const s of SECTIONS){
     const y=s.base+4,w=s.w+24,d=s.d+24;
@@ -848,7 +848,7 @@ function buildRoomBalconies(){
   }
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildRoofAccessAndPipes(){
   for(const s of SECTIONS){
     const y=s.base+s.h+17,w=s.w-20,d=s.d-20;
@@ -1082,7 +1082,7 @@ function buildSignServiceWalkway(){
   }
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildLowerMotelCabins(){
   for(let i=0;i<18;i++){
     const x=-548+i*64,z=-194,y=-66;
@@ -1124,7 +1124,7 @@ function buildLowerMotelCabins(){
   rod([-580,-30,-225],[560,-30,-225],.8,C.steel,8);
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildRoofTanksAndVents(){
   for(const[x,z,y,r,h]of[
     [-492,35,54,15,34],[-447,35,54,15,34],[-235,-38,123,13,31],[-184,-38,123,13,31],
@@ -1296,7 +1296,7 @@ function buildWindowSillsAndRoomMarks(){
   }
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildUnderdeckTrusses(){
   for(const z of[-126,126]){
     for(const y of[-169,-205])rod([-600,y,z],[600,y,z],2.5,y===-169?C.dark:C.steel,10);
@@ -1338,7 +1338,7 @@ function buildUnderdeckTrusses(){
   }
 }
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildFireEscapes(){
   for(const s of SECTIONS.slice(0,4)){
     for(const side of[1,3]){
@@ -1391,6 +1391,128 @@ function buildUnderdeckFasteners(){
   }
 }
 
+
+/* ── сухой док Коммуны: стапель, остов, леса, краны (Cursor densify) ── */
+function buildDryDockBed(){
+  cube([0,-40,0],[1400,20,420],C.concrete);
+  cube([0,-28,0],[1360,6,380],C.dark);
+  for(let i=0;i<18;i++){
+    const x=-650+i*76;
+    cube([x,-22,0],[8,16,360],C.steel);
+    for(const z of[-160,160])cube([x,-10,z],[20,8,24],C.rust);
+  }
+  for(const z of[-200,200]){
+    cube([0,-5,z],[1400,30,24],C.concrete2);
+    for(let i=0;i<20;i++)cube([-650+i*68,12,z],[12,20,12],C.steel);
+  }
+}
+function buildHullSkeleton(){
+  /* остов: эллиптический корпус из колец и стрингеров */
+  for(let i=0;i<16;i++){
+    const t=i/15,x=-520+t*980;
+    const rr=90*Math.sqrt(Math.max(0.05,1-Math.pow((t-.45)/.55,2)));
+    for(let a=0;a<16;a++){
+      const ang=a/16*Math.PI*2;
+      const y=Math.cos(ang)*rr,z=Math.sin(ang)*rr*.55;
+      cube([x,y+30,z],[10,8,8],(i+a)%3?C.steel:C.rust);
+    }
+    for(let a=0;a<8;a++){
+      const ang=a/8*Math.PI*2,ang2=(a+1)/8*Math.PI*2;
+      const y0=Math.cos(ang)*rr,z0=Math.sin(ang)*rr*.55;
+      const y1=Math.cos(ang2)*rr,z1=Math.sin(ang2)*rr*.55;
+      rod([x,y0+30,z0],[x,y1+30,z1],1.6,C.dark,6);
+    }
+  }
+  for(let a=0;a<8;a++){
+    const ang=a/8*Math.PI*2;
+    const pts=[];
+    for(let i=0;i<16;i++){
+      const t=i/15,x=-520+t*980;
+      const rr=90*Math.sqrt(Math.max(0.05,1-Math.pow((t-.45)/.55,2)));
+      pts.push([x,Math.cos(ang)*rr+30,Math.sin(ang)*rr*.55]);
+    }
+    for(let i=0;i<pts.length-1;i++)rod(pts[i],pts[i+1],2.2,a%2?C.steel:C.rust,6);
+  }
+}
+function buildIncompleteNose(){
+  for(let i=0;i<8;i++){
+    const a=i/8*Math.PI*2,rr=70;
+    rod([420,30+Math.cos(a)*rr*.3,Math.sin(a)*rr*.3],[520,30+Math.cos(a)*rr,Math.sin(a)*rr],2.2,C.rust,6);
+  }
+  for(let i=0;i<5;i++){
+    const x=430+i*28;
+    cube([x,30,0],[4,110,180],C.steel);
+    cube([x,80,0],[40,4,8],C.light);
+    for(const s of[-1,1])cube([x,30,s*70],[4,100,4],C.dark);
+  }
+  cube([520,40,0],[40,80,80],C.soot);
+  for(let i=0;i<6;i++)cube([530,-10+i*18,0],[24,8,50],C.amber,.25);
+}
+function buildScaffoldFrames(){
+  for(let bay=0;bay<10;bay++){
+    const x=-480+bay*95;
+    for(const z of[-140,140]){
+      rod([x,-20,z],[x,140,z],3,C.steel,8);
+      rod([x+40,-20,z],[x+40,140,z],3,C.steel,8);
+      for(let y=0;y<=140;y+=28){
+        rod([x,y,z],[x+40,y,z],1.5,C.dark,6);
+        rod([x,y,z],[x,y,z-Math.sign(z)*40],1.2,C.rust,6);
+      }
+      for(let y=0;y<140;y+=28){
+        rod([x,y,z],[x+40,y+28,z],1.0,C.dark,6);
+        rod([x+40,y,z],[x,y+28,z],1.0,C.dark,6);
+      }
+    }
+    beam([x,120,-140],[x,120,140],3,3,C.steel);
+  }
+}
+function buildPortalCranes(){
+  for(const x of[-360,0,320]){
+    cube([x,-20,-220],[40,16,40],C.dark);
+    cube([x,-20,220],[40,16,40],C.dark);
+    rod([x,0,-220],[x,180,-220],5,C.steel,10);
+    rod([x,0,220],[x,180,220],5,C.steel,10);
+    beam([x,180,-230],[x,180,230],8,10,C.steel);
+    cube([x,188,0],[50,14,40],C.rust);
+    rod([x,180,0],[x+60,60,40],1.8,C.dark,6);
+    cube([x+60,52,40],[16,12,16],C.brass);
+    for(const z of[-200,-100,0,100,200])cube([x,170,z],[20,8,12],C.light);
+  }
+}
+function buildBollardsAndCleats(){
+  for(let i=0;i<14;i++){
+    const x=-600+i*90;
+    for(const z of[-190,190]){
+      cyl([x,-8,z],[6,10,6],C.steel,[0,0,0],0,10);
+      cyl([x,2,z],[8,4,8],C.light,[0,0,0],0,10);
+      cube([x,-12,z],[14,4,14],C.dark);
+    }
+  }
+  for(let i=0;i<8;i++){
+    const x=-400+i*110;
+    cube([x,-5,175],[30,8,16],C.rust);
+    for(const s of[-1,1])cube([x+s*10,2,175],[6,10,6],C.steel);
+  }
+}
+function buildYardSheds(){
+  for(let i=0;i<6;i++){
+    const x=-550+i*180,z=-280;
+    cube([x,0,z],[120,10,80],C.concrete);
+    cube([x,40,z],[110,70,70],C.concrete2);
+    cube([x,80,z],[120,8,80],C.rust);
+    for(let w=0;w<4;w++)cube([x-40+w*28,40,z+36],[18,24,2],w%2?C.amber:C.glass,w%2?.2:0);
+    rod([x-50,80,z],[x+50,110,z],2,C.steel,8);
+    rod([x+50,80,z],[x-50,110,z],2,C.steel,8);
+  }
+}
+
+buildDryDockBed();
+buildHullSkeleton();
+buildIncompleteNose();
+buildScaffoldFrames();
+buildPortalCranes();
+buildBollardsAndCleats();
+buildYardSheds();
 buildHotelBody();
 buildBodyServiceDetail();
 buildUnderdeckTrusses();
@@ -1425,7 +1547,7 @@ buildRepairPlates();
 buildSeamClampsAndWelds();
 buildUnderdeckFasteners();
 
-/* корпус гостиницы */
+/* корпус дока / залы верфи */
 function buildUtilityElevators(){
   for(const[x,z,h]of[[-566,142,126],[-301,-139,188],[222,139,250],[490,-130,174]]){
     const base=-79,top=base+h;

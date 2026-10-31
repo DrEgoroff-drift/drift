@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.81 — Giant HTML bodies: dock slip / town bridges / garden dishes
+
+- G15: `kimi-giant-dock` gets dry-dock bed, hull skeleton, incomplete nose, scaffolding, portal cranes; town gets bridges/chimneys; garden gets dishes/masts (hotel scaffold still underneath for Kimi to strip).
+
 ## 0.499.80 — M478 weapon densify key; six giant HTML probes ≥70 KB
 
 - M478: `planModDens("weapon")` (step 0 — tiers stay in `energyCap`, cell ratio in `PF.energy`); `energyMax` multiplies it.

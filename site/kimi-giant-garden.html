@@ -41,7 +41,7 @@
 <button id="reset" type="button">[ исходный ракурс ]</button>
 <div class="hud bottom"><span>лкм</span> орбита &nbsp; <span>колесо</span> дистанция<br><span>двойной щелчок</span> исходный ракурс</div>
 <div class="hud serial">трасса открыта / места есть<br>фурам — нижний пандус</div>
-<!-- scaffold from house; densify body next -->
+<!-- garden dishes/masts injected -->
 <script>
 (()=>{
 'use strict';
@@ -1391,6 +1391,40 @@ function buildUnderdeckFasteners(){
   }
 }
 
+
+function buildGardenDishes(){
+  for(let i=0;i<16;i++){
+    const x=-500+(i%8)*130,z=((i/8)|0)*280-140;
+    rod([x,0,z],[x,50+i*3,z],2.5,C.steel,8);
+    const rr=20+i%5*6;
+    for(let a=0;a<12;a++){
+      const ang=a/12*Math.PI*2;
+      cube([x+Math.cos(ang)*rr,55+i*3,z+Math.sin(ang)*rr],[6,3,6],C.light);
+    }
+    cube([x,55+i*3,z],[8,8,8],C.amber,.3);
+  }
+  for(const [x,z,rr] of [[-420,200,55],[-280,-220,48],[360,160,60],[440,-180,42]]){
+    rod([x,0,z],[x,45,z],4,C.dark,10);
+    cube([x,0,z],[24,8,24],C.concrete);
+    for(let a=0;a<16;a++){
+      const ang=a/16*Math.PI*2;
+      cube([x+Math.cos(ang)*rr,48,z+Math.sin(ang)*rr],[8,4,8],C.steel);
+    }
+    rod([x,48,z],[x+rr*.2,48+rr*.6,z-rr*.1],1.6,C.light,6);
+  }
+}
+function buildGardenMasts(){
+  for(let i=0;i<40;i++){
+    const x=-550+(i%10)*110,z=((i/10)|0)*140-210;
+    const hh=80+(i*17)%180;
+    rod([x,0,z],[x,hh,z],1.8,C.steel,6);
+    for(let k=1;k<4;k++)rod([x-10,hh*k/4,z],[x+10,hh*k/4,z],1.2,C.light,5);
+    cube([x,hh,z],[6,4,6],C.amber,.35);
+  }
+}
+
+buildGardenDishes();
+buildGardenMasts();
 buildHotelBody();
 buildBodyServiceDetail();
 buildUnderdeckTrusses();

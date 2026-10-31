@@ -41,7 +41,7 @@
 <button id="reset" type="button">[ исходный ракурс ]</button>
 <div class="hud bottom"><span>лкм</span> орбита &nbsp; <span>колесо</span> дистанция<br><span>двойной щелчок</span> исходный ракурс</div>
 <div class="hud serial">трасса открыта / места есть<br>фурам — нижний пандус</div>
-<!-- scaffold from house; densify body next -->
+<!-- town bridges/chimneys injected -->
 <script>
 (()=>{
 'use strict';
@@ -1391,6 +1391,26 @@ function buildUnderdeckFasteners(){
   }
 }
 
+
+function buildTownBridges(){
+  for(let i=0;i<6;i++){
+    const x=-400+i*160,y=-40+((i%3)-1)*50;
+    cube([x,40,y],[140,8,20],C.dark);
+    cube([x,48,y],[130,4,12],C.steel);
+    for(const s of[-1,1])rod([x+s*60,0,y],[x+s*60,40,y],2,C.rust,8);
+  }
+}
+function buildTownChimneys(){
+  for(let i=0;i<12;i++){
+    const x=-500+(i%6)*180,z=((i/6)|0)*200-100;
+    cyl([x,80,z],[8,60,8],C.dark,[0,0,0],0,10);
+    cyl([x,140,z],[10,8,10],C.rust,[0,0,0],0,10);
+    cube([x,60,z],[20,8,20],C.concrete);
+  }
+}
+
+buildTownBridges();
+buildTownChimneys();
 buildHotelBody();
 buildBodyServiceDetail();
 buildUnderdeckTrusses();

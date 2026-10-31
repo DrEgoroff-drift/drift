@@ -266,8 +266,8 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 - **0.499.67:** all seven spin on their own axis (`giantSpin`) — no more static stickers.
 - **0.499.78:** customs gates/plates; dock incomplete nose+scaffolding; town bridges/chimneys; garden
   parabolic dishes in `17o`.
-- **0.499.80:** all six HTML probes ≥70 KB (`site/kimi-giant-*.html`; customs densified, dock/town/garden
-  scaffolded from house — Kimi rewriting bodies). Further port from denser HTML still open.
+- **0.499.80–81:** all six HTML probes ≥70 KB; customs densified; dock slip+scaffold; town bridges;
+  garden dishes (hotel wings still under dock/town/garden for Kimi to strip). Further `17o` port open.
 
 ## 9. Seams to honour when the items above are built
 
