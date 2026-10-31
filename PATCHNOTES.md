@@ -6,6 +6,11 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.82 — M483 closed; dock HTML strips hotel wings
+
+- M483: ПРОЕКТЫ and new-part mark were already in КБ; with `planNpcOf` the fast path is closed.
+- G15: `kimi-giant-dock.html` stops calling hotel/motel builders — dry-dock geometry only.
+
 ## 0.499.81 — Giant HTML bodies: dock slip / town bridges / garden dishes
 
 - G15: `kimi-giant-dock` gets dry-dock bed, hull skeleton, incomplete nose, scaffolding, portal cranes; town gets bridges/chimneys; garden gets dishes/masts (hotel scaffold still underneath for Kimi to strip).

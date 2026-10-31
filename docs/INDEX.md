@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 678 · top-level symbols: 8920
+Files: 679 · top-level symbols: 8920
 
 ## SYMBOLS
 
@@ -10949,6 +10949,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzzk9-plan-npc.js · 2 KB
   · M483: упаковщик для NPC и пиратов:1
+
+## tests/91zzzzk9b-plan-projects.js · 1 KB
+  · M483: ПРОЕКТЫ ×3 и метка новой части:1
 
 ## tests/91zzzzy-play.js · 18 KB
   · глубокие сценарии (M331):1
