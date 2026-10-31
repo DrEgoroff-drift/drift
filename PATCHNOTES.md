@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.71 — Дом водителя: пандус и «МЕСТ НЕТ»
+
+- G15/M464: road-house giant gets a truck ramp with rails and a red «МЕСТ НЕТ» board (from `site/kimi-giant-house.html` craft). Spin and rest of the six giants unchanged.
+
 ## 0.499.70 — M478 plan factors: fuel, energy, sight
 
 - M478: `planFactors` adds fuel (mtank cells), energy (mweapon/reactor cells) and sight (util in the nose third) against the typical pack; `stat()` reads them. Fixpoint unchanged — no draft or a saved typical plan keeps every number. Suite `чертёж: числа M478`. Still open: hull from armour, module tiers as densities, oracle line.
