@@ -95,9 +95,11 @@ async function g11Run(){
       st[1]();
       const delay=Math.round(await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(t=>r(wallMs()-tSwitch)))));
       await sleep(4000);                 /* кэши пекутся — меряем крейсер, не старт */
+      const bn0=(GPU&&GPU.bakeN)||0,bms0=(GPU&&GPU.bakeMs)||0;
       const iv=await iv2(2.5);
-      out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,switchMs:delay};
-      put(st[0]+" "+iv.fps+" · p90 "+iv.p90+" · max "+iv.max+" · ≥45 "+iv.n45+" · переход "+delay+" мс");
+      const bs=((GPU&&GPU.bakeN)||0)-bn0,bms=Math.round(((GPU&&GPU.bakeMs)||0)-bms0);
+      out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,switchMs:delay,bakes:bs,bakeMs:bms};
+      put(st[0]+" "+iv.fps+" · p90 "+iv.p90+" · max "+iv.max+" · ≥45 "+iv.n45+" · переход "+delay+" мс · выпечек "+bs+" / "+bms+" мс");
     }catch(e){err.push(st[0]+": "+(e&&e.message||e));put(st[0]+" СБОЙ");}
   }
   put("ГОТОВО "+JSON.stringify(out));
