@@ -261,13 +261,12 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 
 - [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
   release run).
-- [ ] **M480/M481 yards (rest):** calibration by the worlds oracle and the стрельбище (release run).
-  Probe restored (`tests/91zzzzk7-yard-probe.js`, `node test-node.js --only="проба · верфи"`). Re-run 31.10 after
-  spar fix: **worlds** still one-hop for a heavy wide hauler at every yard (Коммуна cargo −15 %, Компания price −15 %
-  with no number against it; КБ billing still absent). **стрельбище** (warship medium ×6 vs spar captain): base/gt/co/km/ra
-  get 2–3 surrenders; **Орднунг and Хай-Фронт 0/6** (full minute); absolute hull lost does not track size (HF 128 vs
-  base 182 at similar %). Not trustworthy for price moves yet — fix why or/hf never finish, then read hull vs price.
-  No yard number moved.
+- [ ] **M480/M481 yards (rest):** worlds oracle OK; стрельбище probe fixed (flanker — nose-on into the captain's
+  front shield was a false 0/6 for or/hf). Re-run 31.10: all yards 6/6 in ~14 s (ГТ ~21 s — thr −8 %); damage dealt
+  identical (same gun); damage taken tracks hull % (HF 58 % vs base 45 %) and thr (ГТ eats more absolute while
+  approaching). **Character notes still half-lies:** Орднунг «носовая броня даром» and Хай-Фронт «прибор даром» are
+  not in `stapelStats` — either wire or strike from the note. Компания −15 % price has no number against it; КБ
+  billing still absent. No yard multiplier moved.
 
 ## 8. Stage 7 — the giants
 

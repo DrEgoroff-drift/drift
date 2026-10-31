@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.63 — yard стрельбище probe flanks the captain
+
+- M480 probe: spar script is a flanker (rear of front-shield captain). Was nose-on → false 0/6 for Орднунг/Хай-Фронт. All yards now 6/6; hull-% damage reads; «носовая броня» / «прибор даром» still notes without code.
+
 ## 0.499.62 — yard calibration probe restored
 
 - M480/M481: `tests/91zzzzk7-yard-probe.js` back (worlds + spar стрельбище). First re-run after the captain-range fix: most yards get 2–3/6 surrenders; Орднунг and Хай-Фронт still 0/6 — no yard numbers moved.

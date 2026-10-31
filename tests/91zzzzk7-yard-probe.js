@@ -46,33 +46,43 @@ function ydWorld(){
   if(typeof ctlReset==="function")ctlReset();
 }
 function ydDuel(by){
-  /* шесть спаррингов: капитан с флагом spar (полоса 420–620) и тонким щитом дуэли */
-  let kills=0,t=0,lost=0,hm=0;
+  /* шесть спаррингов: капитан с флагом spar (полоса 420–620) и тонким щитом дуэли.
+     Сценарий — flanker: зайти в корму (лобовое поле капитана иначе ест весь урон). */
+  let kills=0,t=0,lost=0,hm=0,dealt=0;
   for(let n=0;n<6;n++){
     ydWorld();rndSeed(0xD0E1+n);ydFly(by,"warship","medium");
     G.mods.weapon=2;G.modsOwned.weapon=2;
     if(typeof invalidateParts==="function")invalidateParts();
-    G.energy=999;G.hull=hm=stat().hullMax;G.shield=stat().shieldMax||0;
+    const st0=stat();G.energy=st0.energyMax;G.hull=hm=st0.hullMax;G.shield=st0.shieldMax||0;
     const R=PIRATE_RANKS[2],hp=(26+.5*70)*R.hull,sh=hp*R.shield*.62;
     const a=n*1.05,seed=hashi(0xD0E1,2,n)>>>0;
     const p={x:Math.cos(a)*520,y:Math.sin(a)*520,vx:0,vy:0,a:a+Math.PI,
       hull:hp,hullMax:hp,name:"Проба-"+n,rank:2,seed,shipId:pirateShipId(seed),
       cool:0,aware:true,thrust:false,shield:sh,shieldMax:sh,shieldHit:0,
-      shieldType:(PIRATE_LOADOUT[2].shield||"solid"),deserter:0,spar:1};
+      shieldType:(PIRATE_LOADOUT[2].shield||"front"),deserter:0,spar:1};
     G.pirates.push(p);G.marks=[p];
     if(typeof keys==="object")keys.fire=true;
+    const hpStart=p.hull+(p.shield||0);
     let i=0;
     for(;i<60*60&&p.hull/p.hullMax>=.25&&G.hull>0;i++){
-      const want=Math.atan2(p.y-G.ship.y,p.x-G.ship.x),d=angWrap(want-G.ship.a);
+      /* в корму: точка за спиной капитана, нос на него */
+      const gx=p.x-Math.cos(p.a)*320,gy=p.y-Math.sin(p.a)*320;
+      const dx=gx-G.ship.x,dy=gy-G.ship.y,dd=Math.hypot(dx,dy)||1;
+      const thr=stat().thr*.055;
+      G.ship.vx+=dx/dd*thr;G.ship.vy+=dy/dd*thr;
+      G.ship.vx*=.985;G.ship.vy*=.985;
+      G.ship.x+=G.ship.vx;G.ship.y+=G.ship.vy;
+      const want=Math.atan2(p.y-G.ship.y,p.x-G.ship.x),dang=angWrap(want-G.ship.a);
       const turnR=.038*stat().turn;
-      G.ship.a=angWrap(G.ship.a+clamp(d,-turnR,turnR));
+      G.ship.a=angWrap(G.ship.a+clamp(dang,-turnR,turnR));
       G.t+=1;updateCombat(1);
     }
     if(typeof keys==="object")keys.fire=false;
     if(p.hull/p.hullMax<.25)kills++;
     t+=i;lost+=hm-Math.max(0,G.hull);
+    dealt+=hpStart-(p.hull+(p.shield||0));
   }
-  return {down:kills,sec:+(t/60/6).toFixed(1),lost:Math.round(lost/6),hm};
+  return {down:kills,sec:+(t/60/6).toFixed(1),lost:Math.round(lost/6),hm,dealt:Math.round(dealt/6)};
 }
 suite("проба · верфи: рудовоз против лучшей сделки и бой на стрельбище",{tier:"probe"},()=>{
   const yards=["_"].concat(Object.keys(STAPEL_YARD));
@@ -89,7 +99,7 @@ suite("проба · верфи: рудовоз против лучшей сде
   for(const by of yards){
     const N=stapelStats({by:by==="_"?undefined:by,cls:"warship",size:"medium",l:1,w:1});
     const D=ydDuel(by==="_"?undefined:by);
-    B.push((by==="_"?"—":by)+": "+N.price+" кр, корпус "+D.hm+", поворот "+N.turn+" · сдал "+D.down+"/6, ср. "+D.sec+" с, пират снял "+D.lost+" ("+Math.round(D.lost/Math.max(1,D.hm)*100)+" %)");
+    B.push((by==="_"?"—":by)+": "+N.price+" кр, корпус "+D.hm+", поворот "+N.turn+" · сдал "+D.down+"/6, ср. "+D.sec+" с, сняли "+D.dealt+", пират снял "+D.lost+" ("+Math.round(D.lost/Math.max(1,D.hm)*100)+" %)");
   }
   note("стрельбище · боевой средний · капитан spar · шесть спаррингов · "+B.join(" · "));
   /* в консоль — иначе проба молчит в -Probe/only (note только в TEST.lines) */
@@ -97,6 +107,6 @@ suite("проба · верфи: рудовоз против лучшей сде
   console.log("стрельбище · "+B.join(" · "));
   ok(B.length===yards.length,"все верфи посчитаны");
   const downs=B.map(s=>+(s.match(/сдал (\d+)/)||[])[1]||0);
-  ok(downs.some(n=>n>0),"после правки spar хотя бы одна верфь добивает сдачу: "+downs.join(","));
+  ok(downs.every(n=>n>=5),"flanker · spar-капитан: все верфи ≥5/6 сдач ("+downs.join(",")+")");
   G.shipId="strizh";
 });

@@ -8898,7 +8898,7 @@ yardFirmware                 src/26e1-stapel.js:129-149
 yardGate                     src/04c-yards.js:144-148
 yardHide                     src/26f-yard-gpu.js:20
 yardTick                     src/26f-yard-gpu.js:22-39
-ydDuel                       tests/91zzzzk7-yard-probe.js:48-76
+ydDuel                       tests/91zzzzk7-yard-probe.js:48-86
 ydFly                        tests/91zzzzk7-yard-probe.js:31-37
 ydPrbLeg                     tests/91zzzzk7-yard-probe.js:16-30
 ydPrbStations                tests/91zzzzk7-yard-probe.js:8-15
