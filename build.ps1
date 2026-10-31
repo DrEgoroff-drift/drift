@@ -72,6 +72,26 @@ function ClockLaw($files) {
   return ,$bad
 }
 
+# Закон часов В ТЕСТАХ: тесты законно меряют время через performance.now() и ставят TEST_T0
+# через new Date — им нужен настоящий таймер. А сырые Date.now()/Math.random() — уже нет:
+# мир читают через now()/rnd(), иначе прогон неповторяем. Сейчас таких вызовов в tests/ нет
+# (только в комментариях), поэтому сеть чистая, а случайный вызов поймается здесь.
+function ClockLawTests($files) {
+  $bad = New-Object System.Collections.Generic.List[string]
+  $raw = [regex]'Math\.random\s*\(|Date\.now\s*\('
+  $cm = [regex]'(?s)/\*.*?\*/|(?<![:\\])//[^\n]*'
+  foreach ($f in $files) {
+    $text = [System.IO.File]::ReadAllText($f.FullName, $enc)
+    $rawM = @($raw.Matches($text))
+    if (-not $rawM.Count) { continue }
+    $cms = @($cm.Matches($text))
+    $inCm = { param($pos) foreach ($c in $cms) { if ($c.Index -gt $pos) { return $false }; if ($pos -lt $c.Index + $c.Length) { return $true } }; return $false }
+    $lineOf = { param($pos) 1 + ([regex]::Matches($text.Substring(0, $pos), "`n")).Count }
+    foreach ($r in $rawM) { if (-not (& $inCm $r.Index)) { $bad.Add(("{0}:{1}  {2}" -f $f.Name, (& $lineOf $r.Index), $r.Value)) } }
+  }
+  return ,$bad
+}
+
 function Build {
   $shell = [System.IO.File]::ReadAllText((Join-Path $src "index.html"), $enc)
   $css   = [System.IO.File]::ReadAllText((Join-Path $src "style.css"),  $enc)
@@ -103,6 +123,10 @@ function Build {
   if (Test-Path $tsrc) {
     $tfiles = Sort-Ordinal (Get-ChildItem (Join-Path $tsrc "*.js"))
     if ($tfiles.Count -gt 0) {
+      $lawT = ClockLawTests $tfiles
+      if ($lawT.Count) {
+        throw ("clock law in tests/ (M441): {0} raw Date.now()/Math.random() — tests read now()/rnd()`n  " -f $lawT.Count) + ($lawT -join "`n  ")
+      }
       # перед каждым файлом — его имя (M444, ?files=): набор помнит, из какого он файла
       $tparts = foreach ($f in $tfiles) { 'var TEST_FILE="' + $f.Name + '";' + "`n" + [System.IO.File]::ReadAllText($f.FullName, $enc) }
       # Поля мира (0.438.0): каждое имя, которому где-то в src/ присваивают `G.имя=`,
