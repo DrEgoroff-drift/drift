@@ -90,7 +90,7 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   - the interface — GPU-3; its census (26.09): the panels by how often they open (the desk is on the
     engine through 27i0 `panelGpu` — the post window and КБ too, and the shipyard showcase (26f, one canvas over
     `hullStudio`), the ОПИСЬ pictures, the suit doll and the album; yard buy-price contrast done (0.499.44);
-    next: the home garage hull, faces; slipway sheet already on the engine (26e2); a bake at first sight
+    garage hull and live faces already on the engine; slipway sheet too (26e2); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
   - the hull: `hullStudio` / `hullGpuDraw` (17c2) is the one GPU hull. No screen calls `drawHull` any more (22.10:
@@ -246,7 +246,7 @@ measured on the GPU build first:
 
 ## 6. Stage 5 — the voice and the joke
 
-- [ ] **M460 billboards (rest):** 1–3 signs; the hull tint within R (graphics pass); stale prices as a fork (the author).
+- [ ] **M460 billboards (rest):** 1–3 signs by lane life (0.499.47); still: the hull tint within R (graphics pass); stale prices as a fork (the author).
 - [ ] **M461 hotels (rest):** six faces (0.499.39); desk doors + map mark + land cue «САНАТОРИЙ» (0.499.41–43).
   Still open: fatigue (does not exist for the player); a pair at 760 and 390, at 19 h and 3 h for the four new faces.
 - [ ] **M511 волокита:** the animals the author will invent (his table).

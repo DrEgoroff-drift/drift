@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 673 · top-level symbols: 8882
+Files: 673 · top-level symbols: 8884
 
 ## SYMBOLS
 
@@ -125,10 +125,10 @@ BAZ_CUT                      src/17n-bazaar.js:88
 BAZ_HULLS                    src/17n-bazaar.js:86
 BAZ_SIGN                     src/17n-bazaar.js:108
 BAZ_THROWN_MAX               src/17n-bazaar.js:12
-BB_BAKE                      src/17k-billboard.js:90
+BB_BAKE                      src/17k-billboard.js:98
 BB_CACHE                     src/17k-billboard.js:12
-BB_NEON                      src/17k-billboard.js:89
-BB_NEWS                      src/17k-billboard.js:32
+BB_NEON                      src/17k-billboard.js:97
+BB_NEWS                      src/17k-billboard.js:40
 BB_TITLE                     src/17k-billboard.js:11
 BDUST_WGSL                   src/24be-belt-rock-gpu.js:109
 BEACON_COOL                  src/23-mode-dig.js:89
@@ -2828,19 +2828,21 @@ bazPartBase                  src/17n-bazaar.js:34
 bazRumour                    src/17n-bazaar.js:184-192
 bazSign                      src/17n-bazaar.js:109-117
 bazThrow                     src/17n-bazaar.js:28-33
-bbAhead                      src/17k-billboard.js:176-182
-bbDeal                       src/17k-billboard.js:20-30
-bbDrawGpu                    src/17k-billboard.js:143-173
-bbHere                       src/17k-billboard.js:13-18
-bbHold                       src/17k-billboard.js:41-54
-bbKeep                       src/17k-billboard.js:94-100
-bbLine                       src/17k-billboard.js:55-78
-bbNews                       src/17k-billboard.js:33-39
-bbPanelBake                  src/17k-billboard.js:102-105
-bbPanelKey                   src/17k-billboard.js:101
-bbPanelMake                  src/17k-billboard.js:106-130
-bbStripBake                  src/17k-billboard.js:132-142
-bbTitle                      src/17k-billboard.js:80-84
+bbAhead                      src/17k-billboard.js:184-190
+bbAll                        src/17k-billboard.js:16-25
+bbCount                      src/17k-billboard.js:14
+bbDeal                       src/17k-billboard.js:28-38
+bbDrawGpu                    src/17k-billboard.js:151-181
+bbHere                       src/17k-billboard.js:26
+bbHold                       src/17k-billboard.js:49-62
+bbKeep                       src/17k-billboard.js:102-108
+bbLine                       src/17k-billboard.js:63-86
+bbNews                       src/17k-billboard.js:41-47
+bbPanelBake                  src/17k-billboard.js:110-113
+bbPanelKey                   src/17k-billboard.js:109
+bbPanelMake                  src/17k-billboard.js:114-138
+bbStripBake                  src/17k-billboard.js:140-150
+bbTitle                      src/17k-billboard.js:88-92
 bdustDraw                    src/24be-belt-rock-gpu.js:285-292
 beaconCool                   src/23-mode-dig.js:90
 beaconTick                   src/23-mode-dig.js:117-128
@@ -4023,7 +4025,7 @@ drawBaseBuilding             src/21c-built.js:112-169
 drawBazaar                   src/17n-bazaar.js:118-174
 drawBelt                     src/24-mode-belt.js:401
 drawBeltRocks                src/17gc-sys-belt.js:58-123
-drawBillboard                src/17k-billboard.js:183-199
+drawBillboard                src/17k-billboard.js:191-207
 drawBuilt                    src/21c-built.js:64-72
 drawCave                     src/22d-cave-pln.js:378-395
 drawCheburek                 src/17j-cheburek.js:78-109

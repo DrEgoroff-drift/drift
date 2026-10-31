@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.47 — billboards: one to three by lane life
+
+- M460: a busy approach can carry up to three neon boards along the lane (life .45 / .65 / .85 → 1 / 2 / 3); `bbHere` stays the first for the ГЛАВТРАССА plan plaque.
+
 ## 0.499.46 — station walk: floor click walks, place hit is the tag, no skate
 
 - Hall walk (0.499.40 regression): a floor click walks to that point again — place hit is only the on-screen tag (≤ 44 CSS-px), not a 1.5 m world band that covered the whole hall. Approach to a place keeps a walk cycle instead of sliding on straight legs. Hover no longer adds a lamp (that churned shadow maps). Shadows: full redraw while walking, keep only at rest — no more floor flicker at lamp edges.
