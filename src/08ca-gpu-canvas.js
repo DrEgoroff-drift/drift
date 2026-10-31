@@ -695,4 +695,5 @@ function gpuBakeRedo0(B){
   if(V.length>1<<22)GC_VA=new Float32Array(1<<16);   /* после огромной выпечки 16 МБ не держим */
   GPU.bakeN=(GPU.bakeN||0)+1;GPU.bakeMs=(GPU.bakeMs||0)+(wallMs()-t0);
   {const g=globalThis.__bsize||(globalThis.__bsize={});const k=B.w+"×"+B.h;g[k]=(g[k]||0)+1;}   /* перепись: размеры выпечек в окне замера */
+  {const bdt=wallMs()-t0;if(bdt>6)(globalThis.__bslow||(globalThis.__bslow=[])).push(Math.round(bdt)+"мс "+B.w+"×"+B.h+" "+((new Error().stack||"").split("\n")[2]||"").trim().slice(0,70));}
 }

@@ -95,13 +95,13 @@ async function g11Run(){
       st[1]();
       const delay=Math.round(await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(t=>r(wallMs()-tSwitch)))));
       await sleep(4000);                 /* кэши пекутся — меряем крейсер, не старт */
-      const bn0=(GPU&&GPU.bakeN)||0,bms0=(GPU&&GPU.bakeMs)||0;globalThis.__bkeys={};globalThis.__bsize={};
+      const bn0=(GPU&&GPU.bakeN)||0,bms0=(GPU&&GPU.bakeMs)||0;globalThis.__bkeys={};globalThis.__bsize={};globalThis.__bslow=[];
       const iv=await iv2(2.5);
       const bs=((GPU&&GPU.bakeN)||0)-bn0,bms=Math.round(((GPU&&GPU.bakeMs)||0)-bms0);
       const bk=Object.entries(globalThis.__bkeys||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>String(e[0]).slice(0,30)+"×"+e[1]);
       const bz=Object.entries(globalThis.__bsize||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>e[0]+"×"+e[1]);
-      out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,switchMs:delay,bakes:bs,bakeMs:bms,bkeys:bk,bsize:bz};
-      put(st[0]+" "+iv.fps+" · p90 "+iv.p90+" · max "+iv.max+" · ≥45 "+iv.n45+" · переход "+delay+" мс · выпечек "+bs+" / "+bms+" мс"+(bk.length?" · "+bk.join(", "):"")+(bz.length?" · "+bz.join(", "):""));
+      out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,switchMs:delay,bakes:bs,bakeMs:bms,bkeys:bk,bsize:bz,slow:(globalThis.__bslow||[]).slice(0,4)};
+      put(st[0]+" "+iv.fps+" · p90 "+iv.p90+" · max "+iv.max+" · ≥45 "+iv.n45+" · переход "+delay+" мс · выпечек "+bs+" / "+bms+" мс"+(bz.length?" · "+bz.join(", "):"")+((globalThis.__bslow||[]).length?" · "+(globalThis.__bslow||[]).slice(0,2).join(" ; "):""));
     }catch(e){err.push(st[0]+": "+(e&&e.message||e));put(st[0]+" СБОЙ");}
   }
   put("ГОТОВО "+JSON.stringify(out));

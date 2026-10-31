@@ -2629,7 +2629,7 @@ arrWarmSteps                 src/17h1-arr-warm.js:24-47
 arrive                       src/16-flight.js:110-152
 arriveSystem                 src/18-mode-map.js:734-785
 artGet                       src/08ca-gpu-canvas.js:551
-artPut                       src/08ca-gpu-canvas.js:552-698
+artPut                       src/08ca-gpu-canvas.js:552-699
 asMap                        src/14-save.js:209-215
 askText                      src/11u-names.js:59-77
 assignToBase                 src/12a-crew.js:181-190
@@ -4760,7 +4760,7 @@ gpuBake                      src/08ca-gpu-canvas.js:529-534
 gpuBakeDrop                  src/08ca-gpu-canvas.js:545
 gpuBakeLive                  src/08ca-gpu-canvas.js:548
 gpuBakeRedo                  src/08ca-gpu-canvas.js:562
-gpuBakeRedo0                 src/08ca-gpu-canvas.js:564-698
+gpuBakeRedo0                 src/08ca-gpu-canvas.js:564-699
 gpuBaked                     src/08ca-gpu-canvas.js:538-544
 gpuBargeBody                 src/12l-barge.js:550-557
 gpuBind                      src/08c-gpu-kit.js:42-48
@@ -9100,7 +9100,7 @@ zoomTo                       src/15-input.js:358
 ## src/08c-gpu-kit.js · 32 KB
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 60 KB
+## src/08ca-gpu-canvas.js · 61 KB
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08caa-gpu-path.js · 5 KB
