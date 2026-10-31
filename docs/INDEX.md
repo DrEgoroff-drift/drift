@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 675 · top-level symbols: 8916
+Files: 676 · top-level symbols: 8916
 
 ## SYMBOLS
 
@@ -1674,7 +1674,7 @@ PLAN_COL                     src/05e-plan.js:131
 PLAN_DENS                    src/27jb-kb.js:47
 PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:408
+PLAN_F                       src/27jb-kb.js:407
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -6672,7 +6672,7 @@ planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
 planExposure                 src/05e-plan.js:217-230
-planFactors                  src/27jb-kb.js:409-420
+planFactors                  src/27jb-kb.js:408-427
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
@@ -10939,6 +10939,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzzk7-yard-probe.js · 7 KB
   · проба · шесть верфей: калибровка M480/M481:1
+
+## tests/91zzzzk8-plan-factors.js · 1 KB
+  · M478: числа от чертежа — неподвижная точка:1
 
 ## tests/91zzzzy-play.js · 18 KB
   · глубокие сценарии (M331):1

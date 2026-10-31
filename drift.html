@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.69";
+const VER="0.499.70";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -11209,7 +11209,7 @@ function stat(){
   /* инструменты с полки «Сороки» (12v-wander-shop): малые прибавки, читаются тут же */
   const WT=(typeof wanderStat==="function")?wanderStat():{turn:1,fuel:0,jump:0,cool:1};
   /* чертёж (M478, 27jb): без правки оба множителя — ровно 1 */
-  const PF=(typeof planFactors==="function")?planFactors():{cargo:1,mass:1};
+  const PF=(typeof planFactors==="function")?planFactors():{cargo:1,mass:1,fuel:1,energy:1,see:1};
   const SC=(typeof scarFactors==="function")?scarFactors(S):{cargo:1,turn:1};   /* шрамы корпуса (M482) */
   const PD=(typeof planDens==="function")?planDens():{en:1,see:1,hull:1,sh:1};   /* плотности от дальних грузов (M478) */
   /* орудие, поле и реактор как ВЕЩИ, а не как два числа (M362, 05c-arms):
@@ -11233,12 +11233,12 @@ function stat(){
        вмешивается в арифметику (12s-wear) */
     thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr"))*wearMul()*PF.mass*(typeof abilMul==="function"?abilMul("thr"):1),
     turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul()*WT.turn*PF.mass*SC.turn*(typeof abilMul==="function"?abilMul("turn"):1),
-    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel")+WT.fuel)),
+    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)*(PF.fuel||1)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel")+WT.fuel)),
     cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*PF.cargo*SC.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
     hullMax:Math.max(20,Math.round(PD.hull*(gunList.some(a=>a.g&&a.g.fx==="ram")?1.35:1)*(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0)))),
     drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
-    jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")+WT.jump),
+    jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")+WT.jump+((PF.fuel||1)-1)*.5),
     armed:m.weapon>0||!!P.gun,
     dmg:dmgV,
     cool:coolV,
@@ -11249,7 +11249,7 @@ function stat(){
     /* таран (M366) — не орудие: он утраивает лоб корпуса. Это единственное
        семейство, которое живёт в числах корабля, а не в числах выстрела. */
     ram:gunList.some(a=>a.g&&a.g.fx==="ram"),
-    energyMax:(e=>PD.en===1?e:Math.round(e*PD.en))(energyCap(m.weapon,coreT,P.enCapAdd||0)),
+    energyMax:(e=>PD.en===1?e:Math.round(e*PD.en))(Math.round(energyCap(m.weapon,coreT,P.enCapAdd||0)*(PF.energy||1))),
     energyRegen:energyRegen(m.weapon,coreT,P.enRegenAdd||0),
     /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
        и без ракет в трюме её числа ничего не значат */
@@ -11260,7 +11260,7 @@ function stat(){
     shieldMax:Math.max(0,Math.round(((P.shieldAdd||0)+(yardBi==="or"?(typeof STAPEL_OR_SHIELD==="number"?STAPEL_OR_SHIELD:32):0)+(cr("veil")?40:0)+rs("shield"))*PD.sh)),
     shieldRegen:Math.max(0,P.regenAdd||0),
     shieldType:yardBi==="or"?"front":shieldTypeOf(shldP),
-    see:((((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0))+(yardBi==="hf"?(typeof STAPEL_HF_SEE==="number"?STAPEL_HF_SEE:180):0))+rs("see"))*PD.see,
+    see:((((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0))+(yardBi==="hf"?(typeof STAPEL_HF_SEE==="number"?STAPEL_HF_SEE:180):0))+rs("see"))*PD.see*(PF.see||1),
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55)*(typeof kitStat==="function"?kitStat().wear:1),   /* комплект (M152) */
     refine:1+techLv("refine")*.18,
@@ -125984,23 +125984,30 @@ function kbDraw(c,s,d){
   });
 }
 /* ── числа от чертежа (M478, DESIGN-shipyard §3) ──
-   Неподвижная точка: пока чертёж не правили — оба множителя ровно 1, и у
-   старого сейва ни одно число не сдвинулось. Правка двигает два числа:
-   трюм = клетки трюма × плотность, откалиброванная так, что типовой чертёж даёт
-   сегодняшний трюм, потолок ×1.4 (торговля не ломается); тяга и поворот — от
-   массы плана (вещь — клетка, пустой трюм — полклетки) против типового,
-   зажато в .8…1.1 (чувство руля P8 не разваливается). */
-const PLAN_F={key:"",v:{cargo:1,mass:1}};
+   Неподвижная точка: пока чертёж не правили — множители ровно 1, и у
+   старого сейва ни одно число не сдвинулось. Правка двигает: трюм (hold /
+   типовой, потолок ×1.4); тяга/поворот от массы плана (.8…1.1); бак /
+   энергия — клетки mtank / mweapon (котёл) к типовым; обзор — приборы
+   (util) в носовой трети к типовым. Плотности дальним грузом — planDens. */
+const PLAN_F={key:"",v:{cargo:1,mass:1,fuel:1,energy:1,see:1}};
 function planFactors(){
+  const one={cargo:1,mass:1,fuel:1,energy:1,see:1};
   const id=G.shipId,D=G.draft&&G.draft[id];
-  if(!D)return {cargo:1,mass:1};
+  if(!D)return one;
   const key=id+"|"+JSON.stringify(D)+"|"+JSON.stringify(G.fit[id]||{})+"|"+JSON.stringify(G.mods||{});
   if(PLAN_F.key===key)return PLAN_F.v;
   const d=draftOf(id),t=planPack(id,G.fit[id]||{},G.mods||{});
   const mass=pk=>pk.items.reduce((a,x)=>a+x.cells.length,0)+pk.hold.length*.5;
   const cargo=t.hold.length?clamp(d.hold.length/t.hold.length,0,1.4):1;
   const m=clamp(Math.sqrt(Math.max(1,mass(t))/Math.max(1,mass(d))),.8,1.1);
-  PLAN_F.key=key;PLAN_F.v={cargo,mass:m};
+  const cells=(pk,k)=>pk.items.filter(x=>x.key===k).reduce((a,x)=>a+x.cells.length,0);
+  const ratio=(a,b)=>b?clamp(a/b,.5,1.5):1;
+  const fuel=ratio(cells(d,"mtank"),cells(t,"mtank"));
+  const energy=ratio(cells(d,"mweapon"),cells(t,"mweapon"));
+  /* обзор: только util в nose3 — упаковщик кладёт туда, сдвиг в корму режет зрение */
+  const nose=(pk)=>pk.items.filter(x=>x.kind==="util").reduce((a,x)=>a+x.cells.filter(q=>q.nose3).length,0);
+  const see=ratio(nose(d),nose(t));
+  PLAN_F.key=key;PLAN_F.v={cargo,mass:m,fuel,energy,see};
   return PLAN_F.v;
 }
 

@@ -236,10 +236,7 @@ measured on the GPU build first:
 ## 5. Stage 4 — the ship
 
 - [ ] **M476 the plan (rest):** unique, fused and NPC hulls in the fixpoint suite (release run).
-- [ ] **M478 numbers from the plan:** fuel from tank cells, energy from reactor cells, hull from armour parts,
-  sight from nose-third instruments, module tiers as densities. One mapping table: `hold`/`tank`/
-  `weapon`(reactor)/`armor` become densities per cell (per hull size, never shown as a number);
-  `engine`/`hyper`/`drill` stay station upgrades; the fixpoint suite covers both halves.
+- [ ] **M478 numbers from the plan (rest):** **0.499.70** — fuel/energy/sight factors in `planFactors` (tank / reactor / nose util vs typical). Still open: hull from armour parts, module tiers as densities (`hold`/`tank`/`weapon`/`armor` per cell), mapping table, fixpoint suite for unique/fused/NPC. `engine`/`hyper`/`drill` stay station upgrades.
 - [ ] **M483 the fast path (rest):** NPC and pirate ships built by the packer, their plan read in the silhouette.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a warship
   stripped of hold both fly under the finger the same (the P8 meter); the blueprint gets its almanac issue.

@@ -399,22 +399,29 @@ function kbDraw(c,s,d){
   });
 }
 /* ── числа от чертежа (M478, DESIGN-shipyard §3) ──
-   Неподвижная точка: пока чертёж не правили — оба множителя ровно 1, и у
-   старого сейва ни одно число не сдвинулось. Правка двигает два числа:
-   трюм = клетки трюма × плотность, откалиброванная так, что типовой чертёж даёт
-   сегодняшний трюм, потолок ×1.4 (торговля не ломается); тяга и поворот — от
-   массы плана (вещь — клетка, пустой трюм — полклетки) против типового,
-   зажато в .8…1.1 (чувство руля P8 не разваливается). */
-const PLAN_F={key:"",v:{cargo:1,mass:1}};
+   Неподвижная точка: пока чертёж не правили — множители ровно 1, и у
+   старого сейва ни одно число не сдвинулось. Правка двигает: трюм (hold /
+   типовой, потолок ×1.4); тяга/поворот от массы плана (.8…1.1); бак /
+   энергия — клетки mtank / mweapon (котёл) к типовым; обзор — приборы
+   (util) в носовой трети к типовым. Плотности дальним грузом — planDens. */
+const PLAN_F={key:"",v:{cargo:1,mass:1,fuel:1,energy:1,see:1}};
 function planFactors(){
+  const one={cargo:1,mass:1,fuel:1,energy:1,see:1};
   const id=G.shipId,D=G.draft&&G.draft[id];
-  if(!D)return {cargo:1,mass:1};
+  if(!D)return one;
   const key=id+"|"+JSON.stringify(D)+"|"+JSON.stringify(G.fit[id]||{})+"|"+JSON.stringify(G.mods||{});
   if(PLAN_F.key===key)return PLAN_F.v;
   const d=draftOf(id),t=planPack(id,G.fit[id]||{},G.mods||{});
   const mass=pk=>pk.items.reduce((a,x)=>a+x.cells.length,0)+pk.hold.length*.5;
   const cargo=t.hold.length?clamp(d.hold.length/t.hold.length,0,1.4):1;
   const m=clamp(Math.sqrt(Math.max(1,mass(t))/Math.max(1,mass(d))),.8,1.1);
-  PLAN_F.key=key;PLAN_F.v={cargo,mass:m};
+  const cells=(pk,k)=>pk.items.filter(x=>x.key===k).reduce((a,x)=>a+x.cells.length,0);
+  const ratio=(a,b)=>b?clamp(a/b,.5,1.5):1;
+  const fuel=ratio(cells(d,"mtank"),cells(t,"mtank"));
+  const energy=ratio(cells(d,"mweapon"),cells(t,"mweapon"));
+  /* обзор: только util в nose3 — упаковщик кладёт туда, сдвиг в корму режет зрение */
+  const nose=(pk)=>pk.items.filter(x=>x.kind==="util").reduce((a,x)=>a+x.cells.filter(q=>q.nose3).length,0);
+  const see=ratio(nose(d),nose(t));
+  PLAN_F.key=key;PLAN_F.v={cargo,mass:m,fuel,energy,see};
   return PLAN_F.v;
 }
