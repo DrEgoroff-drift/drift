@@ -287,6 +287,8 @@ function resetWorld(){
      поездку (0.451.0). Сеть дорог не трогаем: она чистый кэш от зерна, а её
      пересчёт наполнил бы кэш систем в наборе про память дороги */
   if(typeof RAIL_DOCK!=="undefined"){RAIL_DOCK=null;RAIL_WAIT=null;RAIL_RIDE=null;RAIL_ARRIVE=-1e9;RAIL_LIFE={pax:null,tea:false,teaDone:false};}
+  /* M474: расширение сети за r 60 — кэш и радиус; иначе чужой набор оставляет RAIL_R=90 */
+  if(typeof RAIL_NET!=="undefined"){RAIL_NET=null;RAIL_PART=null;RAIL_R=60;RAIL_FORK=[6,11.4,21.66,41.15,78.2];RAIL_RINGS=[6,18,35];}
   /* перезарядка «долгого» (16c) — как на свежей странице: G.t сбрасывается, а ABIL_ST.cd оставался от прошлого
      набора, и готовность (кольцо, подпись «ДОЛГОЕ · …» над кнопкой) зависела от того, кто бежал раньше */
   if(RESET_ABIL0){ABIL_ST=structuredClone(RESET_ABIL0);ABIL_KEY=false;}

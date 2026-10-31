@@ -17,16 +17,27 @@
    обеих линий, поэтому она общая: это пересадка, и сеть связна по построению.
    Дальше r 40 — одиночные пути и полустанки.
 
-   Считается лениво, один раз, до RAIL_R; дальше «бесконечно» — M474. */
-const RAIL_R=60;                                  /* докуда строим сейчас, секторов */
-const RAIL_FORK=[6,11.4,21.66,41.15,78.2];        /* радиусы развилок: 6·1.9^k */
-const RAIL_RINGS=[6,18,35];                       /* Кольцевая, Большое, Дальнее (дальше ×1.9 — за RAIL_R) */
+   Считается лениво: до RAIL_R=60 сразу; дальше — railEnsure по региону (M474). */
+let RAIL_R=60;                                    /* докуда построено сейчас, секторов */
+let RAIL_FORK=[6,11.4,21.66,41.15,78.2];          /* радиусы развилок: 6·1.9^k; растёт с RAIL_R */
+let RAIL_RINGS=[6,18,35];                         /* Кольцевая, Большое, Дальнее; дальше ×1.9 */
 const RAIL_RING_RU=["Кольцевая","Большое кольцо","Дальнее кольцо"];
 const RAIL_ARM_RU=["Рыжий рукав","Долгий рукав"];
 const RAIL_METRO_R=12;                            /* метро внутри круга заселения */
 const RAIL_RIM=40;                                /* дальше — полустанки */
 const RAIL_SALT=0x7A11;
 let RAIL_NET=null;
+/* M474: сеть за r 60 — лениво по региону, без полной перестройки галактики заранее */
+function railEnsure(sx,sy){
+  const need=Math.ceil(Math.hypot(sx||0,sy||0)+12);
+  if(need<=RAIL_R)return;
+  RAIL_R=need;
+  while(RAIL_FORK[RAIL_FORK.length-1]<RAIL_R)
+    RAIL_FORK.push(+(RAIL_FORK[RAIL_FORK.length-1]*1.9).toFixed(2));
+  let R=RAIL_RINGS[RAIL_RINGS.length-1];
+  while(R*1.9<RAIL_R){R=+(R*1.9).toFixed(2);RAIL_RINGS.push(R);}
+  RAIL_NET=null;RAIL_PART=null;
+}
 /* ближайшая система со станцией к точке, в пределах tol; одна функция на всех —
    поэтому общая точка двух линий даёт одну и ту же станцию */
 function railNearest(x,y,tol){
@@ -82,7 +93,7 @@ function railBuildLines(){
     /* и где кольцо режет трасса рукава */
     for(let m=0;m<2;m++){const a=railArmAng(m,R);anchors.push(((a%TAU)+TAU)%TAU/TAU);}
     anchors.sort((a,b)=>a-b);
-    lines.push({id:"c"+ri,kind:"ring",pts,ru:RAIL_RING_RU[ri],anchors,loop:true});
+    lines.push({id:"c"+ri,kind:"ring",pts,ru:RAIL_RING_RU[ri]||("Кольцо r "+Math.round(R)),anchors,loop:true});
   });
   /* трассы по рукавам: остановки обязательны там, где рукав режет кольцо */
   for(let m=0;m<2;m++){
@@ -195,6 +206,7 @@ function railNet(){
 }
 /* что за станция в этой системе: линии через неё; пересадка — две и больше */
 function railStation(sx,sy){
+  railEnsure(sx,sy);
   const N=railNet(),ids=N.at[sx+","+sy];
   if(!ids)return null;
   return {lines:ids.map(id=>N.byId[id]),junction:ids.length>1,halt:Math.hypot(sx,sy)>RAIL_RIM,

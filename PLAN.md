@@ -225,9 +225,8 @@ measured on the GPU build first:
 ## 4. Stage 3 — far, and back with a hold
 
 - [ ] **Oracle lines** (`91zzzzzzzzza-worlds`): **0.499.72** — fare laws (metro 5, outer 2×dist, heavy baggage ×3). Still open: best rail round trip ≤ ×1.3 of best jumps in credits/min (baggage lever); stripped hauler's best one-hop deal (M478).
-- [ ] **M474 six railways (rest):** the net past r 60, built lazily per region (M470 rest; whole build is 146 ms
-  to r 60). Test fragility: the ride suite picks the first heart metro station — if its land ever turns
-  Орднунг, the suite needs the double press.
+- [ ] **M474 six railways (rest):** **0.499.83** `railEnsure` grows the net past r 60 per region. Still open:
+  ride-suite fragility if the heart metro land turns Орднунг (double press).
 - [ ] **M475 economy (rest):** fares, baggage and the size rule tuned against the oracle's rail line (release run).
 - **Gate:** from home to a rim полустанок and back with a hold of deep goods in under 4 minutes of play,
   paying its ticket on an average roll; the ride never shows a loading screen.

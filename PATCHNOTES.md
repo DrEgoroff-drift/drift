@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.83 — M474 rail net past r 60 (lazy railEnsure)
+
+- M474: `railEnsure(sx,sy)` grows `RAIL_R` / forks / rings when a region beyond 60 is asked; `railStation` calls it. Core build to 60 unchanged.
+
 ## 0.499.82 — M483 closed; dock HTML strips hotel wings
 
 - M483: ПРОЕКТЫ and new-part mark were already in КБ; with `planNpcOf` the fast path is closed.
