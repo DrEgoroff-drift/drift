@@ -14318,7 +14318,7 @@ function gpuBake(w,h,draw,o){
 function gpuBaked(M,key,w,h,draw,o){
   let B=M.get(key);if(B&&B.dev===GPU.dev){M.delete(key);M.set(key,B);return B;}
   if(B){gpuBakeDrop(B);M.delete(key);}B=gpuBake(w,h,draw,o);if(!B)return B;M.set(key,B);
-  {const g=globalThis.__bkeys||(globalThis.__bkeys={});g[key]=(g[key]||0)+1;}   /* перепись: что печётся в окне замера (g11) */
+  if(globalThis.__g11rec){const g=globalThis.__bkeys||(globalThis.__bkeys={});g[key]=(g[key]||0)+1;}   /* перепись — только в окне замера g11: иначе __bkeys течёт по ключу */
   const cap=(o&&o.keep)||32;while(M.size>cap){const k=M.keys().next().value;gpuBakeDrop(M.get(k));M.delete(k);}
   return B;
 }
@@ -14474,8 +14474,8 @@ function gpuBakeRedo0(B){
   d.queue.submit([enc.finish()]);
   if(V.length>1<<22)GC_VA=new Float32Array(1<<16);   /* после огромной выпечки 16 МБ не держим */
   GPU.bakeN=(GPU.bakeN||0)+1;GPU.bakeMs=(GPU.bakeMs||0)+(wallMs()-t0);
-  {const g=globalThis.__bsize||(globalThis.__bsize={});const k=B.w+"×"+B.h;g[k]=(g[k]||0)+1;}   /* перепись: размеры выпечек в окне замера */
-  {const bdt=wallMs()-t0;if(bdt>6)(globalThis.__bslow||(globalThis.__bslow=[])).push(Math.round(bdt)+"мс "+B.w+"×"+B.h+" "+((new Error().stack||"").split("\n")[2]||"").trim().slice(0,70));}
+  if(globalThis.__g11rec){const g=globalThis.__bsize||(globalThis.__bsize={});const k=B.w+"×"+B.h;g[k]=(g[k]||0)+1;
+    const bdt=wallMs()-t0;if(bdt>6)(globalThis.__bslow||(globalThis.__bslow=[])).push(Math.round(bdt)+"мс "+B.w+"×"+B.h+" "+((new Error().stack||"").split("\n")[2]||"").trim().slice(0,70));}
 }
 
 /* ══════════════ Path2D, что помнит себя — для GPU-холста (docs/GPU-PORT-CENSUS.md §2, дыра 1) ══════════════
@@ -131530,7 +131530,7 @@ async function g11Run(){
       const ss=js.slice().sort((x,y)=>x-y);const qj=k=>+(ss[Math.min(ss.length-1,Math.floor(ss.length*k))]||0).toFixed(1);
       res({fps:Math.round(d.length/((t-t0)/1000)),p50:q(.5),p90:q(.9),max:+(s[s.length-1]||0).toFixed(1),n45:d.filter(x=>x>=45).length,jsMax:+(js[mi]||0).toFixed(1),jsP90:qj(.9)});};
     requestAnimationFrame(tick);});
-  const det={};
+  const det={};globalThis.__g11rec=true;   /* с этой секунды выпечки пишут перепись; после снимаем — в обычной игре глобалы не растут */
   for(const st of steps){
     try{
       const tSwitch=wallMs();
@@ -131547,6 +131547,7 @@ async function g11Run(){
       if(st[0]==="system"&&typeof g11GpuMs==="function"){try{const gm=await g11GpuMs(2,true);const top=Object.entries(gm||{}).filter(e=>e[0]!=="sum").sort((a,b)=>(b[1].max||0)-(a[1].max||0)).slice(0,5).map(e=>e[0]+" max "+e[1].max+" / "+e[1].pf+"/кадр");det[st[0]].gpu=gm;put("  GPU: "+top.join(" · "));}catch(e){}}
     }catch(e){err.push(st[0]+": "+(e&&e.message||e));put(st[0]+" СБОЙ");}
   }
+  globalThis.__g11rec=false;   /* перепись снята */
   put("ГОТОВО "+JSON.stringify(out));
   /* стенд слушает только на localhost; на проде этот POST тихо умрёт — и пусть */
   try{await fetch("/shot?n=g11",{method:"POST",

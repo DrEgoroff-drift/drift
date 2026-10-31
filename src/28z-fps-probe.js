@@ -102,7 +102,7 @@ async function g11Run(){
       const ss=js.slice().sort((x,y)=>x-y);const qj=k=>+(ss[Math.min(ss.length-1,Math.floor(ss.length*k))]||0).toFixed(1);
       res({fps:Math.round(d.length/((t-t0)/1000)),p50:q(.5),p90:q(.9),max:+(s[s.length-1]||0).toFixed(1),n45:d.filter(x=>x>=45).length,jsMax:+(js[mi]||0).toFixed(1),jsP90:qj(.9)});};
     requestAnimationFrame(tick);});
-  const det={};
+  const det={};globalThis.__g11rec=true;   /* с этой секунды выпечки пишут перепись; после снимаем — в обычной игре глобалы не растут */
   for(const st of steps){
     try{
       const tSwitch=wallMs();
@@ -119,6 +119,7 @@ async function g11Run(){
       if(st[0]==="system"&&typeof g11GpuMs==="function"){try{const gm=await g11GpuMs(2,true);const top=Object.entries(gm||{}).filter(e=>e[0]!=="sum").sort((a,b)=>(b[1].max||0)-(a[1].max||0)).slice(0,5).map(e=>e[0]+" max "+e[1].max+" / "+e[1].pf+"/кадр");det[st[0]].gpu=gm;put("  GPU: "+top.join(" · "));}catch(e){}}
     }catch(e){err.push(st[0]+": "+(e&&e.message||e));put(st[0]+" СБОЙ");}
   }
+  globalThis.__g11rec=false;   /* перепись снята */
   put("ГОТОВО "+JSON.stringify(out));
   /* стенд слушает только на localhost; на проде этот POST тихо умрёт — и пусть */
   try{await fetch("/shot?n=g11",{method:"POST",

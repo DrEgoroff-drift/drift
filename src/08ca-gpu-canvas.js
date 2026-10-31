@@ -538,7 +538,7 @@ function gpuBake(w,h,draw,o){
 function gpuBaked(M,key,w,h,draw,o){
   let B=M.get(key);if(B&&B.dev===GPU.dev){M.delete(key);M.set(key,B);return B;}
   if(B){gpuBakeDrop(B);M.delete(key);}B=gpuBake(w,h,draw,o);if(!B)return B;M.set(key,B);
-  {const g=globalThis.__bkeys||(globalThis.__bkeys={});g[key]=(g[key]||0)+1;}   /* перепись: что печётся в окне замера (g11) */
+  if(globalThis.__g11rec){const g=globalThis.__bkeys||(globalThis.__bkeys={});g[key]=(g[key]||0)+1;}   /* перепись — только в окне замера g11: иначе __bkeys течёт по ключу */
   const cap=(o&&o.keep)||32;while(M.size>cap){const k=M.keys().next().value;gpuBakeDrop(M.get(k));M.delete(k);}
   return B;
 }
@@ -694,6 +694,6 @@ function gpuBakeRedo0(B){
   d.queue.submit([enc.finish()]);
   if(V.length>1<<22)GC_VA=new Float32Array(1<<16);   /* после огромной выпечки 16 МБ не держим */
   GPU.bakeN=(GPU.bakeN||0)+1;GPU.bakeMs=(GPU.bakeMs||0)+(wallMs()-t0);
-  {const g=globalThis.__bsize||(globalThis.__bsize={});const k=B.w+"×"+B.h;g[k]=(g[k]||0)+1;}   /* перепись: размеры выпечек в окне замера */
-  {const bdt=wallMs()-t0;if(bdt>6)(globalThis.__bslow||(globalThis.__bslow=[])).push(Math.round(bdt)+"мс "+B.w+"×"+B.h+" "+((new Error().stack||"").split("\n")[2]||"").trim().slice(0,70));}
+  if(globalThis.__g11rec){const g=globalThis.__bsize||(globalThis.__bsize={});const k=B.w+"×"+B.h;g[k]=(g[k]||0)+1;
+    const bdt=wallMs()-t0;if(bdt>6)(globalThis.__bslow||(globalThis.__bslow=[])).push(Math.round(bdt)+"мс "+B.w+"×"+B.h+" "+((new Error().stack||"").split("\n")[2]||"").trim().slice(0,70));}
 }
