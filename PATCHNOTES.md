@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.73 — Компания cylinder: stripe and end airlocks
+
+- G15/M464: Company cylinder giant gets a surik «КОМПАНИЯ» belt and endcap airlock hubs (from `site/kimi-giant-cyl.html` craft, still densifying under Kimi).
+
 ## 0.499.72 — M478 hull from rim armour; rail fare foothold
 
 - M478: `planFactors.hull` from armour/hull cells on side/nose vs typical; `hullMax` reads it. Fixpoint suite covers hull.
