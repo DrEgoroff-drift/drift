@@ -10,7 +10,7 @@
 const NEAR_MAX = 240;
 const NEAR = {on:false, blocks:[], cur:null, n:0, frameN:0,
   marks:{}, work:{}, warm:0, bakeN:0, bakeS:0, pipes:0, cave:0,
-  sw:0, gf:0, dw:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, maxFrames:NEAR_MAX};
+  sw:0, gf:0, dw:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, runs:{}, maxFrames:NEAR_MAX};
 function nearOn(){ NEAR.on = true; }
 function nearBlock(mode, prev){
   if(!NEAR.on) return;
@@ -56,5 +56,5 @@ function nearJSON(){
       worst:b.fr.slice().sort((a, z) => z.gap - a.gap).slice(0, 8)};
   });
   return {dpr:devicePixelRatio, maxFrames:NEAR.maxFrames, blocks,
-    pipes:NEAR.pipes, cave:NEAR.cave};
+    pipes:NEAR.pipes, cave:NEAR.cave, runs:NEAR.runs};
 }

@@ -161,11 +161,12 @@ async function g11RunNear(){
     nearOn();
     const runs=[
       ["system",()=>{G.mode="system";G.ap=null;}],
-      ["landing-cold",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
-        startLanding(s.planets.find(p=>p.type!=="gas"));}],
-      ["surface",()=>{const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
-        jump(s);const p=s.planets.find(p=>p.type==="jungle")||s.planets.find(p=>p.type!=="gas");
-        const tr=genTerrain(p);G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};enterSurface();}],
+      ["landing-cold",()=>{const _t=NEAR.on?wallMs():0;const s=find(s=>s.planets.some(p=>p.type!=="gas"));if(NEAR.on)NEAR.runs.find=Math.round((wallMs()-_t)*10)/10;jump(s);
+        const _t2=NEAR.on?wallMs():0;startLanding(s.planets.find(p=>p.type!=="gas"));if(NEAR.on)NEAR.runs.start=Math.round((wallMs()-_t2)*10)/10;}],
+      ["surface",()=>{const _t=NEAR.on?wallMs():0;const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
+        if(NEAR.on)NEAR.runs.find2=Math.round((wallMs()-_t)*10)/10;jump(s);const p=s.planets.find(p=>p.type==="jungle")||s.planets.find(p=>p.type!=="gas");
+        const _t2=NEAR.on?wallMs():0;const tr=genTerrain(p);if(NEAR.on)NEAR.runs.terr=Math.round((wallMs()-_t2)*10)/10;G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
+        const _t3=NEAR.on?wallMs():0;enterSurface();if(NEAR.on)NEAR.runs.enter=Math.round((wallMs()-_t3)*10)/10;}],
       ["dig",()=>{enterDig();}],
       ["cave",()=>{G.mode="surface";enterCave();}],
       ["landing-warm",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
