@@ -322,7 +322,9 @@ function wan3Frame(){
   const lots=wanLots(),cur=clamp(S.cursor,0,Math.max(0,lots.length-1));
   const mk=(S.seed|0)+"|"+(S.dark?1:0)+"|"+lots.map(l=>(l.id||"-")+(l.empty?"e":"")+(l.gone?"g":"")).join(",");
   if(!WAN3.mesh||WAN3.mkey!==mk){r3Drop(WAN3.mesh);WAN3.mesh=wan3Mesh(S,lots);WAN3.mkey=mk;}
-  const t=wallMs()/1000,cam=wan3Cam(sz,t,cur,lots.length),Sc=wan3Scene(S,lots,cam,t,cur);
+  /* часы мира (now), не wallMs: иначе при CLOCK_PIN сцена «Сороки» плывёт между прогонами
+     (PLAN §10 · wanderer · A — детектор и same-hash ловили реальный ход) */
+  const t=now()/1000,cam=wan3Cam(sz,t,cur,lots.length),Sc=wan3Scene(S,lots,cam,t,cur);
   const lab=r3Dev()?R3.blank:null;   /* подписей поверх кадра нет: пустой вид движка, а не выпечка 2D */
   const U=new Float32Array(60);
   /* ореол — только у колбы в кадре и своего размера (27f4a, 22.10). Радиус прежде мерился сдвигом по z — это глубина:

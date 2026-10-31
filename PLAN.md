@@ -279,10 +279,9 @@ Check each against the code before building — some may already hold.
 
 ## 10. Tests and tooling
 
-- [ ] **Determinism:** `wanderer · A` reads real chance or time on the corridor's buy path
-  (`wanderBuy`/`wanStep`, 24c); the clock out of `stateHash` (`08a-statehash`, ~79 `mixN(now())` — decided
-  11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl` into
-  hashed state.
+- [ ] **Determinism (rest):** **0.499.68** — «Сорока» `wan3Frame` on `now()` (was `wallMs`). Still open: the clock
+  out of `stateHash` (`08a-statehash`, ~79 `mixN(now())` — decided 11.09: a separate field, `T.state()` returns
+  both); `planetStripTick` / `stripLvl` into hashed state if still written from wall time.
 - [ ] **Watch:** «прогоны: двенадцать путей» flickered once under load.
 - [ ] **The vision flickers on real time (22.10):** the DPR pair (one window at 1 and 3) catches the game mid-motion. Settled in `geoSettle`: the base section lens and the man walking to his cell; the landing assembled over frames (`plnWarmStep`). Still open: after «карта» › «Назад» the system cues («Нейэль I · 760», «Звезда…») sit 5–12 px apart between the two runs, 2 of 16 runs — find what the system view eases on the real clock after the map closes, or make the DPR check skip cues anchored to moving bodies. Seen again 22.10 evening in scene «заход», 2 of 6 runs while neighbours' Chromes loaded the machine (`plnWarmStep` budgets by `wallMs`).
 - [ ] **Nets owed:** `TEST_T0` at local noon; not caught yet — the .55 auto-brake, the money-printing

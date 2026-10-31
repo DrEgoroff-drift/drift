@@ -4136,7 +4136,7 @@ drawTrail                    src/16-flight.js:399-402
 drawTransitPlate             src/03d-hull-marks.js:186-196
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
-drawWanderRoom               src/29re-wander-r3.js:362-365
+drawWanderRoom               src/29re-wander-r3.js:364-367
 drawWanderer                 src/12v-wander.js:339-366
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-193
@@ -8719,8 +8719,8 @@ wallWrap                     src/11ae-concert.js:72-80
 wan3Cam                      src/29re-wander-r3.js:309-317
 wan3Canvas                   src/29re-wander-r3.js:290-300
 wan3Case                     src/29re-wander-r3.js:38
-wan3Frame                    src/29re-wander-r3.js:319-346
-wan3Hide                     src/29re-wander-r3.js:353-358
+wan3Frame                    src/29re-wander-r3.js:319-348
+wan3Hide                     src/29re-wander-r3.js:355-360
 wan3Item                     src/29re-wander-r3.js:42-113
 wan3Keeper                   src/29re-wander-r3.js:246
 wan3Lantern                  src/29re-wander-r3.js:116-125
@@ -8728,7 +8728,7 @@ wan3Mesh                     src/29re-wander-r3.js:128-243
 wan3Ok                       src/29re-wander-r3.js:318
 wan3Scene                    src/29re-wander-r3.js:250-287
 wan3Station                  src/29re-wander-r3.js:302-308
-wan3Tags                     src/29re-wander-r3.js:348
+wan3Tags                     src/29re-wander-r3.js:350
 wanAll                       src/24c-mode-wanderer.js:21
 wanCur                       src/24c-mode-wanderer.js:50
 wanLots                      src/24c-mode-wanderer.js:49

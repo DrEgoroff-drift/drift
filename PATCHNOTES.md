@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.68 — «Сорока» camera on the game clock
+
+- Determinism: wanderer corridor draw (`wan3Frame`) uses `now()` instead of `wallMs()` so pinned suites / detectors no longer see a real-time bob on the buy path.
+
 ## 0.499.67 — giants spin on their axis
 
 - M464: every giant turns around its own axis (`giantSpin` / `giantPeriod`) — moon sphere via `gplBody.turn`, h3d mesh + lights rotate together. Cylinder faster (O'Neill), house/dock slower. Kimi craft queue for the six non-moon bodies: `_scratch/kimi-giant-prompt.txt`.
