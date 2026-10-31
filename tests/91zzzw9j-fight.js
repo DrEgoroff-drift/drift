@@ -85,6 +85,20 @@ TEST_SUITES.push(()=>suite("бой: дуэль на стрельбище — п�
   eq(duelSt().best[1],undefined,"проигрыш времени не пишет");
   G.credits=10;ok(!duelStart(0)&&!duelOn(),"без "+DUEL_FEE+" кр дуэли нет");
 }));
+/* M480: живой капитан стоит за автопушкой (~700+); spar должен держаться в 420–620 */
+TEST_SUITES.push(()=>suite("бой: spar-капитан в полосе автопушки",()=>{
+  resetWorld();G.flownMs=2*FIRST_HOUR_MS;
+  const S=dispTestStations()[0];dispTestDock(S);
+  G.credits=200;
+  ok(duelStart(2),"дуэль с капитаном");
+  const p=duelFoe();ok(p&&p.spar&&(p.rank|0)===2,"spar-капитан");
+  for(let f=0;f<60*8&&duelOn();f++){stepWorld(1);G.t+=1;}
+  const d=Math.hypot(p.x-G.ship.x,p.y-G.ship.y);
+  ok(d>=360&&d<=700,"полоса spar 420–620 (±зазор), сейчас "+Math.round(d));
+  ok((p.shieldMax||0)<p.hullMax*.55,"щит дуэли тоньше живого: "+Math.round(p.shieldMax)+" / корпус "+Math.round(p.hullMax));
+  if(duelOn()){p.hull=p.hullMax*.2;stepWorld(1);G.t+=1;}
+  ok(!duelOn(),"дуэль закрывается");
+}));
 TEST_SUITES.push(()=>suite("бой: лучшее время дуэлей переживает запись",()=>{
   resetWorld();
   G.duel={best:{0:14,2:33}};
