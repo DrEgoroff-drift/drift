@@ -69,10 +69,17 @@ const GUN_RANGE0=760, GUN_SPEED0=9, GUN_CONE0=.35, GUN_LEAD0=.2;
    ствола или уровня. Без этой памятки прогон набора вырос вчетверо на одних
    toFixed — считаем один раз на сборку. */
 let GUN_CACHE=null,GUN_KEY="";
+/* Коммуна (M480): +30° к конусу на заказном корпусе — поверх семи чисел */
+function gunYardCone(g){
+  const km=(typeof stapelBuiltIn==="function"&&stapelBuiltIn()==="km")?(typeof STAPEL_KM_CONE==="number"?STAPEL_KM_CONE:Math.PI/6):0;
+  if(!(km>0)||!g||!(g.cone<Math.PI))return g;
+  const out=Object.assign({},g);out.cone=+Math.min(Math.PI,g.cone+km).toFixed(3);return out;
+}
 function gunSpec(dmg,cool,gunPart,lvl){
-  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-")+":"+(gunPart.named||"-"):"-")+"|"+lvl;
+  const km=(typeof stapelBuiltIn==="function"&&stapelBuiltIn()==="km")?1:0;
+  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-")+":"+(gunPart.named||"-"):"-")+"|"+lvl+"|"+km;
   if(GUN_KEY===key&&GUN_CACHE)return GUN_CACHE;
-  GUN_KEY=key;return GUN_CACHE=gunSpecMake(dmg,cool,gunPart,lvl);
+  GUN_KEY=key;return GUN_CACHE=gunYardCone(gunSpecMake(dmg,cool,gunPart,lvl));
 }
 function gunSpecMake(dmg,cool,gunPart,lvl){
   const s=gunPart?gunPart.seed:0;
@@ -210,12 +217,14 @@ let GUNS_CACHE=null,GUNS_KEY="";
 function gunSpecs(list,dmg,cool,lvl){
   /* погнутый подвес (M482): конус первого ствола на треть уже */
   const arc=(typeof scarFactors==="function")?scarFactors(shipData(G.shipId)).arc:1;
-  const key=dmg+"|"+cool+"|"+lvl+"|"+arc+"|"+list.map(a=>a.slot+":"+a.part.seed+":"+a.part.tier+":"+(a.m?a.m.mount:"-")).join(",");
+  const km=(typeof stapelBuiltIn==="function"&&stapelBuiltIn()==="km")?1:0;
+  const key=dmg+"|"+cool+"|"+lvl+"|"+arc+"|"+km+"|"+list.map(a=>a.slot+":"+a.part.seed+":"+a.part.tier+":"+(a.m?a.m.mount:"-")).join(",");
   if(GUNS_KEY===key&&GUNS_CACHE)return GUNS_CACHE;
   GUNS_KEY=key;
   return GUNS_CACHE=list.map((a,i)=>{
     let g=gunOnMount(gunSpecMake(dmg,cool,a.part,lvl),a.m);
     if(i===0&&arc<1&&g.cone<Math.PI){g=Object.assign({},g);g.cone=+(g.cone*arc).toFixed(3);}
+    g=gunYardCone(g);
     return {slot:a.slot,part:a.part,m:a.m,g};
   });
 }

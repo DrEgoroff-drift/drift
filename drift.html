@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.64";
+const VER="0.499.65";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -9009,10 +9009,17 @@ const GUN_RANGE0=760, GUN_SPEED0=9, GUN_CONE0=.35, GUN_LEAD0=.2;
    ствола или уровня. Без этой памятки прогон набора вырос вчетверо на одних
    toFixed — считаем один раз на сборку. */
 let GUN_CACHE=null,GUN_KEY="";
+/* Коммуна (M480): +30° к конусу на заказном корпусе — поверх семи чисел */
+function gunYardCone(g){
+  const km=(typeof stapelBuiltIn==="function"&&stapelBuiltIn()==="km")?(typeof STAPEL_KM_CONE==="number"?STAPEL_KM_CONE:Math.PI/6):0;
+  if(!(km>0)||!g||!(g.cone<Math.PI))return g;
+  const out=Object.assign({},g);out.cone=+Math.min(Math.PI,g.cone+km).toFixed(3);return out;
+}
 function gunSpec(dmg,cool,gunPart,lvl){
-  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-")+":"+(gunPart.named||"-"):"-")+"|"+lvl;
+  const km=(typeof stapelBuiltIn==="function"&&stapelBuiltIn()==="km")?1:0;
+  const key=dmg+"|"+cool+"|"+(gunPart?gunPart.seed+":"+gunPart.tier+":"+(gunPart.fam||"-")+":"+(gunPart.named||"-"):"-")+"|"+lvl+"|"+km;
   if(GUN_KEY===key&&GUN_CACHE)return GUN_CACHE;
-  GUN_KEY=key;return GUN_CACHE=gunSpecMake(dmg,cool,gunPart,lvl);
+  GUN_KEY=key;return GUN_CACHE=gunYardCone(gunSpecMake(dmg,cool,gunPart,lvl));
 }
 function gunSpecMake(dmg,cool,gunPart,lvl){
   const s=gunPart?gunPart.seed:0;
@@ -9150,12 +9157,14 @@ let GUNS_CACHE=null,GUNS_KEY="";
 function gunSpecs(list,dmg,cool,lvl){
   /* погнутый подвес (M482): конус первого ствола на треть уже */
   const arc=(typeof scarFactors==="function")?scarFactors(shipData(G.shipId)).arc:1;
-  const key=dmg+"|"+cool+"|"+lvl+"|"+arc+"|"+list.map(a=>a.slot+":"+a.part.seed+":"+a.part.tier+":"+(a.m?a.m.mount:"-")).join(",");
+  const km=(typeof stapelBuiltIn==="function"&&stapelBuiltIn()==="km")?1:0;
+  const key=dmg+"|"+cool+"|"+lvl+"|"+arc+"|"+km+"|"+list.map(a=>a.slot+":"+a.part.seed+":"+a.part.tier+":"+(a.m?a.m.mount:"-")).join(",");
   if(GUNS_KEY===key&&GUNS_CACHE)return GUNS_CACHE;
   GUNS_KEY=key;
   return GUNS_CACHE=list.map((a,i)=>{
     let g=gunOnMount(gunSpecMake(dmg,cool,a.part,lvl),a.m);
     if(i===0&&arc<1&&g.cone<Math.PI){g=Object.assign({},g);g.cone=+(g.cone*arc).toFixed(3);}
+    g=gunYardCone(g);
     return {slot:a.slot,part:a.part,m:a.m,g};
   });
 }
@@ -27916,7 +27925,9 @@ function lawDock(){
   LAW_NORM_LEFT=by==="gt"?LAW_NORM+(doso?10:0):0;
   if(doso)socGot("doso",0,1);
   if(by==="co"){
-    const sponsor=!!(typeof expAll==="function"&&expAll().pax);   /* попутчик экспедиции (11x) — спонсор */
+    /* спонсор: попутчик экспедиции (11x) ИЛИ заказной корпус Компании (M480 §4) */
+    const sponsor=!!(typeof expAll==="function"&&expAll().pax)
+      ||(typeof stapelBuiltIn==="function"&&stapelBuiltIn()==="co");
     if(sponsor){logAdd("money","Компания: пролёт — 0 кр (акция) · спонсор на борту™");return;}
     const fee=Math.min(LAW_FEE,G.credits|0);
     G.credits-=fee;
@@ -115187,13 +115198,14 @@ const STAPEL_YARD={
   gt:{hull:1.25,thr:.93,note:"бронепояс +25 % корпуса, тяжелее на 8 % · по борту «ПЛАН — ЗАКОН», не смывается"},
   co:{price:.85,note:"на 15 % дешевле · по вашему борту бежит строка рекламы, клетка оплачена"},
   or:{hull:1.08,turn:.96,note:"лобовой щит в комплекте (без части) · чертёж по норме: ни одна клетка не повёрнута"},
-  km:{cargo:.85,turn:1.06,lunch:1,note:"поворот мягче, клеток на 15 % меньше · «так красивее» — изгиб, которого вы не заказывали"},
+  km:{cargo:.85,turn:1.06,lunch:1,note:"турели шире на 30° · клеток на 15 % меньше · «так красивее» — изгиб, которого вы не заказывали"},
   ra:{cargo:1.1,note:"приварят лишний отсек (+10 % трюма) · корпус держит бой: «на соплях, но держит»"},
   hf:{hull:.85,fuel:1.08,note:"дальний захват · зрение +1 ступень, корпус на 15 % тоньше · прошивка обновляется сама"}
 };
 function stapelYard(by){return STAPEL_YARD[by]||{};}
 /* встроенное верфи (M480, DESIGN-shipyard §4): с заказанного корпуса, снять нельзя */
 const STAPEL_OR_SHIELD=32,STAPEL_HF_SEE=180;   /* лобовое поле без части; +1 ступень зрения (как longeye) */
+const STAPEL_KM_CONE=Math.PI/6;                 /* Коммуна: турели +30° к конусу */
 function stapelBuiltIn(id){
   const sh=typeof shipData==="function"?shipData(id||G.shipId):null;
   return (sh&&sh.ordered&&sh.by)||null;
@@ -115339,6 +115351,8 @@ function stapelCollect(viaPost){
   /* встроенное (M480): лобовое поле Орднунга, дальний захват Хай-Фронта — в stat() */
   if(o.by==="or")logAdd("dim","Орднунг: лобовое поле вварено · часть щита не нужна");
   if(o.by==="hf")logAdd("dim","Хай-Фронт: дальний захват · зрение на ступень дальше");
+  if(o.by==="km")logAdd("dim","Коммуна: турели шире на 30° · «лишняя кривизна»");
+  if(o.by==="co")logAdd("dim","Компания: спонсор на борту™ · стыковка у Компании без сбора");
   return id;
 }
 /* ── живой чертёж: временная запись, кэш корпуса сбрасываем на каждый сдвиг (лист, 26e2) ── */

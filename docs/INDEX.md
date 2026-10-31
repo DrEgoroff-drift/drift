@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 675 · top-level symbols: 8911
+Files: 675 · top-level symbols: 8913
 
 ## SYMBOLS
 
@@ -596,9 +596,9 @@ ECON_CYCLE                   src/12ax-fx-econ.js:20
 ECON_EMB                     src/12ax-fx-econ.js:23
 ECON_FAIR                    src/12ax-fx-econ.js:22
 ECON_VEIN                    src/12ax-fx-econ.js:21
-EN_SHIELD                    src/05c-arms.js:162
-EN_SHOT                      src/05c-arms.js:161
-EN_THR                       src/05c-arms.js:163
+EN_SHIELD                    src/05c-arms.js:169
+EN_SHOT                      src/05c-arms.js:168
+EN_THR                       src/05c-arms.js:170
 EPI_KINDS                    src/12ap-notebook.js:20-30
 EPI_MAX                      src/12ap-notebook.js:31
 EPI_SPEED                    src/12ap-notebook.js:33
@@ -934,13 +934,13 @@ GTN                          src/16ga-gpu-trail.js:33
 GTR                          src/16ga-gpu-trail.js:9
 GTR_WGSL                     src/16ga-gpu-trail.js:10
 GUEST_EVERY                  src/21a3-base-people.js:30
-GUNS_CACHE                   src/05c-arms.js:209
-GUN_BAKE                     src/05c-arms.js:267
+GUNS_CACHE                   src/05c-arms.js:216
+GUN_BAKE                     src/05c-arms.js:276
 GUN_CACHE                    src/05c-arms.js:71
 GUN_FACTORY                  src/05b-guns.js:99-106
 GUN_FAMILY                   src/05b-guns.js:24-92
 GUN_FAM_KEYS                 src/05b-guns.js:93
-GUN_GROUPS                   src/05c-arms.js:227
+GUN_GROUPS                   src/05c-arms.js:236
 GUN_LIST                     src/05-parts.js:322
 GUN_NAMED                    src/05b-guns.js:121-162
 GUN_NAMED_BY_ID              src/05b-guns.js:163
@@ -1321,7 +1321,7 @@ LATE_LINES                   src/11aq-late.js:34-43
 LATE_LONG                    src/11aq-late.js:29
 LATE_SIT                     src/11aq-late.js:28
 LATE_WRONG                   src/11aq-late.js:45-50
-LAW_MAKE_FEE                 src/12al2-laws.js:54
+LAW_MAKE_FEE                 src/12al2-laws.js:56
 LAW_NORM                     src/12al2-laws.js:15
 LAW_NORM_LEFT                src/12al2-laws.js:16
 LEADBREAK                    src/13a-guns.js:42
@@ -2252,11 +2252,12 @@ STAMP_ORDER                  src/17i-stamp.js:11
 STAMP_POEM                   src/17i-stamp.js:15
 STAMP_RU                     src/17i-stamp.js:12
 STAPEL_KEYS                  src/26e2-stapel-draw.js:336
+STAPEL_KM_CONE               src/26e1-stapel.js:28
 STAPEL_OR_SHIELD             src/26e1-stapel.js:27
-STAPEL_PV                    src/26e1-stapel.js:176
+STAPEL_PV                    src/26e1-stapel.js:179
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
-STAPEL_SIZES                 src/26e1-stapel.js:32
-STAPEL_UI                    src/26e1-stapel.js:177
+STAPEL_SIZES                 src/26e1-stapel.js:33
+STAPEL_UI                    src/26e1-stapel.js:180
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 STAR_CLASS                   src/02-world.js:192-198
 STAR_COLS                    src/16-flight.js:2
@@ -2520,7 +2521,7 @@ WX_PLANES                    src/19d-weather.js:98-103
 YALTA_R                      src/12al-powers.js:153
 YARD                         src/26f-yard-gpu.js:6
 YARD_CHANCE                  src/04b-fleet.js:162
-YARD_DEBRIS                  src/26e1-stapel.js:124
+YARD_DEBRIS                  src/26e1-stapel.js:125
 ZAP_COOL                     src/23-mode-dig.js:258
 ZOOM_MIN                     src/01-core.js:21
 ZOOM_RATE                    src/15-input.js:357
@@ -4077,7 +4078,7 @@ drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-50
 drawLander                   src/19f-lander.js:54-285
 drawLanding                  src/19-mode-landing.js:196-317
-drawLawRing                  src/12al2-laws.js:137-145
+drawLawRing                  src/12al2-laws.js:139-147
 drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
@@ -4208,8 +4209,8 @@ econTierBonus                src/12ax-fx-econ.js:44
 econVeinHere                 src/12ax-fx-econ.js:38-43
 el                           src/26-ui-station.js:343
 endPtr                       src/15-input.js:436-441
-energyCap                    src/05c-arms.js:166
-energyRegen                  src/05c-arms.js:167
+energyCap                    src/05c-arms.js:173
+energyRegen                  src/05c-arms.js:174
 engineLoop                   src/09-audio.js:342-368
 enterBase                    src/21a-mode-base.js:121-153
 enterBelt                    src/24-mode-belt.js:116-149
@@ -4921,27 +4922,28 @@ gtrDraw                      src/16ga-gpu-trail.js:51-59
 gtrLane                      src/16ga-gpu-trail.js:44-48
 gtrNode                      src/16ga-gpu-trail.js:40-42
 gtrPush                      src/16ga-gpu-trail.js:34-38
-gunAimTick                   src/05c-arms.js:174-191
-gunBake                      src/05c-arms.js:304-316
-gunDims                      src/05c-arms.js:268
+gunAimTick                   src/05c-arms.js:181-198
+gunBake                      src/05c-arms.js:313-325
+gunDims                      src/05c-arms.js:277
 gunFactoryOf                 src/05b-guns.js:171
-gunFamilyApply               src/05c-arms.js:108-139
+gunFamilyApply               src/05c-arms.js:115-146
 gunFamilyKeyOf               src/05b-guns.js:170
 gunFireOnce                  src/13a-guns.js:101-247
-gunGroupOf                   src/05c-arms.js:228-232
-gunGroupPick                 src/05c-arms.js:238-256
-gunLeadAngle                 src/05c-arms.js:149-157
-gunMiss                      src/05c-arms.js:142-146
+gunGroupOf                   src/05c-arms.js:237-241
+gunGroupPick                 src/05c-arms.js:247-265
+gunLeadAngle                 src/05c-arms.js:156-164
+gunMiss                      src/05c-arms.js:149-153
 gunNameOf                    src/05b-guns.js:173-176
 gunNamedRoll                 src/05b-guns.js:165-168
-gunOnMount                   src/05c-arms.js:196-205
-gunPaint                     src/05c-arms.js:269-303
+gunOnMount                   src/05c-arms.js:203-212
+gunPaint                     src/05c-arms.js:278-312
 gunSeriesOf                  src/05b-guns.js:169
-gunSpec                      src/05c-arms.js:72-76
-gunSpecMake                  src/05c-arms.js:77-102
-gunSpecs                     src/05c-arms.js:210-221
-gunTotals                    src/05c-arms.js:339-353
-gunsInGroup                  src/05c-arms.js:233-236
+gunSpec                      src/05c-arms.js:78-83
+gunSpecMake                  src/05c-arms.js:84-109
+gunSpecs                     src/05c-arms.js:217-230
+gunTotals                    src/05c-arms.js:348-362
+gunYardCone                  src/05c-arms.js:73-77
+gunsInGroup                  src/05c-arms.js:242-245
 h01                          src/01-core.js:28
 h3dAtlasAt                   src/17c2a-hull3d.js:467-491
 h3dBargeMesh                 src/17c2f-body-barge.js:58-245
@@ -5758,18 +5760,18 @@ lateLeft                     src/11aq-late.js:57-61
 lateSit                      src/11aq-late.js:65-113
 launch                       src/21-mode-surface.js:717-732
 launchHold                   src/21-mode-surface.js:672
-lawDock                      src/12al2-laws.js:19-33
-lawLunch                     src/12al2-laws.js:42-46
-lawLunchRow                  src/12al2-laws.js:48-51
-lawMakeBlock                 src/12al2-laws.js:78-91
-lawMakeHere                  src/12al2-laws.js:55
-lawMakeOwn                   src/12al2-laws.js:67-77
-lawMakePairs                 src/12al2-laws.js:60-66
-lawNormTake                  src/12al2-laws.js:35-40
+lawDock                      src/12al2-laws.js:19-35
+lawLunch                     src/12al2-laws.js:44-48
+lawLunchRow                  src/12al2-laws.js:50-53
+lawMakeBlock                 src/12al2-laws.js:80-93
+lawMakeHere                  src/12al2-laws.js:57
+lawMakeOwn                   src/12al2-laws.js:69-79
+lawMakePairs                 src/12al2-laws.js:62-68
+lawNormTake                  src/12al2-laws.js:37-42
 lawOwner                     src/12al2-laws.js:17
-lawRingGpu                   src/12al2-laws.js:117-136
-lawRingTick                  src/12al2-laws.js:93-109
-lawSpares                    src/12al2-laws.js:56-59
+lawRingGpu                   src/12al2-laws.js:119-138
+lawRingTick                  src/12al2-laws.js:95-111
+lawSpares                    src/12al2-laws.js:58-61
 layerLevel                   src/10-music.js:362-377
 ledgerAll                    src/11ai-ledger.js:36-39
 ledgerNeed                   src/11ai-ledger.js:44-49
@@ -8126,7 +8128,7 @@ shiftLogRec                  src/12pa-beacon.js:43-47
 shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
 shipGear3d                   src/17c2b-parts3d.js:363-373
-shipGearGpu                  src/05c-arms.js:318-338
+shipGearGpu                  src/05c-arms.js:327-347
 shipRow                      src/26-ui-station.js:472-520
 shipScaleAt                  src/16c-rescue.js:234
 shipScaleCap                 src/16c-rescue.js:233
@@ -8300,31 +8302,31 @@ stampShow                    src/17i-stamp.js:83-96
 stampText                    src/17i-stamp.js:28-41
 standAdd                     src/21e2-surface-gpu.js:54-57
 standPass                    src/20ab-poi-gpu.js:134-137
-stapelAll                    src/26e1-stapel.js:33-38
-stapelBlock                  src/26e1-stapel.js:179-249
-stapelBuiltIn                src/26e1-stapel.js:28-31
-stapelClosedWhy              src/26e1-stapel.js:102-107
-stapelCollect                src/26e1-stapel.js:157-174
+stapelAll                    src/26e1-stapel.js:34-39
+stapelBlock                  src/26e1-stapel.js:182-252
+stapelBuiltIn                src/26e1-stapel.js:29-32
+stapelClosedWhy              src/26e1-stapel.js:103-108
+stapelCollect                src/26e1-stapel.js:158-177
 stapelDelta                  src/26e2-stapel-draw.js:337-347
 stapelDraft                  src/26e2-stapel-draw.js:196-228
 stapelFx                     src/26e2-stapel-draw.js:349-357
 stapelHullBox                src/26e2-stapel-draw.js:239-288
 stapelHullTick               src/26e2-stapel-draw.js:299-333
-stapelId                     src/26e1-stapel.js:74
+stapelId                     src/26e1-stapel.js:75
 stapelLater                  src/26e2-stapel-draw.js:298
-stapelMine                   src/26e1-stapel.js:119-122
-stapelOrder                  src/26e1-stapel.js:86-100
+stapelMine                   src/26e1-stapel.js:120-123
+stapelOrder                  src/26e1-stapel.js:87-101
 stapelPen                    src/26e2-stapel-draw.js:13-19
-stapelReady                  src/26e1-stapel.js:108
-stapelRestore                src/26e1-stapel.js:81-84
+stapelReady                  src/26e1-stapel.js:109
+stapelRestore                src/26e1-stapel.js:82-85
 stapelSheet                  src/26e2-stapel-draw.js:20-190
-stapelSheetW                 src/26e1-stapel.js:178
-stapelShip                   src/26e1-stapel.js:65-73
-stapelStats                  src/26e1-stapel.js:48-63
-stapelStrip                  src/26e1-stapel.js:76-80
-stapelTick                   src/26e1-stapel.js:110-116
+stapelSheetW                 src/26e1-stapel.js:181
+stapelShip                   src/26e1-stapel.js:66-74
+stapelStats                  src/26e1-stapel.js:49-64
+stapelStrip                  src/26e1-stapel.js:77-81
+stapelTick                   src/26e1-stapel.js:111-117
 stapelYard                   src/26e1-stapel.js:25
-stapelYardBy                 src/26e1-stapel.js:40-44
+stapelYardBy                 src/26e1-stapel.js:41-45
 starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:25-34
 starRGB                      src/19c-light.js:49-59
@@ -8894,9 +8896,9 @@ yaltaIs                      src/12al-powers.js:162-165
 yaltaSealed                  src/12al-powers.js:169-173
 yardBeam                     src/04c-yards.js:84-88
 yardCanvas                   src/26f-yard-gpu.js:12-19
-yardDebris                   src/26e1-stapel.js:125-132
+yardDebris                   src/26e1-stapel.js:126-133
 yardDraw                     src/26f-yard-gpu.js:41-54
-yardFirmware                 src/26e1-stapel.js:135-155
+yardFirmware                 src/26e1-stapel.js:136-156
 yardGate                     src/04c-yards.js:144-148
 yardHide                     src/26f-yard-gpu.js:20
 yardTick                     src/26f-yard-gpu.js:22-39
@@ -9005,7 +9007,7 @@ zoomTo                       src/15-input.js:358
 ## src/05b4-recall.js · 4 KB
   · отзыв партии (M509, PLAN «new mechanics», st. 6):1
 
-## src/05c-arms.js · 24 KB
+## src/05c-arms.js · 25 KB
   · орудие в семи числах, щит в трёх повадках (M362, §2 §4):1
 
 ## src/05d-mounts.js · 5 KB
@@ -10477,7 +10479,7 @@ zoomTo                       src/15-input.js:358
 ## src/26e-ui-station-trade.js · 33 KB
   · станция: доска, рынок и док (выделено из 26, M415):1
 
-## src/26e1-stapel.js · 16 KB
+## src/26e1-stapel.js · 17 KB
   · СТАПЕЛЬ — заказ корпуса у державы (M481, DESIGN-shipyard §5):1
 
 ## src/26e2-post.js · 14 KB

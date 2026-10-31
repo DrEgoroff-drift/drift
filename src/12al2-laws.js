@@ -22,7 +22,9 @@ function lawDock(){
   LAW_NORM_LEFT=by==="gt"?LAW_NORM+(doso?10:0):0;
   if(doso)socGot("doso",0,1);
   if(by==="co"){
-    const sponsor=!!(typeof expAll==="function"&&expAll().pax);   /* попутчик экспедиции (11x) — спонсор */
+    /* спонсор: попутчик экспедиции (11x) ИЛИ заказной корпус Компании (M480 §4) */
+    const sponsor=!!(typeof expAll==="function"&&expAll().pax)
+      ||(typeof stapelBuiltIn==="function"&&stapelBuiltIn()==="co");
     if(sponsor){logAdd("money","Компания: пролёт — 0 кр (акция) · спонсор на борту™");return;}
     const fee=Math.min(LAW_FEE,G.credits|0);
     G.credits-=fee;

@@ -261,9 +261,8 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 
 - [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
   release run).
-- [ ] **M480/M481 yards (rest):** worlds oracle OK; стрельбище probe 6/6 (flanker). **0.499.64:** Орднунг front
-  shield + Хай-Фронт sight wired (`stapelBuiltIn` → `stat()`); notes honest. Still open: Компания −15 % price has
-  no number against it; КБ billing absent; Коммуна turret +30° / Рассвет scrap heal / ГТ mass habit unfinished.
+- [ ] **M480/M481 yards (rest):** worlds/spar OK. Wired through 0.499.65: or front shield, hf sight, co −15 % price
+  (probe) + sponsor dock free, km turret +30°, ra scrap heal, gt thr −8 %. Still open: КБ billing at foreign yards.
 
 ## 8. Stage 7 — the giants
 

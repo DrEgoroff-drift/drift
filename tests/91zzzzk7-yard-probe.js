@@ -110,7 +110,7 @@ suite("проба · верфи: рудовоз против лучшей сде
   ok(downs.every(n=>n>=5),"flanker · spar-капитан: все верфи ≥5/6 сдач ("+downs.join(",")+")");
   G.shipId="strizh";
 });
-/* встроенное §4 — быстрый набор: заметки or/hf больше не врут (0.499.64) */
+/* встроенное §4 — быстрый набор (0.499.64–65) */
 suite("верфь · Орднунг лобовой щит · Хай-Фронт зрение",()=>{
   resetWorld();
   ydFly(undefined,"warship","medium");const see0=stat().see|0;
@@ -119,5 +119,19 @@ suite("верфь · Орднунг лобовой щит · Хай-Фронт �
   ydFly("hf","warship","medium");const Sh=stat();
   ok((Sh.see|0)>=see0+(STAPEL_HF_SEE|0)-1,"Хай-Фронт: зрение +1 ступень");
   ok(!/носовая броня даром|прибор даром/.test(STAPEL_YARD.or.note+STAPEL_YARD.hf.note),"заметки or/hf без вранья");
+  G.shipId="strizh";
+});
+suite("верфь · Компания цена · Коммуна конус",()=>{
+  resetWorld();
+  const base=stapelStats({cls:"hauler",size:"heavy",l:1,w:1.15}).price;
+  const co=stapelStats({by:"co",cls:"hauler",size:"heavy",l:1,w:1.15}).price;
+  const ratio=co/Math.max(1,base);
+  ok(ratio>.8&&ratio<.9,"Компания: −15 % к цене корпуса ("+co+" vs "+base+", ×"+ratio.toFixed(2)+")");
+  G.mods.weapon=2;G.modsOwned.weapon=2;
+  ydFly(undefined,"warship","medium");invalidateParts();
+  const c0=(stat().gun&&stat().gun.cone)||0;
+  ydFly("km","warship","medium");invalidateParts();
+  const c1=(stat().gun&&stat().gun.cone)||0;
+  ok(c1+1e-6>=c0+(STAPEL_KM_CONE||0)-.02,"Коммуна: турели +30° ("+c0.toFixed(3)+"→"+c1.toFixed(3)+")");
   G.shipId="strizh";
 });

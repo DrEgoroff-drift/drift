@@ -6,9 +6,13 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.65 — Компания спонсор, Коммуна +30° конуса
+
+- M480: ordered Компания hull docks free as «спонсор на борту™»; Коммуна ordered hulls widen turret cone by 30° (`STAPEL_KM_CONE`). Probe asserts −15 % price and the cone step. No picture change.
+
 ## 0.499.64 — Орднунг лобовой щит, Хай-Фронт дальний захват
 
-- M480: ordered Орднунг hulls get a front shield without a part (`STAPEL_OR_SHIELD`); Хай-Фронт get sight +1 step (`STAPEL_HF_SEE`). Notes match DESIGN-shipyard §4 — no more «носовая броня даром» / «прибор даром» lies.
+- M480: ordered Орднунг hulls get a front shield without a part (`STAPEL_OR_SHIELD`); Хай-Фронт get sight +1 step (`STAPEL_HF_SEE`). Notes match DESIGN-shipyard §4 — no more «носовая броня даром» / «прибор даром» lies. Yard probe typeof guards removed (CI Node was red on 0.499.62–63).
 
 ## 0.499.63 — yard стрельбище probe flanks the captain
 
