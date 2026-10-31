@@ -30,6 +30,10 @@ function farTake(k,n){
   if(first){
     const d=farDeposits(G.sx,G.sy).find(x=>x.k===k);
     if(d&&d.grade===3){farVein(d);if(typeof rushStart==="function")rushStart(G.sx,G.sy);}   /* ажиотаж на дороге (M504) */
+    else if(d&&d.grade===0){   /* бедная — «на обратную дорогу» (DESIGN-review resources) */
+      logAdd("dim","Залежь бедная · "+RES[k].ru+" · «на обратную дорогу»");
+      say("Бедная\nна обратную дорогу",100);
+    }
   }
 }
 /* ── прибор: честный диапазон ── */

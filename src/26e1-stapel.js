@@ -130,6 +130,8 @@ function yardFirmware(){
   const o=stapelMine();if(!o||o.by!=="hf"||typeof chronNow!=="function"||typeof draftOf!=="function")return false;
   const c=chronNow();if(o.fw===undefined){o.fw=c;return false;}
   if(c<=o.fw)return false;o.fw=c;
+  /* «отложить обновление» (0.499.55 / DESIGN-review): G.hfFw.defer сводок */
+  if(G.hfFw&&(G.hfFw.defer|0)>0){G.hfFw.defer--;return false;}
   const d=draftOf(G.shipId),D=G.draft&&G.draft[G.shipId],weld=(D&&D.weld)||[];
   const L=d.items.filter(it=>weld.indexOf(it.key)<0);if(!L.length||!d.hold.length)return false;
   const it=L[(hashi(o.no|0,c,0x4F1)>>>0)%L.length],old=it.cells;
@@ -139,7 +141,8 @@ function yardFirmware(){
     /* освободившиеся клетки палубы уходят в трюм, как в КБ */
     for(const x of old)if(it.cells.indexOf(x)<0&&(x.kind==="deck"||x.kind==="spine"))d.hold.push(x);
     draftSave(G.shipId,d);if(typeof invalidateParts==="function")invalidateParts();
-    logAdd("tech","Хай-Фронт: обновление установлено · переставили «"+(it.what==="mod"?(MODS[it.kind]?MODS[it.kind].ru:it.kind):(PART_KINDS[it.kind]?PART_KINDS[it.kind].ru:it.kind))+"» на новую клетку · «так удобнее»");
+    logAdd("tech","Хай-Фронт: обновление установлено · «оптимизировано» · переставили «"+(it.what==="mod"?(MODS[it.kind]?MODS[it.kind].ru:it.kind):(PART_KINDS[it.kind]?PART_KINDS[it.kind].ru:it.kind))+"»");
+    say("Оптимизировано\nпрошивка сдвинула деталь",110);
     return true;
   }
   return false;

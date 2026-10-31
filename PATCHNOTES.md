@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.57 — «до куда?», poor deposit, one HF firmware path
+
+- Рассвет bus: «До куда?» — «Ну поехали.» Poor far take: «на обратную дорогу». HF firmware: only `yardFirmware` nudges (defer via `G.hfFw`); dropped the duplicate tick.
+
 ## 0.499.56 — metro board «завтра» and «Край»
 
 - DESIGN-review metro: outside the metro circle the board reads «следующий поезд — завтра», then «поезд подан»; a far ticket announces «до станции «Край»… остановок: сто четырнадцать»; a полустанок greets «ждали».

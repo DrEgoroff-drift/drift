@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 674 · top-level symbols: 8899
+Files: 674 · top-level symbols: 8897
 
 ## SYMBOLS
 
@@ -2252,10 +2252,10 @@ STAMP_ORDER                  src/17i-stamp.js:11
 STAMP_POEM                   src/17i-stamp.js:15
 STAMP_RU                     src/17i-stamp.js:12
 STAPEL_KEYS                  src/26e2-stapel-draw.js:336
-STAPEL_PV                    src/26e1-stapel.js:161
+STAPEL_PV                    src/26e1-stapel.js:164
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
-STAPEL_UI                    src/26e1-stapel.js:162
+STAPEL_UI                    src/26e1-stapel.js:165
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 STAR_CLASS                   src/02-world.js:192-198
 STAR_COLS                    src/16-flight.js:2
@@ -4285,19 +4285,19 @@ failTick                     src/05b1-warranty.js:104-119
 fameOf                       src/21b3-base-hunt.js:98-102
 fameWhere                    src/21b3-base-hunt.js:103-115
 farBasePrice                 src/12-economy.js:74-78
-farBeltDress                 src/06e-far-take.js:85-98
+farBeltDress                 src/06e-far-take.js:89-102
 farCargoHit                  src/06f-far-props.js:14-31
-farCaveAmber                 src/06e-far-take.js:136-152
-farCaveAmberTake             src/06e-far-take.js:153-162
+farCaveAmber                 src/06e-far-take.js:140-156
+farCaveAmberTake             src/06e-far-take.js:157-166
 farCurve                     src/12-economy.js:69-73
 farDeposits                  src/06d-far.js:59-79
-farDigNode                   src/06e-far-take.js:100-110
+farDigNode                   src/06e-far-take.js:104-114
 farEaterMul                  src/12-economy.js:38-44
 farEaterVoice                src/12-economy.js:60-68
 farGradeOf                   src/06d-far.js:57
 farGradeRu                   src/06d-far.js:80
 farHere                      src/06e-far-take.js:19-23
-farHunt                      src/06e-far-take.js:123-132
+farHunt                      src/06e-far-take.js:127-136
 farKey                       src/06e-far-take.js:16
 farLeft                      src/06e-far-take.js:17
 farNormal                    src/06d-far.js:53-56
@@ -4306,20 +4306,20 @@ farPlanetIdx                 src/06e-far-take.js:24
 farPresence                  src/06d-far.js:28-31
 farPriceCtx                  src/12-economy.js:79-81
 farR                         src/06d-far.js:25
-farReadLine                  src/06e-far-take.js:47-52
-farReadShow                  src/06e-far-take.js:55-72
-farReading                   src/06e-far-take.js:41-46
-farScoopPick                 src/06e-far-take.js:112-118
-farSpread                    src/06e-far-take.js:36-40
+farReadLine                  src/06e-far-take.js:51-56
+farReadShow                  src/06e-far-take.js:59-76
+farReading                   src/06e-far-take.js:45-50
+farScoopPick                 src/06e-far-take.js:116-122
+farSpread                    src/06e-far-take.js:40-44
 farStall                     src/12-economy.js:89-97
 farStallBuy                  src/12-economy.js:98-108
-farTake                      src/06e-far-take.js:26-34
+farTake                      src/06e-far-take.js:26-38
 farTakenAll                  src/06e-far-take.js:15
 farTrapTick                  src/06f-far-props.js:35-50
-farVein                      src/06e-far-take.js:74-83
-farVeinCompany               src/06e-far-take.js:197-200
-farVeinRumour                src/06e-far-take.js:182-195
-farVeinsKnown                src/06e-far-take.js:168-180
+farVein                      src/06e-far-take.js:78-87
+farVeinCompany               src/06e-far-take.js:201-204
+farVeinRumour                src/06e-far-take.js:186-199
+farVeinsKnown                src/06e-far-take.js:172-184
 farmBeast                    src/21ac2-base-farm.js:54-64
 farmCell                     src/21ac2-base-farm.js:35-38
 farmEnter                    src/21ac2-base-farm.js:80-91
@@ -5272,10 +5272,8 @@ hex2rgb                      src/01-core.js:221-224
 hexA                         src/12e-drone-flight.js:286-292
 hexRGB                       src/24-mode-belt.js:63-65
 hexa                         src/12w-survey.js:83-86
-hfFwDefer                    src/27jc-hf-fw.js:10-17
-hfFwNudge                    src/27jc-hf-fw.js:19-38
-hfFwShip                     src/27jc-hf-fw.js:5-9
-hfFwTick                     src/27jc-hf-fw.js:39-54
+hfFwDefer                    src/27jc-hf-fw.js:9-16
+hfFwShip                     src/27jc-hf-fw.js:4-8
 hgCall                       src/27j1-ui-hangar.js:101-120
 hgFloor                      src/27j1-ui-hangar.js:244-280
 hgFrame                      src/27j1-ui-hangar.js:282-286
@@ -7462,7 +7460,7 @@ railBucket                   src/18i-rail-life.js:18
 railBuffet                   src/18f-rail-station.js:250-257
 railBuildLines               src/18e-rail-net.js:55-101
 railBusDrop                  src/18h-rail-powers.js:54-69
-railBusTalk                  src/18j-rail-rush.js:29-34
+railBusTalk                  src/18j-rail-rush.js:29-36
 railBuy                      src/18f-rail-station.js:230-249
 railCarDraw                  src/18gb-rail-car.js:67-76
 railCarLights                src/18gb-rail-car.js:60-65
@@ -8297,9 +8295,9 @@ stampText                    src/17i-stamp.js:28-41
 standAdd                     src/21e2-surface-gpu.js:54-57
 standPass                    src/20ab-poi-gpu.js:134-137
 stapelAll                    src/26e1-stapel.js:27-32
-stapelBlock                  src/26e1-stapel.js:164-234
+stapelBlock                  src/26e1-stapel.js:167-237
 stapelClosedWhy              src/26e1-stapel.js:96-101
-stapelCollect                src/26e1-stapel.js:148-159
+stapelCollect                src/26e1-stapel.js:151-162
 stapelDelta                  src/26e2-stapel-draw.js:337-347
 stapelDraft                  src/26e2-stapel-draw.js:196-228
 stapelFx                     src/26e2-stapel-draw.js:349-357
@@ -8313,7 +8311,7 @@ stapelPen                    src/26e2-stapel-draw.js:13-19
 stapelReady                  src/26e1-stapel.js:102
 stapelRestore                src/26e1-stapel.js:75-78
 stapelSheet                  src/26e2-stapel-draw.js:20-190
-stapelSheetW                 src/26e1-stapel.js:163
+stapelSheetW                 src/26e1-stapel.js:166
 stapelShip                   src/26e1-stapel.js:59-67
 stapelStats                  src/26e1-stapel.js:42-57
 stapelStrip                  src/26e1-stapel.js:70-74
@@ -8889,7 +8887,7 @@ yardBeam                     src/04c-yards.js:84-88
 yardCanvas                   src/26f-yard-gpu.js:12-19
 yardDebris                   src/26e1-stapel.js:119-126
 yardDraw                     src/26f-yard-gpu.js:41-54
-yardFirmware                 src/26e1-stapel.js:129-146
+yardFirmware                 src/26e1-stapel.js:129-149
 yardGate                     src/04c-yards.js:144-148
 yardHide                     src/26f-yard-gpu.js:20
 yardTick                     src/26f-yard-gpu.js:22-39
@@ -10588,7 +10586,7 @@ zoomTo                       src/15-input.js:358
 ## src/27jb-ui-got.js · 4 KB
   · «ЧТО ПОЛУЧИЛ» — добыча боя карточкой (п. 5 плейтеста 11.09):1
 
-## src/27jc-hf-fw.js · 3 KB
+## src/27jc-hf-fw.js · 1 KB
   · прошивка Хай-Фронта (M480, DESIGN-review shipyard):1
 
 ## src/27k-road.js · 48 KB
