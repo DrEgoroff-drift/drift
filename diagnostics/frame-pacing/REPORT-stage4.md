@@ -81,8 +81,8 @@ The `dig` block: `i=722` has `js=40.2`, `dw=36.4`, while `dg.frame` (the dig's o
 | `surface` 128.8 ms inside `dw` on the first surface frame (js 138.2) | **Cause identified**: the surface's first draw. `dw` = `drawSurface` that frame. |
 | the following `gap` 137.4 | **Cause identified**: it is the rAF interval after that 138.2 ms frame — `prevJs=138.2`, `prevGap=4.3`. The old format could not show this. |
 | `dig` `dw` 36.4 with `dg.frame` 5.5 | **Partially identified**: 5.5 is `dig3Frame`; ~30.9 lies in `drawWorldIn` outside `drawDig` — at `28-loop:451` the branch `sunDirSet(null)` for non-surface/landing modes, and `gpuWorld`. Not yet split between them. |
-| `landing` `gap` 854.2 with `js` 8.3 | **Cause not established.** The tab was visible, the frame body took 8.3 ms. It sits between probe runs (`g11RunNear` awaits `sleep(3000)`), so the prime suspect is the probe's own inter-run gap, not the game — but that is a hypothesis, not proof. |
-| `rackDraw` | **Not reproduced**: `rack` is 0 in every block of this run — the instrument rack was closed. The stage-3 "9 ms" figure is therefore **not confirmed**. |
+| `landing` `gap` 854.2 with `js` 8.3 | **Cause established** (`near-run-05`): the probe's own `sleep(3000)` between runs. Shortening it to 50 ms dropped the landing gap **854.2 → 33.4**. The game did not change; the 854 was the stand. |
+| `rackDraw` | **Measured** (`near-run-05`, rack open): **3.1 ms** total — `rackTex` 3.0, `rackBottom` 0.1, `rackDrawK` 0.1. The stage-3 "9 ms" is **not confirmed**; the cost is the plate bake, not the DOM. |
 
 The `gpuWorld` components (`gw.front`, `gw.bloom`, `gw.ov`) are 0 on every frame because they
 measure JS command-recording only.
@@ -91,7 +91,12 @@ measure JS command-recording only.
 
 ## 6. `rackDraw` and the dig, as measured
 
-- `rack` = 0 in `system`, `landing`, `surface`, `dig`, `cave` — the rack was closed in this run.
+- `rack` = 0 in `system`, `landing`, `surface`, `dig`, `cave` — the rack was closed in that run.
+- **rack open** (`near-run-05`, `G.rack={on:true}`): `rack` peaks at **3.1 ms** on the landing's
+  first frame — `rackT` (`rackTex`, the plate bake) = **3.0**, `rackB` (`rackBottom`, the DOM flag)
+  = 0.1, `rackF` (`rackLate` → `rackDrawK`) = 0.1. In `system` it is 1.1 (rackT 0.6). So the "~9 ms"
+  of stage 3 is **not confirmed**: the whole rack draw is ~3 ms when open, and it is the bake, not
+  the DOM.
 - `dg.qual` = 0, `dg.ready` = 0, `dg.frame` = 5.5, `dg.over` = 0 on the dig frames.
 - `dwAll` = `rack` + `dw` + `hit` to within rounding; on dig the 36.4 is `dw` (`drawWorld`).
 
@@ -118,7 +123,8 @@ still owed. Recorded here as an open item, not as a result.
 - **Refuted**: "`drawWorld` in dig ≈ 15 ms" — `drawWorld`'s own draw (`dig3Frame`) is 5.5 ms; the
   13–15 came from `dw`'s umbrella. "`rackDraw` ≈ 9 ms" — not reproduced (rack closed, `rack`=0).
   "`gpuWorld`/bloom free" — **not proven either way**: `gw.*=0` is JS only.
-- **Unexplained**: the `landing` 854.2 gap behind an 8.3 ms frame (probe suspected, not proven);
+- **Explained since**: the `landing` 854.2 gap behind an 8.3 ms frame — the probe's `sleep(3000)`;
+  it fell to 33.4 after the probe's pause was cut to 50 ms;
   the ~30.9 ms inside `drawWorldIn` on dig outside `drawDig`; the `surface` 128.8 first-draw cost
   is identified by *location* but its internal split (terrain vs. plants vs. lights) is not yet
   measured.
