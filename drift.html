@@ -131532,6 +131532,7 @@ async function g11Run(){
       const bz=Object.entries(globalThis.__bsize||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>e[0]+"×"+e[1]);
       out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,jsMax:iv.jsMax,jsP90:iv.jsP90,switchMs:delay,bakes:bs,bakeMs:bms,bkeys:bk,bsize:bz,slow:(globalThis.__bslow||[]).slice(0,4)};
       put(st[0]+" "+iv.fps+" · p90 "+iv.p90+" · max "+iv.max+" (js "+iv.jsMax+") · ≥45 "+iv.n45+" · переход "+delay+" мс · выпечек "+bs+" / "+bms+" мс"+(bz.length?" · "+bz.join(", "):"")+((globalThis.__bslow||[]).length?" · "+(globalThis.__bslow||[]).slice(0,2).join(" ; "):""));
+      if(st[0]==="system"&&typeof g11GpuMs==="function"){try{const gm=await g11GpuMs(2,true);const top=Object.entries(gm||{}).filter(e=>e[0]!=="sum").sort((a,b)=>(b[1].max||0)-(a[1].max||0)).slice(0,5).map(e=>e[0]+" max "+e[1].max+" / "+e[1].pf+"/кадр");det[st[0]].gpu=gm;put("  GPU: "+top.join(" · "));}catch(e){}}
     }catch(e){err.push(st[0]+": "+(e&&e.message||e));put(st[0]+" СБОЙ");}
   }
   put("ГОТОВО "+JSON.stringify(out));
@@ -131608,7 +131609,7 @@ function gpuTsResolve(){
       const k=nm.slice(-1),base=nm.slice(0,-1);
       if(k==="<")open[base]=e;
       else if(k===">"&&open[base]){const r=acc[base]||(acc[base]={ms:0,n:0});r.ms+=Number(b-open[base])/1e6;r.n++;open[base]=0;}
-      else{const r=acc[nm]||(acc[nm]={ms:0,n:0});r.ms+=Number(e-b)/1e6;r.n++;}
+      else{const r=acc[nm]||(acc[nm]={ms:0,n:0});const d=Number(e-b)/1e6;r.ms+=d;r.n++;if(d>(r.max||0))r.max=d;}
       if(lo===null||b<lo)lo=b;if(hi===null||e>hi)hi=e;}
     if(lo!==null){const r=acc.frame||(acc.frame={ms:0,n:0});r.ms+=Number(hi-lo)/1e6;r.n++;}
     rb.unmap();}).catch(()=>{});
@@ -131625,7 +131626,7 @@ async function g11GpuMs(sec,lite){
   /* ms — на один проход, pf — сумма за кадр (проход может идти дважды или не каждый кадр);
      sum — всё размеченное за кадр, кроме самого кадра: frame минус sum — простой видеокарты */
   const o={};let sum=0;
-  for(const k in GPU.tsAcc){const r=GPU.tsAcc[k];o[k]={ms:+(r.ms/r.n).toFixed(2),pf:+(r.ms/fr).toFixed(2),share:Math.round(100*r.n/fr)};
+  for(const k in GPU.tsAcc){const r=GPU.tsAcc[k];o[k]={ms:+(r.ms/r.n).toFixed(2),pf:+(r.ms/fr).toFixed(2),share:Math.round(100*r.n/fr),max:+(r.max||0).toFixed(2)};
     if(k!=="frame")sum+=r.ms/fr;}
   o.sum={pf:+sum.toFixed(2)};
   return o;

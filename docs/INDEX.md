@@ -706,8 +706,8 @@ FWD_PAY_EVERY                src/21b6-base-forward.js:23
 FW_HOOKS                     src/28o-firstwatch.js:81-87
 FW_URG_MIN                   src/28o-firstwatch.js:17
 G                            src/08-state.js:207-293
-G11_CPU                      src/28z-fps-probe.js:205
-G11_GPU_KILL                 src/28z-fps-probe.js:230-261
+G11_CPU                      src/28z-fps-probe.js:206
+G11_GPU_KILL                 src/28z-fps-probe.js:231-262
 GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:20
 GAL_BULGE_CAP                src/17z1-galaxy.js:22
@@ -4480,9 +4480,9 @@ fwdLine                      src/21b6-base-forward.js:76-82
 fwdLineOf                    src/21b6-base-forward.js:118-124
 fwdMissing                   src/21b6-base-forward.js:42-52
 fwdStep                      src/21b6-base-forward.js:99-116
-g11CpuHook                   src/28z-fps-probe.js:206-211
+g11CpuHook                   src/28z-fps-probe.js:207-212
 g11Fps                       src/28z-fps-probe.js:7-14
-g11Iv                        src/28z-fps-probe.js:212-223
+g11Iv                        src/28z-fps-probe.js:213-224
 galArmD                      src/17z1-galaxy.js:25-29
 galArmPt                     src/17z2-galaxy-names.js:14
 galArmTh                     src/17z2-galaxy-names.js:13
@@ -4825,7 +4825,7 @@ gpuResize                    src/08b-gpu.js:408-453
 gpuScene                     src/08b-gpu.js:581-594
 gpuScene3D                   src/08b-gpu.js:598-606
 gpuScr                       src/08c-gpu-kit.js:144
-gpuSeg                       src/28z-fps-probe.js:157-160
+gpuSeg                       src/28z-fps-probe.js:158-161
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:318-329
 gpuShock                     src/08b-gpu.js:479
@@ -4839,9 +4839,9 @@ gpuSubmitFrame               src/08b-gpu.js:663-668
 gpuSysUnder                  src/17g-gpu-system.js:519-525
 gpuTakeSnap                  src/08b-gpu.js:30-37
 gpuTrail                     src/16ga-gpu-trail.js:61-108
-gpuTs                        src/28z-fps-probe.js:146-153
-gpuTsAround                  src/28z-fps-probe.js:163-167
-gpuTsResolve                 src/28z-fps-probe.js:169-187
+gpuTs                        src/28z-fps-probe.js:147-154
+gpuTsAround                  src/28z-fps-probe.js:164-168
+gpuTsResolve                 src/28z-fps-probe.js:170-188
 gpuUni                       src/08b-gpu.js:546-560
 gpuWake                      src/16ga-gpu-trail.js:117-150
 gpuWeatherFar                src/19cc-gpu-air.js:265-293
@@ -10703,7 +10703,7 @@ zoomTo                       src/15-input.js:358
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
 
-## src/28z-fps-probe.js · 24 KB
+## src/28z-fps-probe.js · 25 KB
   · пробник G11: ?g11:1
 
 ## src/29c-home-in.js · 16 KB
