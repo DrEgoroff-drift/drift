@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.92 — M474 Ordnung double-press via railBuyBoard
+
+- Vestibule: `railBuyBoard` does declare-then-board when the departure land is Ordnung; suite locks the two-press law so metro heart flipping owner cannot break one-shot ticket buys.
+
 ## 0.499.91 — stripLvl out of stateHash; cheb body junk strip
 
 - M441: `strip` / `stripLvl` skipped in `stateHash` — planet unwrap is GPU LOD from screen radius, not world (closes the old `planetStripTick`/wallMs hash leak).

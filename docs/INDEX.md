@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 683 · top-level symbols: 8927
+Files: 684 · top-level symbols: 8928
 
 ## SYMBOLS
 
@@ -7478,11 +7478,12 @@ railAt                       src/18e-rail-net.js:123-131
 railBoardEta                 src/18f-rail-station.js:290-298
 railBranchAng                src/18e-rail-net.js:62-65
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:369-376
+railBuffet                   src/18f-rail-station.js:377-384
 railBuildLines               src/18e-rail-net.js:66-112
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-36
 railBuy                      src/18f-rail-station.js:349-368
+railBuyBoard                 src/18f-rail-station.js:372-376
 railCarDraw                  src/18gb-rail-car.js:67-76
 railCarLights                src/18gb-rail-car.js:60-65
 railCarMesh                  src/18gb-rail-car.js:18-58
@@ -7555,7 +7556,7 @@ railStep                     src/18e-rail-net.js:54
 railStopName                 src/18f-rail-station.js:130
 railStopShapes               src/18gb-rail-car.js:79-90
 railStopsOf                  src/18e-rail-net.js:133-157
-railTick                     src/18f-rail-station.js:378-385
+railTick                     src/18f-rail-station.js:386-393
 railTrainPos                 src/18g-rail-ride.js:40-52
 railUAt                      src/18e-rail-net.js:116-121
 railVisited                  src/18k-rail-scheme.js:110-114
@@ -10962,6 +10963,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzzk9c-rail-far.js · 1 KB
   · M474: сеть за r 60 лениво по региону:1
+
+## tests/91zzzzk9d-rail-or.js · 2 KB
+  · M474: Орднунг — два нажатия на кассе:1
 
 ## tests/91zzzzy-play.js · 18 KB
   · глубокие сценарии (M331):1

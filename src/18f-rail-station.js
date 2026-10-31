@@ -366,6 +366,14 @@ function railBuy(t,express,bus){
   RAIL_WAIT={...t,express:!!express,bus:!!bus,t:bus?3:railWaitNow(G.sx,G.sy)};
   railWinRender();
 }
+/* касса до посадки: в земле Орднунга — два нажатия (декларация, потом билет).
+   Наборы и боты берут это, а не сырой railBuy: иначе сердце метро, став Орднунгом,
+   ломает одно нажатие (M474 rest / PLAN). */
+function railBuyBoard(t,express,bus){
+  if(!t)return;
+  railBuy(t,express,bus);
+  if(!RAIL_WAIT)railBuy(t,express,bus);
+}
 function railBuffet(){
   const free=socIn("know");   /* «Знающим» чай даром (M512) */
   if(!free&&G.credits<3){say("Буфет: «мелочи нет? и у нас нет»",90);return;}

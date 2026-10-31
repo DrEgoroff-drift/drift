@@ -226,8 +226,8 @@ measured on the GPU build first:
 
 - [x] **Oracle lines** (`91zzzzzzzzza-worlds`): **0.499.72** fare laws; **0.499.85** `oracleRoundTrip`; **0.499.89**
   `oracleHaulerHop` (stripped «Вьюк» one-hop); **0.499.90** `oracleDealProbe` — best rail round trip ≤ ×1.3 jumps in credits/min (deal-time probe, baggage lever).
-- [ ] **M474 six railways (rest):** **0.499.83** `railEnsure` grows the net past r 60 per region. Still open:
-  ride-suite fragility if the heart metro land turns Орднунг (double press).
+- [x] **M474 six railways (rest):** **0.499.83** `railEnsure` past r 60; **0.499.92** `railBuyBoard` + suite —
+  Орднунг double press (declare then board) so heart-metro land flipping to Ordnung cannot break one-shot buys.
 - [ ] **M475 economy (rest):** fares, baggage and the size rule tuned against the oracle's rail line (release run).
 - **Gate:** from home to a rim полустанок and back with a hold of deep goods in under 4 minutes of play,
   paying its ticket on an average roll; the ride never shows a loading screen.
