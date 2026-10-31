@@ -6,6 +6,13 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+
+## 0.499.99 — The dig's 2D stub out; launchers on WebGPU; the plan's phone is the final test
+
+- `23-mode-dig`: the dead `drawDigFauna` stub and its `23c0-dig-hooks` entry are gone — the engine draws the beasts and the zap (`23ce`); the ban on editing `23-mode-dig` is lifted.
+- `docs/pageshot.ps1` and `docs/shot.ps1` open the stand on WebGPU (SwiftShader flags from one place, `docs/shot.py`) instead of `--disable-gpu`, so they shoot the game, not the no-WebGPU stub.
+- `PLAN.md`: the phone (S23/P1) is the final test, later; the engine (§0: G15, L1/L1b, L2, L3, G5, heat, CI) is closed and verified without it.
+
 ## 0.499.98 — Shuttle mesh: densify pad out
 
 - `bodyShuttleMesh` kept the hull, nose, gondolas, cabin and the first seams; the numbered rivet/hatch repeats (about 300 lines) are gone. Cache key `c136`.
