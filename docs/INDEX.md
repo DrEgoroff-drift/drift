@@ -1192,7 +1192,7 @@ HOTEL_LIT                    src/17l-hotel.js:123
 HOTEL_LOD                    src/17l-hotel.js:51
 HOTEL_NIGHT                  src/17l-hotel.js:16
 HOTEL_RIM                    src/17l-hotel.js:185
-HOTEL_SHOP_N                 src/17l-hotel.js:313
+HOTEL_SHOP_N                 src/17l-hotel.js:314
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
 HOTEL_T                      src/17l-hotel.js:17
@@ -5425,7 +5425,7 @@ hotelAngD                    src/17l-hotel.js:85
 hotelArc                     src/17l-hotel.js:182
 hotelDesk                    src/17l-hotel.js:279-297
 hotelDock                    src/17l-hotel.js:215-258
-hotelDoors                   src/17l-hotel.js:299-309
+hotelDoors                   src/17l-hotel.js:299-310
 hotelDrop                    src/17l-hotel.js:60
 hotelGet                     src/17l-hotel.js:113-121
 hotelHere                    src/17l-hotel.js:18-23
@@ -5444,7 +5444,7 @@ hotelNeonDraw                src/17l-hotel.js:143-146
 hotelNightPrice              src/17l-hotel.js:275-278
 hotelPoly                    src/17l-hotel.js:180
 hotelRim                     src/17l-hotel.js:186
-hotelShop                    src/17l-hotel.js:314-320
+hotelShop                    src/17l-hotel.js:315-321
 hotelStar                    src/17l-hotel.js:260
 hotelType                    src/17l-hotel.js:24
 hotelUp                      src/17l-hotel.js:84
@@ -9760,7 +9760,7 @@ zoomTo                       src/15-input.js:358
 ## src/17k1-gosplan.js · 4 KB
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 27 KB
+## src/17l-hotel.js · 28 KB
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17l1-hotel-kosmos.js · 27 KB

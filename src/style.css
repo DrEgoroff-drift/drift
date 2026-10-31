@@ -3060,7 +3060,11 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
   #station.hall.walk.eng::before{left:min(64%,max(0px,100% - 560px))}
   body:not(.mobile) #station.hall.walk.eng.open{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);grid-template-areas:"head" "nav" "body"}
   body:not(.mobile) #station.hall.walk.eng.lock.open{grid-template-rows:auto minmax(0,1fr);grid-template-areas:"head" "ship"}
+  /* карточка места — мягкий приход вместе с наездом камеры (.45 с) */
+  #station.hall.walk.eng>:is(.body,#stGroups){animation:hallCardIn .42s ease both}
 }
+@keyframes hallCardIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#station.hall.walk.eng>:is(.body,#stGroups){animation:none}}
 @media (max-width:899.98px){
   body.screen #station.hall.walk.eng.open,#station.hall.walk.eng{padding-top:45vh!important}
   #station.hall.walk.eng::before{top:45vh}

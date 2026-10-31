@@ -302,7 +302,8 @@ function hotelDoors(Ht){
     peopleLine("в холле афиша: сегодня кино. Идите, пока не началось.","портье",false);
   const I=typeof instAll==="function"?instAll():null,vouch=I&&(I.vouch|0)>0;
   const oc=G.sys&&G.sys.planets&&G.sys.planets.find(p=>p.type==="ocean");
-  if(vouch&&oc)peopleLine("Филиал санатория — на «"+oc.name+"». С путёвкой три дня у моря, садитесь на океан.","портье",false);
+  if(vouch&&oc){peopleLine("Филиал санатория — на «"+oc.name+"». С путёвкой три дня у моря, садитесь на океан.","портье",false);
+    if(typeof newsMark==="function"&&G.sys)newsMark(G.sys.key||(G.sx+","+G.sy),"санаторий · "+oc.name,"#7ec8e3");}
   else if(vouch)peopleLine("Путёвка у вас? Филиал работает только на океаническом мире — ищите море.","портье",false);
   const list=typeof newsAll==="function"?newsAll():null,n=list&&list.length?list[list.length-1]:null;
   if(n&&n.ru)peopleLine(n.ru+(n.sx!=null?" · сектор "+n.sx+", "+n.sy:""),"портье",false);
