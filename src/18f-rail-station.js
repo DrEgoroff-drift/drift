@@ -160,6 +160,17 @@ function railFare(t){
   if(metro&&firstSaid("tok")&&!firstSaid("tokUsed")){F.fare=0;F.sum=F.bag;F.tok=1;}
   return F;
 }
+/* oracle foothold (M475): стоимость туда-обратно трассой vs прыжком в кредитах.
+   Топливо → кр через ORACLE_FUEL_CR (рычаг рядом с багажом). Полная линия «рейс ≤ ×1.3
+   прыжка кр/мин» — когда появится проба сделок; здесь — касса и рычаги. */
+const ORACLE_FUEL_CR=4;
+function oracleRoundTrip(dist){
+  const d=Math.max(1,dist|0);
+  const jump=(typeof mapJumpCost==="function"?mapJumpCost(d):Math.round(9+d*13))*2*ORACLE_FUEL_CR;
+  const F=railFare({to:{sx:(G.sx|0)+d,sy:G.sy|0},dist:d});
+  const rail=F.sum*2;
+  return {jump,rail,ratio:rail/Math.max(1,jump),bag:F.bag,big:!!F.big,fare:F.fare};
+}
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
 function railWinClose(){const w=document.getElementById("railWin");if(w)w.classList.remove("open");RAIL_WAIT=null;}
 function railWinShow(){

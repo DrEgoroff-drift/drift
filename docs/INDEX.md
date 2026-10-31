@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 8921
+Files: 681 · top-level symbols: 8923
 
 ## SYMBOLS
 
@@ -1544,6 +1544,7 @@ OPIS_SHIP                    src/27j-ui-opis.js:44-61
 OPIS_TABS                    src/27j-ui-opis.js:37
 OPTS_BOOT                    tests/90-harness.js:228
 OPT_TABS                     src/27-ui-ship.js:334
+ORACLE_FUEL_CR               src/18f-rail-station.js:166
 ORDERS                       src/12a-crew.js:149-155
 ORDER_WIN                    src/12aa-need.js:76
 ORE_KEYS                     src/02-world.js:145
@@ -6423,6 +6424,7 @@ opisWear                     src/27j-ui-opis.js:247-251
 optGroups                    src/27-ui-ship.js:337-354
 optTab                       src/27-ui-ship.js:336
 optsNumify                   src/14a2-save-ephemeral.js:23-28
+oracleRoundTrip              src/18f-rail-station.js:167-173
 orbPathOf                    src/17-mode-system.js:523-533
 orderDeliver                 src/12aa-need.js:119-134
 orderHere                    src/12aa-need.js:115-118
@@ -7469,14 +7471,14 @@ raidSprDesc                  src/24aa1-raid-gpu.js:76-82
 raidUp                       src/24aa-raid-draw.js:8-12
 railArmAng                   src/18e-rail-net.js:114
 railAt                       src/18e-rail-net.js:123-131
-railBoardEta                 src/18f-rail-station.js:172-180
+railBoardEta                 src/18f-rail-station.js:183-191
 railBranchAng                src/18e-rail-net.js:62-65
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:251-258
+railBuffet                   src/18f-rail-station.js:262-269
 railBuildLines               src/18e-rail-net.js:66-112
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-36
-railBuy                      src/18f-rail-station.js:231-250
+railBuy                      src/18f-rail-station.js:242-261
 railCarDraw                  src/18gb-rail-car.js:67-76
 railCarLights                src/18gb-rail-car.js:60-65
 railCarMesh                  src/18gb-rail-car.js:18-58
@@ -7509,7 +7511,7 @@ railLifeExit                 src/18i-rail-life.js:111-119
 railLifeHtml                 src/18i-rail-life.js:59-75
 railLifeStop                 src/18i-rail-life.js:95-109
 railLineGpu                  src/18ga-rail-gpu.js:70-106
-railLineMetro                src/18f-rail-station.js:183
+railLineMetro                src/18f-rail-station.js:194
 railNearest                  src/18e-rail-net.js:43-53
 railNet                      src/18e-rail-net.js:197-206
 railNetPartial               src/18e-rail-net.js:219-230
@@ -7549,15 +7551,15 @@ railStep                     src/18e-rail-net.js:54
 railStopName                 src/18f-rail-station.js:130
 railStopShapes               src/18gb-rail-car.js:79-90
 railStopsOf                  src/18e-rail-net.js:133-157
-railTick                     src/18f-rail-station.js:260-267
+railTick                     src/18f-rail-station.js:271-278
 railTrainPos                 src/18g-rail-ride.js:40-52
 railUAt                      src/18e-rail-net.js:116-121
 railVisited                  src/18k-rail-scheme.js:110-114
 railWaitNow                  src/18f-rail-station.js:128
-railWinClose                 src/18f-rail-station.js:164
-railWinOpen                  src/18f-rail-station.js:163
-railWinRender                src/18f-rail-station.js:184-230
-railWinShow                  src/18f-rail-station.js:165-170
+railWinClose                 src/18f-rail-station.js:175
+railWinOpen                  src/18f-rail-station.js:174
+railWinRender                src/18f-rail-station.js:195-241
+railWinShow                  src/18f-rail-station.js:176-181
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -9875,7 +9877,7 @@ zoomTo                       src/15-input.js:358
 ## src/18e-rail-net.js · 17 KB
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 20 KB
+## src/18f-rail-station.js · 21 KB
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18fa-rail-ring.js · 8 KB
@@ -11024,5 +11026,8 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzzzzzzza-worlds.js · 2 KB
   · миры · тарифы трассы (oracle foothold, M475 / PLAN §3):1
+
+## tests/91zzzzzzzzza2-oracle-rail.js · 1 KB
+  · oracle · трасса vs прыжок (M475 foothold):1
 
 ## tests/99-run.js · 9 KB

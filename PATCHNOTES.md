@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.85 — Oracle foothold: rail vs jump credits
+
+- M475: `oracleRoundTrip` / `ORACLE_FUEL_CR` — round-trip rail fare vs jump fuel in credits; suite locks the baggage lever. Full credits/min ≤×1.3 line still needs a deal probe.
+
 ## 0.499.84 — Dock giant: yard sheds along the slip
 
 - G15: dry-dock giant gets yard sheds with lit windows along the berth (from dock HTML craft).

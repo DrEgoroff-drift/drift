@@ -224,7 +224,7 @@ measured on the GPU build first:
 
 ## 4. Stage 3 — far, and back with a hold
 
-- [ ] **Oracle lines** (`91zzzzzzzzza-worlds`): **0.499.72** — fare laws (metro 5, outer 2×dist, heavy baggage ×3). Still open: best rail round trip ≤ ×1.3 of best jumps in credits/min (baggage lever); stripped hauler's best one-hop deal (M478).
+- [ ] **Oracle lines** (`91zzzzzzzzza-worlds`): **0.499.72** fare laws; **0.499.85** `oracleRoundTrip` (rail vs jump credits, baggage lever). Still open: best rail round trip ≤ ×1.3 of best jumps in credits/min (needs deal probe); stripped hauler's best one-hop deal (M478).
 - [ ] **M474 six railways (rest):** **0.499.83** `railEnsure` grows the net past r 60 per region. Still open:
   ride-suite fragility if the heart metro land turns Орднунг (double press).
 - [ ] **M475 economy (rest):** fares, baggage and the size rule tuned against the oracle's rail line (release run).
