@@ -107,5 +107,6 @@
   "tests/91zzzzzzzzz-savenet.js": ["src/02-world.js", "src/08-state.js", "src/09-audio.js", "src/12u-scrip.js", "src/14-save.js", "src/14a2-save-ephemeral.js", "src/21pii-pln-settle.js", "src/27jb-kb.js"],
   "tests/91zzzzzzzzza-worlds.js": ["src/02-world.js", "src/06f-far-props.js", "src/08-state.js", "src/17a0-prebake.js", "src/18e-rail-net.js", "src/18f-rail-station.js"],
   "tests/91zzzzzzzzza2-oracle-rail.js": ["src/02-world.js", "src/08-state.js", "src/18-mode-map.js", "src/18f-rail-station.js"],
+  "tests/91zzzzzzzzza3-oracle-hauler.js": ["src/18f-rail-station.js"],
   "tests/99-run.js": ["src/01-core.js", "src/01a-crashlog.js", "src/08-state.js", "src/08b-gpu.js", "src/08b0-gpu-pipe.js", "src/08b2-gpu-loss.js", "src/19cb-gpu-sky-bodies.js", "src/27f2-room3d.js", "src/28-loop.js"]
 }

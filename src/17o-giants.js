@@ -454,6 +454,22 @@ function h3dGiantMesh(g){
         K.box(bx+ox,bx+ox+14,by+6,by+18,ht+.2,ht+12,.6,C([28,26,22]),3,.45);
         rect(bx+ox+2,by+8,10,8,ht+13,[220,210,190],.7);
       }
+      /* башни штампов + ограждения очереди (kimi customs densify) */
+      for(const [tx,ty] of [[-420,0],[420,0],[0,-420],[0,420]]){
+        K.box(tx-20,tx+20,ty-20,ty+20,-8,12,4,C([60,56,50]),3,.4);
+        for(let y=12;y<100;y+=14)K.box(tx-14,tx+14,ty-14,ty+14,y,y+10,3,(y/14|0)%2?C([80,76,68]):C(steel),3,.45);
+        K.box(tx-18,tx+18,ty-18,ty+18,100,108,2,C([160,48,36]),3,.55);
+        K.tube([[tx,ty,108],[tx,ty,130]],1.5,C(steel),3,.55,6);
+        rect(tx-6,ty-6,12,8,131,warm,1);
+      }
+      for(const s of[-1,1])for(let lane=0;lane<3;lane++){
+        const z=s*(50+lane*26);
+        for(let i=0;i<10;i++){
+          const x=-180+i*36;
+          K.box(x-3,x+3,z-3,z+3,8,22,1,C([36,34,30]),3,.5);
+          K.box(x-7,x+7,z-7,z+7,22,26,1,C(steel),3,.55);
+        }
+      }
       st=[[650,400],[-650,400]];
     }else if(g.k==="dock"){
       K.box(-650,650,-190,190,-35,-5,6,C([42,39,35]),3,.45);

@@ -171,6 +171,33 @@ function oracleRoundTrip(dist){
   const rail=F.sum*2;
   return {jump,rail,ratio:rail/Math.max(1,jump),bag:F.bag,big:!!F.big,fare:F.fare};
 }
+/* oracle · лучшая одноплечевая сделка на обнажённом тягаче (M478 / shipyard §3):
+   трюм полный (hold dens), орудий нет в смысле плана — смотрим cargoMax × лучшую
+   маржу marketFor между двумя станциями в радиусе hopR. */
+function oracleHaulerHop(hopR){
+  hopR=hopR||8;
+  const id="vyuk",prev=G.shipId,prevMods=G.mods;
+  G.shipId=id;G.owned[id]=true;G.fit[id]=G.fit[id]||{};G.mods={hold:3,tank:1,armor:1};
+  PLAN_F.key="";
+  const cargo=stat().cargoMax,nom=shipData(id).cargo;
+  const sys=[];
+  for(let dy=-hopR;dy<=hopR;dy++)for(let dx=-hopR;dx<=hopR;dx++){
+    const sx=(G.sx|0)+dx,sy=(G.sy|0)+dy;if(!starAt(sx,sy))continue;
+    const s=getSystem(sx,sy);if(s&&s.station)sys.push(s);
+  }
+  let best=null;
+  for(let a=0;a<sys.length;a++)for(let b=0;b<sys.length;b++){
+    if(a===b)continue;
+    const pa=marketFor(sys[a]),pb=marketFor(sys[b]);
+    for(const k of TRADE_KEYS){
+      const margin=pb[k]-pa[k];if(margin<=0)continue;
+      if(!best||margin>best.margin)best={k,margin,buy:pa[k],sell:pb[k],from:sys[a],to:sys[b]};
+    }
+  }
+  G.shipId=prev;G.mods=prevMods;PLAN_F.key="";
+  const profit=best?best.margin*cargo:0;
+  return {cargo,nom,cap:cargo/Math.max(1,nom),best,profit};
+}
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
 function railWinClose(){const w=document.getElementById("railWin");if(w)w.classList.remove("open");RAIL_WAIT=null;}
 function railWinShow(){

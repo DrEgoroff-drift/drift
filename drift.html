@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.88";
+const VER="0.499.89";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -11245,7 +11245,8 @@ function stat(){
     thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr"))*wearMul()*PF.mass*(typeof abilMul==="function"?abilMul("thr"):1),
     turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul()*WT.turn*PF.mass*SC.turn*(typeof abilMul==="function"?abilMul("turn"):1),
     fuelMax:Math.max(20,Math.round(S.fuel*planModDens("tank")*(PF.fuel||1)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel")+WT.fuel)),
-    cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*PF.cargo*SC.cargo*planModDens("hold")*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
+    /* M478/shipyard §3: трюм не выше ×1.4 номинала корпуса (плотность hold упирается в размер) */
+    cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.min(Math.round(S.cargo*1.4),Math.round(S.cargo*PF.cargo*SC.cargo*planModDens("hold")*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo"))))),
     hullMax:Math.max(20,Math.round(PD.hull*(PF.hull||1)*(gunList.some(a=>a.g&&a.g.fx==="ram")?1.35:1)*(S.hull*planModDens("armor")+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0)))),
     drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
@@ -66767,6 +66768,22 @@ function h3dGiantMesh(g){
         K.box(bx+ox,bx+ox+14,by+6,by+18,ht+.2,ht+12,.6,C([28,26,22]),3,.45);
         rect(bx+ox+2,by+8,10,8,ht+13,[220,210,190],.7);
       }
+      /* башни штампов + ограждения очереди (kimi customs densify) */
+      for(const [tx,ty] of [[-420,0],[420,0],[0,-420],[0,420]]){
+        K.box(tx-20,tx+20,ty-20,ty+20,-8,12,4,C([60,56,50]),3,.4);
+        for(let y=12;y<100;y+=14)K.box(tx-14,tx+14,ty-14,ty+14,y,y+10,3,(y/14|0)%2?C([80,76,68]):C(steel),3,.45);
+        K.box(tx-18,tx+18,ty-18,ty+18,100,108,2,C([160,48,36]),3,.55);
+        K.tube([[tx,ty,108],[tx,ty,130]],1.5,C(steel),3,.55,6);
+        rect(tx-6,ty-6,12,8,131,warm,1);
+      }
+      for(const s of[-1,1])for(let lane=0;lane<3;lane++){
+        const z=s*(50+lane*26);
+        for(let i=0;i<10;i++){
+          const x=-180+i*36;
+          K.box(x-3,x+3,z-3,z+3,8,22,1,C([36,34,30]),3,.5);
+          K.box(x-7,x+7,z-7,z+7,22,26,1,C(steel),3,.55);
+        }
+      }
       st=[[650,400],[-650,400]];
     }else if(g.k==="dock"){
       K.box(-650,650,-190,190,-35,-5,6,C([42,39,35]),3,.45);
@@ -69916,6 +69933,33 @@ function oracleRoundTrip(dist){
   const F=railFare({to:{sx:(G.sx|0)+d,sy:G.sy|0},dist:d});
   const rail=F.sum*2;
   return {jump,rail,ratio:rail/Math.max(1,jump),bag:F.bag,big:!!F.big,fare:F.fare};
+}
+/* oracle · лучшая одноплечевая сделка на обнажённом тягаче (M478 / shipyard §3):
+   трюм полный (hold dens), орудий нет в смысле плана — смотрим cargoMax × лучшую
+   маржу marketFor между двумя станциями в радиусе hopR. */
+function oracleHaulerHop(hopR){
+  hopR=hopR||8;
+  const id="vyuk",prev=G.shipId,prevMods=G.mods;
+  G.shipId=id;G.owned[id]=true;G.fit[id]=G.fit[id]||{};G.mods={hold:3,tank:1,armor:1};
+  PLAN_F.key="";
+  const cargo=stat().cargoMax,nom=shipData(id).cargo;
+  const sys=[];
+  for(let dy=-hopR;dy<=hopR;dy++)for(let dx=-hopR;dx<=hopR;dx++){
+    const sx=(G.sx|0)+dx,sy=(G.sy|0)+dy;if(!starAt(sx,sy))continue;
+    const s=getSystem(sx,sy);if(s&&s.station)sys.push(s);
+  }
+  let best=null;
+  for(let a=0;a<sys.length;a++)for(let b=0;b<sys.length;b++){
+    if(a===b)continue;
+    const pa=marketFor(sys[a]),pb=marketFor(sys[b]);
+    for(const k of TRADE_KEYS){
+      const margin=pb[k]-pa[k];if(margin<=0)continue;
+      if(!best||margin>best.margin)best={k,margin,buy:pa[k],sell:pb[k],from:sys[a],to:sys[b]};
+    }
+  }
+  G.shipId=prev;G.mods=prevMods;PLAN_F.key="";
+  const profit=best?best.margin*cargo:0;
+  return {cargo,nom,cap:cargo/Math.max(1,nom),best,profit};
 }
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
 function railWinClose(){const w=document.getElementById("railWin");if(w)w.classList.remove("open");RAIL_WAIT=null;}

@@ -1512,7 +1512,36 @@ buildIncompleteNose();
 buildScaffoldFrames();
 buildPortalCranes();
 buildBollardsAndCleats();
+
+function buildDockWorkLights(){
+  for(let i=0;i<20;i++){
+    const x=-600+i*60;
+    for(const z of[-210,210]){
+      rod([x,-20,z],[x,90,z],1.8,C.steel,8);
+      cube([x,90,z],[14,6,10],C.dark);
+      cube([x,88,z+Math.sign(z)*-8],[10,4,4],C.amber,.4);
+    }
+  }
+}
+function buildKeelBlocks(){
+  for(let i=0;i<12;i++){
+    const x=-480+i*85;
+    cube([x,-35,0],[40,18,80],C.concrete);
+    cube([x,-20,0],[30,10,60],C.steel);
+    for(const s of[-1,1])rod([x+s*15,-20,s*30],[x+s*15,20,s*40],1.2,C.rust,6);
+  }
+}
+function buildPlateStacks(){
+  for(let i=0;i<8;i++){
+    const x=-520+i*130,z=250;
+    for(let k=0;k<5;k++)cube([x, -10+k*8, z],[70,6,40],k%2?C.steel:C.rust);
+  }
+}
+
 buildYardSheds();
+buildDockWorkLights();
+buildKeelBlocks();
+buildPlateStacks();
 /* hotel stripped */ //buildHotelBody();
 /* hotel stripped */ //buildBodyServiceDetail();
 buildUnderdeckTrusses();

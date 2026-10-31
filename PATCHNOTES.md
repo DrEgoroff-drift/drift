@@ -6,6 +6,11 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.89 — Customs stamp towers; cargo ×1.4 cap; hauler oracle
+
+- G15: customs giant gets stamp towers and queue railings.
+- M478: `cargoMax` clamped to ×1.4 of hull nominal (shipyard §3); `oracleHaulerHop` locks stripped «Вьюк» one-hop.
+
 ## 0.499.88 — Town giant: winches and roadside crates
 
 - G15: Dawn settlement giant gets winches at the bridges and cargo crates along the rock roads.

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 681 · top-level symbols: 8923
+Files: 682 · top-level symbols: 8924
 
 ## SYMBOLS
 
@@ -412,10 +412,10 @@ CREW_TRIP_QUEUE              src/12a-crew.js:348
 CREW_YIELD                   src/12a-crew.js:349
 CRYO_RECIPE                  src/21a1a-base-heat.js:33
 CS_KS                        tests/91zzzzzzy7-census2d.js:7
-CUE_AT                       src/08-state.js:409
+CUE_AT                       src/08-state.js:410
 CUE_EPS                      src/27m-scroll-cue.js:25
-CUE_INFO                     src/08-state.js:393
-CUE_LVL                      src/08-state.js:394
+CUE_INFO                     src/08-state.js:394
+CUE_LVL                      src/08-state.js:395
 CULT_EXP_GOAL                src/12b3-fx-cult.js:22
 CULT_PLAY                    src/12b3-fx-cult.js:51-94
 CULT_PLAY_EVERY              src/12b3-fx-cult.js:19
@@ -691,7 +691,7 @@ FOLK_IDS                     src/12u-folk.js:81
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 FORK_HOOKS                   src/28q-fork.js:200-213
 FORK_SHARE                   src/28q-fork.js:18
-FRAME_IN                     src/08-state.js:380
+FRAME_IN                     src/08-state.js:381
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:140
 FRIDGE_FEATS                 src/21ac4-base-fridge.js:14
@@ -805,11 +805,11 @@ GHZ                          src/19cc-gpu-air.js:185
 GHZ_WGSL                     src/19cc-gpu-air.js:186
 GIANTS                       src/17o-giants.js:22
 GIANTS_DEF                   src/17o-giants.js:13-21
-GIANT_DOCK                   src/17o-giants.js:666
-GIANT_LEN                    src/17o-giants.js:633
-GIANT_RAD                    src/17o-giants.js:667
+GIANT_DOCK                   src/17o-giants.js:682
+GIANT_LEN                    src/17o-giants.js:649
+GIANT_RAD                    src/17o-giants.js:683
 GIANT_SPIN                   src/17o-giants.js:58
-GIANT_VISIT                  src/17o-giants.js:650-665
+GIANT_VISIT                  src/17o-giants.js:666-681
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
 GIFT_W                       src/11at-gift.js:27
@@ -1458,7 +1458,7 @@ MOUNT_KINDS                  src/05d-mounts.js:21-27
 MOUNT_SIZES                  src/05d-mounts.js:19
 MOUNT_SIZE_RU                src/05d-mounts.js:20
 MPN                          src/17z4-map-pen.js:18
-MSG_OBJ                      src/08-state.js:383
+MSG_OBJ                      src/08-state.js:384
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -2984,7 +2984,7 @@ bodyFleet                    src/17c2e-body-kit.js:80-88
 bodyFleetHull                src/17c2e-body-kit.js:72-78
 bodyGestPost                 src/17c2l-body-gest.js:219-224
 bodyGestPostMesh             src/17c2l-body-gest.js:4-217
-bodyGiant                    src/17o-giants.js:596-617
+bodyGiant                    src/17o-giants.js:612-633
 bodyGpu                      src/17c2e-body-kit.js:26
 bodyInSystem                 src/16-flight.js:39-49
 bodyLights                   src/17c2e-body-kit.js:42-50
@@ -3645,12 +3645,12 @@ crownReady                   src/05a-nodes.js:158
 ctlHint                      src/15-input.js:171-175
 ctlReset                     src/15a-helm.js:127-132
 ctx                          src/08-state.js:5
-cue                          src/08-state.js:419-424
-cueAt                        src/08-state.js:410
-cueFold                      src/08-state.js:427-432
-cueLvl                       src/08-state.js:400-403
-cueReset                     src/08-state.js:404
-cueSameOffer                 src/08-state.js:418
+cue                          src/08-state.js:420-425
+cueAt                        src/08-state.js:411
+cueFold                      src/08-state.js:428-433
+cueLvl                       src/08-state.js:401-404
+cueReset                     src/08-state.js:405
+cueSameOffer                 src/08-state.js:419
 cultBlock                    src/12b3-fx-cult.js:237-290
 cultExpCount                 src/12b3-fx-cult.js:139-156
 cultExpFound                 src/12b3-fx-cult.js:157-160
@@ -4065,7 +4065,7 @@ drawGalaxyStars              src/17z1-galaxy.js:86-115
 drawGestPost                 src/17h-sys-gesture.js:239-266
 drawGesture                  src/17h-sys-gesture.js:135-187
 drawGestureTop               src/17h-sys-gesture.js:191-220
-drawGiant                    src/17o-giants.js:618-631
+drawGiant                    src/17o-giants.js:634-647
 drawGiantsMap                src/17o-giants.js:78-89
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-232
@@ -4661,19 +4661,19 @@ getSystem                    src/06-galaxy.js:95-198
 gexDraw                      src/16ga-gpu-trail.js:316-325
 gexPush                      src/16ga-gpu-trail.js:280-286
 ghf                          src/17ga-gpu-planets.js:370
-giantArrive                  src/17o-giants.js:639-645
+giantArrive                  src/17o-giants.js:655-661
 giantAt                      src/17o-giants.js:54
-giantBody                    src/17o-giants.js:669-673
-giantClose                   src/17o-giants.js:701
-giantInteract                src/17o-giants.js:688-700
+giantBody                    src/17o-giants.js:685-689
+giantClose                   src/17o-giants.js:717
+giantInteract                src/17o-giants.js:704-716
 giantMapGlyph                src/17o-giants.js:66-77
-giantNight                   src/17o-giants.js:710-717
-giantOpen                    src/17o-giants.js:718-739
-giantOrbit                   src/17o-giants.js:674-687
+giantNight                   src/17o-giants.js:726-733
+giantOpen                    src/17o-giants.js:734-755
+giantOrbit                   src/17o-giants.js:690-703
 giantPeriod                  src/17o-giants.js:59
 giantPos                     src/17o-giants.js:56
-giantRuler                   src/17o-giants.js:634-637
-giantRumour                  src/17o-giants.js:703-709
+giantRuler                   src/17o-giants.js:650-653
+giantRumour                  src/17o-giants.js:719-725
 giantSpin                    src/17o-giants.js:60-64
 giantsAll                    src/17o-giants.js:23-53
 giftArrive                   src/11at-gift.js:43-63
@@ -4959,7 +4959,7 @@ h3dDev                       src/17c2a-hull3d.js:449-458
 h3dDraw                      src/17c2a-hull3d.js:540-553
 h3dDraw2                     src/17c2a-hull3d.js:661-664
 h3dEar                       src/17c2a-hull3d.js:288-303
-h3dGiantMesh                 src/17o-giants.js:94-595
+h3dGiantMesh                 src/17o-giants.js:94-611
 h3dJob                       src/17c2a-hull3d.js:145
 h3dKeepAt                    src/17c2a-hull3d.js:504-514
 h3dKeepSig                   src/17c2a-hull3d.js:516-524
@@ -5247,7 +5247,7 @@ heardWordsRu                 src/12x-parrot.js:79-85
 heardYours                   src/12x-parrot.js:71-74
 heatAdd                      src/13a-guns.js:47-52
 heatTick                     src/13a-guns.js:54-62
-held                         src/08-state.js:369
+held                         src/08-state.js:370
 helmApply                    src/15a-helm.js:450-548
 helmBand                     src/15b-helm-draw.js:145-148
 helmCamOff                   src/15b-helm-draw.js:130-143
@@ -6196,7 +6196,7 @@ mpTextAlong                  src/17z4-map-pen.js:130-134
 mpTri                        src/17z4-map-pen.js:114-118
 mpU                          src/17z4-map-pen.js:30
 mpWeight                     src/17z4-map-pen.js:29
-msgHeld                      src/08-state.js:433
+msgHeld                      src/08-state.js:434
 mslBoom                      src/16b-missile.js:154-167
 mslCheck                     src/16b-missile.js:114-120
 mslDraw                      src/16b-missile.js:253-269
@@ -6424,6 +6424,7 @@ opisWear                     src/27j-ui-opis.js:247-251
 optGroups                    src/27-ui-ship.js:337-354
 optTab                       src/27-ui-ship.js:336
 optsNumify                   src/14a2-save-ephemeral.js:23-28
+oracleHaulerHop              src/18f-rail-station.js:177-200
 oracleRoundTrip              src/18f-rail-station.js:167-173
 orbPathOf                    src/17-mode-system.js:523-533
 orderDeliver                 src/12aa-need.js:119-134
@@ -7471,14 +7472,14 @@ raidSprDesc                  src/24aa1-raid-gpu.js:76-82
 raidUp                       src/24aa-raid-draw.js:8-12
 railArmAng                   src/18e-rail-net.js:114
 railAt                       src/18e-rail-net.js:123-131
-railBoardEta                 src/18f-rail-station.js:183-191
+railBoardEta                 src/18f-rail-station.js:210-218
 railBranchAng                src/18e-rail-net.js:62-65
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:262-269
+railBuffet                   src/18f-rail-station.js:289-296
 railBuildLines               src/18e-rail-net.js:66-112
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-36
-railBuy                      src/18f-rail-station.js:242-261
+railBuy                      src/18f-rail-station.js:269-288
 railCarDraw                  src/18gb-rail-car.js:67-76
 railCarLights                src/18gb-rail-car.js:60-65
 railCarMesh                  src/18gb-rail-car.js:18-58
@@ -7511,7 +7512,7 @@ railLifeExit                 src/18i-rail-life.js:111-119
 railLifeHtml                 src/18i-rail-life.js:59-75
 railLifeStop                 src/18i-rail-life.js:95-109
 railLineGpu                  src/18ga-rail-gpu.js:70-106
-railLineMetro                src/18f-rail-station.js:194
+railLineMetro                src/18f-rail-station.js:221
 railNearest                  src/18e-rail-net.js:43-53
 railNet                      src/18e-rail-net.js:197-206
 railNetPartial               src/18e-rail-net.js:219-230
@@ -7551,15 +7552,15 @@ railStep                     src/18e-rail-net.js:54
 railStopName                 src/18f-rail-station.js:130
 railStopShapes               src/18gb-rail-car.js:79-90
 railStopsOf                  src/18e-rail-net.js:133-157
-railTick                     src/18f-rail-station.js:271-278
+railTick                     src/18f-rail-station.js:298-305
 railTrainPos                 src/18g-rail-ride.js:40-52
 railUAt                      src/18e-rail-net.js:116-121
 railVisited                  src/18k-rail-scheme.js:110-114
 railWaitNow                  src/18f-rail-station.js:128
-railWinClose                 src/18f-rail-station.js:175
-railWinOpen                  src/18f-rail-station.js:174
-railWinRender                src/18f-rail-station.js:195-241
-railWinShow                  src/18f-rail-station.js:176-181
+railWinClose                 src/18f-rail-station.js:202
+railWinOpen                  src/18f-rail-station.js:201
+railWinRender                src/18f-rail-station.js:222-268
+railWinShow                  src/18f-rail-station.js:203-208
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -7958,7 +7959,7 @@ saveGame                     src/14a-cloud.js:54-67
 saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
-say                          src/08-state.js:384
+say                          src/08-state.js:385
 sbeltChip                    src/17gc-sys-belt.js:44-53
 sbeltClumps                  src/17gc-sys-belt.js:11-20
 sbeltDens                    src/17gc-sys-belt.js:22-35
@@ -8343,7 +8344,7 @@ starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:637-645
 startLanding                 src/19-mode-landing.js:2-38
 startScoop                   src/19a-mode-scoop.js:51-64
-stat                         src/08-state.js:297-368
+stat                         src/08-state.js:297-369
 statPreview                  src/05-parts.js:417-425
 stateHash                    src/08a-statehash.js:31-82
 stateHashParts               src/08a-statehash.js:83-91
@@ -8887,7 +8888,7 @@ withFrame                    src/18c-chunks.js:49-54
 withScale                    src/18c-chunks.js:35-46
 workAdd                      src/17a0-prebake.js:66
 workPump                     src/17a0-prebake.js:67-78
-worldCovered                 src/08-state.js:437
+worldCovered                 src/08-state.js:438
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
@@ -9877,7 +9878,7 @@ zoomTo                       src/15-input.js:358
 ## src/18e-rail-net.js · 17 KB
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 21 KB
+## src/18f-rail-station.js · 22 KB
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18fa-rail-ring.js · 8 KB
@@ -11029,5 +11030,8 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzzzzzzza2-oracle-rail.js · 1 KB
   · oracle · трасса vs прыжок (M475 foothold):1
+
+## tests/91zzzzzzzzza3-oracle-hauler.js · 1 KB
+  · oracle · одно плечо обнажённого тягача (M478):1
 
 ## tests/99-run.js · 9 KB

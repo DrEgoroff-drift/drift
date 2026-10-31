@@ -224,7 +224,8 @@ measured on the GPU build first:
 
 ## 4. Stage 3 — far, and back with a hold
 
-- [ ] **Oracle lines** (`91zzzzzzzzza-worlds`): **0.499.72** fare laws; **0.499.85** `oracleRoundTrip` (rail vs jump credits, baggage lever). Still open: best rail round trip ≤ ×1.3 of best jumps in credits/min (needs deal probe); stripped hauler's best one-hop deal (M478).
+- [ ] **Oracle lines** (`91zzzzzzzzza-worlds`): **0.499.72** fare laws; **0.499.85** `oracleRoundTrip`; **0.499.89**
+  `oracleHaulerHop` (stripped «Вьюк» one-hop). Still open: best rail round trip ≤ ×1.3 of best jumps in credits/min (needs deal-time probe).
 - [ ] **M474 six railways (rest):** **0.499.83** `railEnsure` grows the net past r 60 per region. Still open:
   ride-suite fragility if the heart metro land turns Орднунг (double press).
 - [ ] **M475 economy (rest):** fares, baggage and the size rule tuned against the oracle's rail line (release run).
@@ -234,7 +235,7 @@ measured on the GPU build first:
 ## 5. Stage 4 — the ship
 
 - [ ] **M476 the plan (rest):** **0.499.74** fleet+NPC; **0.499.75** ordered unique; **0.499.79** fused in the fixpoint suite. Open: release-run polish only.
-- [ ] **M478 numbers from the plan (rest):** **0.499.70** fuel/energy/sight; **0.499.72** hull; **0.499.74–75** fixpoint; **0.499.77** hold/tank/armor as `planModDens`; **0.499.79** fused; **0.499.80** weapon densify via `energyCap`+`planModDens("weapon")` (step 0 — tiers live in `energyCap`, cell ratio in `PF.energy`). `engine`/`hyper`/`drill` stay station upgrades.
+- [ ] **M478 numbers from the plan (rest):** **0.499.70–80** densify/fixpoint; **0.499.89** cargo ≤×1.4 nominal + hauler one-hop oracle. `engine`/`hyper`/`drill` stay station upgrades. Open: release-run polish only.
 - [x] **M483 the fast path:** **0.499.79** `planNpcOf` + pirate barrels from plan cells; ПРОЕКТЫ (`KB_PR` / `kbProjSwitch`) and new-part mark (`kbPartFuture`) already in КБ.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a warship
   stripped of hold both fly under the finger the same (the P8 meter); the blueprint gets its almanac issue.
