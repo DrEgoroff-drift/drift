@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.54";
+const VER="0.499.55";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -11105,7 +11105,7 @@ const G={
   inv:[],fit:{},shield:0,shieldHit:0,energy:0,loot:[],partsBought:{},
   /* допуск и налёт (M363, §11.4): допуск не падает, налёт копится только в полёте */
   clearance:1,flownMs:0,gunGroup:0,
-  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},recalled:{},reg:{},regWave:0,rush:null,soc:{},giantsSeen:{},beast:null,vol:{},tapeRoll:0,tapes:{},actWk:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e) */
+  mined:{},farTaken:{},draft:{},smenaAt:{},stapel:{},thrown:[],bazBought:null,railParcel:null,railPass:null,railSeal:0,gosDone:{},recalled:{},reg:{},regWave:0,rush:null,soc:{},giantsSeen:{},beast:null,vol:{},tapeRoll:0,tapes:{},actWk:null,hfFw:null,   /* выработанные залежи по планетам; неделя налёта и талоны (05e); прошивка HF (M480) */
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -47220,7 +47220,7 @@ function snapshot(){
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
     offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */
-    told:G.told,lastDig:G.lastDig,mined:G.mined||{},farTaken:G.farTaken||{},draft:G.draft||{},smenaAt:G.smenaAt||{},tapeRoll:G.tapeRoll|0,tapes:G.tapes||{},actWk:G.actWk||null,
+    told:G.told,lastDig:G.lastDig,mined:G.mined||{},farTaken:G.farTaken||{},draft:G.draft||{},smenaAt:G.smenaAt||{},tapeRoll:G.tapeRoll|0,tapes:G.tapes||{},actWk:G.actWk||null,hfFw:G.hfFw||null,
     /* четыре поля, которые терялись при загрузке (0.442.0, сеть сейва): счёт побед
        (допуск и задания управляющих считают от него), отметка приказов (задание
        «тишина в эфире» сравнивает с ней), заходы на базу (от них зерно аврала),
@@ -48294,6 +48294,7 @@ function applySaveRest(s){
   G.tapeRoll=s.tapeRoll|0;G.tapes=asMap(s.tapes);   /* изолента (M486) */   /* чертежи кораблей — правка игрока (M477); нет записи — упаковщик */
   G._hullHeld=null;         /* корпус до беды считается заново от загруженного (28-loop) */
   G.actWk=(s.actWk&&typeof s.actWk==="object"&&!Array.isArray(s.actWk))?{wk:s.actWk.wk|0,ms:Math.max(0,+s.actWk.ms||0),used:s.actWk.used|0}:null;
+  G.hfFw=(s.hfFw&&typeof s.hfFw==="object")?{at:s.hfFw.at|0,defer:Math.max(0,s.hfFw.defer|0)}:null;   /* прошивка HF (M480) */
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   G.soldTotal=Math.max(0,s.soldTotal|0);
@@ -53904,6 +53905,7 @@ function updateSystem(dt){
   if(typeof kpTick==="function"&&(G.t|0)%60===30)kpTick();   /* посылки: доля кооператива, возвраты (M492) */
   if(typeof scarTick==="function"&&(G.t|0)%3600===0)scarTick();
   if(typeof subTick==="function"&&(G.t|0)%60===0)subTick();
+  if(typeof hfFwTick==="function"&&(G.t|0)%60===0)hfFwTick();   /* прошивка HF · «оптимизировано» (M480) */
   if(typeof recallTick==="function"&&(G.t|0)%60===0)recallTick();   /* отзыв партии Хай-Фронта (M509) */   /* подписка: взнос на границе смены (M487) */   /* течёт бак: −1 % в минуту (M482) */   /* стапель: заказ готов — строка в почте (M481) */   /* техподдержка решает заявки (M495) */   /* ловушки антивещества: питание или процент в минуту (M468) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 
@@ -125643,7 +125645,9 @@ function kbRender(){
     (fo?"<div class='kb-bill'>ВЕРФЬ «"+(STAMP_RU[kbYard()]||kbYard()).toUpperCase()+"» · ЧУЖАЯ · "+KB_CELL_FEE+" КР ЗА КЛЕТКУ · ПЕРЕЛОЖЕНО "+mv+" · К ОПЛАТЕ "+mv*KB_CELL_FEE+" КР</div>":"")+
     "<canvas class='kb-cv'></canvas>"+
     "<div class='kb-msg'>"+(KB.msg||"&nbsp;")+"</div><div class='kb-tray'></div><div class='kb-inv'></div>"+
-    "<div class='kb-acts'><button class='act kb-typ'>ТИПОВОЙ · КАК У ВСЕХ</button><button class='act gold kb-done'>ГОТОВО</button></div>";
+    "<div class='kb-acts'><button class='act kb-typ'>ТИПОВОЙ · КАК У ВСЕХ</button>"+
+    (typeof hfFwShip==="function"&&hfFwShip(KB.id)?"<button class='act kb-fw'>ОТЛОЖИТЬ ОБНОВЛЕНИЕ · 3 СВОДКИ</button>":"")+
+    "<button class='act gold kb-done'>ГОТОВО</button></div>";
   const tray=w.querySelector(".kb-tray");
   d.items.forEach((it,k)=>{
     const b=document.createElement("button");b.className="act kb-it"+(KB.sel===k?" on":"");
@@ -125710,6 +125714,8 @@ function kbRender(){
     if(o&&(o.pr||o.dens||o.weld)){const r={};if(o.pr){r.pr=o.pr;r.cur=o.cur|0;}if(o.dens)r.dens=o.dens;if(o.weld)r.weld=o.weld;draftAll()[KB.id]=r;}
     else delete draftAll()[KB.id];   /* проекты, плотности и доводку не стираем (M477–M478) */
     KB.d=draftOf(KB.id);KB.sel=null;KB.msg="как у всех";kbRender();};
+  const fw=w.querySelector(".kb-fw");
+  if(fw)fw.onclick=()=>{if(typeof hfFwDefer==="function")hfFwDefer(3);KB.msg="обновление отложено · 3 сводки";kbRender();};
   w.querySelector(".kb-done").onclick=kbDone;
 }
 function kbTap(i,j){
@@ -125751,7 +125757,10 @@ function kbDone(){
       KB.d=draftOf(KB.id);KB.sel=null;KB.msg="не хватает "+fee+" кр — чертёж вернули как был";kbRender();return;
     }
     G.credits-=fee;
-    logAdd("money","Верфь «"+(STAMP_RU[kbYard()]||kbYard())+"»: переложено "+(fee/KB_CELL_FEE)+" клеток · −"+fee+" кр");
+    const n=fee/KB_CELL_FEE,yard=kbYard();
+    logAdd("money",yard==="co"
+      ?"Компания™: перемещение ячейки — "+KB_CELL_FEE+" кр, итого "+fee+" кр, спасибо за выбор"
+      :"Верфь «"+(STAMP_RU[yard]||yard)+"»: переложено "+n+" клеток · −"+fee+" кр");
     KB.map0=kbCellMap(KB.d);
   }
   const m=document.querySelector("#kbWin .kb-msg");
@@ -125881,6 +125890,61 @@ function gotTick(){
   if(!GOT.q.length){if(GOT.el&&GOT.el.classList.contains("open"))gotClose();return;}
   if(!gotCalm()){gotClose();return;}
   if(!GOT.el||!GOT.el.classList.contains("open"))gotRender();
+}
+
+/* ══════════════ прошивка Хай-Фронта (M480, DESIGN-review shipyard) ══════════════
+   На заказанном корпусе HF раз в сводку прошивка сдвигает одну деталь на клетку
+   — «оптимизировано». Выключить нельзя, только «отложить обновление» на 3 сводки
+   (кнопка в КБ на верфи HF или с пульта). Состояние — G.hfFw {at, defer}. */
+function hfFwShip(id){
+  id=id||G.shipId;
+  const S=(typeof shipData==="function")?shipData(id):null;
+  return !!(S&&S.ordered&&S.by==="hf");
+}
+function hfFwDefer(n){
+  if(!hfFwShip()){say("Прошивка — только на корпусе Хай-Фронта",100);return false;}
+  G.hfFw=G.hfFw||{at:holdShift(),defer:0};
+  G.hfFw.defer=Math.max(G.hfFw.defer|0,n|0);
+  logAdd("dim","Хай-Фронт: обновление отложено · "+G.hfFw.defer+" "+pl3(G.hfFw.defer,"сводка","сводки","сводок"));
+  say("Обновление отложено\nещё "+G.hfFw.defer+" "+pl3(G.hfFw.defer,"сводка","сводки","сводок"),120);
+  return true;
+}
+/* сдвиг одной вещи на соседнюю клетку; без открытого КБ — через draftOf/kbPlace */
+function hfFwNudge(id){
+  if(typeof draftOf!=="function"||typeof kbPlace!=="function"||typeof draftSave!=="function")return false;
+  const d=draftOf(id);if(!d||!d.items||!d.items.length)return false;
+  const sh=holdShift(),pick=(hashi(id,sh,0x0F70)>>>0)%d.items.length;
+  for(let k=0;k<d.items.length;k++){
+    const it=d.items[(pick+k)%d.items.length];
+    if(typeof kbWelded==="function"&&kbWelded(it))continue;
+    const q0=it.cells[0];if(!q0)continue;
+    const dirs=[[0,1],[1,0],[0,-1],[-1,0]];
+    const rot=(hashi(id,sh,it.key||k,0x0F71)>>>0)%4;
+    for(let i=0;i<4;i++){
+      const o=dirs[(rot+i)%4],q=d.P.cells.find(c=>c.i===q0.i+o[0]&&c.j===q0.j+o[1]);
+      if(!q)continue;
+      const no=kbPlace(d,it,q);if(no)continue;
+      draftSave(id,d);if(typeof GUN_LIST!=="undefined")GUN_LIST=null;
+      return it.key||"деталь";
+    }
+  }
+  return false;
+}
+function hfFwTick(){
+  if(!hfFwShip())return;
+  const cur=holdShift();
+  G.hfFw=G.hfFw||{at:cur,defer:0};
+  if((G.hfFw.at|0)>=cur)return;
+  let moved=null;
+  while((G.hfFw.at|0)<cur){
+    G.hfFw.at=(G.hfFw.at|0)+1;
+    if((G.hfFw.defer|0)>0){G.hfFw.defer--;continue;}
+    moved=hfFwNudge(G.shipId);if(moved)break;
+  }
+  if(moved){
+    logAdd("tech","Хай-Фронт: прошивка · «оптимизировано» · сдвинута «"+moved+"»");
+    say("Оптимизировано\nпрошивка сдвинула деталь",110);
+  }
 }
 
 /* ══════════════ дорожный спутник ══════════════

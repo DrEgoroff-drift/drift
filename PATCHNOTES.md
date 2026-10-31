@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.55 — HF firmware «оптимизировано»
+
+- M480: on an ordered Хай-Фронт hull the firmware nudges one draft part a cell per сводка — «оптимизировано»; КБ offers «отложить обновление · 3 сводки». Компания cell-move receipt says «перемещение ячейки … спасибо за выбор».
+
 ## 0.499.54 — talking traps and «я первый» at the halt
 
 - Resources voice (DESIGN-review): antimatter traps without feed count down aloud each game minute — «до потери груза — N минут». After a ЖИЛА rumour, three ships at a rail stop each claim they were first.

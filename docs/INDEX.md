@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 673 · top-level symbols: 8894
+Files: 674 · top-level symbols: 8898
 
 ## SYMBOLS
 
@@ -1673,7 +1673,7 @@ PLAN_COL                     src/05e-plan.js:131
 PLAN_DENS                    src/27jb-kb.js:47
 PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:395
+PLAN_F                       src/27jb-kb.js:402
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -2609,7 +2609,7 @@ applyCrewEvent               src/12b-crew-events.js:227-236
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:216-625
-applySaveRest                src/14a1-save-rest.js:15-392
+applySaveRest                src/14a1-save-rest.js:15-393
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
@@ -3324,7 +3324,7 @@ chessMyTurn                  src/25n-chess.js:212-216
 chessPaint                   src/25n-chess.js:255-315
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
-chipDist                     src/17-mode-system.js:748-754
+chipDist                     src/17-mode-system.js:749-755
 chipDom                      src/08bi-gpu-ovl.js:305-321
 chipDomSnap                  src/08bh-gpu-hud.js:10-14
 chipDomSweep                 src/08bh-gpu-hud.js:22-25
@@ -4117,12 +4117,12 @@ drawStrata                   src/18b-geology.js:100
 drawSurface                  src/21pz-pln-frame.js:439-458
 drawSurfaceHud               src/21e-surface-draw.js:40-143
 drawSurvey                   src/12w-survey.js:63-81
-drawSysHud                   src/17-mode-system.js:755-1104
+drawSysHud                   src/17-mode-system.js:756-1105
 drawSysLane                  src/17g-sys-lane.js:112-137
 drawSysLaneShips             src/17g-sys-lane.js:167-200
 drawSysRail                  src/18f-rail-station.js:61-69
 drawSysTraffic               src/17f-sys-traffic.js:39-43
-drawSystem                   src/17-mode-system.js:559-743
+drawSystem                   src/17-mode-system.js:560-744
 drawTapes                    src/12s1-tape.js:66-81
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
@@ -5272,6 +5272,10 @@ hex2rgb                      src/01-core.js:221-224
 hexA                         src/12e-drone-flight.js:286-292
 hexRGB                       src/24-mode-belt.js:63-65
 hexa                         src/12w-survey.js:83-86
+hfFwDefer                    src/27jc-hf-fw.js:10-17
+hfFwNudge                    src/27jc-hf-fw.js:19-38
+hfFwShip                     src/27jc-hf-fw.js:5-9
+hfFwTick                     src/27jc-hf-fw.js:39-54
 hgCall                       src/27j1-ui-hangar.js:101-120
 hgFloor                      src/27j1-ui-hangar.js:244-280
 hgFrame                      src/27j1-ui-hangar.js:282-286
@@ -5625,8 +5629,8 @@ jumpToBase                   src/21a-mode-base.js:386-403
 kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:220
 kbDensUp                     src/27jb-kb.js:84-92
-kbDone                       src/27jb-kb.js:329-349
-kbDraw                       src/27jb-kb.js:351-387
+kbDone                       src/27jb-kb.js:333-356
+kbDraw                       src/27jb-kb.js:358-394
 kbForeign                    src/27jb-kb.js:31
 kbFreeBy                     src/27jb-kb.js:60-64
 kbMoved                      src/27jb-kb.js:33-39
@@ -5637,10 +5641,10 @@ kbPartFuture                 src/27jb-kb.js:111-120
 kbPlace                      src/27jb-kb.js:178-198
 kbProjSwitch                 src/27jb-kb.js:123-132
 kbRec                        src/27jb-kb.js:83
-kbRender                     src/27jb-kb.js:221-299
+kbRender                     src/27jb-kb.js:221-303
 kbRule                       src/27jb-kb.js:176
 kbShape                      src/27jb-kb.js:26
-kbTap                        src/27jb-kb.js:300-328
+kbTap                        src/27jb-kb.js:304-332
 kbTurnOf                     src/27jb-kb.js:27
 kbWeld                       src/27jb-kb.js:93-105
 kbWelded                     src/27jb-kb.js:82
@@ -6409,7 +6413,7 @@ opisWear                     src/27j-ui-opis.js:247-251
 optGroups                    src/27-ui-ship.js:337-354
 optTab                       src/27-ui-ship.js:336
 optsNumify                   src/14a2-save-ephemeral.js:23-28
-orbPathOf                    src/17-mode-system.js:522-532
+orbPathOf                    src/17-mode-system.js:523-533
 orderDeliver                 src/12aa-need.js:119-134
 orderHere                    src/12aa-need.js:115-118
 orderOf                      src/12aa-need.js:78-102
@@ -6659,7 +6663,7 @@ planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
 planExposure                 src/05e-plan.js:217-230
-planFactors                  src/27jb-kb.js:396-407
+planFactors                  src/27jb-kb.js:403-414
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
@@ -8418,13 +8422,13 @@ sysLandNear                  src/17-mode-system.js:98-105
 sysLane                      src/17g-sys-lane.js:32-67
 sysLightDir                  src/17c2e-body-kit.js:13
 sysMakes                     src/12ad-site.js:134-140
-sysOcPush                    src/17-mode-system.js:550-558
+sysOcPush                    src/17-mode-system.js:551-559
 sysPirateBase                src/24a-mode-raid.js:98-102
 sysRasterDrop                src/06-galaxy.js:23-31
 sysRasterTick                src/06-galaxy.js:33-45
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
-sysWatchLabel                src/17-mode-system.js:537-545
+sysWatchLabel                src/17-mode-system.js:538-546
 tab                          src/26-ui-station.js:3
 tabLive                      src/14a-cloud.js:52
 tableBake                    src/27i-ui-table.js:145-155
@@ -8588,7 +8592,7 @@ updateRail                   src/18g-rail-ride.js:53-105
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
-updateSystem                 src/17-mode-system.js:106-518
+updateSystem                 src/17-mode-system.js:106-519
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29rc-winter-r3.js:295-299
 useBeacon                    src/23-mode-dig.js:91-116
@@ -9587,7 +9591,7 @@ zoomTo                       src/15-input.js:358
   · облако:81
   · видимое состояние обмена:96
 
-## src/14a1-save-rest.js · 30 KB
+## src/14a1-save-rest.js · 31 KB
   · загрузка: вторая половина (выделено из 14, M415):1
 
 ## src/14a2-save-ephemeral.js · 7 KB
@@ -10582,6 +10586,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/27jb-ui-got.js · 4 KB
   · «ЧТО ПОЛУЧИЛ» — добыча боя карточкой (п. 5 плейтеста 11.09):1
+
+## src/27jc-hf-fw.js · 3 KB
+  · прошивка Хай-Фронта (M480, DESIGN-review shipyard):1
 
 ## src/27k-road.js · 48 KB
   · дорожный спутник:1

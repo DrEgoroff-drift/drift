@@ -228,7 +228,9 @@ function kbRender(){
     (fo?"<div class='kb-bill'>ВЕРФЬ «"+(STAMP_RU[kbYard()]||kbYard()).toUpperCase()+"» · ЧУЖАЯ · "+KB_CELL_FEE+" КР ЗА КЛЕТКУ · ПЕРЕЛОЖЕНО "+mv+" · К ОПЛАТЕ "+mv*KB_CELL_FEE+" КР</div>":"")+
     "<canvas class='kb-cv'></canvas>"+
     "<div class='kb-msg'>"+(KB.msg||"&nbsp;")+"</div><div class='kb-tray'></div><div class='kb-inv'></div>"+
-    "<div class='kb-acts'><button class='act kb-typ'>ТИПОВОЙ · КАК У ВСЕХ</button><button class='act gold kb-done'>ГОТОВО</button></div>";
+    "<div class='kb-acts'><button class='act kb-typ'>ТИПОВОЙ · КАК У ВСЕХ</button>"+
+    (typeof hfFwShip==="function"&&hfFwShip(KB.id)?"<button class='act kb-fw'>ОТЛОЖИТЬ ОБНОВЛЕНИЕ · 3 СВОДКИ</button>":"")+
+    "<button class='act gold kb-done'>ГОТОВО</button></div>";
   const tray=w.querySelector(".kb-tray");
   d.items.forEach((it,k)=>{
     const b=document.createElement("button");b.className="act kb-it"+(KB.sel===k?" on":"");
@@ -295,6 +297,8 @@ function kbRender(){
     if(o&&(o.pr||o.dens||o.weld)){const r={};if(o.pr){r.pr=o.pr;r.cur=o.cur|0;}if(o.dens)r.dens=o.dens;if(o.weld)r.weld=o.weld;draftAll()[KB.id]=r;}
     else delete draftAll()[KB.id];   /* проекты, плотности и доводку не стираем (M477–M478) */
     KB.d=draftOf(KB.id);KB.sel=null;KB.msg="как у всех";kbRender();};
+  const fw=w.querySelector(".kb-fw");
+  if(fw)fw.onclick=()=>{if(typeof hfFwDefer==="function")hfFwDefer(3);KB.msg="обновление отложено · 3 сводки";kbRender();};
   w.querySelector(".kb-done").onclick=kbDone;
 }
 function kbTap(i,j){
@@ -336,7 +340,10 @@ function kbDone(){
       KB.d=draftOf(KB.id);KB.sel=null;KB.msg="не хватает "+fee+" кр — чертёж вернули как был";kbRender();return;
     }
     G.credits-=fee;
-    logAdd("money","Верфь «"+(STAMP_RU[kbYard()]||kbYard())+"»: переложено "+(fee/KB_CELL_FEE)+" клеток · −"+fee+" кр");
+    const n=fee/KB_CELL_FEE,yard=kbYard();
+    logAdd("money",yard==="co"
+      ?"Компания™: перемещение ячейки — "+KB_CELL_FEE+" кр, итого "+fee+" кр, спасибо за выбор"
+      :"Верфь «"+(STAMP_RU[yard]||yard)+"»: переложено "+n+" клеток · −"+fee+" кр");
     KB.map0=kbCellMap(KB.d);
   }
   const m=document.querySelector("#kbWin .kb-msg");

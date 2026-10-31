@@ -332,6 +332,7 @@ function updateSystem(dt){
   if(typeof kpTick==="function"&&(G.t|0)%60===30)kpTick();   /* посылки: доля кооператива, возвраты (M492) */
   if(typeof scarTick==="function"&&(G.t|0)%3600===0)scarTick();
   if(typeof subTick==="function"&&(G.t|0)%60===0)subTick();
+  if(typeof hfFwTick==="function"&&(G.t|0)%60===0)hfFwTick();   /* прошивка HF · «оптимизировано» (M480) */
   if(typeof recallTick==="function"&&(G.t|0)%60===0)recallTick();   /* отзыв партии Хай-Фронта (M509) */   /* подписка: взнос на границе смены (M487) */   /* течёт бак: −1 % в минуту (M482) */   /* стапель: заказ готов — строка в почте (M481) */   /* техподдержка решает заявки (M495) */   /* ловушки антивещества: питание или процент в минуту (M468) */
   if(typeof hailTick==="function"&&hailTick(sh,dt,actEdge))return;
 

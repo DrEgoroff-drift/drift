@@ -254,6 +254,7 @@ measured on the GPU build first:
 - Metro voice (0.499.52): doors / уступайте / «плюс десять» on oversized bag — DESIGN-review metro column.
 - M452 rest (0.499.53): Рассвет paint 5 кр; Орднунг form all «служебная».
 - Resources voice (0.499.54): trap countdown aloud; three «я первый» at the halt after ЖИЛА.
+- M480 HF firmware (0.499.55): «оптимизировано» per сводка; defer 3; Компания cell receipt.
 - Approach joke (0.499.50): the stuck queue ship «с прошлой сводки» — DESIGN-review life column.
 - [ ] **M511 волокита:** the animals the author will invent (his table).
 - **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can say

@@ -342,6 +342,7 @@ function applySaveRest(s){
   G.tapeRoll=s.tapeRoll|0;G.tapes=asMap(s.tapes);   /* изолента (M486) */   /* чертежи кораблей — правка игрока (M477); нет записи — упаковщик */
   G._hullHeld=null;         /* корпус до беды считается заново от загруженного (28-loop) */
   G.actWk=(s.actWk&&typeof s.actWk==="object"&&!Array.isArray(s.actWk))?{wk:s.actWk.wk|0,ms:Math.max(0,+s.actWk.ms||0),used:s.actWk.used|0}:null;
+  G.hfFw=(s.hfFw&&typeof s.hfFw==="object")?{at:s.hfFw.at|0,defer:Math.max(0,s.hfFw.defer|0)}:null;   /* прошивка HF (M480) */
   G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   G.soldTotal=Math.max(0,s.soldTotal|0);
