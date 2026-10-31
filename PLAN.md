@@ -5,6 +5,15 @@ Only what we want next. What is done is not kept here: the story of each version
 M-number), and the rules and decisions that stand are in `docs/DECISIONS.md`. A finished item is
 deleted from this file in the commit that finishes it; its story goes to the patchnote.
 
+**STATUS 31.10 — the plan is closed, without the phone.** The engine is verified done (census `91zzzzzzy7`:
+0 2D on `#c` in all 16 scenes; 11 scenes by eye; `g11` 223–240 fps at DPR 2; 0 WebGPU errors). The launchers
+shoot the game, the dead 2D stub in the mine is out, and the test nets confirmed in place. Deferred on
+purpose: the **phone (S23/P1)** is the final test, later; the **sun day** waits for a chronicle pass (the
+surface sun already runs on `celSun` at `CEL_DAY × (6–10)`); the **refactor debts** (line-based source net,
+the button-family merge, long functions) are on-touch only; the **3D spikes** and the **fleet design pass**
+belong to the other sessions; `§13`–`§15` are parked / the `space` branch. Everything else is closed or
+release-run polish.
+
 **How it is worked (the author, 26.09 ~20:55).** «Одного рабочего, пусть всё делает, хочу уже дальше игрового
 накинуть, а не только переход на движок»; «пусть делает без тестов, быстро накидывает, потом с графикой пройдёмся
 перед релизом». So:
