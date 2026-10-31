@@ -252,6 +252,7 @@ measured on the GPU build first:
   Pairs for the four new faces (co/or/km/hf × 19h/3h × 760/390): `_scratch/hotel-pairs/` — camera lock + frozen `hotelHere` (station orbit was moving the house off-frame); await author craft pass.
 - M480 yard kindness (0.499.51): taped hull → free seam «сынок, ну кто ж так» once per dock.
 - Metro voice (0.499.52): doors / уступайте / «плюс десять» on oversized bag — DESIGN-review metro column.
+- M452 rest (0.499.53): Рассвет paint 5 кр; Орднунг form all «служебная».
 - Approach joke (0.499.50): the stuck queue ship «с прошлой сводки» — DESIGN-review life column.
 - [ ] **M511 волокита:** the animals the author will invent (his table).
 - **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can say

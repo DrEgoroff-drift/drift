@@ -408,6 +408,7 @@ function updateSystem(dt){
   if(!landNear){
   if(typeof railInteract==="function"&&railInteract(sh))return;
   if(typeof chebInteract==="function"&&chebInteract(sh))return;   /* «Чебуречная» на подъезде (M462) */
+  if(typeof gestInteract==="function"&&gestInteract())return;   /* покраска / форма на жесте (M452 rest) */
   if(typeof hotelInteract==="function"&&hotelInteract(sh))return;
   if(typeof bazInteract==="function"&&bazInteract(sh))return;
   if(typeof giantInteract==="function"&&giantInteract(sh))return;   /* причал великана (M464) */   /* барахолка у пояса (M463) */   /* гостиница у станции (M461) */
@@ -712,6 +713,7 @@ function drawSystem(){
   const gr=shipGear3d();
   hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln,gr);
   if(typeof bbHullPaint==="function")bbHullPaint(hsx,hsy,shS);   /* неон щита на обшивке (M460 Law 2) */
+  if(typeof gestPaintHull==="function")gestPaintHull(hsx,hsy,shS);   /* панель буксира Рассвета (M452) */
   /* стволы на подвесах, повёрнутые по наводке (M363), и пусковая под корпусом (хвост M112):
      сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c).
      Корпус в объёме (M722) несёт части сам — плоские стволы только там, где объёма не было */

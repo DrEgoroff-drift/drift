@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.53 — border gesture: paint and «служебная»
+
+- M452 rest (DESIGN-review borders): Рассвет tug offers one panel for 5 кр when the hull is whole — «тебе к лицу …»; soft wash on the flank for three minutes. Орднунг pad: торг / транзит / иное — all resolve to «служебная».
+
 ## 0.499.52 — metro announcer: doors and baggage
 
 - Rail (DESIGN-review metro): departure voice «Осторожно, двери закрываются» (a ship has none); first stop yields seats to «детям и крупногабариту»; oversized bag button says «плюс десять».

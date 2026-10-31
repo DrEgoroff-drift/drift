@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 673 · top-level symbols: 8891
+Files: 673 · top-level symbols: 8894
 
 ## SYMBOLS
 
@@ -791,11 +791,12 @@ GEO_SIDE                     tests/90b2-geom.js:29
 GEO_TPL                      src/18b-geology.js:31-44
 GEO_WORLD                    tests/90b3-geom-world.js:9-13
 GEO_Z                        tests/90b2-geom.js:28
-GEST                         src/17h-sys-gesture.js:23
-GEST_POST                    src/17h-sys-gesture.js:21
-GEST_POST_CV                 src/17h-sys-gesture.js:183
-GEST_SAID                    src/17h-sys-gesture.js:24
-GEST_T                       src/17h-sys-gesture.js:20
+GEST                         src/17h-sys-gesture.js:27
+GEST_PAINT_COLS              src/17h-sys-gesture.js:20-23
+GEST_POST                    src/17h-sys-gesture.js:25
+GEST_POST_CV                 src/17h-sys-gesture.js:222
+GEST_SAID                    src/17h-sys-gesture.js:28
+GEST_T                       src/17h-sys-gesture.js:24
 GEW                          src/17-mode-system.js:48
 GEW_WGSL                     src/17-mode-system.js:49
 GEX                          src/16ga-gpu-trail.js:213
@@ -2098,7 +2099,7 @@ S1                           src/01-core.js:183
 S2                           src/01-core.js:184
 SAME_FRAMES                  tests/91zzzzzbb-samehash.js:21
 SAVE_BUDGET                  src/14-save.js:126
-SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-60
+SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-61
 SAVE_KEY                     src/14-save.js:6
 SBELT_ARC                    src/17gc-sys-belt.js:9
 SBELT_BAS                    src/17gc-sys-belt.js:42
@@ -3323,7 +3324,7 @@ chessMyTurn                  src/25n-chess.js:212-216
 chessPaint                   src/25n-chess.js:255-315
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
-chipDist                     src/17-mode-system.js:746-752
+chipDist                     src/17-mode-system.js:748-754
 chipDom                      src/08bi-gpu-ovl.js:305-321
 chipDomSnap                  src/08bh-gpu-hud.js:10-14
 chipDomSweep                 src/08bh-gpu-hud.js:22-25
@@ -4054,9 +4055,9 @@ drawFoeBody                  src/24ab-raid-foe.js:11-131
 drawGalaxy                   src/17z1-galaxy.js:64-67
 drawGalaxyNames              src/17z2-galaxy-names.js:38-68
 drawGalaxyStars              src/17z1-galaxy.js:86-115
-drawGestPost                 src/17h-sys-gesture.js:200-227
-drawGesture                  src/17h-sys-gesture.js:96-148
-drawGestureTop               src/17h-sys-gesture.js:152-181
+drawGestPost                 src/17h-sys-gesture.js:239-266
+drawGesture                  src/17h-sys-gesture.js:135-187
+drawGestureTop               src/17h-sys-gesture.js:191-220
 drawGiant                    src/17o-giants.js:699-712
 drawGiantsMap                src/17o-giants.js:70-81
 drawGlyph                    src/12t-settle.js:59-77
@@ -4116,12 +4117,12 @@ drawStrata                   src/18b-geology.js:100
 drawSurface                  src/21pz-pln-frame.js:439-458
 drawSurfaceHud               src/21e-surface-draw.js:40-143
 drawSurvey                   src/12w-survey.js:63-81
-drawSysHud                   src/17-mode-system.js:753-1102
+drawSysHud                   src/17-mode-system.js:755-1104
 drawSysLane                  src/17g-sys-lane.js:112-137
 drawSysLaneShips             src/17g-sys-lane.js:167-200
 drawSysRail                  src/18f-rail-station.js:61-69
 drawSysTraffic               src/17f-sys-traffic.js:39-43
-drawSystem                   src/17-mode-system.js:558-741
+drawSystem                   src/17-mode-system.js:559-743
 drawTapes                    src/12s1-tape.js:66-81
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
@@ -4634,19 +4635,21 @@ geoWorld                     tests/90b3-geom-world.js:41-56
 geoWorldBox                  tests/90b3-geom-world.js:15-26
 geoWorldOne                  tests/90b3-geom-world.js:27-40
 geologyOf                    src/18b-geology.js:45-71
-gestAge                      src/17h-sys-gesture.js:45
-gestArrive                   src/17h-sys-gesture.js:33-41
-gestAt                       src/17h-sys-gesture.js:90
-gestEase                     src/17h-sys-gesture.js:87
-gestLive                     src/17h-sys-gesture.js:42-44
-gestOnce                     src/17h-sys-gesture.js:47-51
-gestOwner                    src/17h-sys-gesture.js:25-31
-gestPostNo                   src/17h-sys-gesture.js:52
-gestPostSprite               src/17h-sys-gesture.js:184-199
-gestRect                     src/17h-sys-gesture.js:91
-gestShip                     src/17h-sys-gesture.js:94
-gestShipFrame                src/17h-sys-gesture.js:82-86
-gestTick                     src/17h-sys-gesture.js:53-80
+gestAge                      src/17h-sys-gesture.js:49
+gestArrive                   src/17h-sys-gesture.js:37-45
+gestAt                       src/17h-sys-gesture.js:129
+gestEase                     src/17h-sys-gesture.js:126
+gestInteract                 src/17h-sys-gesture.js:87-111
+gestLive                     src/17h-sys-gesture.js:46-48
+gestOnce                     src/17h-sys-gesture.js:51-55
+gestOwner                    src/17h-sys-gesture.js:29-35
+gestPaintHull                src/17h-sys-gesture.js:113-119
+gestPostNo                   src/17h-sys-gesture.js:56
+gestPostSprite               src/17h-sys-gesture.js:223-238
+gestRect                     src/17h-sys-gesture.js:130
+gestShip                     src/17h-sys-gesture.js:133
+gestShipFrame                src/17h-sys-gesture.js:121-125
+gestTick                     src/17h-sys-gesture.js:57-84
 getSystem                    src/06-galaxy.js:95-198
 gexDraw                      src/16ga-gpu-trail.js:316-325
 gexPush                      src/16ga-gpu-trail.js:280-286
@@ -6406,7 +6409,7 @@ opisWear                     src/27j-ui-opis.js:247-251
 optGroups                    src/27-ui-ship.js:337-354
 optTab                       src/27-ui-ship.js:336
 optsNumify                   src/14a2-save-ephemeral.js:23-28
-orbPathOf                    src/17-mode-system.js:521-531
+orbPathOf                    src/17-mode-system.js:522-532
 orderDeliver                 src/12aa-need.js:119-134
 orderHere                    src/12aa-need.js:115-118
 orderOf                      src/12aa-need.js:78-102
@@ -8415,13 +8418,13 @@ sysLandNear                  src/17-mode-system.js:98-105
 sysLane                      src/17g-sys-lane.js:32-67
 sysLightDir                  src/17c2e-body-kit.js:13
 sysMakes                     src/12ad-site.js:134-140
-sysOcPush                    src/17-mode-system.js:549-557
+sysOcPush                    src/17-mode-system.js:550-558
 sysPirateBase                src/24a-mode-raid.js:98-102
 sysRasterDrop                src/06-galaxy.js:23-31
 sysRasterTick                src/06-galaxy.js:33-45
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
-sysWatchLabel                src/17-mode-system.js:536-544
+sysWatchLabel                src/17-mode-system.js:537-545
 tab                          src/26-ui-station.js:3
 tabLive                      src/14a-cloud.js:52
 tableBake                    src/27i-ui-table.js:145-155
@@ -8585,7 +8588,7 @@ updateRail                   src/18g-rail-ride.js:53-105
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
-updateSystem                 src/17-mode-system.js:106-517
+updateSystem                 src/17-mode-system.js:106-518
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29rc-winter-r3.js:295-299
 useBeacon                    src/23-mode-dig.js:91-116
@@ -9587,7 +9590,7 @@ zoomTo                       src/15-input.js:358
 ## src/14a1-save-rest.js · 30 KB
   · загрузка: вторая половина (выделено из 14, M415):1
 
-## src/14a2-save-ephemeral.js · 6 KB
+## src/14a2-save-ephemeral.js · 7 KB
   · поля мира, которые НЕ сохраняются — и почему (0.438.0):1
 
 ## src/14b-war-net.js · 12 KB
@@ -9744,7 +9747,7 @@ zoomTo                       src/15-input.js:358
 ## src/17gc-sys-belt.js · 13 KB
   · пояс в кадре системы (M824):1
 
-## src/17h-sys-gesture.js · 15 KB
+## src/17h-sys-gesture.js · 18 KB
   · чья земля — за пять секунд: жест первого корабля и пост (M452, DESIGN-review §2.1):1
 
 ## src/17h1-arr-warm.js · 6 KB

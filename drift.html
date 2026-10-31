@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.52";
+const VER="0.499.53";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -48396,6 +48396,7 @@ const SAVE_EPHEMERAL={
   spaTip:"кадр",       /* подсказка посадки «САНАТОРИЙ» с стойки гостиницы — на сессию, не в сейв (M461) */
   _laneWait:"кадр",    /* плашка «с прошлой сводки» у очереди на подлёте — раз за визит в систему */
   _tapeSon:"кадр",     /* доброта верфи «сынок, ну кто ж так» — раз за заход (M480) */
+  gestPaint:"кадр",    /* покраска панели буксиром Рассвета — до until, не в сейв (M452) */
 };
 
 /* ══════════════ провод войны (M376, §13, §16.4) ══════════════
@@ -53973,6 +53974,7 @@ function updateSystem(dt){
   if(!landNear){
   if(typeof railInteract==="function"&&railInteract(sh))return;
   if(typeof chebInteract==="function"&&chebInteract(sh))return;   /* «Чебуречная» на подъезде (M462) */
+  if(typeof gestInteract==="function"&&gestInteract())return;   /* покраска / форма на жесте (M452 rest) */
   if(typeof hotelInteract==="function"&&hotelInteract(sh))return;
   if(typeof bazInteract==="function"&&bazInteract(sh))return;
   if(typeof giantInteract==="function"&&giantInteract(sh))return;   /* причал великана (M464) */   /* барахолка у пояса (M463) */   /* гостиница у станции (M461) */
@@ -54277,6 +54279,7 @@ function drawSystem(){
   const gr=shipGear3d();
   hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln,gr);
   if(typeof bbHullPaint==="function")bbHullPaint(hsx,hsy,shS);   /* неон щита на обшивке (M460 Law 2) */
+  if(typeof gestPaintHull==="function")gestPaintHull(hsx,hsy,shS);   /* панель буксира Рассвета (M452) */
   /* стволы на подвесах, повёрнутые по наводке (M363), и пусковая под корпусом (хвост M112):
      сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c).
      Корпус в объёме (M722) несёт части сам — плоские стволы только там, где объёма не было */
@@ -63757,8 +63760,12 @@ const SBELT_PICK=[];
    Пост у входа — фон, не сцена: ферма, доска со словом хозяина, одна лампа;
    печётся один раз на систему. Жест виден при каждом прибытии; сказанное (эфир,
    КНИЖКА) — не чаще раза в игровые сутки на систему, иначе дом заговорит.
-   Не сделано из пункта (в плане): форма «цель визита» на пульте, покраска
-   панели за 5 кр, состояния фронт / свежая оккупация / Ялта. */
+   Сделано: форма «цель визита» (Орднунг), покраска панели за 5 кр (Рассвет).
+   Не сделано: состояния фронт / свежая оккупация / Ялта. */
+const GEST_PAINT_COLS=[
+  {ru:"охра",c:[196,148,72]},{ru:"сурик",c:[176,72,56]},{ru:"хаки",c:[120,132,88]},
+  {ru:"небесную",c:[88,140,188]},{ru:"слоновую",c:[220,208,176]}
+];
 const GEST_T={gt:14,co:8,or:4,km:0,ra:9,hf:90};   /* сколько секунд длится жест */
 const GEST_POST={gt:"ПОСТ ТРАССЫ № ",co:"ЗОНА ПАРТНЁРА™",or:"КПП · ЭКЗ. 1 ИЗ 3",
   km:"ОБЕД. ВЕРНУСЬ",ra:"ЗАХОДИ, БРАТ",hf:"◉"};
@@ -63819,6 +63826,41 @@ function gestTick(sh){
   }else if(g.by==="hf"){
     gestOnce(g,"say",3,()=>{etherLine("Ваш рейтинг доверия рассчитан. Спасибо.",who);});
   }
+}
+/* доброта / форма на жесте (DESIGN-review borders): Рассвет красит панель за 5 кр;
+   Орднунг — три ответа, все «служебная». Зовётся из updateSystem рядом с гостиницей. */
+function gestInteract(){
+  const g=gestLive();if(!g)return false;
+  const t=gestAge(g);
+  if(g.by==="ra"&&!g.paintDone&&t>=3&&t<GEST_T.ra){
+    const whole=G.hull>=stat().hullMax-.5;if(!whole)return false;
+    if(cue("БУКСИР · ОДНА ПАНЕЛЬ · 5 КР\nДЕЙСТВИЕ — ПОКРАСИТЬ",CUE_ACT)&&actEdge){
+      if(G.credits<5){say("Не хватает даже на краску",90);return true;}
+      G.credits-=5;g.paintDone=1;
+      const C=GEST_PAINT_COLS[g.seed%GEST_PAINT_COLS.length];
+      G.gestPaint={c:C.c,until:G.t+60*180};   /* цвет держится три игровые минуты */
+      say("«Тебе к лицу "+C.ru+"»\n−5 кр · панель",140);
+      logAdd("money","Буксир Рассвета: панель · −5 кр · «тебе к лицу "+C.ru+"»");
+    }
+    return true;
+  }
+  if(g.by==="or"&&!g.formDone&&t>=3.2&&t<8){
+    if(cue("ЦЕЛЬ ВИЗИТА · ТОРГ · ТРАНЗИТ · ИНОЕ\nДЕЙСТВИЕ — ВСЁ «СЛУЖЕБНАЯ»",CUE_ACT)&&actEdge){
+      g.formDone=1;
+      say("Цель визита: служебная\nэкз. 1 из 3 — вам не выдаётся",120);
+      logAdd("dim","Орднунг: цель визита — служебная · торг/транзит/иное · экз. 1 из 3");
+    }
+    return true;
+  }
+  return false;
+}
+/* отсвет покрашенной панели на корпусе (аддитив, как неон щита) */
+function gestPaintHull(x,y,sc){
+  const P=G.gestPaint;if(!P||G.t>P.until){if(P)G.gestPaint=null;return;}
+  const pass=gpuScene();if(!pass)return;
+  const c=P.c,h=mixc(c,[255,255,255],.4),r=Math.max(8,14*sc),a=.42;
+  gpuShapes(pass,[[1,x+r*.55,y-r*.15,r*.55,0,0,r*.7,c[0],c[1],c[2],a],
+    [1,x+r*.55,y-r*.15,r*.22,0,0,r*.28,h[0],h[1],h[2],a*.7]],{blend:"add"});
 }
 /* ── где стоит жест: всё — функция возраста и корабля ── */
 function gestShipFrame(sh){
