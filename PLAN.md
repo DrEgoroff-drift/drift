@@ -267,7 +267,9 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 - **0.499.78:** customs gates/plates; dock incomplete nose+scaffolding; town bridges/chimneys; garden
   parabolic dishes in `17o`.
 - **0.499.80–84:** all six HTML probes ≥70 KB; customs densified; dock slip+scaffold+sheds; town bridges;
-  garden dishes (hotel wings stripped from assembly). Further `17o` port from denser HTML open.
+  garden dishes (hotel wings stripped from assembly).
+- **0.499.93:** customs weighbridges + border beacons from HTML; plaza junk furniture pad stripped. Further
+  `17o` port from denser HTML open (cyl/house/archive stacks).
 
 ## 9. Seams to honour when the items above are built
 

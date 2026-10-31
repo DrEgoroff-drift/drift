@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.93 — Customs giant: weighbridges and border beacons
+
+- Ported `buildWeighbridges` / `buildBorderBeacons` from `kimi-giant-customs` into `17o`; stripped the plaza furniture pad (flagpoles/benches/urns loops) that was densify junk.
+
 ## 0.499.92 — M474 Ordnung double-press via railBuyBoard
 
 - Vestibule: `railBuyBoard` does declare-then-board when the departure land is Ordnung; suite locks the two-press law so metro heart flipping owner cannot break one-shot ticket buys.

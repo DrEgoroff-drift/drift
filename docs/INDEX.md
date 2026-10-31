@@ -805,11 +805,11 @@ GHZ                          src/19cc-gpu-air.js:185
 GHZ_WGSL                     src/19cc-gpu-air.js:186
 GIANTS                       src/17o-giants.js:22
 GIANTS_DEF                   src/17o-giants.js:13-21
-GIANT_DOCK                   src/17o-giants.js:682
-GIANT_LEN                    src/17o-giants.js:649
-GIANT_RAD                    src/17o-giants.js:683
+GIANT_DOCK                   src/17o-giants.js:674
+GIANT_LEN                    src/17o-giants.js:641
+GIANT_RAD                    src/17o-giants.js:675
 GIANT_SPIN                   src/17o-giants.js:58
-GIANT_VISIT                  src/17o-giants.js:666-681
+GIANT_VISIT                  src/17o-giants.js:658-673
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
 GIFT_W                       src/11at-gift.js:27
@@ -2985,7 +2985,7 @@ bodyFleet                    src/17c2e-body-kit.js:80-88
 bodyFleetHull                src/17c2e-body-kit.js:72-78
 bodyGestPost                 src/17c2l-body-gest.js:65-70
 bodyGestPostMesh             src/17c2l-body-gest.js:5-63
-bodyGiant                    src/17o-giants.js:612-633
+bodyGiant                    src/17o-giants.js:604-625
 bodyGpu                      src/17c2e-body-kit.js:26
 bodyInSystem                 src/16-flight.js:39-49
 bodyLights                   src/17c2e-body-kit.js:42-50
@@ -4066,7 +4066,7 @@ drawGalaxyStars              src/17z1-galaxy.js:86-115
 drawGestPost                 src/17h-sys-gesture.js:239-266
 drawGesture                  src/17h-sys-gesture.js:135-187
 drawGestureTop               src/17h-sys-gesture.js:191-220
-drawGiant                    src/17o-giants.js:634-647
+drawGiant                    src/17o-giants.js:626-639
 drawGiantsMap                src/17o-giants.js:78-89
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-232
@@ -4662,19 +4662,19 @@ getSystem                    src/06-galaxy.js:95-198
 gexDraw                      src/16ga-gpu-trail.js:316-325
 gexPush                      src/16ga-gpu-trail.js:280-286
 ghf                          src/17ga-gpu-planets.js:370
-giantArrive                  src/17o-giants.js:655-661
+giantArrive                  src/17o-giants.js:647-653
 giantAt                      src/17o-giants.js:54
-giantBody                    src/17o-giants.js:685-689
-giantClose                   src/17o-giants.js:717
-giantInteract                src/17o-giants.js:704-716
+giantBody                    src/17o-giants.js:677-681
+giantClose                   src/17o-giants.js:709
+giantInteract                src/17o-giants.js:696-708
 giantMapGlyph                src/17o-giants.js:66-77
-giantNight                   src/17o-giants.js:726-733
-giantOpen                    src/17o-giants.js:734-755
-giantOrbit                   src/17o-giants.js:690-703
+giantNight                   src/17o-giants.js:718-725
+giantOpen                    src/17o-giants.js:726-747
+giantOrbit                   src/17o-giants.js:682-695
 giantPeriod                  src/17o-giants.js:59
 giantPos                     src/17o-giants.js:56
-giantRuler                   src/17o-giants.js:650-653
-giantRumour                  src/17o-giants.js:719-725
+giantRuler                   src/17o-giants.js:642-645
+giantRumour                  src/17o-giants.js:711-717
 giantSpin                    src/17o-giants.js:60-64
 giantsAll                    src/17o-giants.js:23-53
 giftArrive                   src/11at-gift.js:43-63
@@ -4960,7 +4960,7 @@ h3dDev                       src/17c2a-hull3d.js:449-458
 h3dDraw                      src/17c2a-hull3d.js:540-553
 h3dDraw2                     src/17c2a-hull3d.js:661-664
 h3dEar                       src/17c2a-hull3d.js:288-303
-h3dGiantMesh                 src/17o-giants.js:94-611
+h3dGiantMesh                 src/17o-giants.js:94-603
 h3dJob                       src/17c2a-hull3d.js:145
 h3dKeepAt                    src/17c2a-hull3d.js:504-514
 h3dKeepSig                   src/17c2a-hull3d.js:516-524
@@ -9832,7 +9832,7 @@ zoomTo                       src/15-input.js:358
 ## src/17n-bazaar.js · 16 KB
   · барахолка, которая помнит (M463, DESIGN-life):1
 
-## src/17o-giants.js · 54 KB
+## src/17o-giants.js · 53 KB
   · по великану на рукав (M464, DESIGN-life):1
 
 ## src/17p-cam-frame.js · 4 KB
@@ -10964,7 +10964,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzk9c-rail-far.js · 1 KB
   · M474: сеть за r 60 лениво по региону:1
 
-## tests/91zzzzk9d-rail-or.js · 2 KB
+## tests/91zzzzk9d-rail-or.js · 3 KB
   · M474: Орднунг — два нажатия на кассе:1
 
 ## tests/91zzzzy-play.js · 18 KB
@@ -11041,7 +11041,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzzzzza3-oracle-hauler.js · 1 KB
   · oracle · одно плечо обнажённого тягача (M478):1
 
-## tests/91zzzzzzzzza4-oracle-deal.js · 1 KB
+## tests/91zzzzzzzzza4-oracle-deal.js · 2 KB
   · oracle · кр/мин трасса vs прыжок (DESIGN-metro §5):1
 
 ## tests/99-run.js · 9 KB
