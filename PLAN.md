@@ -330,11 +330,7 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
-- [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). Note (31.10):
-  the **surface** sun already runs on `celSun` with a period of `CEL_DAY × (6–10)` — a full circuit is
-  6–10 real minutes, not the calendar minute; the calendar day is `CEL_DAY`. Reaching "an hour" means
-  raising that multiplier, and it moves the war chronicle's hashes and the need windows — a chronicle
-  pass, not a constant change.
+- [x] **The sun crosses the sky in an hour — done 0.499.100:** the surface sun's multiplier went `6–9` → `54–72` (`celSun`, `21pifa`, `25m-probe` and `91ql-light` in step), so a full day is ~an hour instead of ~6–10 minutes. `CEL_DAY` itself is untouched — the war chronicle's hashes and the need windows do not move (they read `CEL_DAY`, not the surface sun).
 - [x] **Old worktrees — inspected 31.10:** `drift-refactor` (branch `refactor`, WIP «stall report names
   who held the frame; bloom blurs at quarter resolution»), `drift-lab` (branch `playable-11-09`, «plan:
   dev.html write-guard done», dirty `site/war.js`), `drift-t1`/`drift-t2`/`drift-tests` (all three at the
