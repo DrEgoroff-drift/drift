@@ -215,9 +215,10 @@ hall), `27f5-portrait3d` (portraits); `27d-ui-cantina` keeps only the station st
 2. **The face is a profile, not an ellipsoid**: the lower face is a plane down to the chin, the jaw keeps its width
    to the angle, eyes sit at mid-head; tone zones like a painter's (redder nose and cheeks, cooler under the eyes,
    lighter brow).
-3. **Hair is strands over a cap.** The cap sinks under the skin below the hairline, so the edge is where two surfaces
-   meet — smooth, never the grid's staircase; roots thin to skin. A bob and dreads are ribbons laid along the skull
-   (Catmull–Rom), a fringe lies on the forehead, ends taper to nothing.
+3. **Hair is strands over a cap with volume.** The cap sinks under the skin below the hairline, so the edge is where
+   two surfaces meet — smooth, never the grid's staircase; soft θ lobes keep it from reading as a helmet; roots thin
+   to skin. A bob and dreads are ribbons laid along the skull (Catmull–Rom), a fringe lies on the forehead, ends taper
+   to nothing. The ear's bowl carries a tragus (0.499.45); the eye is a touch larger with more sclera than iris.
 4. **Clothes read before the face**: a commander's vest with pouches, radio and pad; a keeper's overalls with flat
    straps (bands along the body's own normal, never hoses), hi-vis bands and a tool belt; a factor's coat with lapels
    and a scarf wound round the neck; a scientist's tunic with pens and a glowing pass. The neckline is geometry, and

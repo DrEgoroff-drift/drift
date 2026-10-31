@@ -6,6 +6,11 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.45 — face rest: larger eyes, tragus, hair volume
+
+- M729 face rest (`27f3a`): eyes a touch larger with more sclera (less doll iris), ear gains a tragus on the bowl, hair cap carries soft θ lobes so it reads as volume rather than a helmet.
+- Save net: `G.spaTip` (hotel → land cue) named in `SAVE_EPHEMERAL` — session tip, not persisted.
+
 ## 0.499.44 — yard buy price readable when you cannot afford it
 
 - Station yard (G15 / Контроль 26.09): a disabled gold buy button keeps a cream-amber price (`#f0c090`) on graphite so the figure still reads at contrast ≥ 3; the cool disabled act is lifted the same way.

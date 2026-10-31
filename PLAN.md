@@ -89,9 +89,8 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   The engine already has `gpuScene3D` (08b: depth, per-pixel light); the belt rocks and the raid use it. Owners:
   - the interface — GPU-3; its census (26.09): the panels by how often they open (the desk is on the
     engine through 27i0 `panelGpu` — the post window and КБ too, and the shipyard showcase (26f, one canvas over
-    `hullStudio`), the ОПИСЬ pictures, the suit doll and the album; to fix on the shipyard: the price on a buy button you
-    cannot afford is dark on dark — it must still read, contrast ≥ 3 (Контроль 26.09); next: the slipway sheet (26e2, needs a hull mask in 08bi),
-    the home garage hull, faces); a bake at first sight
+    `hullStudio`), the ОПИСЬ pictures, the suit doll and the album; yard buy-price contrast done (0.499.44);
+    next: the home garage hull, faces; slipway sheet already on the engine (26e2); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
   - the hull: `hullStudio` / `hullGpuDraw` (17c2) is the one GPU hull. No screen calls `drawHull` any more (22.10:
@@ -366,11 +365,10 @@ The author, 06.10: «кучу деталей смоделировать и чт�
   такой … он должен тоже процедурно челиков генерировать». One generator from a seed and a brief (job, house, age):
   face, body, hair and a wardrobe — spacesuit with helmet and pack, suit and tie, coverall, coat, lab coat, leather,
   uniform — each with its own layers of detail. Then every place that shows a person takes it: HQ
-  (`27f-hq-room.js` still paints `mgrFace` in 2D), crew, story people, the road. Done in 0.491.0: the sculpted face
-  and live portraits with six emotions (`docs/DESIGN-space.md` «The face»). Left: the wardrobe, `npcMake(seed,brief)`
-  (job, house, age, `fem` only from a brief — managers' text is masculine), `cpEmote` on events (hire, refusal,
-  hover), the places above; and the face's own rest — eyes a touch larger and less doll-like, an ear with a tragus,
-  hair with volume instead of a cap.
+  (HQ portraits are already `cpPortrait` on the engine, 22.10), crew, story people, the road. Done in 0.491.0: the
+  sculpted face and live portraits with six emotions (`docs/DESIGN-space.md` «The face»). Face rest done in
+  0.499.45 (eyes, tragus, hair volume). Left: the wardrobe, `npcMake(seed,brief)` (job, house, age, `fem` only from
+  a brief — managers' text is masculine), `cpEmote` on events (hire, refusal, hover), the places above.
 - **M726 The station, finished.** Line icons for sections and goods, the state order as a card with progress, the own
   ship's thumbnail in the ship column, keycaps on actions, «КОРПУС ЦЕЛ» as a state and not a button.
 - **M727 Every other window** in the same kit: СТОЛ, ДЕЛО, crew, HQ, barge, prices, settings, menu, SOS, road.

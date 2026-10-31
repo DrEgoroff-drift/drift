@@ -69,9 +69,10 @@ function cpWarpTh(){return cpWarp("th",-Math.PI,Math.PI,a=>.2+.8*r3Step(1.3,.85,
 function cpWarpPh(){return cpWarp("ph",-Math.PI/2,Math.PI/2,a=>.22+.78*r3Step(-1.3,-1.02,a)*r3Step(.62,.36,a));}
 /* точки лица из гена — в системе головы: глаз (центр яблока, радиус, разрез), нос, рот */
 function cpFaceRig(H,g){
-  const ex=H.ex,ey=.004,er=.0114*(.92+.16*(g.eyeR-.8)/.5),Ez=cpFaceAt(H,ex,ey)[2]+.0035-er;
+  /* глаз чуть крупнее (M729 rest): меньше «куклы» — белок шире радужки, разрез мягче */
+  const ex=H.ex,ey=.004,er=.0122*(.92+.16*(g.eyeR-.8)/.5),Ez=cpFaceAt(H,ex,ey)[2]+.0032-er;
   const nl=.9+.25*g.nose,yt=.008-.044*nl;
-  return {ex,ey,er,Ez,rs:er+.0011,aw:er*1.3,hu:.0054+.0016*(g.eyeR-.8),hl:.0039,
+  return {ex,ey,er,Ez,rs:er+.0011,aw:er*1.28,hu:.0058+.0017*(g.eyeR-.8),hl:.0042,
     np:.85+.35*(1-g.nose),yn:ey+.005,yt,ysn:yt-.0085,aX:.0112+.0025*(1-g.nose),
     lf:.85+.35*g.lip,my:-.061*(H.b/.106),mw:.0212+.004*g.lip,age:g.age||0,fem:g.fem||0};
 }
@@ -235,7 +236,7 @@ function* cpHeadGen(K,g,lod,cl,seed){
   yield;   /* хвост рядов кожи и первый кусок поверхности — разными шагами: слитно до 3 мс на ПК */
   yield* K.surfG(NU,NV,null,Msk,{wrap:1,src:{P:SKP,C:SKC,W:SKW}},2);
   yield;
-  /* уши: раковина, завиток по краю, тёмная чаша */
+  /* уши: раковина, завиток по краю, тёмная чаша, козелок (tragus) спереди у входа в канал */
   const er=.85+.3*g.ear;
   for(const s of [-1,1]){K.push([s*H.a*.95,-.012,-.012],-s*.36,0,s*.1);   /* перед уха к щеке, зад отходит от черепа */
     const Me=K.mt(mixc(g.skin,[150,70,60],.12),.25,5,P.skin);
@@ -243,7 +244,9 @@ function* cpHeadGen(K,g,lod,cl,seed){
     if(lod){const rim=[];for(let i=0;i<=14;i++){const a=-1.2+i/14*3.6;rim.push([s*.0035,Math.sin(a)*.024*er,Math.cos(a)*.0145*er-.001]);}
       K.tube(rim,[.002,.0028,.0034,.0036,.0036,.0034,.0032,.003,.0028,.0026,.0024,.0024,.0026,.003,.0034],Me,5);
       K.ell([s*.003,-.002,.002],[.004,.014*er,.009*er],K.mt(mixc(g.skin,[60,30,25],.35),.1,4,P.skin),4,8);
-      K.ell([s*.002,-.021*er,.002],[.0055,.0065*er,.007*er],Me,4,8);}   /* мочка */
+      K.ell([s*.002,-.021*er,.002],[.0055,.0065*er,.007*er],Me,4,8);   /* мочка */
+      /* козелок: маленький бугор спереди чаши, закрывает вход в слуховой канал */
+      K.ell([s*.0012,.001,.0075*er],[.0032*er,.007*er,.0048*er],Me,4,6);}
     K.pop();if(s<0)yield;}   /* ухо — шаг */
   yield;
   /* глаза: яблоко — сфера с полюсом по взгляду (зрачок и радужка — кольцами, ровно), роговица чуть выпуклая;
@@ -259,13 +262,13 @@ function* cpHeadGen(K,g,lod,cl,seed){
       if(lod){const rg=[];for(let i=0;i<=16;i++){const t=i/16*TAU;rg.push([E[0]+Math.cos(t)*er0*1.32,E[1]+Math.sin(t)*er0*1.32,E[2]+er0*.62]);}
         K.tube(rg,.0018,K.mt([150,154,160],.8,11,P.brushed),5);}
     }else{
-      const pr=.15+.03*((seed>>>5)%3),nu=lod>1?40:lod?20:10,nv=lod>1?30:lod?14:6;
+      const pr=.14+.025*((seed>>>5)%3),iri=.36,nu=lod>1?40:lod?20:10,nv=lod>1?30:lod?14:6;
       yield* K.surfG(nu,nv,(u,v)=>{const az=u*TAU,al=Math.PI*Math.pow(v,1.45),r=er0+.0007*r3Step(.5,.26,al),sa=Math.sin(al);
         const d=[sa*Math.cos(az),sa*Math.sin(az),Math.cos(al)];
         let col;
         if(al<pr)col=pup;
-        else if(al<.42){const k=(al-pr)/(.42-pr),st=.5+.5*(.55*Math.sin(az*23+s)+.3*Math.sin(az*41+1.3)+.15*Math.sin(az*67+2.1));
-          col=r3Sc(iris,(.5+.75*st)*(1.15-.3*k+.25*Math.exp(-Math.pow((k-.22)/.08,2)))*(k>.84?.4:1));}
+        else if(al<iri){const k=(al-pr)/(iri-pr),st=.5+.5*(.55*Math.sin(az*23+s)+.3*Math.sin(az*41+1.3)+.15*Math.sin(az*67+2.1));
+          col=r3Sc(iris,(.5+.75*st)*(1.12-.28*k+.22*Math.exp(-Math.pow((k-.22)/.08,2)))*(k>.84?.4:1));}
         else col=r3Mix(scl,pink,r3Step(1.05,1.6,al)*(.4+.6*Math.abs(Math.cos(az))));
         col=r3Sc(col,1-.38*r3Step(-.15,.75,d[1])-.12*r3Step(.3,.9,Math.abs(d[0])));   /* тень века сверху, углы глубже */
         return [[E[0]+d[0]*r,E[1]+d[1]*r,E[2]+d[2]*r],col];},K.mt([255,255,255],.85,13,P.eye),{wrap:1},2);
@@ -327,16 +330,16 @@ function* cpHairG(K,g,H,lod,cl,NU,NV,skin,hairC,seed){
     for(const s of [-1,1])K.box([s*H.a*1.12,.01,-.01],[.008,.022,.03],K.mt([44,50,58],.7,10,P.brushed),.004);
     return;
   }
-  /* шапка волос: та же голова, раздутая наружу. Ниже линии роста она уходит под кожу — край волос рисует сама встреча
-     двух поверхностей (гладко, без ступенек сетки); у корней волосы редеют до кожи */
-  const T=[.0035,.05,.09,.04,0,0,.03][st]*(.85+.3*R()),shaved=st===0,TH=cpWarpTh();
+  /* шапка волос + объём (M729 rest): не ровный шлем — мягкие доли по θ; ниже линии роста уходит под кожу */
+  const T=[.0045,.065,.11,.05,0,0,.04][st]*(.85+.3*R()),shaved=st===0,TH=cpWarpTh();
   const HL=th=>{if(st!==2||!lod)return cpHairline(th,st);const at=Math.abs(th);return at<.8?.5:at<1.3?.5-(at-.8)*2.1:-.55;};
   const col=shaved?r3Mix(skin,hairC,.55):hairC;
   const M=K.mt(g.hair,shaved?.08:.22,shaved?3:7,shaved?0:P.hair);
   /* θ — по той же густоте, что кожа (у лица чаще): редкая сетка хордой срезала глазницу, и шапка проступала у виска.
      Ниже линии роста шапка уходит под кожу глубже — на ширину хорды с запасом */
   yield* S(NU,NV,(u,v)=>{const th=TH(u),ph=-Math.PI/2+v*Math.PI,p=H.at(th,ph),dy=Math.sin(ph),yh=HL(th);
-    let k=1-.012-.05*r3Step(yh-.04,yh-.14,dy)+(.02+T*(st===2?(.7+.6*r3Step(.3,-.5,dy)):(.6+.4*dy)))*r3Step(yh-.03,yh+.2,dy);
+    let k=1-.012-.05*r3Step(yh-.04,yh-.14,dy)+(.024+T*(st===2?(.7+.6*r3Step(.3,-.5,dy)):(.6+.4*dy)))*r3Step(yh-.03,yh+.2,dy);
+    if(!shaved)k+=.012*T*(.55+.45*Math.sin(th*3.1+1.1))*(.5+.5*dy)*r3Step(yh-.02,yh+.25,dy);   /* доли объёма, не каска */
     if(st===2&&!lod&&Math.abs(th)<.8&&dy<.55&&dy>.25)k+=.02;   /* чёлка каре издали; вблизи её кладут пряди */
     /* тон — прядями: колонка сетки (вдоль θ) держит свой тон от лба к затылку, вдоль пряди он плывёт медленно */
     const ci=Math.round(u*NU),n=(.62*(hashi(ci,0,7)%1000)+.38*(hashi(ci,(v*7)|0,8)%1000))/1000;
