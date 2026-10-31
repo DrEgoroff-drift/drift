@@ -150,14 +150,8 @@ if ($onLin) { $url = "file://" + (Join-Path $root "tests.html") }   # путь �
 # читается, а не переписывается. Включает DRIFT_GPU=swiftshader (крюк облачного
 # сеанса). На Linux WebGPU в Хроме за флагом --enable-unsafe-webgpu — без него
 # GPU.none, и глаза тестов слепы. Дома (Windows, без DRIFT_GPU) не добавляется ничего.
-$gpuArgs = @()
-if ($onLin -or $env:DRIFT_GPU -eq "swiftshader") { $gpuArgs += "--enable-unsafe-webgpu" }
-if ($env:DRIFT_GPU -eq "swiftshader") {
-  $shotPy = [System.IO.File]::ReadAllText((Join-Path $root "docs\shot.py"), [System.Text.Encoding]::UTF8)
-  $swm = [regex]::Match($shotPy, '(?s)\nSWIFTSHADER = \[(.*?)\]')
-  if (-not $swm.Success) { throw "docs/shot.py: no SWIFTSHADER list — the GPU flags live there" }
-  $gpuArgs += @([regex]::Matches($swm.Groups[1].Value, '"([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
-}
+. (Join-Path $root "docs\gpuargs.ps1")
+$gpuArgs = Get-GpuArgs -Root $root -OnLin:$onLin
 # -Accept: детектор конвейеров (91zzzzzzy4) кладёт ключи полёта в <pre id="pipekeys"> —
 # -Accept пишет из них таблицу прогрева src/08b1-gpu-pipe-keys.js. Один набор, одна страница.
 if ($Accept -and -not $Only) { $Only = "конвейеры" }

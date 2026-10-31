@@ -33,15 +33,10 @@ $chrome = @("C:\Program Files\Google\Chrome\Application\chrome.exe",
 if (-not $chrome) { throw "no headless browser found" }
 
 $url  = "http://localhost:8777/docs/$Name.html"
-# WebGPU: сцена рисуется на видеокарте, а не заглушкой «нет WebGPU». На машине
-# без видеокарты — SwiftShader-флаги из одного места docs/shot.py (как test.ps1).
-$gpuArgs = @()
-if ($env:DRIFT_GPU -eq "swiftshader") {
-  $shotPy = [System.IO.File]::ReadAllText((Join-Path $root "docs\shot.py"), [System.Text.Encoding]::UTF8)
-  $swm = [regex]::Match($shotPy, '(?s)\nSWIFTSHADER = \[(.*?)\]')
-  if (-not $swm.Success) { throw "docs/shot.py: no SWIFTSHADER list" }
-  $gpuArgs += @([regex]::Matches($swm.Groups[1].Value, '"([^"]+)"') | ForEach-Object { $_.Groups[1].Value }) + "--enable-unsafe-webgpu"
-}
+# WebGPU: сцена рисуется на видеокарте, а не заглушкой «нет WebGPU». Флаги — из
+# одного места docs/gpuargs.ps1 (он читает docs/shot.py), как у test.ps1.
+. (Join-Path $here "gpuargs.ps1")
+$gpuArgs = Get-GpuArgs -Root $root
 $argv = @("--headless=new") + $gpuArgs + @("--no-sandbox", "--window-size=1280,800",
           "--user-data-dir=$($env:TEMP)\drift-shot-profile",
           "--no-first-run", "--no-default-browser-check",
