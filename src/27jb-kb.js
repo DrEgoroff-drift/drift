@@ -344,6 +344,12 @@ function kbDone(){
     logAdd("money",yard==="co"
       ?"Компания™: перемещение ячейки — "+KB_CELL_FEE+" кр, итого "+fee+" кр, спасибо за выбор"
       :"Верфь «"+(STAMP_RU[yard]||yard)+"»: переложено "+n+" клеток · −"+fee+" кр");
+    /* Компания (DESIGN-shipyard §4): квитанция приходит в ПОЧТУ / ВЕЩИ */
+    if(yard==="co"){
+      logAdd("dim","ПОЧТА · Компания™: квитанция — переложено "+n+" клеток · "+fee+" кр · «спасибо за выбор»");
+      if(typeof thingAdd==="function")thingAdd("coBill","Квитанция · Компания™",
+        "Перемещение ячейки — "+KB_CELL_FEE+" кр × "+n+" = "+fee+" кр. Спасибо за выбор Компании™.");
+    }
     KB.map0=kbCellMap(KB.d);
   }
   const m=document.querySelector("#kbWin .kb-msg");

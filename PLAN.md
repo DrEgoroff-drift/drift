@@ -261,8 +261,8 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 
 - [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
   release run).
-- [ ] **M480/M481 yards (rest):** worlds/spar OK. Wired through 0.499.65: or front shield, hf sight, co −15 % price
-  (probe) + sponsor dock free, km turret +30°, ra scrap heal, gt thr −8 %. Still open: КБ billing at foreign yards.
+- [x] **M480/M481 yards (character):** or/hf/co/km/ra/gt built-ins through 0.499.66; foreign КБ cell fee + Компания
+  receipt in ПОЧТА. Open only if author wants more habit polish (Орднунг no-turn already, slogan/ad line craft).
 
 ## 8. Stage 7 — the giants
 

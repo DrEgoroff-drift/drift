@@ -1673,7 +1673,7 @@ PLAN_COL                     src/05e-plan.js:131
 PLAN_DENS                    src/27jb-kb.js:47
 PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:402
+PLAN_F                       src/27jb-kb.js:408
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -5632,8 +5632,8 @@ jumpToBase                   src/21a-mode-base.js:386-403
 kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:220
 kbDensUp                     src/27jb-kb.js:84-92
-kbDone                       src/27jb-kb.js:333-356
-kbDraw                       src/27jb-kb.js:358-394
+kbDone                       src/27jb-kb.js:333-362
+kbDraw                       src/27jb-kb.js:364-400
 kbForeign                    src/27jb-kb.js:31
 kbFreeBy                     src/27jb-kb.js:60-64
 kbMoved                      src/27jb-kb.js:33-39
@@ -6669,7 +6669,7 @@ planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
 planExposure                 src/05e-plan.js:217-230
-planFactors                  src/27jb-kb.js:403-414
+planFactors                  src/27jb-kb.js:409-420
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
@@ -10596,7 +10596,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/27j1-ui-hangar.js · 26 KB
 
-## src/27jb-kb.js · 29 KB
+## src/27jb-kb.js · 30 KB
   · КБ: редактор чертежа, синька (M477, DESIGN-shipyard §3, review §2.2):1
 
 ## src/27jb-ui-got.js · 4 KB
