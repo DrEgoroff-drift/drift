@@ -198,6 +198,86 @@ function oracleHaulerHop(hopR){
   const profit=best?best.margin*cargo:0;
   return {cargo,nom,cap:cargo/Math.max(1,nom),best,profit};
 }
+/* oracle · проба сделок кр/мин (DESIGN-metro §5 / PLAN): лучший круговой рейс
+   трассой не бьёт лучший прыжками больше чем ×1.3. Прыжок мгновенный — на каждом
+   конце только касса ORACLE_DEAL_S; трасса — ожидание + перегоны + остановки + касса.
+   Рычаг — багаж (railFare). */
+const ORACLE_DEAL_S=18,ORACLE_RATIO_MAX=1.3;
+function oracleRideSec(t){
+  function leg(l,i0,dir,k){
+    const n=l.stops.length;let sec=0;
+    for(let m=0;m<k;m++){
+      let ia=i0+dir*m,ib=i0+dir*(m+1);
+      if(l.loop){ia=((ia%n)+n)%n;ib=((ib%n)+n)%n;}
+      const a=l.stops[ia],b=l.stops[ib];
+      sec+=.8+.35*Math.hypot(a.sx-b.sx,a.sy-b.sy);
+      if(m+1<k)sec+=2;
+    }
+    return sec;
+  }
+  if(!t||!t.l)return 0;
+  const k1=t.via?t.via.k1:t.k;
+  let sec=leg(t.l,t.i0,t.dir,k1);
+  if(t.via){sec+=3;sec+=leg(t.via.l,t.via.i0,t.via.dir,t.via.k);}
+  return sec;
+}
+function oracleDealProbe(hopR){
+  hopR=hopR||12;
+  const id="vyuk",prev=G.shipId,prevMods=G.mods,prevCargo=G.cargo,prevSx=G.sx,prevSy=G.sy,prevSys=G.sys;
+  G.shipId=id;G.owned[id]=true;G.fit[id]=G.fit[id]||{};G.mods={hold:3,tank:1,armor:1};
+  PLAN_F.key="";
+  const cargo=stat().cargoMax;
+  const sys=[];
+  for(let dy=-hopR;dy<=hopR;dy++)for(let dx=-hopR;dx<=hopR;dx++){
+    const sx=(prevSx|0)+dx,sy=(prevSy|0)+dy;if(!starAt(sx,sy))continue;
+    const s=getSystem(sx,sy);if(s&&s.station)sys.push(s);
+  }
+  function fill(k){
+    const w=(typeof resW==="function")?resW(k):1;
+    const n=Math.max(1,Math.floor(cargo/Math.max(1,w)));
+    G.cargo={};for(const q of RES_KEYS)G.cargo[q]=0;G.cargo[k]=n;return n;
+  }
+  function cpmOf(profit,sec){const m=Math.max(sec,1)/60;return profit/m;}
+  let jumpBest=null,railBest=null;
+  /* прыжки: все пары станций — туда и обратно, касса на каждом конце */
+  for(let a=0;a<sys.length;a++)for(let b=0;b<sys.length;b++){
+    if(a===b)continue;
+    const pa=marketFor(sys[a]),pb=marketFor(sys[b]);
+    const dist=Math.hypot(sys[a].sx-sys[b].sx,sys[a].sy-sys[b].sy);
+    if(dist<1||dist>hopR)continue;
+    const fuel=(typeof mapJumpCost==="function"?mapJumpCost(dist):Math.round(9+dist*13))*2*ORACLE_FUEL_CR;
+    for(const k of TRADE_KEYS){
+      const margin=pb[k]-pa[k];if(margin<=0)continue;
+      const n=fill(k),profit=margin*n-fuel;if(profit<=0)continue;
+      const sec=ORACLE_DEAL_S*2,cpm=cpmOf(profit,sec);
+      if(!jumpBest||cpm>jumpBest.cpm)
+        jumpBest={k,n,margin,profit,sec,cpm,fuel,from:sys[a],to:sys[b],dist};
+    }
+  }
+  /* трасса: с каждой станции — касса → назначение → обратно тем же путём */
+  for(const A of sys){
+    if(!railStation(A.sx,A.sy))continue;
+    G.sx=A.sx;G.sy=A.sy;G.sys=A;
+    let dests;try{dests=railDestinations();}catch(e){continue;}
+    for(const t of dests){
+      const B=getSystem(t.to.sx,t.to.sy);if(!B||!B.station)continue;
+      const pa=marketFor(A),pb=marketFor(B);
+      const wait=railInterval(A.sx,A.sy)/2+railInterval(B.sx,B.sy)/2;
+      const ride=oracleRideSec(t)*2;
+      for(const k of TRADE_KEYS){
+        const margin=pb[k]-pa[k];if(margin<=0)continue;
+        const n=fill(k);
+        const F=railFare(t),ticket=F.sum*2,profit=margin*n-ticket;if(profit<=0)continue;
+        const sec=wait+ride+ORACLE_DEAL_S*2,cpm=cpmOf(profit,sec);
+        if(!railBest||cpm>railBest.cpm)
+          railBest={k,n,margin,profit,sec,cpm,ticket,bag:F.bag,from:A,to:B,dist:t.dist};
+      }
+    }
+  }
+  G.shipId=prev;G.mods=prevMods;G.cargo=prevCargo;G.sx=prevSx;G.sy=prevSy;G.sys=prevSys;PLAN_F.key="";
+  const ratio=(railBest&&jumpBest&&jumpBest.cpm>0)?railBest.cpm/jumpBest.cpm:0;
+  return {cargo,jump:jumpBest,rail:railBest,ratio,ok:!railBest||!jumpBest||ratio<=ORACLE_RATIO_MAX+1e-9};
+}
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
 function railWinClose(){const w=document.getElementById("railWin");if(w)w.classList.remove("open");RAIL_WAIT=null;}
 function railWinShow(){

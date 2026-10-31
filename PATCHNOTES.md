@@ -6,6 +6,11 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.90 — Oracle deal probe: rail ≤ ×1.3 jumps credits/min
+
+- M475 / DESIGN-metro §5: `oracleDealProbe` — best round-trip rail vs jumps in credits per minute of play (deal time + ride/wait); suite locks ≤ ×1.3; baggage remains the lever.
+- G15: strip junk densify from gest post, buoy, billboard legs, SOS capsule — readable craft again.
+
 ## 0.499.89 — Customs stamp towers; cargo ×1.4 cap; hauler oracle
 
 - G15: customs giant gets stamp towers and queue railings.

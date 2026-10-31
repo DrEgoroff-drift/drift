@@ -224,8 +224,8 @@ measured on the GPU build first:
 
 ## 4. Stage 3 — far, and back with a hold
 
-- [ ] **Oracle lines** (`91zzzzzzzzza-worlds`): **0.499.72** fare laws; **0.499.85** `oracleRoundTrip`; **0.499.89**
-  `oracleHaulerHop` (stripped «Вьюк» one-hop). Still open: best rail round trip ≤ ×1.3 of best jumps in credits/min (needs deal-time probe).
+- [x] **Oracle lines** (`91zzzzzzzzza-worlds`): **0.499.72** fare laws; **0.499.85** `oracleRoundTrip`; **0.499.89**
+  `oracleHaulerHop` (stripped «Вьюк» one-hop); **0.499.90** `oracleDealProbe` — best rail round trip ≤ ×1.3 jumps in credits/min (deal-time probe, baggage lever).
 - [ ] **M474 six railways (rest):** **0.499.83** `railEnsure` grows the net past r 60 per region. Still open:
   ride-suite fragility if the heart metro land turns Орднунг (double press).
 - [ ] **M475 economy (rest):** fares, baggage and the size rule tuned against the oracle's rail line (release run).

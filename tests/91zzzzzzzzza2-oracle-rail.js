@@ -1,5 +1,5 @@
 /* ══════════════ oracle · трасса vs прыжок (M475 foothold) ══════════════
-   Полная линия кр/мин — после пробы сделок. Здесь: касса и рычаг багажа. */
+   Линия кр/мин — `oracleDealProbe`. Здесь: касса и рычаг багажа. */
 TEST_SUITES.push(()=>suite("миры: oracle трасса/прыжок",()=>{
   resetWorld();
   G.cargo={};for(const k of RES_KEYS)G.cargo[k]=0;

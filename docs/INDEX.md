@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 682 · top-level symbols: 8924
+Files: 683 · top-level symbols: 8927
 
 ## SYMBOLS
 
@@ -1544,6 +1544,7 @@ OPIS_SHIP                    src/27j-ui-opis.js:44-61
 OPIS_TABS                    src/27j-ui-opis.js:37
 OPTS_BOOT                    tests/90-harness.js:228
 OPT_TABS                     src/27-ui-ship.js:334
+ORACLE_DEAL_S                src/18f-rail-station.js:205
 ORACLE_FUEL_CR               src/18f-rail-station.js:166
 ORDERS                       src/12a-crew.js:149-155
 ORDER_WIN                    src/12aa-need.js:76
@@ -2971,19 +2972,19 @@ bodyBarge                    src/17c2f-body-barge.js:441-447
 bodyBargeFrames              src/17c2f-body-barge.js:9
 bodyBargeParts               src/17c2f-body-barge.js:11-56
 bodyBargeWreck               src/17c2f-body-barge.js:449-454
-bodyBb                       src/17c2m-body-bb.js:106-111
-bodyBbMesh                   src/17c2m-body-bb.js:4-105
-bodyBuoy                     src/17c2j-body-buoy.js:208-213
-bodyBuoyMesh                 src/17c2j-body-buoy.js:5-206
+bodyBb                       src/17c2m-body-bb.js:51-56
+bodyBbMesh                   src/17c2m-body-bb.js:5-50
+bodyBuoy                     src/17c2j-body-buoy.js:63-68
+bodyBuoyMesh                 src/17c2j-body-buoy.js:6-61
 bodyChebMesh                 src/17c2k-body-cheb.js:4-200
 bodyCheburek                 src/17c2k-body-cheb.js:202-208
 bodyDot                      src/17c2e-body-kit.js:52-56
-bodyFind                     src/17c2i-body-find.js:471-479
-bodyFindMesh                 src/17c2i-body-find.js:8-469
+bodyFind                     src/17c2i-body-find.js:416-424
+bodyFindMesh                 src/17c2i-body-find.js:8-414
 bodyFleet                    src/17c2e-body-kit.js:80-88
 bodyFleetHull                src/17c2e-body-kit.js:72-78
-bodyGestPost                 src/17c2l-body-gest.js:219-224
-bodyGestPostMesh             src/17c2l-body-gest.js:4-217
+bodyGestPost                 src/17c2l-body-gest.js:65-70
+bodyGestPostMesh             src/17c2l-body-gest.js:5-63
 bodyGiant                    src/17o-giants.js:612-633
 bodyGpu                      src/17c2e-body-kit.js:26
 bodyInSystem                 src/16-flight.js:39-49
@@ -6424,7 +6425,9 @@ opisWear                     src/27j-ui-opis.js:247-251
 optGroups                    src/27-ui-ship.js:337-354
 optTab                       src/27-ui-ship.js:336
 optsNumify                   src/14a2-save-ephemeral.js:23-28
+oracleDealProbe              src/18f-rail-station.js:224-280
 oracleHaulerHop              src/18f-rail-station.js:177-200
+oracleRideSec                src/18f-rail-station.js:206-223
 oracleRoundTrip              src/18f-rail-station.js:167-173
 orbPathOf                    src/17-mode-system.js:523-533
 orderDeliver                 src/12aa-need.js:119-134
@@ -7472,14 +7475,14 @@ raidSprDesc                  src/24aa1-raid-gpu.js:76-82
 raidUp                       src/24aa-raid-draw.js:8-12
 railArmAng                   src/18e-rail-net.js:114
 railAt                       src/18e-rail-net.js:123-131
-railBoardEta                 src/18f-rail-station.js:210-218
+railBoardEta                 src/18f-rail-station.js:290-298
 railBranchAng                src/18e-rail-net.js:62-65
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:289-296
+railBuffet                   src/18f-rail-station.js:369-376
 railBuildLines               src/18e-rail-net.js:66-112
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-36
-railBuy                      src/18f-rail-station.js:269-288
+railBuy                      src/18f-rail-station.js:349-368
 railCarDraw                  src/18gb-rail-car.js:67-76
 railCarLights                src/18gb-rail-car.js:60-65
 railCarMesh                  src/18gb-rail-car.js:18-58
@@ -7512,7 +7515,7 @@ railLifeExit                 src/18i-rail-life.js:111-119
 railLifeHtml                 src/18i-rail-life.js:59-75
 railLifeStop                 src/18i-rail-life.js:95-109
 railLineGpu                  src/18ga-rail-gpu.js:70-106
-railLineMetro                src/18f-rail-station.js:221
+railLineMetro                src/18f-rail-station.js:301
 railNearest                  src/18e-rail-net.js:43-53
 railNet                      src/18e-rail-net.js:197-206
 railNetPartial               src/18e-rail-net.js:219-230
@@ -7552,15 +7555,15 @@ railStep                     src/18e-rail-net.js:54
 railStopName                 src/18f-rail-station.js:130
 railStopShapes               src/18gb-rail-car.js:79-90
 railStopsOf                  src/18e-rail-net.js:133-157
-railTick                     src/18f-rail-station.js:298-305
+railTick                     src/18f-rail-station.js:378-385
 railTrainPos                 src/18g-rail-ride.js:40-52
 railUAt                      src/18e-rail-net.js:116-121
 railVisited                  src/18k-rail-scheme.js:110-114
 railWaitNow                  src/18f-rail-station.js:128
-railWinClose                 src/18f-rail-station.js:202
-railWinOpen                  src/18f-rail-station.js:201
-railWinRender                src/18f-rail-station.js:222-268
-railWinShow                  src/18f-rail-station.js:203-208
+railWinClose                 src/18f-rail-station.js:282
+railWinOpen                  src/18f-rail-station.js:281
+railWinRender                src/18f-rail-station.js:302-348
+railWinShow                  src/18f-rail-station.js:283-288
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -9732,19 +9735,19 @@ zoomTo                       src/15-input.js:358
 
 ## src/17c2h-body-pirate.js · 42 KB
 
-## src/17c2i-body-find.js · 45 KB
+## src/17c2i-body-find.js · 38 KB
   · находки в полёте телом (G15 / M820):1
 
-## src/17c2j-body-buoy.js · 20 KB
+## src/17c2j-body-buoy.js · 4 KB
   · бакен полосы телом (G15 / M459):1
 
 ## src/17c2k-body-cheb.js · 19 KB
   · «Чебуречная» телом (G15 / M462):1
 
-## src/17c2l-body-gest.js · 20 KB
+## src/17c2l-body-gest.js · 4 KB
   · пост у входа телом (G15 / M452):1
 
-## src/17c2m-body-bb.js · 9 KB
+## src/17c2m-body-bb.js · 3 KB
   · щит полосы: стойки телом (G15 / M460):1
 
 ## src/17d-house-shapes.js · 1 KB
@@ -9878,7 +9881,7 @@ zoomTo                       src/15-input.js:358
 ## src/18e-rail-net.js · 17 KB
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 22 KB
+## src/18f-rail-station.js · 26 KB
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18fa-rail-ring.js · 8 KB
@@ -11033,5 +11036,8 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzzzzzzza3-oracle-hauler.js · 1 KB
   · oracle · одно плечо обнажённого тягача (M478):1
+
+## tests/91zzzzzzzzza4-oracle-deal.js · 1 KB
+  · oracle · кр/мин трасса vs прыжок (DESIGN-metro §5):1
 
 ## tests/99-run.js · 9 KB
