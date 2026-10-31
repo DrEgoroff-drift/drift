@@ -248,9 +248,8 @@ measured on the GPU build first:
 ## 6. Stage 5 — the voice and the joke
 
 - [ ] **M460 billboards (rest):** 1–3 signs; the hull tint within R (graphics pass); stale prices as a fork (the author).
-- [ ] **M461 hotels (rest):** six faces on the engine (0.499.39). Desk doors in 0.499.41 — cinema day, spa tip
-  when a voucher + ocean world, latest cantina rumour. Still open: fatigue (does not exist for the player);
-  a pair at 760 and 390, at 19 h and 3 h for the four new faces; actually landing into the spa from the tip.
+- [ ] **M461 hotels (rest):** six faces (0.499.39); desk doors + map mark + land cue «САНАТОРИЙ» (0.499.41–43).
+  Still open: fatigue (does not exist for the player); a pair at 760 and 390, at 19 h and 3 h for the four new faces.
 - [ ] **M511 волокита:** the animals the author will invent (his table).
 - **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can say
   afterwards which institution the joke was on — never a person.

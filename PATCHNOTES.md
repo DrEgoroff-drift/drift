@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.43 — hotel spa tip reaches the landing cue
+
+- After the porter names the ocean branch, the system remembers `G.spaTip`. Near that ocean world with a voucher the land line reads «САНАТОРИЙ · … · ПУТЁВКА С СОБОЙ» instead of a plain landing. Entering the spa clears the tip.
+
 ## 0.499.42 — spa mark on the map from the hotel desk
 
 - Hotel doors: with a voucher and an ocean world in the system the porter's tip also drops a map mark («санаторий · имя»), so the branch is findable after the talk.

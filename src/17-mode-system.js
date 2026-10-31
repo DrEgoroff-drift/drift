@@ -449,6 +449,10 @@ function updateSystem(dt){
       else if(!G.opts.easyLand&&sp>3.2)cue("СЛИШКОМ БЫСТРО · "+decRu(sp,1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
       else{
         let ln="ДЕЙСТВИЕ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;
+        /* гостиница указала филиал (M461): у океана с путёвкой — санаторий в строке посадки */
+        {const T=G.spaTip,I=typeof instAll==="function"?instAll():null;
+          if(T&&I&&(I.vouch|0)>0&&near.type==="ocean"&&T.sx===(G.sx|0)&&T.sy===(G.sy|0)&&(T.pi<0||T.pi===(near.idx|0)))
+            ln="САНАТОРИЙ · "+near.name+"\nДЕЙСТВИЕ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · ПУТЁВКА С СОБОЙ";}
         if(G.tech.has("deep")&&near.res.length)
           ln+="\nНЕДРА: "+near.res.map(k=>RES[k].ru).join(", ");
         /* дальняя залежь с орбиты — диапазоном прибора (M466): удача решается

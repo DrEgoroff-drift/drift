@@ -59,7 +59,7 @@ function enterSpa(){
   G.spa={day:1,days:SPA_DAYS,slot:0,done:0,took:{},talked:0,
     pname:(G.surf&&G.surf.p&&G.surf.p.name)||"",
     home:{sx:G.sx,sy:G.sy},seed:hashi(G.sx,G.sy,0x5A9)};
-  G.mode="spa";
+  G.mode="spa";G.spaTip=null;   /* дверь гостиницы отработана */
   say("Санаторий. Три дня.\nМожно ничего не делать — и это не фигура речи.",300);
   logAdd("good","Санаторий: три дня. Ничего не запланировано.");
   return true;

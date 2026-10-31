@@ -1192,7 +1192,7 @@ HOTEL_LIT                    src/17l-hotel.js:123
 HOTEL_LOD                    src/17l-hotel.js:51
 HOTEL_NIGHT                  src/17l-hotel.js:16
 HOTEL_RIM                    src/17l-hotel.js:185
-HOTEL_SHOP_N                 src/17l-hotel.js:314
+HOTEL_SHOP_N                 src/17l-hotel.js:316
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
 HOTEL_T                      src/17l-hotel.js:17
@@ -3317,7 +3317,7 @@ chessMyTurn                  src/25n-chess.js:212-216
 chessPaint                   src/25n-chess.js:255-315
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
-chipDist                     src/17-mode-system.js:741-747
+chipDist                     src/17-mode-system.js:745-751
 chipDom                      src/08bi-gpu-ovl.js:305-321
 chipDomSnap                  src/08bh-gpu-hud.js:10-14
 chipDomSweep                 src/08bh-gpu-hud.js:22-25
@@ -4110,12 +4110,12 @@ drawStrata                   src/18b-geology.js:100
 drawSurface                  src/21pz-pln-frame.js:439-458
 drawSurfaceHud               src/21e-surface-draw.js:40-143
 drawSurvey                   src/12w-survey.js:63-81
-drawSysHud                   src/17-mode-system.js:748-1093
+drawSysHud                   src/17-mode-system.js:752-1097
 drawSysLane                  src/17g-sys-lane.js:112-137
 drawSysLaneShips             src/17g-sys-lane.js:167-195
 drawSysRail                  src/18f-rail-station.js:61-69
 drawSysTraffic               src/17f-sys-traffic.js:39-43
-drawSystem                   src/17-mode-system.js:554-736
+drawSystem                   src/17-mode-system.js:558-740
 drawTapes                    src/12s1-tape.js:51-66
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
@@ -5425,7 +5425,7 @@ hotelAngD                    src/17l-hotel.js:85
 hotelArc                     src/17l-hotel.js:182
 hotelDesk                    src/17l-hotel.js:279-297
 hotelDock                    src/17l-hotel.js:215-258
-hotelDoors                   src/17l-hotel.js:299-310
+hotelDoors                   src/17l-hotel.js:299-312
 hotelDrop                    src/17l-hotel.js:60
 hotelGet                     src/17l-hotel.js:113-121
 hotelHere                    src/17l-hotel.js:18-23
@@ -5444,7 +5444,7 @@ hotelNeonDraw                src/17l-hotel.js:143-146
 hotelNightPrice              src/17l-hotel.js:275-278
 hotelPoly                    src/17l-hotel.js:180
 hotelRim                     src/17l-hotel.js:186
-hotelShop                    src/17l-hotel.js:315-321
+hotelShop                    src/17l-hotel.js:317-323
 hotelStar                    src/17l-hotel.js:260
 hotelType                    src/17l-hotel.js:24
 hotelUp                      src/17l-hotel.js:84
@@ -6399,7 +6399,7 @@ opisWear                     src/27j-ui-opis.js:247-251
 optGroups                    src/27-ui-ship.js:337-354
 optTab                       src/27-ui-ship.js:336
 optsNumify                   src/14a2-save-ephemeral.js:23-28
-orbPathOf                    src/17-mode-system.js:517-527
+orbPathOf                    src/17-mode-system.js:521-531
 orderDeliver                 src/12aa-need.js:119-134
 orderHere                    src/12aa-need.js:115-118
 orderOf                      src/12aa-need.js:78-102
@@ -8408,13 +8408,13 @@ sysLandNear                  src/17-mode-system.js:98-105
 sysLane                      src/17g-sys-lane.js:32-67
 sysLightDir                  src/17c2e-body-kit.js:13
 sysMakes                     src/12ad-site.js:134-140
-sysOcPush                    src/17-mode-system.js:545-553
+sysOcPush                    src/17-mode-system.js:549-557
 sysPirateBase                src/24a-mode-raid.js:98-102
 sysRasterDrop                src/06-galaxy.js:23-31
 sysRasterTick                src/06-galaxy.js:33-45
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
-sysWatchLabel                src/17-mode-system.js:532-540
+sysWatchLabel                src/17-mode-system.js:536-544
 tab                          src/26-ui-station.js:3
 tabLive                      src/14a-cloud.js:52
 tableBake                    src/27i-ui-table.js:145-155
@@ -8577,7 +8577,7 @@ updateRail                   src/18g-rail-ride.js:51-98
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
-updateSystem                 src/17-mode-system.js:106-513
+updateSystem                 src/17-mode-system.js:106-517
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29rc-winter-r3.js:295-299
 useBeacon                    src/23-mode-dig.js:91-116
