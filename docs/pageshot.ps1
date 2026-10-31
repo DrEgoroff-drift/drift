@@ -38,7 +38,16 @@ if (-not $chrome) { throw "no headless browser found" }
 # Свой профиль: чужой Chrome пользователя трогать нельзя ни при каких условиях.
 $prof = Join-Path $env:TEMP "drift-pageshot-profile"
 $url  = "http://localhost:8777/docs/$Name.html" + $Q
-$argv = @("--headless=new", "--disable-gpu", "--no-sandbox",
+# WebGPU: страница рисуется на видеокарте, а не заглушкой «нет WebGPU». На машине
+# без видеокарты — SwiftShader-флаги из одного места docs/shot.py (как test.ps1).
+$gpuArgs = @()
+if ($env:DRIFT_GPU -eq "swiftshader") {
+  $shotPy = [System.IO.File]::ReadAllText((Join-Path $root "docs\shot.py"), [System.Text.Encoding]::UTF8)
+  $swm = [regex]::Match($shotPy, '(?s)\nSWIFTSHADER = \[(.*?)\]')
+  if (-not $swm.Success) { throw "docs/shot.py: no SWIFTSHADER list" }
+  $gpuArgs += @([regex]::Matches($swm.Groups[1].Value, '"([^"]+)"') | ForEach-Object { $_.Groups[1].Value }) + "--enable-unsafe-webgpu"
+}
+$argv = @("--headless=new") + $gpuArgs + @("--no-sandbox",
           "--window-size=$Width,$Height", "--force-device-scale-factor=1",
           "--user-data-dir=$prof", "--no-first-run", "--no-default-browser-check",
           "--hide-scrollbars", "--virtual-time-budget=$($WaitSec * 1000)",
