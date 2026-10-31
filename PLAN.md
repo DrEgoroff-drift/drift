@@ -248,7 +248,8 @@ measured on the GPU build first:
 
 - [ ] **M460 billboards (rest):** 1–3 signs by lane life (0.499.47); hull tint within R (0.499.49). Still: stale prices as a fork (the author).
 - [ ] **M461 hotels (rest):** six faces (0.499.39); desk doors + map mark + land cue «САНАТОРИЙ» (0.499.41–43).
-  Still open: fatigue axis (story-craft §3 — blocked; hull under a third already sleeps free per the review); a pair at 760 and 390, at 19 h and 3 h for the four new faces.
+  Still open: fatigue axis (story-craft §3 — blocked; hull under a third already sleeps free per the review).
+  Pairs for the four new faces (co/or/km/hf × 19h/3h × 760/390): `_scratch/hotel-pairs/` — camera lock + frozen `hotelHere` (station orbit was moving the house off-frame); await author craft pass.
 - Approach joke (0.499.50): the stuck queue ship «с прошлой сводки» — DESIGN-review life column.
 - [ ] **M511 волокита:** the animals the author will invent (his table).
 - **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can say
