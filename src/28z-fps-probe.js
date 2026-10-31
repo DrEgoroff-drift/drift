@@ -82,11 +82,13 @@ async function g11Run(){
     }]];
   /* промежутки кадров: среднее — не главное; долгие кадры (p90, max, ≥45 мс) и
      задержка перехода (от нажатия до первого кадра нового режима) — вот что меряем */
-  const iv2=sec=>new Promise(res=>{const d=[];let t0=0,tp=0;
-    const tick=t=>{if(!t0)t0=tp=t;else{d.push(t-tp);tp=t;}
+  const iv2=sec=>new Promise(res=>{const d=[],js=[];let t0=0,tp=0;
+    const tick=t=>{if(!t0)t0=tp=t;else{d.push(t-tp);js.push(typeof FRAME_JS!=="undefined"?FRAME_JS:0);tp=t;}
       if(t-t0<sec*1000){requestAnimationFrame(tick);return;}
       const s=d.slice().sort((x,y)=>x-y);const q=k=>+(s[Math.min(s.length-1,Math.floor(s.length*k))]||0).toFixed(1);
-      res({fps:Math.round(d.length/((t-t0)/1000)),p50:q(.5),p90:q(.9),max:+(s[s.length-1]||0).toFixed(1),n45:d.filter(x=>x>=45).length});};
+      let mi=0;for(let i=1;i<d.length;i++)if(d[i]>d[mi])mi=i;
+      const ss=js.slice().sort((x,y)=>x-y);const qj=k=>+(ss[Math.min(ss.length-1,Math.floor(ss.length*k))]||0).toFixed(1);
+      res({fps:Math.round(d.length/((t-t0)/1000)),p50:q(.5),p90:q(.9),max:+(s[s.length-1]||0).toFixed(1),n45:d.filter(x=>x>=45).length,jsMax:+(js[mi]||0).toFixed(1),jsP90:qj(.9)});};
     requestAnimationFrame(tick);});
   const det={};
   for(const st of steps){
@@ -100,8 +102,8 @@ async function g11Run(){
       const bs=((GPU&&GPU.bakeN)||0)-bn0,bms=Math.round(((GPU&&GPU.bakeMs)||0)-bms0);
       const bk=Object.entries(globalThis.__bkeys||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>String(e[0]).slice(0,30)+"×"+e[1]);
       const bz=Object.entries(globalThis.__bsize||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>e[0]+"×"+e[1]);
-      out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,switchMs:delay,bakes:bs,bakeMs:bms,bkeys:bk,bsize:bz,slow:(globalThis.__bslow||[]).slice(0,4)};
-      put(st[0]+" "+iv.fps+" · p90 "+iv.p90+" · max "+iv.max+" · ≥45 "+iv.n45+" · переход "+delay+" мс · выпечек "+bs+" / "+bms+" мс"+(bz.length?" · "+bz.join(", "):"")+((globalThis.__bslow||[]).length?" · "+(globalThis.__bslow||[]).slice(0,2).join(" ; "):""));
+      out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,jsMax:iv.jsMax,jsP90:iv.jsP90,switchMs:delay,bakes:bs,bakeMs:bms,bkeys:bk,bsize:bz,slow:(globalThis.__bslow||[]).slice(0,4)};
+      put(st[0]+" "+iv.fps+" · p90 "+iv.p90+" · max "+iv.max+" (js "+iv.jsMax+") · ≥45 "+iv.n45+" · переход "+delay+" мс · выпечек "+bs+" / "+bms+" мс"+(bz.length?" · "+bz.join(", "):"")+((globalThis.__bslow||[]).length?" · "+(globalThis.__bslow||[]).slice(0,2).join(" ; "):""));
     }catch(e){err.push(st[0]+": "+(e&&e.message||e));put(st[0]+" СБОЙ");}
   }
   put("ГОТОВО "+JSON.stringify(out));
