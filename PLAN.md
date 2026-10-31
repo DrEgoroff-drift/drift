@@ -266,9 +266,8 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
   `tests/91zzzzk7-yard-probe.js` lives only there): **worlds** is usable — a heavy wide hauler pays for itself in one
   best one-hop run at every yard except Коммуна (two, hold −15 %); Компания is −15 % price with no number against it,
   its limit (КБ billing) is not in the stats. **The стрельбище is not trustworthy yet**: six duels against a rank-2
-  pirate (160 hp) kill nothing in 60 s at any yard, and the damage taken does not follow hull size (Хай-Фронт loses
-  less than the base). Fix the duel first (aim, `g.range`/cone, the `weapon` mod tier, pirate flight), then read hull
-  against price. No yard number has been moved.
+  pirate (160 hp) killed nothing in 60 s — spar captain sat past auto range (0.499.61: hold 420–620, thinner shield).
+  Re-run the стрельбище, then read hull against price. Damage-taken vs hull size still open. No yard number moved.
 
 ## 8. Stage 7 — the giants
 

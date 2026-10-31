@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.61 — duel captain in gun range
+
+- M480 стрельбище: spar-капитан holds 420–620 (was 700+, past auto range), spawns at 520, shield ×0.62 — a minute can actually finish him so yard hulls can be compared.
+
 ## 0.499.60 — stale billboards, manager fatigue, ПАЛАТА fauna table
 
 - **M460 B:** ~38 % of approach billboards lie — a price from past сводки, shown as a route-style fork, often better than the neighbour's real tag.

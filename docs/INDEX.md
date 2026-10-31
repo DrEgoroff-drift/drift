@@ -642,7 +642,7 @@ FAUCET_FLOOR                 src/12ab-hold.js:154
 FAUNA_RES                    src/02-world.js:137
 FB                           src/17a0-prebake.js:62
 FG_MAN                       src/21b-surface-deco.js:220
-FIGHT_HOOKS                  src/28r-fight.js:127-155
+FIGHT_HOOKS                  src/28r-fight.js:129-157
 FIGHT_LENS                   src/17p-cam-frame.js:32
 FIGHT_LENS_MAX               src/17p-cam-frame.js:33
 FIND_BUCKET                  src/17b-finds.js:17
@@ -4174,13 +4174,13 @@ droneTarget                  src/12-economy.js:331
 droneTripMs                  src/12e-drone-flight.js:118-126
 dsDeed                       src/12p1-doublespeak.js:28-32
 dsTick                       src/12p1-doublespeak.js:33-42
-duelEnd                      src/28r-fight.js:106-120
+duelEnd                      src/28r-fight.js:108-122
 duelFoe                      src/28r-fight.js:86
 duelNext                     src/28r-fight.js:84
 duelOn                       src/28r-fight.js:85
-duelRestore                  src/28r-fight.js:121-126
+duelRestore                  src/28r-fight.js:123-128
 duelSt                       src/28r-fight.js:83
-duelStart                    src/28r-fight.js:87-105
+duelStart                    src/28r-fight.js:87-107
 dustMotesGpu                 src/21e3-surface-stand-gpu.js:39-53
 dustTable                    src/16a-space.js:50-63
 e2eClickables                tests/91zzzzz-e2e-life.js:61
@@ -6635,7 +6635,7 @@ pirateClass                  src/12i-pirate-hull.js:47-52
 pirateFellTo                 src/13-combat.js:76-84
 pirateHas                    src/13d-loadout.js:34-37
 pirateLoadout                src/13d-loadout.js:33
-pirateRoleTick               src/13c-roles.js:54-145
+pirateRoleTick               src/13c-roles.js:54-148
 pirateShipId                 src/13-pirates.js:20-27
 pl3                          src/01-core.js:109-115
 plLand                       tests/90a-tools.js:742-748

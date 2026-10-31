@@ -92,11 +92,13 @@ function duelStart(rk){
   G.credits-=DUEL_FEE;
   G.pirates=G.pirates.filter(p=>!p.dummy);G.marks=[];
   const R=PIRATE_RANKS[D.rk],S=G.sys.station,hp=(26+DUEL_DANGER*70)*R.hull;
-  /* над кораблём: по линии от станции он вставал за угол экрана, под кнопку ЦЕЛЬ */
-  const seed=hashi(0xD0E1,D.rk,(G.t|0)&0xffff)>>>0,a=-Math.PI/2;
-  const p={x:G.ship.x+Math.cos(a)*300,y:G.ship.y+Math.sin(a)*300,vx:0,vy:0,a:a+Math.PI,
+  /* над кораблём: по линии от станции он вставал за угол экрана, под кнопку ЦЕЛЬ.
+     Дистанция 520 — в spar-полосе капитана (420–620), не за автопушкой. Поле
+     на дуэли тоньше живого: иначе минута уходит в щит (M480 / проба 28.09). */
+  const seed=hashi(0xD0E1,D.rk,(G.t|0)&0xffff)>>>0,a=-Math.PI/2,sh=hp*R.shield*.62;
+  const p={x:G.ship.x+Math.cos(a)*520,y:G.ship.y+Math.sin(a)*520,vx:0,vy:0,a:a+Math.PI,
     hull:hp,hullMax:hp,name:(R.pre?R.pre+" ":"")+pick(PIRATE_NAMES,rng(seed)),rank:D.rk,seed,shipId:pirateShipId(seed),
-    cool:60,aware:true,thrust:false,shield:hp*R.shield,shieldMax:hp*R.shield,shieldHit:0,
+    cool:60,aware:true,thrust:false,shield:sh,shieldMax:sh,shieldHit:0,
     shieldType:(PIRATE_LOADOUT[D.rk].shield||"solid"),deserter:0,spar:1};
   G.pirates.push(p);helmLock(p);
   G.range.duel={rk:D.rk};

@@ -105,12 +105,15 @@ function pirateRoleTick(p,dt,d,want){
        (проба · дуэль, 09.10) */
     /* ближе семисот он не пятится без конца (прежде — задним ходом .04 с лицом к вам,
        и обойти его было некуда: он отъезжал и доворачивал): под четырьмястами
-       отходит, между — стоит и ворочает лоб. Обойти лоб — вся дуэль с ним */
-    if(d<400){roleSteer(p,want,dt,.012);const k=.04*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
-    else if(d<700){roleSteer(p,want,dt,.012);roleDamp(p,dt,.94);}
-    else if(d>950){roleSteer(p,want,dt,.012);roleThrust(p,dt,.045);}
+       отходит, между — стоит и ворочает лоб. Обойти лоб — вся дуэль с ним.
+       Стрельбище (spar, M480): полоса 420–620 — иначе он стоит за пределом
+       автопушки (~620) и минута дуэли ничего не убивает (проба 28.09). */
+    const lo=p.spar?420:700,hi=p.spar?620:950,push=p.spar?240:400,fireR=p.spar?850:1100;
+    if(d<push){roleSteer(p,want,dt,.012);const k=.04*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
+    else if(d<lo){roleSteer(p,want,dt,.012);roleDamp(p,dt,.94);}
+    else if(d>hi){roleSteer(p,want,dt,.012);roleThrust(p,dt,.045);}
     else{roleSteer(p,want,dt,.012);roleDamp(p,dt,.96);}
-    if(d<1100&&p.cool<=0&&!(p.stunT>0)&&Math.abs(angDiff(want,p.a))<.3){
+    if(d<fireR&&p.cool<=0&&!(p.stunT>0)&&Math.abs(angDiff(want,p.a))<.3){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
       /* пусковая — по таблице §5 у капитана (M367/M368): раз в несколько
          залпов уходит ракета, и её сбивают зениткой или уводят ловушкой */
