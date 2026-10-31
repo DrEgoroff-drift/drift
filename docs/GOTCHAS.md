@@ -105,13 +105,12 @@ this file keeps the evidence and the fix.
   `client_global_hostkeys_prove_confirm` line was silenced with
   `UpdateHostKeys no` in `~/.ssh/config`.
 - **`snapshot()` shares references with `G`.** The object it returns holds the live `G.cargo`, `G.mods` and the like, not copies; `saveGame` stringifies at once so the game never notices, but anything that *keeps* the object (a recording head, a «before» snapshot in a suite) sees the world drift under it — the replay suite started with 13 ice it had not mined yet. Keep `JSON.parse(JSON.stringify(snapshot()))`, never the bare object (2026-09-11).
-- **Pushing the branch right after main cancels main's deploy.** `.github/workflows/deploy.yml` has one
-  `concurrency: group: deploy` with `cancel-in-progress: true` for every branch, so a branch push of
-  the same commit started the dev.html run and cancelled the play.html one — 0.447.0 sat on the site
-  as 0.446.0 (2026-09-12). Push main, wait for its run (`api.github.com/.../actions/runs`), then the
-  branch; or make the group per ref. A docs-only commit does not re-run it (the workflow watches
-  `src/`, `site/`, `tests/`, `build.ps1`): republish with `deploy.ps1 -SkipBuild` after checking that
-  `md5sum drift.html` equals the committed one.
+- **Pushing the branch right after main used to cancel main's deploy.** Fixed: concurrency is
+  `deploy-${{ github.ref }}` so planet-main → `dev.html` no longer cancels main → `play.html`
+  (was one group `deploy` + `cancel-in-progress`; 0.447.0 sat on the site as 0.446.0, 2026-09-12;
+  again 0.499.89 while sources were 0.499.92, 2026-10-31). A docs-only commit still does not re-run
+  it (paths filter): republish with `deploy.ps1 -SkipBuild` after checking `md5sum drift.html`
+  equals the committed one.
 
 - **Test output through a Bash redirect was mojibake** (12.09.2026, fixed 27.09.2026): the console
   code page (cp866, cp437 on the new PC) ate the Cyrillic and `grep "✗"` found nothing in a red run.

@@ -26,8 +26,10 @@ on:
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
+# Per-ref: a planet-main push must not cancel main's play.html deploy
+# (GOTCHAS 2026-09-12: one group + cancel-in-progress left the site a version behind).
 concurrency:
-  group: deploy
+  group: deploy-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
