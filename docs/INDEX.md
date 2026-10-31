@@ -2997,8 +2997,8 @@ bodyPirate                   src/17c2h-body-pirate.js:346-351
 bodyPower                    src/17c2h-body-pirate.js:355-362
 bodyPowerOn                  src/17c2h-body-pirate.js:353
 bodyRun                      src/17c2e-body-kit.js:35-40
-bodyShuttle                  src/17c2e-body-kit.js:440-446
-bodyShuttleMesh              src/17c2e-body-kit.js:91-438
+bodyShuttle                  src/17c2e-body-kit.js:133-139
+bodyShuttleMesh              src/17c2e-body-kit.js:91-131
 bodyStCraft                  src/17c2g1-body-st-craft.js:5-1619
 bodyStModules                src/17c2g-body-station.js:87-112
 bodyStRing                   src/17c2g-body-station.js:61-85
@@ -9725,7 +9725,7 @@ zoomTo                       src/15-input.js:358
 ## src/17c2d-parts-thumb.js · 9 KB
   · миниатюры частей (M724):1
 
-## src/17c2e-body-kit.js · 39 KB
+## src/17c2e-body-kit.js · 10 KB
 
 ## src/17c2f-body-barge.js · 39 KB
 
