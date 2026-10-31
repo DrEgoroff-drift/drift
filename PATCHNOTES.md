@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.86 — Clock out of stateHash; T.state().clock
+
+- Determinism: `stateHash` no longer mixes `now()` — clock is `T.state().clock` (decided 11.09). `91zzzzzbb-samehash` re-based.
+
 ## 0.499.85 — Oracle foothold: rail vs jump credits
 
 - M475: `oracleRoundTrip` / `ORACLE_FUEL_CR` — round-trip rail fare vs jump fuel in credits; suite locks the baggage lever. Full credits/min ≤×1.3 line still needs a deal probe.

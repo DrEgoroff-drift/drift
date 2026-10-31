@@ -2266,7 +2266,7 @@ STAR_CLASS                   src/02-world.js:192-198
 STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:22
 STAR_MV                      src/16-flight.js:24
-STATE_HASH_SKIP              src/08a-statehash.js:24-29
+STATE_HASH_SKIP              src/08a-statehash.js:25-30
 STAT_SHOW                    src/05-parts.js:426-438
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -8345,8 +8345,8 @@ startLanding                 src/19-mode-landing.js:2-38
 startScoop                   src/19a-mode-scoop.js:51-64
 stat                         src/08-state.js:297-368
 statPreview                  src/05-parts.js:417-425
-stateHash                    src/08a-statehash.js:30-81
-stateHashParts               src/08a-statehash.js:82-90
+stateHash                    src/08a-statehash.js:31-82
+stateHashParts               src/08a-statehash.js:83-91
 stationBuilder               src/17a-station-mod.js:18-23
 stationDeals                 src/27g-deals.js:141-158
 stationFleet                 src/04b-fleet.js:163-191

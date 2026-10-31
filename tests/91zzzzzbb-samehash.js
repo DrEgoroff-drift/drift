@@ -124,8 +124,10 @@ TEST_SUITES.push(()=>suite("детерминизм: хэш мира видит �
   eq(stateHash({a:1,b:[2,3]}),stateHash({b:[2,3],a:1}),"порядок полей не судится");
   const c={x:1};c.self=c;
   ok(typeof stateHash(c)==="string","цикл не вешает обход");
+  const c0=T.state().clock;
   clockAdvance(1000);
-  ok(stateHash()!==h0,"часы игры — тоже часть мира");
+  eq(stateHash(),h0,"часы вне хэша (отдельное поле)");
+  ok(T.state().clock===c0+1000,"T.state().clock видит сдвиг");
   resetWorld();
 }));
 TEST_SUITES.push(()=>suite("детерминизм: часы игры прибиваются, двигаются и отпускаются",()=>{

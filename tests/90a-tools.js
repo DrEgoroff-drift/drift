@@ -28,7 +28,7 @@
                              кнопками, что игрок; ответ {ok, frames, why}
    Глаза — читают мир:
      T.frame() / T.diff(a,b)  подпись кадра (каждая восьмая проба яркости) и доля сдвига
-     T.state()                {hash, snap, purse}: stateHash() мира (08a), снимок сейва, кошелёк
+     T.state()                {hash, clock, snap, purse}: stateHash() мира (08a), now(), снимок сейва, кошелёк
      T.look()                 числа кадра прибора (lookFrame, 28y-look)
      T.ledger(fn)             что кадр сделал с канвой: вызовы по именам, тексты с кеглем
      T.text()                 {dom, canvas}: видимый текст вёрстки и то, что кадр написал
@@ -497,7 +497,7 @@ const T=(()=>{
   /* хэш — игровой stateHash() (08a, M441): один на игру и на тесты, с
      положением rnd() и часами. Снимок — сейв, для чтения глазами */
   function state(){
-    return {hash:stateHash(),snap:snapshot(),purse:purse()};
+    return {hash:stateHash(),clock:now(),snap:snapshot(),purse:purse()};
   }
   function look(){return lookFrame();}
   /* ── бухгалтерия кадра ──
