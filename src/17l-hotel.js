@@ -167,13 +167,21 @@ function drawHotel(zx,zy,Z){
     for(let i=0;i<Q.length;i++){const q=Q[i],r=O[i];r.x=ox+(q[0]+q[2])/2*sx;r.y=oy+(q[1]+q[3])/2*sy;r.w=(q[2]-q[0])*sx;r.h=(q[3]-q[1])*sy;r.a=a;}
     return O;},all=B.all||(B.all=[[0,0,B.w,B.h]]);
   const o={lod:HOTEL_LOD},ad={blend:"add",lod:HOTEL_LOD};
+  /* Хай-Фронт: одна ячейка сот мигает (DESIGN-review §4 — единственный flicker у гостиницы) */
+  let Lwin=lit,Lhalo=lith;
+  if(Ht.by==="hf"&&lit.length&&(((G.t*4)|0)&1)===0){
+    const i=(hashi(sd,0xBEEF)>>>0)%lit.length;
+    Lwin=lit.slice();Lhalo=lith.slice();Lwin.splice(i,1);Lhalo.splice(i,1);
+  }
   gpuImage(pass,B.cv,R(all,1),{blend:"hull",lod:HOTEL_LOD});   /* краска дома в свечение не идёт (fsDown): светят окна и вывеска */
   if(S)gpuImage(pass,B.sh,R(all,HOTEL_SHEEN*fa),ad);
   /* горящие окна — поверх: стекло непрозрачно, замена точная (отсвет вывески на них не нужен — светят сами) */
-  if(lit.length){gpuImage(pass,B.cl,R(lit,1),o);}
+  if(Lwin.length)gpuImage(pass,B.cl,R(Lwin,1),o);
   gpuImage(pass,B.em,R(all,HOTEL_EM),ad);
-  if(lith.length)gpuImage(pass,B.el,R(lith,HOTEL_EM),ad);
-  if(S)hotelNeonDraw(pass,S,ox+T.sign[0]*k,oy+T.sign[1]*k,fa,HOTEL_NEON*fa);
+  if(Lhalo.length)gpuImage(pass,B.el,R(Lhalo,HOTEL_EM),ad);
+  /* ГЛАВТРАССА: мёртвая буква вывески гудит раз в минуту на 200 мс (как щит 17k) */
+  const buzz=Ht.by==="gt"&&((G.t/60)%60)<.2?.35:1;
+  if(S)hotelNeonDraw(pass,S,ox+T.sign[0]*k,oy+T.sign[1]*k,fa,HOTEL_NEON*fa*buzz);
 }
 /* ── общие куски кисти ── */
 /* многоугольник по точкам [x,y,…] */

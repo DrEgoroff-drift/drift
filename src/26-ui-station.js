@@ -73,6 +73,7 @@ function openStationBody(){
      обращаются и какая реплика в очереди станет следующей */
   if(typeof visitMark==="function")visitMark();
   if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
+  if(typeof tapeOldMasterKind==="function")tapeOldMasterKind();   /* изолента на корпусе — шов даром (M480) */
   /* что здесь сегодня предлагают (11ah): часть предложений — не вам, и это
      нормально. Именное приходит только от того, кто вас помнит хорошо */
   /* сперва сдать привезённое, потом смотреть, что предлагают сегодня (11ah) */
@@ -228,6 +229,7 @@ function repairCost(){
 }
 function closeStation(){
   if(typeof vegaLaunchHold==="function"&&vegaLaunchHold())return;   /* зеркало (M153): раз в день — «вы обещали остаться» */
+  G._tapeSon=0;   /* следующий заход снова может увидеть изоленту (M480) */
   visitClose(G.sys);   /* остатки потолков захода — в запись станции (§12) */
   if(typeof folkLeave==="function")folkLeave();   /* свои остались на станции (12u-folk) */
   /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили

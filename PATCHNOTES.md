@@ -6,6 +6,11 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.51 — yard «сынок» and hotel sign craft
+
+- M480 kindness: at a yard, if the hull carries tape, the old master welds one seam for free once per dock — «Сынок, ну кто ж так» (DESIGN-review shipyard column).
+- M461 hotels: ГЛАВТРАССА sign buzzes 200 ms once a minute (same as the billboard); one Хай-Фронт honeycomb cell flickers — the only allowed hotel flicker.
+
 ## 0.499.50 — the queue ship that never docks
 
 - Approach queue (M459 / DESIGN-review life): the first ship in the holding ellipse sits still facing the dock — «Он тут с прошлой сводки. Ждёт.» once per system visit. The rest keep circling.

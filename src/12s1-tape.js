@@ -47,6 +47,21 @@ function tapeYardRepaired(){
   G.tapes[G.shipId]=0;
   logAdd("dim","Изоленту сняли, заварили как положено");
 }
+/* доброта (DESIGN-review shipyard): на любой верфи старый мастер видит изоленту
+   и заваривает один шов даром — «сынок, ну кто ж так». Раз за заход (_tapeSon). */
+function tapeOldMasterKind(){
+  if(G._tapeSon)return false;
+  const st=G.sys&&G.sys.station;if(!st||st.stype!=="yard")return false;
+  if(!tapesOf())return false;
+  const hm=stat().hullMax;if(G.hull>=hm-.5)return false;
+  G._tapeSon=1;
+  const heal=Math.max(1,Math.round(hm*.05));
+  G.hull=Math.min(hm,G.hull+heal);
+  logAdd("tech","Старый мастер: шов · даром · «сынок, ну кто ж так»");
+  say("«Сынок, ну кто ж так»\nшов заварен · даром",140);
+  if(typeof seamAdd==="function")seamAdd();
+  return true;
+}
 /* серые полосы на корпусе — в координатах корпуса, рядом со швами */
 function drawTapes(h,n){
   if(!n)return;
