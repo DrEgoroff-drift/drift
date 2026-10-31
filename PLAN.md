@@ -320,13 +320,17 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
-- [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). The day is
-  `CEL_DAY` of the sky calendar (`06a-celest`), copied in `21pifa` and `25m-probe`; a longer day moves
-  the war chronicle's hashes and the need windows. Decide together with the chronicle, reshoot hashes.
-- [ ] **Old worktrees:** `C:\Claude\drift-refactor` (one WIP commit «stall report names who held the frame»,
-  330 behind), `drift-lab` (an uncommitted `site/war.js`), `drift-t1`, `drift-t2`, `drift-tests` (still
-  since 12.09) and the main checkout `C:\Claude\files` (236 behind) — see what is unmerged, then refresh
-  or remove.
+- [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). Note (31.10):
+  the **surface** sun already runs on `celSun` with a period of `CEL_DAY × (6–10)` — a full circuit is
+  6–10 real minutes, not the calendar minute; the calendar day is `CEL_DAY`. Reaching "an hour" means
+  raising that multiplier, and it moves the war chronicle's hashes and the need windows — a chronicle
+  pass, not a constant change.
+- [x] **Old worktrees — inspected 31.10:** `drift-refactor` (branch `refactor`, WIP «stall report names
+  who held the frame; bloom blurs at quarter resolution»), `drift-lab` (branch `playable-11-09`, «plan:
+  dev.html write-guard done», dirty `site/war.js`), `drift-t1`/`drift-t2`/`drift-tests` (all three at the
+  same old commit `c09436ae`, «FRAME_JS ReferenceError»), and `C:\Claude\files` on a very old `main`
+  (`f68f5a81`). Nothing there is newer than `engine`; the WIP commits stay in place (removing them is
+  destructive and not needed) — refresh or remove when the author says.
 
 ## 13. Outside the game — audience and money (parked; the author 26.09: «запиши куда-нибудь, потом решим»)
 
