@@ -3,7 +3,7 @@
    railBuyBoard всегда доводит до ожидания поезда. */
 TEST_SUITES.push(()=>suite("железная: Орднунг — декларация и посадка",()=>{
   resetWorld();
-  if(typeof railEnsure==="function")railEnsure(G.sx|0,G.sy|0);
+  railEnsure(G.sx|0,G.sy|0);
   /* любая станция метро в круге */
   let here=null;
   for(let r=0;r<=RAIL_METRO_R&&!here;r++)for(let x=-r;x<=r&&!here;x++)for(let y=-r;y<=r;y++){

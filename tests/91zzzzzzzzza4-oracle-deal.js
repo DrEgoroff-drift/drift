@@ -3,7 +3,7 @@
 TEST_SUITES.push(()=>suite("миры: oracle кр/мин трасса/прыжок",()=>{
   resetWorld();
   /* сеть трассы — ленивая; прогреем вокруг старта */
-  if(typeof railEnsure==="function")railEnsure(G.sx|0,G.sy|0);
+  railEnsure(G.sx|0,G.sy|0);
   const D=oracleDealProbe(12);
   ok(D.jump&&D.jump.cpm>0,"есть прибыльный прыжковый рейс");
   ok(D.rail&&D.rail.cpm>0,"есть прибыльный рейс трассой");
