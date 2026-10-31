@@ -570,6 +570,14 @@ function h3dGiantMesh(g){
         K.tube([[bx,by,48],[bx+rr*.15,by-rr*.1,48+rr*.7]],1.6,C(steel),3,.55,6);
         L.push({x:bx,y:by,c:cold,r:6,k:TAU/50,ph:bx*.01});
       }
+      /* кабельные лотки между крупными тарелками */
+      const dishPts=[[-420,220],[-280,-260],[360,180],[440,-200]];
+      for(let i=0;i<dishPts.length-1;i++){
+        const a=dishPts[i],b=dishPts[i+1];
+        K.tube([[a[0],a[1],8],[b[0],b[1],8]],2.2,C([40,44,52]),3,.45,6);
+        for(let t=1;t<4;t++){const u=t/4,x=a[0]+(b[0]-a[0])*u,y=a[1]+(b[1]-a[1])*u;
+          K.box(x-4,x+4,y-4,y+4,6,12,1,C(steel),3,.55);}
+      }
       st=[[600,380],[-600,380]];
     }
     const m=h3dPack(K.V,g.k==="moon"?560:760,{st,ne:g.k==="moon"?2.5:2.2,kh:g.k==="moon"?.78:.6,gl:g.k==="moon"?.2:.35});m.L=L;m.len=1300;m.pulse=pulse;m.run=run;return m;

@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.86";
+const VER="0.499.87";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -66882,6 +66882,14 @@ function h3dGiantMesh(g){
         K.lathe(bx,by,48,[[0,3],[rr*.35,rr*.5],[rr*.8,rr],[rr,rr*.3]],C([190,200,214]),3,.7,0,16,null,null);
         K.tube([[bx,by,48],[bx+rr*.15,by-rr*.1,48+rr*.7]],1.6,C(steel),3,.55,6);
         L.push({x:bx,y:by,c:cold,r:6,k:TAU/50,ph:bx*.01});
+      }
+      /* кабельные лотки между крупными тарелками */
+      const dishPts=[[-420,220],[-280,-260],[360,180],[440,-200]];
+      for(let i=0;i<dishPts.length-1;i++){
+        const a=dishPts[i],b=dishPts[i+1];
+        K.tube([[a[0],a[1],8],[b[0],b[1],8]],2.2,C([40,44,52]),3,.45,6);
+        for(let t=1;t<4;t++){const u=t/4,x=a[0]+(b[0]-a[0])*u,y=a[1]+(b[1]-a[1])*u;
+          K.box(x-4,x+4,y-4,y+4,6,12,1,C(steel),3,.55);}
       }
       st=[[600,380],[-600,380]];
     }
