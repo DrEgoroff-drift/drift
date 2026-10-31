@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.41 — hotel doors: spa tip, cantina rumour at the desk
+
+- Hotel desk (M461 rest): after a night (or when already stayed this shift) the porter also opens the quiet doors — cinema poster if it is a film day, the sanatorium branch on the system's ocean world when a voucher is in hand, and the latest cantina rumour with its sector.
+
 ## 0.499.40 — station walk: steady camera, click places, tone
 
 - Hall camera: no lens chase while the place card is open; engage eases from the walk lens (.45 s); tabs inside a place leave the camera still; ship↔site no longer swaps the window.

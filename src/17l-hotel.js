@@ -281,7 +281,7 @@ function hotelDesk(Ht){
   const free=low;                                   /* доброта: ниже трети — даром */
   /* одна ночь на смену у станции: метка в её записи холдинга, которая и так в сейве */
   const H=G.sys&&G.sys.key&&typeof holdOf==="function"?holdOf(G.sys.key):null,sh=typeof holdShift==="function"?holdShift():0;
-  if(H&&H.night===sh){say("«Вы у нас уже ночевали.»\nследующая ночь — в другую смену",110);hotelShop(Ht);return;}
+  if(H&&H.night===sh){say("«Вы у нас уже ночевали.»\nследующая ночь — в другую смену",110);hotelShop(Ht);hotelDoors(Ht);return;}
   const price=hotelNightPrice();
   if(!free&&G.credits<price){say((Ht.by==="gt"?"«Мест нет.»":"«Номер — "+price+" кр.»")+"\nне хватает",110);return;}
   if(!free)G.credits-=price;
@@ -293,7 +293,19 @@ function hotelDesk(Ht){
   logAdd("good",Ht.name+": ночь в номере"+(free?" — даром, «потом заплатите»":" · −"+price+" кр")+" · корпус +"+heal+" за ночь стоянки");
   say(greet+(free?"\n«…потом заплатите»":""),150);
   hotelShop(Ht);
-  if(typeof kinoHere==="function"&&kinoHere())peopleLine("в холле афиша: сегодня кино. Идите, пока не началось.","портье",false);
+  hotelDoors(Ht);   /* двери тихих мест: кино, санаторий по путёвке, слух кантины (M461 rest) */
+}
+/* двери гостиницы (DESIGN-life §3.3): не новая система — вход в то, что уже есть */
+function hotelDoors(Ht){
+  if(typeof peopleLine!=="function")return;
+  if(typeof kinoHere==="function"&&kinoHere())
+    peopleLine("в холле афиша: сегодня кино. Идите, пока не началось.","портье",false);
+  const I=typeof instAll==="function"?instAll():null,vouch=I&&(I.vouch|0)>0;
+  const oc=G.sys&&G.sys.planets&&G.sys.planets.find(p=>p.type==="ocean");
+  if(vouch&&oc)peopleLine("Филиал санатория — на «"+oc.name+"». С путёвкой три дня у моря, садитесь на океан.","портье",false);
+  else if(vouch)peopleLine("Путёвка у вас? Филиал работает только на океаническом мире — ищите море.","портье",false);
+  const list=typeof newsAll==="function"?newsAll():null,n=list&&list.length?list[list.length-1]:null;
+  if(n&&n.ru)peopleLine(n.ru+(n.sx!=null?" · сектор "+n.sx+", "+n.sy:""),"портье",false);
 }
 /* лавка гостиницы (M469, DESIGN-resources §2): берёт жемчуг пустоты на сувениры
    для постояльцев — до трёх зёрен за визит, в полторы цены местной приёмки.
