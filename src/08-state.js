@@ -317,6 +317,8 @@ function stat(){
   const shldP=(typeof fittedOfKind==="function")?fittedOfKind("shield"):null;
   const coreP=(typeof fittedOfKind==="function")?fittedOfKind("core"):null;
   const coreT=coreP?(coreP.tier|0):0;
+  /* встроенное заказанной верфи (M480): Орднунг — лоб, Хай-Фронт — зрение */
+  const yardBi=typeof stapelBuiltIn==="function"?stapelBuiltIn():null;
   const dmgV=(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg"));
   const coolV=Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool"))*WT.cool));
   /* все стволы разом (M363): у каждого свой подвес, а значит свой конус и
@@ -353,10 +355,10 @@ function stat(){
     mslDmg:MSL_DMG*mul("mslDmgMul"),
     mslTurn:MSL_TURN*mul("mslLockMul"),
     mslCool:Math.max(24,Math.round(MSL_COOL/mul("mslLockMul"))),
-    shieldMax:Math.max(0,Math.round(((P.shieldAdd||0)+(cr("veil")?40:0)+rs("shield"))*PD.sh)),
+    shieldMax:Math.max(0,Math.round(((P.shieldAdd||0)+(yardBi==="or"?(typeof STAPEL_OR_SHIELD==="number"?STAPEL_OR_SHIELD:32):0)+(cr("veil")?40:0)+rs("shield"))*PD.sh)),
     shieldRegen:Math.max(0,P.regenAdd||0),
-    shieldType:shieldTypeOf(shldP),
-    see:((((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"))*PD.see,
+    shieldType:yardBi==="or"?"front":shieldTypeOf(shldP),
+    see:((((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0))+(yardBi==="hf"?(typeof STAPEL_HF_SEE==="number"?STAPEL_HF_SEE:180):0))+rs("see"))*PD.see,
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55)*(typeof kitStat==="function"?kitStat().wear:1),   /* комплект (M152) */
     refine:1+techLv("refine")*.18,

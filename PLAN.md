@@ -261,12 +261,9 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 
 - [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
   release run).
-- [ ] **M480/M481 yards (rest):** worlds oracle OK; стрельбище probe fixed (flanker — nose-on into the captain's
-  front shield was a false 0/6 for or/hf). Re-run 31.10: all yards 6/6 in ~14 s (ГТ ~21 s — thr −8 %); damage dealt
-  identical (same gun); damage taken tracks hull % (HF 58 % vs base 45 %) and thr (ГТ eats more absolute while
-  approaching). **Character notes still half-lies:** Орднунг «носовая броня даром» and Хай-Фронт «прибор даром» are
-  not in `stapelStats` — either wire or strike from the note. Компания −15 % price has no number against it; КБ
-  billing still absent. No yard multiplier moved.
+- [ ] **M480/M481 yards (rest):** worlds oracle OK; стрельбище probe 6/6 (flanker). **0.499.64:** Орднунг front
+  shield + Хай-Фронт sight wired (`stapelBuiltIn` → `stat()`); notes honest. Still open: Компания −15 % price has
+  no number against it; КБ billing absent; Коммуна turret +30° / Рассвет scrap heal / ГТ mass habit unfinished.
 
 ## 8. Stage 7 — the giants
 

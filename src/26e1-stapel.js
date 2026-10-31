@@ -17,12 +17,18 @@ const STAPEL_SIZE={
 const STAPEL_YARD={
   gt:{hull:1.25,thr:.93,note:"бронепояс +25 % корпуса, тяжелее на 8 % · по борту «ПЛАН — ЗАКОН», не смывается"},
   co:{price:.85,note:"на 15 % дешевле · по вашему борту бежит строка рекламы, клетка оплачена"},
-  or:{hull:1.08,turn:.96,note:"носовая броня даром · чертёж по норме: ни одна клетка не повёрнута"},
+  or:{hull:1.08,turn:.96,note:"лобовой щит в комплекте (без части) · чертёж по норме: ни одна клетка не повёрнута"},
   km:{cargo:.85,turn:1.06,lunch:1,note:"поворот мягче, клеток на 15 % меньше · «так красивее» — изгиб, которого вы не заказывали"},
   ra:{cargo:1.1,note:"приварят лишний отсек (+10 % трюма) · корпус держит бой: «на соплях, но держит»"},
-  hf:{hull:.85,fuel:1.08,note:"прибор даром, корпус на 15 % тоньше · прошивка обновляется сама"}
+  hf:{hull:.85,fuel:1.08,note:"дальний захват · зрение +1 ступень, корпус на 15 % тоньше · прошивка обновляется сама"}
 };
 function stapelYard(by){return STAPEL_YARD[by]||{};}
+/* встроенное верфи (M480, DESIGN-shipyard §4): с заказанного корпуса, снять нельзя */
+const STAPEL_OR_SHIELD=32,STAPEL_HF_SEE=180;   /* лобовое поле без части; +1 ступень зрения (как longeye) */
+function stapelBuiltIn(id){
+  const sh=typeof shipData==="function"?shipData(id||G.shipId):null;
+  return (sh&&sh.ordered&&sh.by)||null;
+}
 const STAPEL_SIZES=["light","medium","heavy"],STAPEL_L=[.85,1.15],STAPEL_MARKUP=1.25;
 function stapelAll(){
   const S=G.stapel||(G.stapel={});
@@ -158,9 +164,12 @@ function stapelCollect(viaPost){
   G.uniqueShips[id]=sh;G.owned[id]=true;
   if(typeof regBought==="function")regBought(id,o.by);   /* чужой стапель — транзитные номера (M513) */
   logAdd("good","Со стапеля сошёл «"+sh.ru+"» — "+sh.cls+" · в ангаре");
-  /* Коммуна (DESIGN-review shipyard): изгиб, которого не заказывали */
+  /* Коммуна (DESIGN-review shipyard): изгиб, которого вы не заказывали */
   if(o.by==="km"){say("«Так красивее»\nизгиб, которого вы не заказывали",140);
     logAdd("dim","Коммуна: на корпусе изгиб · «так красивее»");}
+  /* встроенное (M480): лобовое поле Орднунга, дальний захват Хай-Фронта — в stat() */
+  if(o.by==="or")logAdd("dim","Орднунг: лобовое поле вварено · часть щита не нужна");
+  if(o.by==="hf")logAdd("dim","Хай-Фронт: дальний захват · зрение на ступень дальше");
   return id;
 }
 /* ── живой чертёж: временная запись, кэш корпуса сбрасываем на каждый сдвиг (лист, 26e2) ── */

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 675 · top-level symbols: 8909
+Files: 675 · top-level symbols: 8911
 
 ## SYMBOLS
 
@@ -412,10 +412,10 @@ CREW_TRIP_QUEUE              src/12a-crew.js:348
 CREW_YIELD                   src/12a-crew.js:349
 CRYO_RECIPE                  src/21a1a-base-heat.js:33
 CS_KS                        tests/91zzzzzzy7-census2d.js:7
-CUE_AT                       src/08-state.js:407
+CUE_AT                       src/08-state.js:409
 CUE_EPS                      src/27m-scroll-cue.js:25
-CUE_INFO                     src/08-state.js:391
-CUE_LVL                      src/08-state.js:392
+CUE_INFO                     src/08-state.js:393
+CUE_LVL                      src/08-state.js:394
 CULT_EXP_GOAL                src/12b3-fx-cult.js:22
 CULT_PLAY                    src/12b3-fx-cult.js:51-94
 CULT_PLAY_EVERY              src/12b3-fx-cult.js:19
@@ -691,7 +691,7 @@ FOLK_IDS                     src/12u-folk.js:81
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
 FORK_HOOKS                   src/28q-fork.js:200-213
 FORK_SHARE                   src/28q-fork.js:18
-FRAME_IN                     src/08-state.js:378
+FRAME_IN                     src/08-state.js:380
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:140
 FRIDGE_FEATS                 src/21ac4-base-fridge.js:14
@@ -1457,7 +1457,7 @@ MOUNT_KINDS                  src/05d-mounts.js:21-27
 MOUNT_SIZES                  src/05d-mounts.js:19
 MOUNT_SIZE_RU                src/05d-mounts.js:20
 MPN                          src/17z4-map-pen.js:18
-MSG_OBJ                      src/08-state.js:381
+MSG_OBJ                      src/08-state.js:383
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -2252,10 +2252,11 @@ STAMP_ORDER                  src/17i-stamp.js:11
 STAMP_POEM                   src/17i-stamp.js:15
 STAMP_RU                     src/17i-stamp.js:12
 STAPEL_KEYS                  src/26e2-stapel-draw.js:336
-STAPEL_PV                    src/26e1-stapel.js:167
+STAPEL_OR_SHIELD             src/26e1-stapel.js:27
+STAPEL_PV                    src/26e1-stapel.js:176
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
-STAPEL_SIZES                 src/26e1-stapel.js:26
-STAPEL_UI                    src/26e1-stapel.js:168
+STAPEL_SIZES                 src/26e1-stapel.js:32
+STAPEL_UI                    src/26e1-stapel.js:177
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 STAR_CLASS                   src/02-world.js:192-198
 STAR_COLS                    src/16-flight.js:2
@@ -2519,7 +2520,7 @@ WX_PLANES                    src/19d-weather.js:98-103
 YALTA_R                      src/12al-powers.js:153
 YARD                         src/26f-yard-gpu.js:6
 YARD_CHANCE                  src/04b-fleet.js:162
-YARD_DEBRIS                  src/26e1-stapel.js:118
+YARD_DEBRIS                  src/26e1-stapel.js:124
 ZAP_COOL                     src/23-mode-dig.js:258
 ZOOM_MIN                     src/01-core.js:21
 ZOOM_RATE                    src/15-input.js:357
@@ -3640,12 +3641,12 @@ crownReady                   src/05a-nodes.js:158
 ctlHint                      src/15-input.js:171-175
 ctlReset                     src/15a-helm.js:127-132
 ctx                          src/08-state.js:5
-cue                          src/08-state.js:417-422
-cueAt                        src/08-state.js:408
-cueFold                      src/08-state.js:425-430
-cueLvl                       src/08-state.js:398-401
-cueReset                     src/08-state.js:402
-cueSameOffer                 src/08-state.js:416
+cue                          src/08-state.js:419-424
+cueAt                        src/08-state.js:410
+cueFold                      src/08-state.js:427-432
+cueLvl                       src/08-state.js:400-403
+cueReset                     src/08-state.js:404
+cueSameOffer                 src/08-state.js:418
 cultBlock                    src/12b3-fx-cult.js:237-290
 cultExpCount                 src/12b3-fx-cult.js:139-156
 cultExpFound                 src/12b3-fx-cult.js:157-160
@@ -5239,7 +5240,7 @@ heardWordsRu                 src/12x-parrot.js:79-85
 heardYours                   src/12x-parrot.js:71-74
 heatAdd                      src/13a-guns.js:47-52
 heatTick                     src/13a-guns.js:54-62
-held                         src/08-state.js:367
+held                         src/08-state.js:369
 helmApply                    src/15a-helm.js:450-548
 helmBand                     src/15b-helm-draw.js:145-148
 helmCamOff                   src/15b-helm-draw.js:130-143
@@ -6188,7 +6189,7 @@ mpTextAlong                  src/17z4-map-pen.js:130-134
 mpTri                        src/17z4-map-pen.js:114-118
 mpU                          src/17z4-map-pen.js:30
 mpWeight                     src/17z4-map-pen.js:29
-msgHeld                      src/08-state.js:431
+msgHeld                      src/08-state.js:433
 mslBoom                      src/16b-missile.js:154-167
 mslCheck                     src/16b-missile.js:114-120
 mslDraw                      src/16b-missile.js:253-269
@@ -7945,7 +7946,7 @@ saveGame                     src/14a-cloud.js:54-67
 saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
-say                          src/08-state.js:382
+say                          src/08-state.js:384
 sbeltChip                    src/17gc-sys-belt.js:44-53
 sbeltClumps                  src/17gc-sys-belt.js:11-20
 sbeltDens                    src/17gc-sys-belt.js:22-35
@@ -8299,37 +8300,38 @@ stampShow                    src/17i-stamp.js:83-96
 stampText                    src/17i-stamp.js:28-41
 standAdd                     src/21e2-surface-gpu.js:54-57
 standPass                    src/20ab-poi-gpu.js:134-137
-stapelAll                    src/26e1-stapel.js:27-32
-stapelBlock                  src/26e1-stapel.js:170-240
-stapelClosedWhy              src/26e1-stapel.js:96-101
-stapelCollect                src/26e1-stapel.js:151-165
+stapelAll                    src/26e1-stapel.js:33-38
+stapelBlock                  src/26e1-stapel.js:179-249
+stapelBuiltIn                src/26e1-stapel.js:28-31
+stapelClosedWhy              src/26e1-stapel.js:102-107
+stapelCollect                src/26e1-stapel.js:157-174
 stapelDelta                  src/26e2-stapel-draw.js:337-347
 stapelDraft                  src/26e2-stapel-draw.js:196-228
 stapelFx                     src/26e2-stapel-draw.js:349-357
 stapelHullBox                src/26e2-stapel-draw.js:239-288
 stapelHullTick               src/26e2-stapel-draw.js:299-333
-stapelId                     src/26e1-stapel.js:68
+stapelId                     src/26e1-stapel.js:74
 stapelLater                  src/26e2-stapel-draw.js:298
-stapelMine                   src/26e1-stapel.js:113-116
-stapelOrder                  src/26e1-stapel.js:80-94
+stapelMine                   src/26e1-stapel.js:119-122
+stapelOrder                  src/26e1-stapel.js:86-100
 stapelPen                    src/26e2-stapel-draw.js:13-19
-stapelReady                  src/26e1-stapel.js:102
-stapelRestore                src/26e1-stapel.js:75-78
+stapelReady                  src/26e1-stapel.js:108
+stapelRestore                src/26e1-stapel.js:81-84
 stapelSheet                  src/26e2-stapel-draw.js:20-190
-stapelSheetW                 src/26e1-stapel.js:169
-stapelShip                   src/26e1-stapel.js:59-67
-stapelStats                  src/26e1-stapel.js:42-57
-stapelStrip                  src/26e1-stapel.js:70-74
-stapelTick                   src/26e1-stapel.js:104-110
+stapelSheetW                 src/26e1-stapel.js:178
+stapelShip                   src/26e1-stapel.js:65-73
+stapelStats                  src/26e1-stapel.js:48-63
+stapelStrip                  src/26e1-stapel.js:76-80
+stapelTick                   src/26e1-stapel.js:110-116
 stapelYard                   src/26e1-stapel.js:25
-stapelYardBy                 src/26e1-stapel.js:34-38
+stapelYardBy                 src/26e1-stapel.js:40-44
 starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:25-34
 starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:637-645
 startLanding                 src/19-mode-landing.js:2-38
 startScoop                   src/19a-mode-scoop.js:51-64
-stat                         src/08-state.js:297-366
+stat                         src/08-state.js:297-368
 statPreview                  src/05-parts.js:417-425
 stateHash                    src/08a-statehash.js:30-81
 stateHashParts               src/08a-statehash.js:82-90
@@ -8873,7 +8875,7 @@ withFrame                    src/18c-chunks.js:49-54
 withScale                    src/18c-chunks.js:35-46
 workAdd                      src/17a0-prebake.js:66
 workPump                     src/17a0-prebake.js:67-78
-worldCovered                 src/08-state.js:435
+worldCovered                 src/08-state.js:437
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
@@ -8892,9 +8894,9 @@ yaltaIs                      src/12al-powers.js:162-165
 yaltaSealed                  src/12al-powers.js:169-173
 yardBeam                     src/04c-yards.js:84-88
 yardCanvas                   src/26f-yard-gpu.js:12-19
-yardDebris                   src/26e1-stapel.js:119-126
+yardDebris                   src/26e1-stapel.js:125-132
 yardDraw                     src/26f-yard-gpu.js:41-54
-yardFirmware                 src/26e1-stapel.js:129-149
+yardFirmware                 src/26e1-stapel.js:135-155
 yardGate                     src/04c-yards.js:144-148
 yardHide                     src/26f-yard-gpu.js:20
 yardTick                     src/26f-yard-gpu.js:22-39
@@ -10475,7 +10477,7 @@ zoomTo                       src/15-input.js:358
 ## src/26e-ui-station-trade.js · 33 KB
   · станция: доска, рынок и док (выделено из 26, M415):1
 
-## src/26e1-stapel.js · 15 KB
+## src/26e1-stapel.js · 16 KB
   · СТАПЕЛЬ — заказ корпуса у державы (M481, DESIGN-shipyard §5):1
 
 ## src/26e2-post.js · 14 KB
@@ -10930,7 +10932,7 @@ zoomTo                       src/15-input.js:358
   · запись, которая не убивает полёт:1
   · пустая карта, вернувшаяся из облака списком:40
 
-## tests/91zzzzk7-yard-probe.js · 6 KB
+## tests/91zzzzk7-yard-probe.js · 7 KB
   · проба · шесть верфей: калибровка M480/M481:1
 
 ## tests/91zzzzy-play.js · 18 KB

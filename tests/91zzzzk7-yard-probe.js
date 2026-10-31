@@ -17,7 +17,7 @@ function ydPrbLeg(list,hold){
   const legs=[];
   for(const A of list)for(const B of list){
     if(A===B)continue;
-    if(typeof needOf==="function"&&(needOf(A)||needOf(B)))continue;
+    if(needOf(A)||needOf(B))continue;
     const PB=marketFor(B),d=Math.max(Math.abs(A.sx-B.sx),Math.abs(A.sy-B.sy));
     for(const k of TRADE_KEYS){
       const ask=buyPriceFor(A,k);if(!ask||!PB[k])continue;
@@ -32,7 +32,7 @@ function ydFly(by,cls,size,w){
   const S=stapelAll(),o={by,cls,size,l:1,w:w||1,seed:0x5EED,no:900+S.done.length,st:"проба"};
   S.done.push(o);const id=stapelId(o);
   G.uniqueShips[id]=stapelShip(o);G.owned[id]=true;G.shipId=id;
-  if(typeof invalidateParts==="function")invalidateParts();
+  invalidateParts();
   return id;
 }
 function ydWorld(){
@@ -42,8 +42,8 @@ function ydWorld(){
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];G.marks=[];G.allies=[];
   G.fuel=100;G.engaged=false;
   for(const k in keys)keys[k]=false;
-  if(typeof HELM!=="undefined"){HELM.key={};HELM.S=null;HELM.fade=null;}
-  if(typeof ctlReset==="function")ctlReset();
+  HELM.key={};HELM.S=null;HELM.fade=null;
+  ctlReset();
 }
 function ydDuel(by){
   /* шесть спаррингов: капитан с флагом spar (полоса 420–620) и тонким щитом дуэли.
@@ -52,7 +52,7 @@ function ydDuel(by){
   for(let n=0;n<6;n++){
     ydWorld();rndSeed(0xD0E1+n);ydFly(by,"warship","medium");
     G.mods.weapon=2;G.modsOwned.weapon=2;
-    if(typeof invalidateParts==="function")invalidateParts();
+    invalidateParts();
     const st0=stat();G.energy=st0.energyMax;G.hull=hm=st0.hullMax;G.shield=st0.shieldMax||0;
     const R=PIRATE_RANKS[2],hp=(26+.5*70)*R.hull,sh=hp*R.shield*.62;
     const a=n*1.05,seed=hashi(0xD0E1,2,n)>>>0;
@@ -61,7 +61,7 @@ function ydDuel(by){
       cool:0,aware:true,thrust:false,shield:sh,shieldMax:sh,shieldHit:0,
       shieldType:(PIRATE_LOADOUT[2].shield||"front"),deserter:0,spar:1};
     G.pirates.push(p);G.marks=[p];
-    if(typeof keys==="object")keys.fire=true;
+    keys.fire=true;
     const hpStart=p.hull+(p.shield||0);
     let i=0;
     for(;i<60*60&&p.hull/p.hullMax>=.25&&G.hull>0;i++){
@@ -77,7 +77,7 @@ function ydDuel(by){
       G.ship.a=angWrap(G.ship.a+clamp(dang,-turnR,turnR));
       G.t+=1;updateCombat(1);
     }
-    if(typeof keys==="object")keys.fire=false;
+    keys.fire=false;
     if(p.hull/p.hullMax<.25)kills++;
     t+=i;lost+=hm-Math.max(0,G.hull);
     dealt+=hpStart-(p.hull+(p.shield||0));
@@ -108,5 +108,16 @@ suite("проба · верфи: рудовоз против лучшей сде
   ok(B.length===yards.length,"все верфи посчитаны");
   const downs=B.map(s=>+(s.match(/сдал (\d+)/)||[])[1]||0);
   ok(downs.every(n=>n>=5),"flanker · spar-капитан: все верфи ≥5/6 сдач ("+downs.join(",")+")");
+  G.shipId="strizh";
+});
+/* встроенное §4 — быстрый набор: заметки or/hf больше не врут (0.499.64) */
+suite("верфь · Орднунг лобовой щит · Хай-Фронт зрение",()=>{
+  resetWorld();
+  ydFly(undefined,"warship","medium");const see0=stat().see|0;
+  ydFly("or","warship","medium");const So=stat();
+  ok(So.shieldType==="front"&&So.shieldMax>=(STAPEL_OR_SHIELD|0),"Орднунг: лобовое поле без части");
+  ydFly("hf","warship","medium");const Sh=stat();
+  ok((Sh.see|0)>=see0+(STAPEL_HF_SEE|0)-1,"Хай-Фронт: зрение +1 ступень");
+  ok(!/носовая броня даром|прибор даром/.test(STAPEL_YARD.or.note+STAPEL_YARD.hf.note),"заметки or/hf без вранья");
   G.shipId="strizh";
 });
