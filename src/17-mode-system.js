@@ -711,6 +711,7 @@ function drawSystem(){
   const hsx=zx(sh.x),hsy=zy(sh.y),hlx=zx(0)-hsx,hly=zy(0)-hsy,hln=Math.hypot(hlx,hly)||1;
   const gr=shipGear3d();
   hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln,gr);
+  if(typeof bbHullPaint==="function")bbHullPaint(hsx,hsy,shS);   /* неон щита на обшивке (M460 Law 2) */
   /* стволы на подвесах, повёрнутые по наводке (M363), и пусковая под корпусом (хвост M112):
      сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c).
      Корпус в объёме (M722) несёт части сам — плоские стволы только там, где объёма не было */

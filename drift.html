@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.48";
+const VER="0.499.49";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -54259,6 +54259,7 @@ function drawSystem(){
   const hsx=zx(sh.x),hsy=zy(sh.y),hlx=zx(0)-hsx,hly=zy(0)-hsy,hln=Math.hypot(hlx,hly)||1;
   const gr=shipGear3d();
   hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln,gr);
+  if(typeof bbHullPaint==="function")bbHullPaint(hsx,hsy,shS);   /* неон щита на обшивке (M460 Law 2) */
   /* стволы на подвесах, повёрнутые по наводке (M363), и пусковая под корпусом (хвост M112):
      сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c).
      Корпус в объёме (M722) несёт части сам — плоские стволы только там, где объёма не было */
@@ -64479,6 +64480,23 @@ function bbAhead(B,s,col){
   const F=Math.round(11*s),T=bbTitle(B.by),full=BB_TITLE[B.by]||BB_TITLE.gt;
   neonAhead(T,full,F,col,"middle");
   if(!GP)bbStripBake(bbLine(B.by)+"   ·   ",Math.round(8*s),col,false);
+}
+/* корпус ловит цвет щита (Law 2, DESIGN-life §3.2): в R неон ложится на обшивку */
+const BB_TINT_R=380;
+function bbHullTint(sh){
+  const list=bbAll();if(!list.length||!sh)return null;
+  let best=null,bd=BB_TINT_R;
+  for(const B of list){const d=Math.hypot(sh.x-B.x,sh.y-B.y);if(d<bd){bd=d;best=B;}}
+  if(!best)return null;
+  const col=(typeof laneLampCol==="function")?laneLampCol(best.by):[255,190,110];
+  const u=clamp(1-bd/BB_TINT_R,0,1);
+  return {c:col,k:u*u,by:best.by};
+}
+function bbHullPaint(x,y,sc){
+  const T=bbHullTint(G.ship);if(!T||T.k<.05)return;
+  const pass=gpuScene();if(!pass)return;
+  const a=T.k*.5,c=T.c,h=mixc(c,[255,255,255],.35),r=Math.max(9,16*sc);
+  gpuShapes(pass,[[1,x,y,r,0,0,r*1.5,c[0],c[1],c[2],a],[1,x,y,r*.4,0,0,r*.35,h[0],h[1],h[2],a*.65]],{blend:"add"});
 }
 function drawBillboard(zx,zy,Z){
   const list=bbAll();if(!list.length)return;

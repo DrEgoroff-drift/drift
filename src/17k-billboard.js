@@ -188,6 +188,23 @@ function bbAhead(B,s,col){
   neonAhead(T,full,F,col,"middle");
   if(!GP)bbStripBake(bbLine(B.by)+"   ·   ",Math.round(8*s),col,false);
 }
+/* корпус ловит цвет щита (Law 2, DESIGN-life §3.2): в R неон ложится на обшивку */
+const BB_TINT_R=380;
+function bbHullTint(sh){
+  const list=bbAll();if(!list.length||!sh)return null;
+  let best=null,bd=BB_TINT_R;
+  for(const B of list){const d=Math.hypot(sh.x-B.x,sh.y-B.y);if(d<bd){bd=d;best=B;}}
+  if(!best)return null;
+  const col=(typeof laneLampCol==="function")?laneLampCol(best.by):[255,190,110];
+  const u=clamp(1-bd/BB_TINT_R,0,1);
+  return {c:col,k:u*u,by:best.by};
+}
+function bbHullPaint(x,y,sc){
+  const T=bbHullTint(G.ship);if(!T||T.k<.05)return;
+  const pass=gpuScene();if(!pass)return;
+  const a=T.k*.5,c=T.c,h=mixc(c,[255,255,255],.35),r=Math.max(9,16*sc);
+  gpuShapes(pass,[[1,x,y,r,0,0,r*1.5,c[0],c[1],c[2],a],[1,x,y,r*.4,0,0,r*.35,h[0],h[1],h[2],a*.65]],{blend:"add"});
+}
 function drawBillboard(zx,zy,Z){
   const list=bbAll();if(!list.length)return;
   const s=Math.max(1,clamp(Z,.6,1.5))*UIK,col=(typeof laneLampCol==="function")?laneLampCol(list[0].by):[255,190,110];

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 673 · top-level symbols: 8887
+Files: 673 · top-level symbols: 8890
 
 ## SYMBOLS
 
@@ -129,6 +129,7 @@ BB_BAKE                      src/17k-billboard.js:98
 BB_CACHE                     src/17k-billboard.js:12
 BB_NEON                      src/17k-billboard.js:97
 BB_NEWS                      src/17k-billboard.js:40
+BB_TINT_R                    src/17k-billboard.js:192
 BB_TITLE                     src/17k-billboard.js:11
 BDUST_WGSL                   src/24be-belt-rock-gpu.js:109
 BEACON_COOL                  src/23-mode-dig.js:89
@@ -2836,6 +2837,8 @@ bbDeal                       src/17k-billboard.js:28-38
 bbDrawGpu                    src/17k-billboard.js:151-181
 bbHere                       src/17k-billboard.js:26
 bbHold                       src/17k-billboard.js:49-62
+bbHullPaint                  src/17k-billboard.js:202-207
+bbHullTint                   src/17k-billboard.js:193-201
 bbKeep                       src/17k-billboard.js:102-108
 bbLine                       src/17k-billboard.js:63-86
 bbNews                       src/17k-billboard.js:41-47
@@ -3320,7 +3323,7 @@ chessMyTurn                  src/25n-chess.js:212-216
 chessPaint                   src/25n-chess.js:255-315
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
-chipDist                     src/17-mode-system.js:745-751
+chipDist                     src/17-mode-system.js:746-752
 chipDom                      src/08bi-gpu-ovl.js:305-321
 chipDomSnap                  src/08bh-gpu-hud.js:10-14
 chipDomSweep                 src/08bh-gpu-hud.js:22-25
@@ -4026,7 +4029,7 @@ drawBaseBuilding             src/21c-built.js:112-169
 drawBazaar                   src/17n-bazaar.js:118-174
 drawBelt                     src/24-mode-belt.js:401
 drawBeltRocks                src/17gc-sys-belt.js:58-123
-drawBillboard                src/17k-billboard.js:191-207
+drawBillboard                src/17k-billboard.js:208-224
 drawBuilt                    src/21c-built.js:64-72
 drawCave                     src/22d-cave-pln.js:378-395
 drawCheburek                 src/17j-cheburek.js:78-109
@@ -4113,12 +4116,12 @@ drawStrata                   src/18b-geology.js:100
 drawSurface                  src/21pz-pln-frame.js:439-458
 drawSurfaceHud               src/21e-surface-draw.js:40-143
 drawSurvey                   src/12w-survey.js:63-81
-drawSysHud                   src/17-mode-system.js:752-1101
+drawSysHud                   src/17-mode-system.js:753-1102
 drawSysLane                  src/17g-sys-lane.js:112-137
 drawSysLaneShips             src/17g-sys-lane.js:167-195
 drawSysRail                  src/18f-rail-station.js:61-69
 drawSysTraffic               src/17f-sys-traffic.js:39-43
-drawSystem                   src/17-mode-system.js:558-740
+drawSystem                   src/17-mode-system.js:558-741
 drawTapes                    src/12s1-tape.js:51-66
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
@@ -9653,7 +9656,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/16gc-gpu-nebfade.js · 9 KB
 
-## src/17-mode-system.js · 87 KB
+## src/17-mode-system.js · 88 KB
   · режим: система:1
 
 ## src/17a-station-mod.js · 6 KB
@@ -9755,7 +9758,7 @@ zoomTo                       src/15-input.js:358
 ## src/17j-cheburek.js · 10 KB
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
-## src/17k-billboard.js · 13 KB
+## src/17k-billboard.js · 14 KB
   · рекламные щиты на подъезде (M460, DESIGN-life §3.2, review §4.2):1
 
 ## src/17k0-neon.js · 4 KB

@@ -246,7 +246,7 @@ measured on the GPU build first:
 
 ## 6. Stage 5 — the voice and the joke
 
-- [ ] **M460 billboards (rest):** 1–3 signs by lane life (0.499.47); still: the hull tint within R (graphics pass); stale prices as a fork (the author).
+- [ ] **M460 billboards (rest):** 1–3 signs by lane life (0.499.47); hull tint within R (0.499.49). Still: stale prices as a fork (the author).
 - [ ] **M461 hotels (rest):** six faces (0.499.39); desk doors + map mark + land cue «САНАТОРИЙ» (0.499.41–43).
   Still open: fatigue (does not exist for the player); a pair at 760 and 390, at 19 h and 3 h for the four new faces.
 - [ ] **M511 волокита:** the animals the author will invent (his table).

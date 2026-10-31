@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.49 — billboard neon tints the hull (Law 2)
+
+- M460: within ~380 of a lane sign the ship's hull picks up the power's neon as a soft additive wash (squared falloff) — DESIGN-life Law 2, the colour that fills the approach.
+
 ## 0.499.48 — hollow moon «Гнездо»: planet sphere, nest mouth, orbit
 
 - M464 moon: ball drawn through `gplBody` like the system's planets (terminator, limb, rock strip); h3d only builds the quarry mouth, tower and the town lights in depth — no more flat sticker discs.
