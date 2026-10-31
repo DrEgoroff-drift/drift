@@ -24,7 +24,15 @@ function g11Fps(sec){
     requestAnimationFrame(tick);
   });
 }
+/* длительные задачи главного потока: rAF-провал может быть не «кадром», а long task (>50 мс).
+   Меряем отдельно от кадра — иначе в виноватые попадёт не тот. */
+let G11_LT=[];
+function g11LongTasks(){
+  try{new PerformanceObserver(l=>{for(const e of l.getEntries())G11_LT.push(Math.round(e.duration));}).observe({entryTypes:["longtask"]});}catch(e){}
+}
 async function g11Run(){
+  G11_LT=[];
+  try{g11LongTasks();}catch(e){}
   const out={},err=[],sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const find=pred=>{
     for(let r0=0;r0<16;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++){
@@ -114,7 +122,7 @@ async function g11Run(){
       const bs=((GPU&&GPU.bakeN)||0)-bn0,bms=Math.round(((GPU&&GPU.bakeMs)||0)-bms0);
       const bk=Object.entries(globalThis.__bkeys||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>String(e[0]).slice(0,30)+"×"+e[1]);
       const bz=Object.entries(globalThis.__bsize||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(e=>e[0]+"×"+e[1]);
-      out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,jsMax:iv.jsMax,jsP90:iv.jsP90,switchMs:delay,bakes:bs,bakeMs:bms,bkeys:bk,bsize:bz,slow:(globalThis.__bslow||[]).slice(0,4)};
+      out[st[0]]=iv.fps; det[st[0]]={p50:iv.p50,p90:iv.p90,max:iv.max,n45:iv.n45,jsMax:iv.jsMax,jsP90:iv.jsP90,switchMs:delay,bakes:bs,bakeMs:bms,bkeys:bk,bsize:bz,lt:G11_LT.length,ltMax:(G11_LT.length?Math.max.apply(null,G11_LT):0),slow:(globalThis.__bslow||[]).slice(0,4)};
       put(st[0]+" "+iv.fps+" · p90 "+iv.p90+" · max "+iv.max+" (js "+iv.jsMax+") · ≥45 "+iv.n45+" · переход "+delay+" мс · выпечек "+bs+" / "+bms+" мс"+(bz.length?" · "+bz.join(", "):"")+((globalThis.__bslow||[]).length?" · "+(globalThis.__bslow||[]).slice(0,2).join(" ; "):""));
       if(st[0]==="system"&&typeof g11GpuMs==="function"){try{const gm=await g11GpuMs(2,true);const top=Object.entries(gm||{}).filter(e=>e[0]!=="sum").sort((a,b)=>(b[1].max||0)-(a[1].max||0)).slice(0,5).map(e=>e[0]+" max "+e[1].max+" / "+e[1].pf+"/кадр");det[st[0]].gpu=gm;put("  GPU: "+top.join(" · "));}catch(e){}}
     }catch(e){err.push(st[0]+": "+(e&&e.message||e));put(st[0]+" СБОЙ");}
