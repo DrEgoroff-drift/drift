@@ -54,6 +54,13 @@ TEST_SUITES.push(()=>suite("тела: станции, флот, баржа, по
       ok(m.L.length>0||m.pulse||m.run,"у великана «"+D.k+"» есть живые огни");
       eq(h3dGiantMesh(g),m,"сетка великана «"+D.k+"» закреплена за зерном");
     }
+    /* ось (0.499.67): угол едет с часами мира, цилиндр быстрее дома */
+    {const pinned=clockPinned(),tSave=now();clockSet(1e12);
+      const house={k:"house",seed:1},cyl={k:"cyl",seed:1};
+      const s0=giantSpin(house);clockSet(1e12+giantPeriod(house));
+      near(Math.abs(angWrap(giantSpin(house)-s0)),0,.05,"дом водителя: полный оборот за период");
+      ok(giantPeriod(cyl)<giantPeriod(house),"цилиндр O'Neill крутится быстрее дома");
+      if(pinned)clockSet(tSave);else clockSet(null);}
     /* ── полоса: целый и не замеченный — нет; свой борт державы — нет; в захвате и раненый — да ── */
     const pir={hull:50,hullMax:50,aware:false},pw={hull:10,hullMax:50,pw:"gt",iff:1};
     G.marks=[];

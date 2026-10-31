@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.69 — giantSpin locked in the bodies suite
+
+- M464: `тела:` suite asserts a full house turn per period and that the Company cylinder is faster than the road house.
+
 ## 0.499.68 — «Сорока» camera on the game clock
 
 - Determinism: wanderer corridor draw (`wan3Frame`) uses `now()` instead of `wallMs()` so pinned suites / detectors no longer see a real-time bob on the buy path.

@@ -10795,7 +10795,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qc2-hall-targets.js · 2 KB
   · цели кадра зала переживают смену станции (24.10, телефон):1
 
-## tests/91qd-bodies.js · 5 KB
+## tests/91qd-bodies.js · 6 KB
   · тела под звездой (M820):1
 
 ## tests/91qd-hall-phone.js · 2 KB
