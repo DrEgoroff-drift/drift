@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.56 — metro board «завтра» and «Край»
+
+- DESIGN-review metro: outside the metro circle the board reads «следующий поезд — завтра», then «поезд подан»; a far ticket announces «до станции «Край»… остановок: сто четырнадцать»; a полустанок greets «ждали».
+
 ## 0.499.55 — HF firmware «оптимизировано»
 
 - M480: on an ordered Хай-Фронт hull the firmware nudges one draft part a cell per сводка — «оптимизировано»; КБ offers «отложить обновление · 3 сводки». Компания cell-move receipt says «перемещение ячейки … спасибо за выбор».

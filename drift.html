@@ -3434,7 +3434,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.55";
+const VER="0.499.56";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -69708,7 +69708,7 @@ const RAIL_RING_OFF=300;          /* кольцо — за станцией, н�
 const RAIL_HAIL_R=300,RAIL_CONE_R=110,RAIL_SLOW=1.2;
 const RAIL_BUFFET={gt:"лимонад «Звёздный»",co:"«Кола Партнёр™»",or:"вода минеральная, 0,33 л, № 2",
   km:"кофе с круассаном (круассаны закончились)",ra:"чай из общего котла",hf:"энергетик v4"};
-let RAIL_DOCK=null,RAIL_WAIT=null;
+let RAIL_DOCK=null,RAIL_WAIT=null,RAIL_BOARD_T=0;   /* когда открыли вестибюль — для шутки табло «завтра» (rim) */
 function railReady(){if(!RAIL_NET)railNetPartial();return !!RAIL_NET;}
 function railHere(){
   if(!G.sys||!G.sys.station||!railReady())return null;
@@ -69795,6 +69795,9 @@ function railDocked(auto){
   if(auto){say("Автостыковка\nпросьба не мешать",120);
     recordAdd("станция «"+R.name+"»","стыковка выполнена автоматикой.");}
   else say("ПРИНЯТО",60);
+  /* полустанок (DESIGN-review metro kindness): диспетчер «ждали» */
+  const halt=R.S&&R.S.lines.some(l=>l.stops.some(s=>s.sx===G.sx&&s.sy===G.sy&&s.halt));
+  if(halt){say("«Ждали»",80);logAdd("dim","Диспетчер полустанка: «ждали»");}
   railWinShow();
 }
 /* ── табло листается (M472): буква, что сменилась с прошлой перерисовки,
@@ -69850,7 +69853,18 @@ function railWinClose(){const w=document.getElementById("railWin");if(w)w.classL
 function railWinShow(){
   let w=document.getElementById("railWin");
   if(!w){w=document.createElement("div");w.id="railWin";document.body.appendChild(w);}
+  if(!w.classList.contains("open"))RAIL_BOARD_T=G.t;   /* заново — шутка «завтра» с нуля */
   w.classList.add("open");railWinRender();
+}
+/* табло на краю (DESIGN-review metro): «следующий поезд — завтра», через ~40 с — «поезд подан» */
+function railBoardEta(l){
+  if(RAIL_WAIT&&RAIL_WAIT.l===l)return "ваш · через "+railFmt(Math.ceil(RAIL_WAIT.t));
+  if(!railLineMetro(l)){
+    const age=(G.t-RAIL_BOARD_T)/60;
+    if(age<40)return "следующий поезд — завтра";
+    if(age<44)return "поезд подан";
+  }
+  return "через "+railFmt(railWaitNow(G.sx,G.sy));
 }
 /* линия — метро, только если вся она внутри круга: тариф и жетон считаются по зоне обоих
    концов пути, и табло не должно обещать метро линии, что уходит наружу (§9, Контроль 28.09) */
@@ -69862,7 +69876,7 @@ function railWinRender(){
   let h="<div class='rw-head'><b>СТАНЦИЯ «"+R.name.toUpperCase()+"»</b><s>"+S.lines.map(l=>l.ru).join(" · ")+(S.junction?" · ПЕРЕСАДКА":"")+"</s></div>";
   h+="<div class='rw-sec'>ТАБЛО</div><div class='rw-board'>";
   S.lines.forEach((l,li)=>{h+="<div><span>"+(railLineMetro(l)?"МЕТРО":"ЭЛЕКТРИЧКА")+" · "+l.ru+"</span><em>"+
-    railFlap(li,RAIL_WAIT&&RAIL_WAIT.l===l?"ваш · через "+railFmt(Math.ceil(RAIL_WAIT.t)):"через "+railFmt(railWaitNow(G.sx,G.sy)))+"</em></div>";});
+    railFlap(li,railBoardEta(l))+"</em></div>";});
   h+="</div>";
   if(RAIL_WAIT){
     h+="<div class='rw-sec'>ВАШ ПОЕЗД</div><div class='rw-row'><span>до «"+railStopName(RAIL_WAIT.to)+"» · "+RAIL_WAIT.k+" "+pl3(RAIL_WAIT.k,"остановка","остановки","остановок")+"</span><em>поезд прибывает через "+Math.ceil(RAIL_WAIT.t)+" с</em></div>";
@@ -69914,6 +69928,11 @@ function railBuy(t,express,bus){
   if(F.tok)firstAll().push("tokUsed");
   railLifeBoard(t,F);
   logAdd("money",(F.tok?"Жетон замполита":F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
+  /* дальний рейс (DESIGN-review metro): «до «Край» … остановок: сто четырнадцать» */
+  if(!F.metro&&!bus&&t.k>=4&&Math.hypot(t.to.sx,t.to.sy)>36){
+    say("Поезд следует до станции «Край»\nсо всеми остановками. Остановок: сто четырнадцать",150);
+    voiceSay(["Поезд следует до станции «Край» со всеми остановками.","Остановок: сто четырнадцать."],"disp");
+  }
   RAIL_WAIT={...t,express:!!express,bus:!!bus,t:bus?3:railWaitNow(G.sx,G.sy)};
   railWinRender();
 }
@@ -69927,6 +69946,8 @@ function railBuffet(){
 }
 /* интервал идёт в кадре системы: поезд пришёл — отправление */
 function railTick(dt){
+  /* табло «завтра» → «поезд подан» листается и без билета */
+  if(railWinOpen()&&!RAIL_WAIT&&(G.t|0)%30===0)railWinRender();
   if(!RAIL_WAIT)return;
   RAIL_WAIT.t-=dt/60;
   if((G.t|0)%20===0)railWinRender();
