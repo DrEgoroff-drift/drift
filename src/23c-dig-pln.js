@@ -267,7 +267,7 @@ function dig3Draw(){
   if(G.dig&&G.dig.p){
     try{
       {const _t=NEAR.on?wallMs():0;plnQualAuto();if(NEAR.on)NEAR.dg.qual=Math.round((wallMs()-_t)*10)/10;}
-      {const _t=NEAR.on?wallMs():0;ok=cave3GpuReady()&&dig3Frame();if(NEAR.on)NEAR.dg.frame=Math.round((wallMs()-_t)*10)/10;}
+      {const _t=NEAR.on?wallMs():0;const ready=cave3GpuReady();if(NEAR.on)NEAR.dg.ready=Math.round((wallMs()-_t)*10)/10;const _t2=NEAR.on?wallMs():0;ok=ready&&dig3Frame();if(NEAR.on)NEAR.dg.frame=Math.round((wallMs()-_t2)*10)/10;}
       if(ok)DIG3.bad=0;
     }catch(e){
       DIG3.bad++;DIG3.err=String((e&&e.stack)||e).slice(0,600);plnLog("шахта: кадр: "+DIG3.err);

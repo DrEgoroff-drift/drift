@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 685 · top-level symbols: 8942
+Files: 685 · top-level symbols: 8936
 
 ## SYMBOLS
 
@@ -806,11 +806,9 @@ GHZ                          src/19cc-gpu-air.js:185
 GHZ_WGSL                     src/19cc-gpu-air.js:186
 GIANTS                       src/17o-giants.js:22
 GIANTS_DEF                   src/17o-giants.js:13-21
-GIANT_DOCK                   src/17o-giants.js:614
-GIANT_LEN                    src/17o-giants.js:581
-GIANT_RAD                    src/17o-giants.js:615
-GIANT_SPIN                   src/17o-giants.js:58
-GIANT_VISIT                  src/17o-giants.js:598-613
+GIANT_DOCK                   src/17o-giants.js:233
+GIANT_LEN                    src/17o-giants.js:200
+GIANT_VISIT                  src/17o-giants.js:217-232
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
 GIFT_W                       src/11at-gift.js:27
@@ -2988,7 +2986,7 @@ bodyFleet                    src/17c2e-body-kit.js:80-88
 bodyFleetHull                src/17c2e-body-kit.js:72-78
 bodyGestPost                 src/17c2l-body-gest.js:65-70
 bodyGestPostMesh             src/17c2l-body-gest.js:5-63
-bodyGiant                    src/17o-giants.js:544-565
+bodyGiant                    src/17o-giants.js:174-184
 bodyGpu                      src/17c2e-body-kit.js:26
 bodyInSystem                 src/16-flight.js:39-49
 bodyLights                   src/17c2e-body-kit.js:42-50
@@ -3682,7 +3680,7 @@ cvs                          src/08-state.js:2
 cvsRect                      src/08-state.js:107-110
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:800-870
+dbg                          src/28-loop.js:801-871
 dcLensEq                     tests/91qc-descent.js:15-18
 dcWorld                      tests/91qc-descent.js:6-14
 dcol                         src/21b-surface-deco.js:155-160
@@ -4068,8 +4066,8 @@ drawGalaxyStars              src/17z1-galaxy.js:86-115
 drawGestPost                 src/17h-sys-gesture.js:239-266
 drawGesture                  src/17h-sys-gesture.js:135-187
 drawGestureTop               src/17h-sys-gesture.js:191-220
-drawGiant                    src/17o-giants.js:566-579
-drawGiantsMap                src/17o-giants.js:78-89
+drawGiant                    src/17o-giants.js:185-198
+drawGiantsMap                src/17o-giants.js:70-81
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-232
 drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
@@ -4446,7 +4444,7 @@ forkSt                       src/28q-fork.js:19-22
 forkTick                     src/28q-fork.js:56-81
 forkWage                     src/28q-fork.js:48-55
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:686-742
+frame                        src/28-loop.js:686-743
 frameBody                    src/28-loop.js:476-482
 frameBodyIn                  src/28-loop.js:483-618
 frameCapNow                  src/28-loop.js:263-267
@@ -4665,20 +4663,16 @@ getSystem                    src/06-galaxy.js:95-198
 gexDraw                      src/16ga-gpu-trail.js:316-325
 gexPush                      src/16ga-gpu-trail.js:280-286
 ghf                          src/17ga-gpu-planets.js:370
-giantArrive                  src/17o-giants.js:587-593
+giantArrive                  src/17o-giants.js:206-212
 giantAt                      src/17o-giants.js:54
-giantBody                    src/17o-giants.js:617-621
-giantClose                   src/17o-giants.js:649
-giantInteract                src/17o-giants.js:636-648
-giantMapGlyph                src/17o-giants.js:66-77
-giantNight                   src/17o-giants.js:658-665
-giantOpen                    src/17o-giants.js:666-687
-giantOrbit                   src/17o-giants.js:622-635
-giantPeriod                  src/17o-giants.js:59
+giantClose                   src/17o-giants.js:241
+giantInteract                src/17o-giants.js:234-240
+giantMapGlyph                src/17o-giants.js:58-69
+giantNight                   src/17o-giants.js:250-257
+giantOpen                    src/17o-giants.js:258-279
 giantPos                     src/17o-giants.js:56
-giantRuler                   src/17o-giants.js:582-585
-giantRumour                  src/17o-giants.js:651-657
-giantSpin                    src/17o-giants.js:60-64
+giantRuler                   src/17o-giants.js:201-204
+giantRumour                  src/17o-giants.js:243-249
 giantsAll                    src/17o-giants.js:23-53
 giftArrive                   src/11at-gift.js:43-63
 giftDue                      src/11at-gift.js:30-41
@@ -4963,7 +4957,7 @@ h3dDev                       src/17c2a-hull3d.js:449-458
 h3dDraw                      src/17c2a-hull3d.js:540-553
 h3dDraw2                     src/17c2a-hull3d.js:661-664
 h3dEar                       src/17c2a-hull3d.js:288-303
-h3dGiantMesh                 src/17o-giants.js:94-543
+h3dGiantMesh                 src/17o-giants.js:86-173
 h3dJob                       src/17c2a-hull3d.js:145
 h3dKeepAt                    src/17c2a-hull3d.js:504-514
 h3dKeepSig                   src/17c2a-hull3d.js:516-524
@@ -6247,12 +6241,12 @@ near                         tests/90-harness.js:197
 nearBake                     src/28zn-near.js:27
 nearBlock                    src/28zn-near.js:15-22
 nearCave                     src/28zn-near.js:29
-nearFrame                    src/28zn-near.js:30-35
-nearJSON                     src/28zn-near.js:42-60
+nearFrame                    src/28zn-near.js:30-42
+nearJSON                     src/28zn-near.js:49-69
 nearMark                     src/28zn-near.js:23
 nearOn                       src/28zn-near.js:14
 nearPipe                     src/28zn-near.js:28
-nearStat                     src/28zn-near.js:36-41
+nearStat                     src/28zn-near.js:43-48
 nearWarm                     src/28zn-near.js:26
 nearWork                     src/28zn-near.js:24
 nearestPOI                   src/20a-poi.js:200-205
@@ -7329,7 +7323,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:762-789
+prof                         src/28-loop.js:763-790
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
@@ -9846,7 +9840,7 @@ zoomTo                       src/15-input.js:358
 ## src/17n-bazaar.js · 16 KB
   · барахолка, которая помнит (M463, DESIGN-life):1
 
-## src/17o-giants.js · 46 KB
+## src/17o-giants.js · 23 KB
   · по великану на рукав (M464, DESIGN-life):1
 
 ## src/17p-cam-frame.js · 4 KB
@@ -10660,7 +10654,7 @@ zoomTo                       src/15-input.js:358
 ## src/27z-telemetry.js · 60 KB
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 72 KB
+## src/28-loop.js · 73 KB
   · авария:1
   · звук по кадрам:48
   · цикл:106
@@ -10669,8 +10663,8 @@ zoomTo                       src/15-input.js:358
   · РОВНЫЙ ТАКТ (0.1b):357
   · развилка режимов — одна на всех (M238):413
   · кадр, который не убивает игру (M234):619
-  · prof() — на что уходит кадр:750
-  · dbg() — что держит корабль:791
+  · prof() — на что уходит кадр:751
+  · dbg() — что держит корабль:792
 
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
@@ -10824,7 +10818,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qc2-hall-targets.js · 2 KB
   · цели кадра зала переживают смену станции (24.10, телефон):1
 
-## tests/91qd-bodies.js · 6 KB
+## tests/91qd-bodies.js · 4 KB
   · тела под звездой (M820):1
 
 ## tests/91qd-hall-phone.js · 2 KB

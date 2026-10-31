@@ -605,7 +605,7 @@ function frameBodyIn(now){
     const tg=wallMs();const drew=gpuFrame();if(NEAR.on)NEAR.gf=wallMs()-tg;
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой игрок повернулся.
        Она — очередь слоя #ovl, а слой сливается в конце мира: потому зовётся ДО него */
-    {const t0=wallMs();if(drew){if(typeof rackDraw==="function")rackDraw();drawWorld();if(typeof drawHitFx==="function")drawHitFx(dt);}if(NEAR.on)NEAR.dw=wallMs()-t0;}   /* хроматика после попадания (M325) */
+    {const t0=wallMs();if(drew){const t1=wallMs();if(typeof rackDraw==="function")rackDraw();if(NEAR.on)NEAR.rack=Math.round((wallMs()-t1)*10)/10;const t2=wallMs();drawWorld();if(NEAR.on)NEAR.dw=Math.round((wallMs()-t2)*10)/10;const t3=wallMs();if(typeof drawHitFx==="function")drawHitFx(dt);if(NEAR.on)NEAR.hit=Math.round((wallMs()-t3)*10)/10;}if(NEAR.on)NEAR.dwAll=Math.round((wallMs()-t0)*10)/10;}   /* хроматика после попадания (M325) */
     {const t0=wallMs();hud();if(NEAR.on)NEAR.hud=wallMs()-t0;}
     {const t0=wallMs();if(drew)gpuPresent();if(NEAR.on)NEAR.gp=wallMs()-t0;}
   }else{
@@ -731,8 +731,9 @@ function frame(now){
   /* ?g11=near: кадр перехода в буфер (диагностика, в обычной игре NEAR.on=false) */
   if(NEAR.on){const pm=NEAR.cur?NEAR.cur.mode:"";
     nearBlock(G.mode,pm);
-    nearFrame({t:now,gap:(framePrev?now-framePrev:0),js:FRAME_JS,mode:G.mode,prev:pm,
-      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
+    nearFrame({raf:now,start:fb0,end:fb0+FRAME_JS,js:FRAME_JS,gap:(framePrev?now-framePrev:0),
+      vis:(typeof document!=="undefined"&&document.visibilityState)||"?",mode:G.mode,prev:pm,
+      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
       warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
       asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,sl:NEAR.sl,sg:NEAR.sg,dg:NEAR.dg,gw:NEAR.gw,
       pipes:NEAR.pipes,cave:NEAR.cave});}
