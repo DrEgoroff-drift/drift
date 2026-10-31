@@ -780,6 +780,10 @@ function drawSysHud(zx,zy,sh,sys,U){
     }
     if(np)marks.push({x:np.x,y:np.y,c:"#c4bba9",l:np.name,t:{kind:"planet",p:np},k:"planet:"+np.name});
   }
+  if(typeof giantAt==="function"&&typeof giantBody==="function"){
+    const g=giantAt(G.sx,G.sy);if(g){const GB=giantBody(g);
+      marks.push({x:GB.x,y:GB.y,c:"#f0dcaa",l:g.ru,t:{kind:"giant",p:GB},k:"giant:"+g.k});}
+  }
   if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6a2b",l:"Цель",t:null,k:"target"});}
   /* корпус после боя (G4c): подпись над ним стала фишкой — ближний из тех, что за кадром
      (видимый читается сам), по тычку автопилот к нему */

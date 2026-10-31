@@ -582,6 +582,11 @@ function tap(sxp,syp){
     const d=near(S.x,S.y,50);
     if(d>=0&&d<bd){bd=d;best={kind:"station"};}
   }
+  if(typeof giantAt==="function"&&typeof giantBody==="function"){
+    const g=giantAt(G.sx,G.sy);
+    if(g){const GB=giantBody(g),d=near(GB.x,GB.y,GB.radius);
+      if(d>=0&&d<bd){bd=d;best={kind:"giant",p:GB};}}
+  }
   const B=G.sys.belt;
   if(B&&!best){
     const rr=Math.hypot(wx,wy);
@@ -592,7 +597,7 @@ function tap(sxp,syp){
   }
   if(best){
     G.ap=best;G.ap.phase="fly";
-    const nm=best.kind==="planet"?best.p.name:(best.kind==="station"?S.name:B.name);
+    const nm=best.kind==="planet"?best.p.name:(best.kind==="giant"?best.p.name:(best.kind==="station"?S.name:B.name));
     say("Автопилот → "+nm,90);
   }else if(G.marks&&G.marks.length)G.marks.length=0;   /* тап в пустоту снимает захват (M360) */
   /* ── промах НЕ отменяет цель ──

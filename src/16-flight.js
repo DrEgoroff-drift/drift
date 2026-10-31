@@ -40,6 +40,7 @@ function bodyInSystem(p,sys){
   if(!p||!sys)return false;
   if(G.orbit&&G.orbit.sys&&G.orbit.sys!==G.sx+","+G.sy)return false;
   if(sys.station===p)return true;
+  if(p.giant&&p.giant.sx===(G.sx|0)&&p.giant.sy===(G.sy|0))return true;   /* орбита великана (M464) */
   for(const pl of sys.planets){
     if(pl===p)return true;
     for(const m of pl.moons)if(m===p)return true;
@@ -52,6 +53,7 @@ function targetPos(){
   const ap=G.ap;if(!ap)return null;
   if(ap.kind==="planet")return {x:ap.p.x,y:ap.p.y,vx:ap.p.vx||0,vy:ap.p.vy||0,
     park:ap.p.radius+70};
+  if(ap.kind==="giant")return {x:ap.p.x,y:ap.p.y,vx:0,vy:0,park:ap.p.radius+70};
   if(ap.kind==="station"){const S=G.sys.station;
     return {x:S.x,y:S.y,vx:S.vx,vy:S.vy,park:62};}
   if(ap.kind==="star")return {x:0,y:0,vx:0,vy:0,park:G.sys.radius+220};
@@ -137,6 +139,10 @@ function arrive(){
     G.orbit.sys=G.sx+","+G.sy;
     G.ap=null;
     say("Захват орбиты\n"+p.name+(G.opts.easyLand?"\nДЕЙСТВИЕ — авто-посадка":"\nДЕЙСТВИЕ — посадка"));
+  }else if(ap.kind==="giant"){
+    G.ap=null;
+    if(typeof giantOrbit==="function")giantOrbit(ap.p.giant||ap.p);
+    else say("У великана\nДЕЙСТВИЕ — ПРИЧАЛИТЬ");
   }else if(ap.kind==="star"){
     G.ap=null;say("Подлёт к звезде\n"+G.sys.name);
   }else{

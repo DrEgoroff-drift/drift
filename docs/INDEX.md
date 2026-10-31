@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 673 · top-level symbols: 8884
+Files: 673 · top-level symbols: 8887
 
 ## SYMBOLS
 
@@ -803,9 +803,10 @@ GHZ                          src/19cc-gpu-air.js:185
 GHZ_WGSL                     src/19cc-gpu-air.js:186
 GIANTS                       src/17o-giants.js:22
 GIANTS_DEF                   src/17o-giants.js:13-21
-GIANT_DOCK                   src/17o-giants.js:732
-GIANT_LEN                    src/17o-giants.js:699
-GIANT_VISIT                  src/17o-giants.js:716-731
+GIANT_DOCK                   src/17o-giants.js:747
+GIANT_LEN                    src/17o-giants.js:714
+GIANT_RAD                    src/17o-giants.js:748
+GIANT_VISIT                  src/17o-giants.js:731-746
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
 GIFT_W                       src/11at-gift.js:27
@@ -2367,12 +2368,12 @@ TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32-45
 TRACK_LIFE                   src/21-mode-surface.js:6
 TRADE_KEYS                   src/02-world.js:143
-TRAIL                        src/16-flight.js:169
-TRAIL_AMAX                   src/16-flight.js:291
-TRAIL_CHAR                   src/16-flight.js:177-184
-TRAIL_HALO                   src/16-flight.js:292
-TRAIL_LIFE                   src/16-flight.js:232
-TRAIL_TINT                   src/16-flight.js:192
+TRAIL                        src/16-flight.js:175
+TRAIL_AMAX                   src/16-flight.js:297
+TRAIL_CHAR                   src/16-flight.js:183-190
+TRAIL_HALO                   src/16-flight.js:298
+TRAIL_LIFE                   src/16-flight.js:238
+TRAIL_TINT                   src/16-flight.js:198
 TRAINEE_LINES                src/11ac-trainee.js:14-18
 TRAINEE_NAMES                src/11ac-trainee.js:13
 TRC                          src/21piib-pln-trace.js:13
@@ -2422,8 +2423,8 @@ VOTE_Q                       src/12at-vote.js:16-20
 VSINK                        src/08c-gpu-kit.js:312
 W                            src/08-state.js:7
 W3                           src/08cd-gpu-mat.js:33
-WAKE                         src/16-flight.js:228
-WAKE_LIFE                    src/16-flight.js:230
+WAKE                         src/16-flight.js:234
+WAKE_LIFE                    src/16-flight.js:236
 WALKS                        tests/91zzzzzzzza-walks.js:19-99
 WALL_CACHE                   src/11ah-wall.js:44
 WALL_KIND_RU                 src/11ah-wall.js:42
@@ -2589,7 +2590,7 @@ ammoStamp                    src/12ar-hail.js:42
 ammoStampSet                 src/12ar-hail.js:43
 angDiff                      src/01-core.js:180
 angWrap                      src/01-core.js:179
-apVel                        src/16-flight.js:62
+apVel                        src/16-flight.js:64
 appetiteAte                  src/12ab-hold.js:46-50
 appetiteBlock                src/12ab-hold.js:168-179
 appetiteBought               src/12ab-hold.js:93-100
@@ -2615,7 +2616,7 @@ arrWarmAt                    src/17h1-arr-warm.js:13-17
 arrWarmHull                  src/17h1-arr-warm.js:19
 arrWarmStep                  src/17h1-arr-warm.js:49-60
 arrWarmSteps                 src/17h1-arr-warm.js:24-47
-arrive                       src/16-flight.js:108-146
+arrive                       src/16-flight.js:110-152
 arriveSystem                 src/18-mode-map.js:734-785
 artGet                       src/08ca-gpu-canvas.js:550
 artPut                       src/08ca-gpu-canvas.js:551-696
@@ -2972,9 +2973,9 @@ bodyFleet                    src/17c2e-body-kit.js:80-88
 bodyFleetHull                src/17c2e-body-kit.js:72-78
 bodyGestPost                 src/17c2l-body-gest.js:219-224
 bodyGestPostMesh             src/17c2l-body-gest.js:4-217
-bodyGiant                    src/17o-giants.js:673-683
+bodyGiant                    src/17o-giants.js:679-698
 bodyGpu                      src/17c2e-body-kit.js:26
-bodyInSystem                 src/16-flight.js:39-48
+bodyInSystem                 src/16-flight.js:39-49
 bodyLights                   src/17c2e-body-kit.js:42-50
 bodyMarkBox                  src/17c2h-body-pirate.js:367-375
 bodyMesh                     src/17c2e-body-kit.js:58-65
@@ -4053,7 +4054,7 @@ drawGalaxyStars              src/17z1-galaxy.js:86-115
 drawGestPost                 src/17h-sys-gesture.js:200-227
 drawGesture                  src/17h-sys-gesture.js:96-148
 drawGestureTop               src/17h-sys-gesture.js:152-181
-drawGiant                    src/17o-giants.js:684-697
+drawGiant                    src/17o-giants.js:699-712
 drawGiantsMap                src/17o-giants.js:70-81
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-232
@@ -4112,7 +4113,7 @@ drawStrata                   src/18b-geology.js:100
 drawSurface                  src/21pz-pln-frame.js:439-458
 drawSurfaceHud               src/21e-surface-draw.js:40-143
 drawSurvey                   src/12w-survey.js:63-81
-drawSysHud                   src/17-mode-system.js:752-1097
+drawSysHud                   src/17-mode-system.js:752-1101
 drawSysLane                  src/17g-sys-lane.js:112-137
 drawSysLaneShips             src/17g-sys-lane.js:167-195
 drawSysRail                  src/18f-rail-station.js:61-69
@@ -4122,7 +4123,7 @@ drawTapes                    src/12s1-tape.js:51-66
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:13-106
-drawTrail                    src/16-flight.js:393-396
+drawTrail                    src/16-flight.js:399-402
 drawTransitPlate             src/03d-hull-marks.js:186-196
 drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
@@ -4647,16 +4648,18 @@ getSystem                    src/06-galaxy.js:95-198
 gexDraw                      src/16ga-gpu-trail.js:316-325
 gexPush                      src/16ga-gpu-trail.js:280-286
 ghf                          src/17ga-gpu-planets.js:370
-giantArrive                  src/17o-giants.js:705-711
+giantArrive                  src/17o-giants.js:720-726
 giantAt                      src/17o-giants.js:54
-giantClose                   src/17o-giants.js:740
-giantInteract                src/17o-giants.js:733-739
+giantBody                    src/17o-giants.js:750-754
+giantClose                   src/17o-giants.js:782
+giantInteract                src/17o-giants.js:769-781
 giantMapGlyph                src/17o-giants.js:58-69
-giantNight                   src/17o-giants.js:749-756
-giantOpen                    src/17o-giants.js:757-778
+giantNight                   src/17o-giants.js:791-798
+giantOpen                    src/17o-giants.js:799-820
+giantOrbit                   src/17o-giants.js:755-768
 giantPos                     src/17o-giants.js:56
-giantRuler                   src/17o-giants.js:700-703
-giantRumour                  src/17o-giants.js:742-748
+giantRuler                   src/17o-giants.js:715-718
+giantRumour                  src/17o-giants.js:784-790
 giantsAll                    src/17o-giants.js:23-53
 giftArrive                   src/11at-gift.js:43-63
 giftDue                      src/11at-gift.js:30-41
@@ -4940,7 +4943,7 @@ h3dDev                       src/17c2a-hull3d.js:449-458
 h3dDraw                      src/17c2a-hull3d.js:540-553
 h3dDraw2                     src/17c2a-hull3d.js:661-664
 h3dEar                       src/17c2a-hull3d.js:288-303
-h3dGiantMesh                 src/17o-giants.js:86-672
+h3dGiantMesh                 src/17o-giants.js:86-678
 h3dJob                       src/17c2a-hull3d.js:145
 h3dKeepAt                    src/17c2a-hull3d.js:504-514
 h3dKeepSig                   src/17c2a-hull3d.js:516-524
@@ -7902,7 +7905,7 @@ rumourToMap                  src/11t-rumours.js:68-71
 rumourWhere                  src/11t-rumours.js:61-66
 rumoursHere                  src/11t-rumours.js:73-119
 rumoursKnown                 src/18a-map-addr.js:43
-runAutopilot                 src/16-flight.js:63-107
+runAutopilot                 src/16-flight.js:65-109
 runTests                     tests/90-harness.js:498-587
 rungAddress                  src/12ad-site.js:94-97
 rungBoardBlock               src/12ae-ladder.js:111-121
@@ -8114,7 +8117,7 @@ shipScaleAt                  src/16c-rescue.js:234
 shipScaleCap                 src/16c-rescue.js:233
 shipThumb                    src/26f-yard-gpu.js:7-11
 shipTier                     src/04b-fleet.js:156
-shipZ                        src/16-flight.js:168
+shipZ                        src/16-flight.js:174
 shipZoneR                    src/19f-lander.js:14
 shuttleAt                    src/17f-sys-traffic.js:45-64
 sirenHeard                   src/16c-abil.js:47-64
@@ -8309,7 +8312,7 @@ stapelYardBy                 src/26e1-stapel.js:34-38
 starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:25-34
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:632-640
+start                        src/15-input.js:637-645
 startLanding                 src/19-mode-landing.js:2-38
 startScoop                   src/19a-mode-scoop.js:51-64
 stat                         src/08-state.js:297-366
@@ -8439,7 +8442,7 @@ tabsSync                     src/15-input.js:230-245
 tactHz                       src/28-loop.js:378
 tactTick                     src/28-loop.js:388-401
 tactWork                     src/28-loop.js:381
-tap                          src/15-input.js:478-603
+tap                          src/15-input.js:478-608
 tapeBuy                      src/12s1-tape.js:37-42
 tapeCan                      src/12s1-tape.js:22
 tapeFree                     src/12s1-tape.js:20
@@ -8459,7 +8462,7 @@ tapeUnpack                   src/25b-tape.js:39-46
 tapeUse                      src/12s1-tape.js:23-36
 tapeYardRepaired             src/12s1-tape.js:44-49
 tapesOf                      src/12s1-tape.js:10
-targetPos                    src/16-flight.js:51-59
+targetPos                    src/16-flight.js:52-61
 techCost                     src/04-mods.js:52-55
 techLv                       src/04-mods.js:51
 tell                         src/11-log.js:64-68
@@ -8535,11 +8538,11 @@ tracePoly                    src/03b-hull-paint.js:1-5
 traceSpotX                   src/11ag-trace.js:105-108
 traceTake                    src/11ag-trace.js:120-139
 traceToday                   src/11ag-trace.js:72
-trailBurst                   src/16-flight.js:170
-trailChar                    src/16-flight.js:185-191
+trailBurst                   src/16-flight.js:176
+trailChar                    src/16-flight.js:191-197
 trailLanes                   src/16ga-gpu-trail.js:50
-trailStep                    src/16-flight.js:294-392
-trailTint                    src/16-flight.js:197-213
+trailStep                    src/16-flight.js:300-398
+trailTint                    src/16-flight.js:203-219
 traineeAboard                src/11ac-trainee.js:19
 traineeAct                   src/11ac-trainee.js:38-41
 traineeBlock                 src/11ac-trainee.js:83-90
@@ -8667,10 +8670,10 @@ voteTally                    src/12at-vote.js:32-42
 voteWinner                   src/12at-vote.js:43-50
 vsinkCol                     src/08c-gpu-kit.js:313
 vsinkDisc                    src/08c-gpu-kit.js:314-317
-wakeBurst                    src/16-flight.js:233
-wakeLanes                    src/16-flight.js:293
-wakeStep                     src/16-flight.js:262-290
-wakeTips                     src/16-flight.js:234-261
+wakeBurst                    src/16-flight.js:239
+wakeLanes                    src/16-flight.js:299
+wakeStep                     src/16-flight.js:268-296
+wakeTips                     src/16-flight.js:240-267
 wallAsk                      src/11ah-wall.js:65-80
 wallBlock                    src/11ae-concert.js:106-128
 wallBusy                     src/11ah-wall.js:45
@@ -9605,9 +9608,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/16-flight.js · 30 KB
   · фон:1
-  · автопилот:50
-  · шлейф двигателей и струи ориентации:148
-  · кильватер: хвосты от скорости, а не от сопла:214
+  · автопилот:51
+  · шлейф двигателей и струи ориентации:154
+  · кильватер: хвосты от скорости, а не от сопла:220
 
 ## src/16a-space.js · 9 KB
   · облик системы:1
@@ -9788,7 +9791,7 @@ zoomTo                       src/15-input.js:358
 ## src/17n-bazaar.js · 16 KB
   · барахолка, которая помнит (M463, DESIGN-life):1
 
-## src/17o-giants.js · 58 KB
+## src/17o-giants.js · 60 KB
   · по великану на рукав (M464, DESIGN-life):1
 
 ## src/17p-cam-frame.js · 4 KB

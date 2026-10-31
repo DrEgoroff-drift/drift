@@ -6,6 +6,11 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.48 — hollow moon «Гнездо»: planet sphere, nest mouth, orbit
+
+- M464 moon: ball drawn through `gplBody` like the system's planets (terminator, limb, rock strip); h3d only builds the quarry mouth, tower and the town lights in depth — no more flat sticker discs.
+- Giants take orbit like planets: click / autopilot arrives into orbit, then ДЕЙСТВИЕ — ПРИЧАЛИТЬ; approach band also offers ЗАХВАТ ОРБИТЫ. Edge chip and tap-pick wired.
+
 ## 0.499.47 — billboards: one to three by lane life
 
 - M460: a busy approach can carry up to three neon boards along the lane (life .45 / .65 / .85 → 1 / 2 / 3); `bbHere` stays the first for the ГЛАВТРАССА plan plaque.

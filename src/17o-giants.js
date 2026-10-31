@@ -84,7 +84,7 @@ function drawGiantsMap(V,cell){
    сетка h3d, а не Canvas-мастер. Своё зерно строит форму один раз; живые огни идут
    через bodyLights/gpuShapes каждый кадр. Без GPU тела нет, как у станции и баржи. */
 function h3dGiantMesh(g){
-  return bodyMesh("gi:"+g.k+":"+g.seed+":c113",7,()=>{
+  return bodyMesh("gi:"+g.k+":"+g.seed+":c118",7,()=>{
     const K=h3dKit(),C=K.C,r=rng(g.seed),L=[],warm=[255,214,150],cold=[140,220,255];
     const iron=[48,46,43],steel=[138,142,146],dark=[24,23,22];
     let st=[[700,400],[-700,400]],pulse=null,run=null;
@@ -96,24 +96,30 @@ function h3dGiantMesh(g){
           [x+Math.cos(b)*rr,y+Math.sin(b)*rr,z],[x+Math.cos(b)*ri,y+Math.sin(b)*ri,z]],[x,y,z-2],C(col),3,-.1,em||0);}};
     const hoopX=(x,rr,zc,col,th)=>{const P=[];for(let i=0;i<=32;i++){const a=i/32*TAU;P.push([x,Math.cos(a)*rr,zc+Math.sin(a)*rr]);}K.tube(P,th||2,C(col),3,.45,6);};
     if(g.k==="moon"){
-      const R=520,Sp=[],mx=R*.2,my=-R*.1,mr=R*.42,mz=R+5;
-      for(let i=0;i<=32;i++){const x=-R+2*R*i/32;Sp.push([x,Math.max(.01,Math.sqrt(R*R-x*x))]);}
-      K.lathe(0,0,0,Sp,C([78,70,61]),3,.3,0,48);
-      for(let i=0;i<26;i++){const a=r()*TAU,d=r()*R*.9,cr=8+r()*50,x=Math.cos(a)*d,y=Math.sin(a)*d;
-        if(Math.hypot(x-mx,y-my)<mr+cr)continue;
-        const z=Math.sqrt(Math.max(0,R*R-x*x-y*y))+2;disc(x,y,cr,z,[28,25,22],0,20);ring(x,y,cr,z+1,[112,101,85],0);}
-      disc(mx,my,mr,mz,[5,6,7],0,48);ring(mx,my,mr,mz+1,[164,132,88],.25);
-      for(let k=1;k<=4;k++){const rr=mr*.22*k;ring(mx,my,rr,mz+2,warm,.35+(4-k)*.12);
-        for(let i=0;i<10*k;i++){const a=i/(10*k)*TAU+k;disc(mx+Math.cos(a)*rr,my+Math.sin(a)*rr,1.8,mz+3,warm,1.35,6);}}
-      for(let i=0;i<12;i++)rect(mx+mr*1.05+i*7,my-mr*.1,3,3,mz+3,warm,1.4);
-      /* вышка у карьера — craft G15 */
-      K.tube([[mx+mr*1.2,my,mz],[mx+mr*1.2,my,mz+80]],4,C(iron),3,.5,8);
-      for(let k=1;k<4;k++)K.tube([[mx+mr*1.2-12,my,mz+k*20],[mx+mr*1.2+12,my,mz+k*20]],1.2,C(steel),3,.45,5);
-      K.lathe(mx+mr*1.2,my,mz+80,[[0,1],[4,7],[8,9]],C(steel),3,.7,0,10,null,null);
-      for(const a of[0,TAU/3,2*TAU/3]) /* растяжки вышки */
-        K.tube([[mx+mr*1.2,my,mz+60],[mx+mr*1.2+Math.cos(a)*40,my+Math.sin(a)*40,mz+10]],1.5,C(iron),3,.4,5);
-      K.box(mx+mr*1.1,mx+mr*1.3,my-8,my+8,mz,mz+6,2,C(steel),3,.5); /* основание вышки */
-      pulse={x:mx+mr*1.05,y:my-mr*.1,r:6,c:warm};st=[];for(let i=0;i<=14;i++){const x=R-2*R*i/14;st.push([x,Math.max(.3,Math.sqrt(R*R-x*x))]);}
+      /* шар — gplBody как у планет (bodyGiant); здесь только жерло, вышка, огни */
+      const R=520,N=28,darkR=C([26,22,18]),rimC=C([168,140,102]),soot=C([12,10,9]);
+      const mkAt=(cx,cy,rr,z,rev)=>{const P=[];for(let i=0;i<=N;i++){const a=(rev?N-i:i)/N*TAU;P.push([cx+Math.cos(a)*rr,cy+Math.sin(a)*rr,z]);}return P;};
+      const mx=R*.2,my=-R*.15,mr=R*.4,zSurf=Math.sqrt(Math.max(1,R*R-mx*mx-my*my));
+      const bowl=[];
+      for(let i=0;i<=14;i++){const t=i/14;bowl.push(mkAt(mx,my,Math.max(4,mr*(1-t*.93)),zSurf-t*R*1.1,1));}
+      K.loft(bowl,darkR,3,.08,0);
+      K.loft([mkAt(mx,my,mr,zSurf,0),mkAt(mx,my,mr+16,zSurf+10,0),mkAt(mx,my,mr-6,zSurf-4,0)],rimC,3,.4,0);
+      for(let k=1;k<=6;k++){
+        const t=k/7,rr=mr*(1-t*.9)*.88,zz=zSurf-t*R*1.0,nL=8+k*4;
+        for(let i=0;i<nL;i++){const a=i/nL*TAU+k*.29,lx=mx+Math.cos(a)*rr,ly=my+Math.sin(a)*rr;
+          disc(lx,ly,2.6,zz+2,warm,1.35,6);L.push({x:lx,y:ly,c:warm,r:3,k:0,ph:i+k});}
+      }
+      disc(mx,my,mr*.18,zSurf-R*1.0,soot,.2,16);
+      const tx=mx+mr*.88,ty=my;
+      K.tube([[tx,ty,zSurf],[tx,ty,zSurf+100]],4.5,C(iron),3,.5,8);
+      for(let k=1;k<4;k++)K.tube([[tx-14,ty,zSurf+k*22],[tx+14,ty,zSurf+k*22]],1.3,C(steel),3,.45,5);
+      K.lathe(tx,ty,zSurf+100,[[0,1],[5,8],[10,10]],C(steel),3,.7,0,10,null,null);
+      for(const a of[0,TAU/3,2*TAU/3])
+        K.tube([[tx,ty,zSurf+70],[tx+Math.cos(a)*48,ty+Math.sin(a)*48,zSurf+10]],1.5,C(iron),3,.4,5);
+      K.box(tx-10,tx+10,ty-10,ty+10,zSurf,zSurf+8,2,C(steel),3,.5);
+      for(let i=0;i<8;i++)rect(tx+12+i*7,ty-4,3,3,zSurf+5,warm,1.4);
+      pulse={x:tx,y:ty,r:9,c:warm};
+      st=[[mr+30,zSurf+20],[-mr-30,zSurf+20]];
     }else if(g.k==="house"){
       K.box(-450,450,-210,210,-55,65,16,C([61,56,51]),3,.5);
       K.box(-450,450,-210,-184,65,82,4,C(iron),3,.55);K.box(-450,450,180,210,65,78,4,C(iron),3,.55);
@@ -667,14 +673,23 @@ function h3dGiantMesh(g){
         K.box(x-9,x+9,-11,11,2.8,5.8,.8,C(iron),3,.5);}
       st=[[600,380],[-600,380]];
     }
-    const m=h3dPack(K.V,g.k==="moon"?560:760,{st,ne:2.2,kh:.6,gl:.35});m.L=L;m.len=1300;m.pulse=pulse;m.run=run;return m;
+    const m=h3dPack(K.V,g.k==="moon"?560:760,{st,ne:g.k==="moon"?2.5:2.2,kh:g.k==="moon"?.78:.6,gl:g.k==="moon"?.2:.35});m.L=L;m.len=1300;m.pulse=pulse;m.run=run;return m;
   });
 }
 function bodyGiant(g,x,y,S){
   if(!bodyGpu())return false;
   const P=giantPos(g),m=h3dGiantMesh(g);if(m.len*S<BODY.LOD){bodyDot(x,y,[100,92,78],P.x,P.y,1);return true;}
-  if(!bodyRun(m,x,y,0,S,P.x,P.y,.15))return false;
-  bodyLights(m,x,y,0,S,1);const pass=gpuScene();if(!pass)return true;
+  const pass=gpuScene();
+  /* «Гнездо»: шар тем же путём, что планеты (терминатор, лимб), поверх — жерло h3d */
+  if(g.k==="moon"&&pass&&typeof gplBody==="function"){
+    const [lx,ly]=sysLightDir(P.x,P.y),rr=520*S;
+    const pal=[[48,42,36],[78,70,58],[108,96,80],[138,122,100],[158,142,118]];
+    gplBody(pass,"gim"+g.seed,x,y,rr,null,{sx:lx||.6,sy:ly||-.3,rimK:.22,rim:[150,138,120],
+      base:pal[2],sun:(typeof gplSun==="function")?gplSun():[1,.95,.85],seed:g.seed%97,kind:1,
+      hi:pal[3],lo:pal[0],wet:0,pal,cloud:0,lights:0});
+  }
+  if(!bodyRun(m,x,y,0,S,P.x,P.y,g.k==="moon"?.05:.15))return g.k==="moon";
+  bodyLights(m,x,y,0,S,1);if(!pass)return true;
   if(m.pulse){const q=m.pulse,on=.3+.6*(.5+.5*Math.sin(G.t/60*1.3)),px=x+q.x*S,py=y+q.y*S,rr=Math.max(1.5,q.r*S);
     gpuShapes(pass,[[1,px,py,rr,0,0,0,q.c[0],q.c[1],q.c[2],on]]);gpuShapes(pass,[[1,px,py,rr*1.8,0,0,rr,q.c[0],q.c[1],q.c[2],on*.35]],{blend:"add"});}
   if(m.run){const q=m.run,u=(G.t/60*.15)%1,px=x+(q.x0+q.w*u)*S,py=y+q.y*S;
@@ -729,12 +744,39 @@ const GIANT_VISIT={
   garden: {txt:"Сад ретрансляторов: лес мачт, мигает вразнобой, и в каждом огне — чей-то разговор. Тихо здесь не бывает никогда.",
            src:"связист на мачте",keep:"Схема мачт Хай-Фронта",kn:"синька, мачты подписаны частотами; половина уже снята"}
 };
-const GIANT_DOCK=760,GIANT_NIGHT=150;
+const GIANT_DOCK=760,GIANT_ORBIT=1180,GIANT_NIGHT=150;
+const GIANT_RAD={moon:520,house:450,cyl:400,customs:380,dock:420,town:400,garden:380};
+/* устойчивое тело для орбиты и автопилота (как планета): x/y с места, radius по виду */
+function giantBody(g){
+  if(g._body)return g._body;
+  const P=giantPos(g);
+  return g._body={x:P.x,y:P.y,vx:0,vy:0,radius:GIANT_RAD[g.k]||400,name:g.ru,giant:g};
+}
+function giantOrbit(g){
+  if(g&&g.giant)g=g.giant;
+  const p=giantBody(g),sh=G.ship;
+  const rx=sh.x-p.x,ry=sh.y-p.y;
+  const rMin=p.radius+46;
+  const r=Math.max(Math.hypot(rx,ry)||rMin,rMin);
+  const ang0=Math.atan2(ry,rx)||0;
+  sh.x=p.x+Math.cos(ang0)*r;sh.y=p.y+Math.sin(ang0)*r;
+  const dirCcw=(rx*sh.vy-ry*sh.vx)>=0?1:-1;
+  const cruise=6.4+stat().thr*1.6;
+  const w=dirCcw*clamp(Math.min(.6/Math.sqrt(r),cruise*.28/Math.max(r,1)),.0006,.006);
+  G.orbit={p,r,ang:ang0,w};G.orbit.sys=G.sx+","+G.sy;G.ap=null;
+  say("Захват орбиты\n"+p.name+"\nДЕЙСТВИЕ — ПРИЧАЛИТЬ");
+}
 function giantInteract(sh){
   const g=giantAt(G.sx,G.sy);if(!g)return false;
-  const P=giantPos(g);
-  if(Math.hypot(sh.x-P.x,sh.y-P.y)>GIANT_DOCK){if(document.getElementById("giantWin"))giantClose();return false;}
-  if(cue(g.ru.toUpperCase()+"\nДЕЙСТВИЕ — ПРИЧАЛИТЬ",CUE_ACT)&&actEdge)giantOpen(g);
+  const B=giantBody(g),d=Math.hypot(sh.x-B.x,sh.y-B.y);
+  const orbiting=!!(G.orbit&&G.orbit.p&&G.orbit.p.giant===g);
+  if(d>GIANT_ORBIT){if(document.getElementById("giantWin"))giantClose();return false;}
+  if(orbiting||d<=GIANT_DOCK){
+    const sub=g.k==="moon"?" · ШАХТЁРСКИЙ ПОСЁЛОК":"";
+    if(cue(g.ru.toUpperCase()+sub+"\nДЕЙСТВИЕ — ПРИЧАЛИТЬ",CUE_ACT)&&actEdge){G.orbit=null;giantOpen(g);}
+    return true;
+  }
+  if(cue(g.ru.toUpperCase()+"\nДЕЙСТВИЕ — ЗАХВАТ ОРБИТЫ",CUE_ACT)&&actEdge)giantOrbit(g);
   return true;
 }
 function giantClose(){const w=document.getElementById("giantWin");if(w)w.remove();}
