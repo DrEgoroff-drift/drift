@@ -125,6 +125,8 @@ function Build {
     if ($tfiles.Count -gt 0) {
       $lawT = ClockLawTests $tfiles
       if ($lawT.Count) {
+        $tOld = Join-Path $root "tests.html"
+        if (Test-Path $tOld) { Remove-Item $tOld -Force }
         throw ("clock law in tests/ (M441): {0} raw Date.now()/Math.random() — tests read now()/rnd()`n  " -f $lawT.Count) + ($lawT -join "`n  ")
       }
       # перед каждым файлом — его имя (M444, ?files=): набор помнит, из какого он файла
