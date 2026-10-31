@@ -448,8 +448,9 @@ function drawWorldIn(){
   /* у сцен без своего неба свет постоянный (M243): SUN_DIR не должен нести
      сюда азимут планеты, с которой игрок только что ушёл, — иначе тени в
      комнатах ложатся по вчерашнему закату */
-  if(!(G.mode==="surface"||G.mode==="landing")&&typeof sunDirSet==="function")sunDirSet(null);
+  {const _t=NEAR.on?wallMs():0;if(!(G.mode==="surface"||G.mode==="landing")&&typeof sunDirSet==="function")sunDirSet(null);if(NEAR.on)NEAR.wSun=Math.round((wallMs()-_t)*10)/10;}
   /* в доке зал на ходу закрывает весь экран (окно в зале — своя текстура шара): систему под ним не рисуем (M816c) */
+  {const _t=NEAR.on?wallMs():0;
   if(G.mode==="system"||G.mode==="barge"||G.mode==="dock"&&!(typeof hallCovers==="function"&&hallCovers()))drawSystem();
   else if(G.mode==="map")drawMap();
   else if(G.mode==="landing")drawLanding();
@@ -465,9 +466,10 @@ function drawWorldIn(){
   else if(G.mode==="winter"&&G.win)drawWinter();
   else if(G.mode==="spa"&&G.spa)drawSpa();
   else if(G.mode==="wanderer"&&G.wan)drawWanderRoom();
+  if(NEAR.on)NEAR.wScene=Math.round((wallMs()-_t)*10)/10;}
   /* ореол вокруг яркого — последним по миру и до приборов (M243); зерно на все
      сцены, виньетка — где своей нет (M244). У видеокарты всё это — один проход (08b) */
-  gpuWorld(BLOOM_K[G.mode]||0,G.mode!=="map",!(G.mode==="surface"||G.mode==="landing"));
+  {const _t=NEAR.on?wallMs():0;gpuWorld(BLOOM_K[G.mode]||0,G.mode!=="map",!(G.mode==="surface"||G.mode==="landing"));if(NEAR.on)NEAR.wGpu=Math.round((wallMs()-_t)*10)/10;}
 }
 /* обёртка кадра (24.10, телефон): размер окна — один на кадр (01b), а пол HUD меряется ДО первой записи кадра в DOM.
    Раньше hud мерил его посреди своих записей, и каждая мерка заставляла браузер сверстать страницу заново.
@@ -733,7 +735,7 @@ function frame(now){
     nearBlock(G.mode,pm);
     nearFrame({raf:now,start:fb0,end:fb0+FRAME_JS,js:FRAME_JS,gap:(framePrev?now-framePrev:0),
       vis:(typeof document!=="undefined"&&document.visibilityState)||"?",mode:G.mode,prev:pm,
-      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,rackB:NEAR.rackB,rackT:NEAR.rackT,rackF:NEAR.rackF,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
+      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,rackB:NEAR.rackB,rackT:NEAR.rackT,rackF:NEAR.rackF,wSun:NEAR.wSun,wScene:NEAR.wScene,wGpu:NEAR.wGpu,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
       warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
       asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,sl:NEAR.sl,sg:NEAR.sg,dg:NEAR.dg,gw:NEAR.gw,
       pipes:NEAR.pipes,cave:NEAR.cave});}

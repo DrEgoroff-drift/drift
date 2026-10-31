@@ -3590,9 +3590,9 @@ cppX                         src/27f5-portrait3d.js:96
 craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
-crashAt                      src/28-loop.js:632-646
-crashN                       src/28-loop.js:627
-crashSay                     src/28-loop.js:653-682
+crashAt                      src/28-loop.js:634-648
+crashN                       src/28-loop.js:629
+crashSay                     src/28-loop.js:655-684
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 crewAssignShip               src/12a-crew.js:252-260
@@ -3680,7 +3680,7 @@ cvs                          src/08-state.js:2
 cvsRect                      src/08-state.js:107-110
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:801-871
+dbg                          src/28-loop.js:803-873
 dcLensEq                     tests/91qc-descent.js:15-18
 dcWorld                      tests/91qc-descent.js:6-14
 dcol                         src/21b-surface-deco.js:155-160
@@ -4145,7 +4145,7 @@ drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-193
 drawWinter                   src/29rc-winter-r3.js:275-278
 drawWorld                    src/28-loop.js:443-446
-drawWorldIn                  src/28-loop.js:447-471
+drawWorldIn                  src/28-loop.js:447-473
 drawWreck                    src/20aa-poi-shapes.js:8-47
 drawWrecksSystem             src/12l-barge.js:378-395
 drawYardMark                 src/03d-hull-marks.js:200-243
@@ -4444,11 +4444,11 @@ forkSt                       src/28q-fork.js:19-22
 forkTick                     src/28q-fork.js:56-81
 forkWage                     src/28q-fork.js:48-55
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:686-743
-frameBody                    src/28-loop.js:476-482
-frameBodyIn                  src/28-loop.js:483-618
+frame                        src/28-loop.js:688-745
+frameBody                    src/28-loop.js:478-484
+frameBodyIn                  src/28-loop.js:485-620
 frameCapNow                  src/28-loop.js:263-267
-frameLastAt                  src/28-loop.js:685
+frameLastAt                  src/28-loop.js:687
 freeVoice                    src/09-audio.js:104-108
 fridgeFee                    src/21ac4-base-fridge.js:19
 fridgeFirmAt                 src/21ac4-base-fridge.js:15-18
@@ -7323,7 +7323,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:763-790
+prof                         src/28-loop.js:765-792
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
@@ -10662,9 +10662,9 @@ zoomTo                       src/15-input.js:358
   · авторазрешение:208
   · РОВНЫЙ ТАКТ (0.1b):357
   · развилка режимов — одна на всех (M238):413
-  · кадр, который не убивает игру (M234):619
-  · prof() — на что уходит кадр:751
-  · dbg() — что держит корабль:792
+  · кадр, который не убивает игру (M234):621
+  · prof() — на что уходит кадр:753
+  · dbg() — что держит корабль:794
 
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
