@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.62 — yard calibration probe restored
+
+- M480/M481: `tests/91zzzzk7-yard-probe.js` back (worlds + spar стрельбище). First re-run after the captain-range fix: most yards get 2–3/6 surrenders; Орднунг and Хай-Фронт still 0/6 — no yard numbers moved.
+
 ## 0.499.61 — duel captain in gun range
 
 - M480 стрельбище: spar-капитан holds 420–620 (was 700+, past auto range), spawns at 520, shield ×0.62 — a minute can actually finish him so yard hulls can be compared.

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 674 · top-level symbols: 8904
+Files: 675 · top-level symbols: 8909
 
 ## SYMBOLS
 
@@ -8898,6 +8898,11 @@ yardFirmware                 src/26e1-stapel.js:129-149
 yardGate                     src/04c-yards.js:144-148
 yardHide                     src/26f-yard-gpu.js:20
 yardTick                     src/26f-yard-gpu.js:22-39
+ydDuel                       tests/91zzzzk7-yard-probe.js:48-76
+ydFly                        tests/91zzzzk7-yard-probe.js:31-37
+ydPrbLeg                     tests/91zzzzk7-yard-probe.js:16-30
+ydPrbStations                tests/91zzzzk7-yard-probe.js:8-15
+ydWorld                      tests/91zzzzk7-yard-probe.js:38-47
 zooAll                       src/11ad-zoo.js:15
 zooBlock                     src/11ad-zoo.js:72-82
 zooCargoSlots                src/11ad-zoo.js:31
@@ -10924,6 +10929,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
   · пустая карта, вернувшаяся из облака списком:40
+
+## tests/91zzzzk7-yard-probe.js · 6 KB
+  · проба · шесть верфей: калибровка M480/M481:1
 
 ## tests/91zzzzy-play.js · 18 KB
   · глубокие сценарии (M331):1

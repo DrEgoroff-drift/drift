@@ -262,12 +262,12 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 - [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
   release run).
 - [ ] **M480/M481 yards (rest):** calibration by the worlds oracle and the стрельбище (release run).
-  Started 28.09 (recovered 08.10 from the unpushed `game` branch of the old `drift-design` clone; its probe
-  `tests/91zzzzk7-yard-probe.js` lives only there): **worlds** is usable — a heavy wide hauler pays for itself in one
-  best one-hop run at every yard except Коммуна (two, hold −15 %); Компания is −15 % price with no number against it,
-  its limit (КБ billing) is not in the stats. **The стрельбище is not trustworthy yet**: six duels against a rank-2
-  pirate (160 hp) killed nothing in 60 s — spar captain sat past auto range (0.499.61: hold 420–620, thinner shield).
-  Re-run the стрельбище, then read hull against price. Damage-taken vs hull size still open. No yard number moved.
+  Probe restored (`tests/91zzzzk7-yard-probe.js`, `node test-node.js --only="проба · верфи"`). Re-run 31.10 after
+  spar fix: **worlds** still one-hop for a heavy wide hauler at every yard (Коммуна cargo −15 %, Компания price −15 %
+  with no number against it; КБ billing still absent). **стрельбище** (warship medium ×6 vs spar captain): base/gt/co/km/ra
+  get 2–3 surrenders; **Орднунг and Хай-Фронт 0/6** (full minute); absolute hull lost does not track size (HF 128 vs
+  base 182 at similar %). Not trustworthy for price moves yet — fix why or/hf never finish, then read hull vs price.
+  No yard number moved.
 
 ## 8. Stage 7 — the giants
 
