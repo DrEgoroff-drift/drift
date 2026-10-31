@@ -248,14 +248,10 @@ measured on the GPU build first:
 ## 6. Stage 5 — the voice and the joke
 
 - [ ] **M460 billboards (rest):** 1–3 signs; the hull tint within R (graphics pass); stale prices as a fork (the author).
-- [ ] **M461 hotels:** six faces in DESIGN-life §3.3, two built — «Космос» (17l1) and «Дружба» (17l2, 0.470.0).
-  The other four have their sign, window rhythm and hours but stand in «Космос»'s crescent (`hotelType` falls
-  back to `gt`): «АЭЛИТА™» (Компания, a Stalinist tower on a rock), «ДОМ ПРИЕЗЖИХ № 4» (Орднунг, khrushchyovkas on
-  a truss), «ЮПИТЕР» (Коммуна, constructivism, red consoles, a glass cylinder), «БУРАН» (Хай-Фронт, a modernist
-  grid with a saucer and a mosaic) — each its own file 17l3…17l6 on the engine, closed by a pair at 760 and 390,
-  at 19 h and 3 h (the author 26.09: «у нас же 6 типов гостиниц было»; when — «после», after the engine). Then the doors (the sanatorium wants a
+- [ ] **M461 hotels (rest):** six faces on the engine — «Космос» (17l1), «Дружба» (17l2), «Аэлита» (17l3),
+  «Дом» (17l4), «Юпитер» (17l5), «Буран» (17l6) shipped in 0.499.39. Still open: doors (the sanatorium wants a
   voucher and an ocean world — how a hotel offers it); cantina rumours at the desk; fatigue (does not exist for
-  the player).
+  the player); a pair at 760 and 390, at 19 h and 3 h for the four new faces.
 - [ ] **M511 волокита:** the animals the author will invent (his table).
 - **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can say
   afterwards which institution the joke was on — never a person.

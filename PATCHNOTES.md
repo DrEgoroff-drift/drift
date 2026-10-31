@@ -6,6 +6,13 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.40 — station walk: steady camera, click places, tone
+
+- Hall camera: no lens chase while the place card is open; engage eases from the walk lens (.45 s); tabs inside a place leave the camera still; ship↔site no longer swaps the window.
+- Hall shadows: keep maps every frame (the every-other-frame pass made the floor and ceiling flicker).
+- Walk UX: hover a place to light it (tag, strip, warm halo), click to walk in; screen hit on the tag; airlock verb is ОТСТЫКОВАТЬСЯ; last tab per place remembered in the visit; PC strip hides until the cursor is at the top edge.
+- Card focus: edges of the hall dim when engaged; the counter keeper looks at the pilot; the board visitor steps aside; room tone follows the place underfoot on the dock.
+
 ## 0.499.39 — body craft densify, six hotel faces, planet GPU path
 
 - System bodies (G15): station, barge, buoy, cheburek, gesture, billboard and find meshes densified with readable-scale craft under the live caps (bb n≤10000, barge R≤140, buoy/cheb/gest n≤20000, trade/sci station n≤60000, relay n≤20000). Station craft lives in `17c2g1`; find/buoy/cheb/gest/bb each have their own body module.

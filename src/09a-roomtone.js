@@ -74,6 +74,18 @@ function rtWant(){
   if(M==="base"&&G.base)return [.014,520,.008,100];
   if(M==="raid"&&G.raid)return [.010,640,.010,70];
   if(M==="scoop"&&G.scoop)return [.030,300,.012,60];
+  /* станция пешком (M816): тон места под ногами / в карточке — пол, не солист */
+  if(M==="dock"&&typeof HALL!=="undefined"&&HALL.open&&HALL.walk){
+    const id=HALL.walk.eng||HALL.walk.at;
+    if(id==="folk")return [.011,360,.007,115];
+    if(id==="trade")return [.009,470,.005,100];
+    if(id==="ship"||id==="site")return [.013,540,.009,88];
+    if(id==="board")return [.005,280,.007,125];
+    if(id==="know")return [.007,680,.005,95];
+    if(id==="hold")return [.006,390,.006,105];
+    if(id==="lock")return [.008,320,.008,90];
+    return [.008,430,.006,108];
+  }
   return [0,420,0,120];
 }
 function roomToneTick(dt){

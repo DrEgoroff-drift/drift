@@ -134,11 +134,15 @@ function hallGlideAt(tm){
   return {eye:m(A.eye,B.eye),tgt:m(A.tgt,B.tgt),fy:A.fy+(B.fy-A.fy)*k,k};
 }
 function hallMoving(){return !!(HALL.to&&HALL.from&&wallMs()-HALL.g0<HALL.gd+40);}
-/* вести камеру к месту; первое — от двери */
-function hallGo(place,first){
+/* вести камеру к месту; первое — от двери; from — явный старт (ход → место: с объектива линии, не со старого to) */
+function hallGo(place,first,from){
   const c=HALL_CAMS[place]||HALL_CAMS.trade;
-  const cur=first?hallDoor(c):(hallGlideAt(wallMs())||c);
-  HALL.from={eye:cur.eye.slice(),tgt:cur.tgt.slice(),fy:cur.fy};HALL.to=c;HALL.g0=wallMs();HALL.gd=first?900:600;HALL.place=place;
+  if(!first&&!from&&HALL.place===place&&HALL.to===c)return;   /* уже здесь — не перезапускать наезд (вкладки места) */
+  /* ship↔site почти одна станция окна: короткий мягкий ход, без полного 600 мс рывка */
+  const near=HALL.to&&!first&&!from&&((HALL.place==="ship"&&place==="site")||(HALL.place==="site"&&place==="ship"));
+  const cur=from||(first?hallDoor(c):(hallGlideAt(wallMs())||c));
+  HALL.from={eye:cur.eye.slice(),tgt:cur.tgt.slice(),fy:cur.fy};HALL.to=c;HALL.g0=wallMs();
+  HALL.gd=first?900:from?520:near?280:600;HALL.place=place;
 }
 
 /* ── раскладка: кто где стоит (чистый JS, без видеокарты) ── */
@@ -296,12 +300,17 @@ function hallScene(L,cam,t){
   draws.push([hallBoardUp(L),0,1]);   /* листы доски — объявления плиты (M814) */
   draws.push([hallHoldUp(L),0,1]);   /* карта под стеклом конторы — дом и базы фишками (M814) */
   if(ii<R3_MAXI){hallInstrPose(M,ii,t);draws.push([hallInstrUp(),ii,1]);ii++;}   /* пять приборов на верстаке (M813): стрелки — части 1–5 */
+  const Weng=HALL.walk&&HALL.walk.eng;
   for(const P of L.people){if(ii>=R3_MAXI)break;
-    const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw,0,0,1,HALL_WA);
+    /* у доски посетитель на шаг в сторону — пилот читает объявления, не чужой затылок */
+    const px=Weng==="board"&&P.kind==="crowd"&&Math.abs(P.x+4.7)<.55?P.x+.55:P.x;
+    const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([px,0,P.z],P.yaw,0,0,1,HALL_WA);
     HALL_WS[5]=br;const B=r3Mul(A,HALL_WS,HALL_WB),at=P.mesh.at;
     let hy,hp;
-    if(P.kind==="keep"&&P.id==="hallkeep"){   /* хозяин поворачивает голову к камере, не дальше ±20° */
-      const a=Math.atan2(cam.eye[0]-P.x,cam.eye[2]-P.z)-P.yaw,w=Math.atan2(Math.sin(a),Math.cos(a));
+    if(P.kind==="keep"&&P.id==="hallkeep"){   /* хозяин: к пилоту у стойки, иначе к камере; не дальше ±20° */
+      const Wk=HALL.walk,pr=Wk&&Wk.eng==="trade"?hallWalkPilot():null;
+      const a=pr?Math.atan2(pr[0]-P.x,pr[1]-P.z)-P.yaw:Math.atan2(cam.eye[0]-P.x,cam.eye[2]-P.z)-P.yaw;
+      const w=Math.atan2(Math.sin(a),Math.cos(a));
       hy=clamp(w,-.35,.35)+.04*Math.sin(t*.23+ph);hp=.03*Math.sin(t*.17+ph);}
     else if(P.watch!=null){   /* зритель: голова к экрану (не дальше ±0,6), чуть вверх, редко отворачивается к соседу */
       const a=P.watch-P.yaw,w=Math.atan2(Math.sin(a),Math.cos(a));
@@ -314,7 +323,7 @@ function hallScene(L,cam,t){
       M.set(rA,(ii*R3_PART+2+k)*16);}
     const dm=HALL.place==="folk"&&P.kind==="crowd"?.32:(P.dim||0);   /* у бара один герой: завсегдатаи за столиками тише */
     for(let p=0;p<R3_PART;p++)OT[(ii*R3_PART+p)*4+1]=dm;
-    hallManMark(ii,P.x,P.z,P.kind==="keep"?.34:.3,dm>.2?.35:1.15);   /* притушенным за столиками — вполсилы */
+    hallManMark(ii,px,P.z,P.kind==="keep"?.34:.3,dm>.2?.35:1.15);   /* притушенным за столиками — вполсилы */
     draws.push([P.mesh,ii,1]);P.ii=ii;ii++;}
   /* пилот: у места раздела, стоит, дышит; голова — к вещи места, не к камере */
   const pa=hallWalkPilot();   /* M816: на ходу — с линии хода */
@@ -336,6 +345,7 @@ function hallScene(L,cam,t){
   {const gl=hallGoodsLight();if(gl)lights.push(gl);}   /* строка таблицы под мышью — её ящик горит */
   {const bl=hallBoardLight();if(bl)lights.push(bl);}   /* и строка доски — её лист (M814) */
   {const hl=hallHoldLight();if(hl)lights.push(hl);}   /* и строка ВЛАДЕНИЙ — её фишка на карте (M814) */
+  {const pl=hallPlaceHotLight();if(pl)lights.push(pl);}   /* ховер места на ходу — тёплый ореол у вещи */
   /* рабочая лампа у окна: днём вторая после окна, ночью — ключ места у верстака; третьей в списке — предел ламп её не срежет */
   /* ночью (M814) полный луч лампы — на весь ряд приборов: внутренний конус шире, ось — в передний край верстака */
   {const wy0=hallWorkY(T);lights.push({p:[HALL_WORK[0],wy0,HALL_WORK[1]],range:5.2,c:r3Sc(key,(dk?2.6:3.2)*(.4+1.6*nk)),spot:1,
@@ -434,9 +444,9 @@ function hallTagsDraw(L,cam,sz){
   /* поле табличек: на ПК — герой без запаса под ширину таблички, на телефоне — верх полосы над наездом плиты */
   const W=HALL.walk,full=!!W&&!W.eng;
   const xr=full?sz.cw-200*ui:sz.wide?hallWalkFree(sz.cw)*sz.cw-200*ui:sz.cw-170,yr=full||sz.wide?sz.ch-60*ui:sz.ch*.45-8;
-  const list=mv?[]:full?hallWalkTagList():hallTagList(L,HALL.place),key=list.map(x=>x.t+"/"+x.s).join("|");
+  const list=mv?[]:full?hallWalkTagList():hallTagList(L,HALL.place),key=list.map(x=>x.t+"/"+x.s+(x.hot?"!":"")).join("|");
   if(box.__key!==key){box.__key=key;box.textContent="";
-    for(const g of list){const e=document.createElement("i"),b=document.createElement("b");e.className="ht";b.textContent=g.t;e.appendChild(b);
+    for(const g of list){const e=document.createElement("i"),b=document.createElement("b");e.className="ht"+(g.hot?" hot":"");b.textContent=g.t;e.appendChild(b);
       if(g.s){const s=document.createElement("s");s.textContent=g.s;e.appendChild(s);}if(g.dn)e.classList.add("dn");box.appendChild(e);}}
   list.forEach((g,i)=>{const e=box.children[i],q=r3Proj(cam.vp,g.p,sz.cw,sz.ch);
     const ok=!!q&&q[0]>16*ui&&q[0]<xr&&(g.dn?q[1]>40*ui&&q[1]<yr-70*ui:q[1]>110*ui&&q[1]<yr);
@@ -501,10 +511,12 @@ function hallRelease(){
   if(HALL.cn&&HALL.cn.__rpg)HALL.cn.__rpg.bg.clear();hallGoodsDrop();hallInstrDrop();hallBoardDrop();hallHoldDrop();hallRigDrop();
   if(HALL.orbTex&&HALL.orbTex.dev===GPU.dev)GPU.trash.push(HALL.orbTex.tex);HALL.orbTex=null;HALL.orb=null;HALL.orbKey="";
 }
-/* вкладка сменилась: камера — к месту раздела */
+/* вкладка сменилась: камера — к месту раздела (не к каждой вкладке внутри места) */
 function hallTab(){
   if(!HALL.open)return;
-  if(HALL.walk){const p=hallWalkPlaceCam();if(p&&p!==HALL.place)hallGo(p,false);hallWalkTabs();}   /* M816: камера ходит по месту, а не по вкладке */
+  if(HALL.walk){const p=hallWalkPlaceCam();if(p&&p!==HALL.place)hallGo(p,false);hallWalkTabs();
+    HALL_LENS.last=0;HALL_LENS.g=0;   /* смена вкладки — без хвоста объектива от прошлой строки */
+    if(HALL.walk.eng&&HALL.walk.eng!=="lock")HALL_TABMEM[HALL.walk.eng]=tab;}
   if(HALL.L&&HALL.L.st!==((G.st&&G.st.stype)||"trade"))HALL.L=null;
 }
 /* телефон: сообщение (say) уходит в полосу эфира — там его место (M826); то же сообщение второй раз не идёт,
@@ -582,11 +594,14 @@ function hallFrame(){
   const oq=r3Proj(cam.vp,c.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   /* холст — левая доля кадра: виньетка и хроматика считаются по всему кадру, как до среза */
   U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL.sharp==null?HALL_SHARP:HALL.sharp,1],52);
-  /* на ходу дальний конец зала уходит в темноту, а не режется кромкой: сила и x пилота на экране (M816) */
-  if(!W.eng){const pw=hallWalkPilot(),q=pw&&r3Proj(cam.vp,[pw[0],1,pw[1]],sz.cw,sz.ch);U.set([.6*(1-W.fk),q?q[0]/sz.cw:.5,0,1],56);}
-  /* тени зала — через кадр (запаздывания жеста не видно), и на ходу, и в наезде: камера тени не меняет (29.10, телефон).
-     Каждый кадр — только слои, до которых достаёт идущий пилот (S.shHot), и слои сменившихся ламп (27f2) */
-  S.own="hall";S.shKeep=!!(HALL.frames&1);S.shHot=hallWalkMoving()?S.pii:null;
+  /* на ходу — даль в темноту; в карточке — края чуть гаснут, вещь места остаётся в свету (фокус на столе) */
+  {const pw=hallWalkPilot(),q=pw&&r3Proj(cam.vp,[pw[0],1,pw[1]],sz.cw,sz.ch);
+    if(W.eng||W.fk>0){const cx=sz.wide?hallWalkFree(sz.cw)*.5:(q?q[0]/sz.cw:.5);U.set([.32*W.fk,cx,0,1],56);}
+    else U.set([.6,q?q[0]/sz.cw:.5,0,1],56);}
+  /* тени зала — кэш слоёв (27f2): каждый кадр только слои у идущего пилота (S.shHot) и сменившихся ламп.
+     Через кадр (frames&1) мигал пол и потолок — жест людей крошечный, а чередование карты тени видно.
+     Камера тени не меняет (29.10, телефон) */
+  S.own="hall";S.shKeep=true;S.shHot=hallWalkMoving()?S.pii:null;
   HALL.frames++;HALL.S=S;HALL.vp=cam.vp;   /* пределы — hallLimits(HALL.S) по запросу теста, не в кадре (M816c) */
   const k0=L.people[0],pw=hallWalkPilot(),pa=pw?[pw[0],pw[1]]:null,f=sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};

@@ -55,8 +55,10 @@ function hallGoodsDrop(){r3Drop(HALL_GOODS.mesh);HALL_GOODS.mesh=null;HALL_GOODS
    скользит к ящикам, цель — середина между хозяином и ящиком, хозяин ~.27 кадра. Отпустил — ждёт
    45 кадров (750 мс: мышь переходит между строками через щель) и возвращается. Постоянного зума нет ── */
 const HALL_LENS={g:0,t:0,last:0,m:1.31,hold:750};
-/* хочет ли объектив к ящику в момент tm: горит строка на месте стойки или горела меньше hold назад */
+/* хочет ли объектив к ящику в момент tm: горит строка на месте стойки или горела меньше hold назад.
+   На ходу с открытой карточкой (M816 eng) — нет: таблица справа, а 3D дёргался к каждой строке */
 function hallLensWant(tm){
+  if(HALL.walk&&HALL.walk.eng)return 0;
   if(HALL_GOODS.hot&&HALL.place==="trade"&&hallGoodsKeys().indexOf(HALL_GOODS.hot)>=0)HALL_LENS.last=tm;
   if(HALL_INSTR.hot&&HALL_INSTR_PLACES.includes(HALL.place)&&INSTR_KEYS.indexOf(HALL_INSTR.hot)>=0)HALL_LENS.last=tm;   /* и прибор на верстаке (M813) */
   if(HALL.place==="board"&&HALL_BOARD.hot>=0&&hallBoardSheet(HALL_BOARD.hot))HALL_LENS.last=tm;   /* и лист на доске (M814) */
