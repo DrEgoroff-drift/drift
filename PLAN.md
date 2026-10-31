@@ -264,8 +264,10 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 
 - Hollow moon «Гнездо» (0.499.48): planet sphere + nest mouth, orbit/dock like planets.
 - **0.499.67:** all seven spin on their own axis (`giantSpin`) — no more static stickers.
-- Other six still need denser bodies (author/Kimi craft): prompt `_scratch/kimi-giant-prompt.txt` →
-  `site/kimi-giant-{house,cyl,customs,dock,town,garden}.html`, then port zones into `17o-giants.js`.
+- **0.499.78:** customs gates/plates; dock incomplete nose+scaffolding; town bridges/chimneys; garden
+  parabolic dishes (ported into `17o` while Kimi densifies HTML probes).
+- Still open craft: denser Kimi HTML for customs/dock/town/garden (≥70 KB each) → further port.
+  Prompt `_scratch/kimi-giant-prompt.txt` → `site/kimi-giant-{house,cyl,customs,dock,town,garden}.html`.
 
 ## 9. Seams to honour when the items above are built
 

@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.78 — Giants densify: customs · dock · town · garden
+
+- G15/M464: customs — control gates, inspection frames, facade plates; dock — incomplete nose with scaffolding and a second gantry; town — bridges, chimneys, roof dishes; garden — parabolic relay dishes (junk micro-loops stripped; nose craft moved out of garden into dock).
+
 ## 0.499.77 — M478 module tiers as cell densities
 
 - M478: `PLAN_MOD_DENS` / `planModDens` — hold/tank/armor tiers are density per cell (same numbers as before); `stat()` reads them. engine/hyper/drill stay station upgrades.
