@@ -9090,7 +9090,7 @@ zoomTo                       src/15-input.js:358
 ## src/08a1-hud-vars.js · 2 KB
   · переменные раскладки HUD — на своих читателях (24.10, телефон):1
 
-## src/08b-gpu.js · 57 KB
+## src/08b-gpu.js · 58 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
 ## src/08b0-gpu-pipe.js · 13 KB

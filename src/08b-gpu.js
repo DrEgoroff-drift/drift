@@ -688,10 +688,10 @@ function gpuWorld(k,grain,vig,clip){
     P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
     if(GPU.kill.bloom)P.k=0;
     if(!GPU.noiseOk)gpuNoise();
-    if(!GPU.kill.front)gpuFrontCopy("front2");
-    if(P.k>0)gpuBloom();
+    {const _t=NEAR.on?wallMs():0;if(!GPU.kill.front)gpuFrontCopy("front2");if(NEAR.on)NEAR.gw.front=Math.round((wallMs()-_t)*10)/10;}
+    {const _t=NEAR.on?wallMs():0;if(P.k>0)gpuBloom();if(NEAR.on)NEAR.gw.bloom=Math.round((wallMs()-_t)*10)/10;}
     /* всё, что над миром, — одним проходом слоя #ovl (08bi): 2D-слоя приборов нет, ctx остаётся на #c */
-    ovFlush();
+    {const _t=NEAR.on?wallMs():0;ovFlush();if(NEAR.on)NEAR.gw.ov=Math.round((wallMs()-_t)*10)/10;}
   }catch(e){gpuFail(e,"сборка");}
 }
 /* лестница свечения: колено в первый уровень, вниз по уровням, сумма верхних — одним проходом */

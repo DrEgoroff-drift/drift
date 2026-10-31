@@ -12163,10 +12163,10 @@ function gpuWorld(k,grain,vig,clip){
     P.k=(!off&&G.running)?k:0;P.grain=(!off&&grain&&G.running)?1:0;P.vig=(!off&&grain&&vig&&G.running)?1:0;
     if(GPU.kill.bloom)P.k=0;
     if(!GPU.noiseOk)gpuNoise();
-    if(!GPU.kill.front)gpuFrontCopy("front2");
-    if(P.k>0)gpuBloom();
+    {const _t=NEAR.on?wallMs():0;if(!GPU.kill.front)gpuFrontCopy("front2");if(NEAR.on)NEAR.gw.front=Math.round((wallMs()-_t)*10)/10;}
+    {const _t=NEAR.on?wallMs():0;if(P.k>0)gpuBloom();if(NEAR.on)NEAR.gw.bloom=Math.round((wallMs()-_t)*10)/10;}
     /* всё, что над миром, — одним проходом слоя #ovl (08bi): 2D-слоя приборов нет, ctx остаётся на #c */
-    ovFlush();
+    {const _t=NEAR.on?wallMs():0;ovFlush();if(NEAR.on)NEAR.gw.ov=Math.round((wallMs()-_t)*10)/10;}
   }catch(e){gpuFail(e,"сборка");}
 }
 /* лестница свечения: колено в первый уровень, вниз по уровням, сумма верхних — одним проходом */
@@ -128588,7 +128588,7 @@ function frame(now){
     nearFrame({t:now,gap:(framePrev?now-framePrev:0),js:FRAME_JS,mode:G.mode,prev:pm,
       sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
       warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
-      asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,sl:NEAR.sl,sg:NEAR.sg,dg:NEAR.dg,
+      asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,sl:NEAR.sl,sg:NEAR.sg,dg:NEAR.dg,gw:NEAR.gw,
       pipes:NEAR.pipes,cave:NEAR.cave});}
   tactWork(FRAME_JS);   /* средняя работа кадра решает, можно ли 120 (0.1b) */
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
@@ -131882,7 +131882,7 @@ else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout
 const NEAR_MAX = 240;
 const NEAR = {on:false, blocks:[], cur:null, n:0, frameN:0,
   marks:{}, work:{}, warm:0, bakeN:0, bakeS:0, pipes:0, cave:0,
-  sw:0, gf:0, dw:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, runs:{}, maxFrames:NEAR_MAX};
+  sw:0, gf:0, dw:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, runs:{}, gw:{}, maxFrames:NEAR_MAX};
 function nearOn(){ NEAR.on = true; }
 function nearBlock(mode, prev){
   if(!NEAR.on) return;
