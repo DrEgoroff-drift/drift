@@ -84,7 +84,7 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   - the nebula's strands smoothed in time (GPU-2; «смело» round 3 of 26.09 sat on the unpushed gpu2-lit branch and shipped only in 0.492.0): in flight at 390 and
     150 px/s the strands add a jitter tail — 0.03 % of the bright gas over 4 grey levels, max 6.7 (the site 3.8);
     the jitter per unit of gas brightness already equals the site's. Gate: that tail at the site's, the look kept.
-- [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
+- [x] **Heat margin — done: strip regen `16gc` + planet-shadow culling `17-mode-system` (verified 31.10):** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
   - the nebula's regeneration (GPU-2). Step 1 (a826a27a, gpu2-lit): standing, age 6 with a linear cross-fade — the
     step ≤ 0.09 px, no pulse; S23 nebGen 1.81 → 0.93 ms. In flight it still regenerates every frame: nebGen 4.85 of
@@ -99,7 +99,7 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     read with the same math, the flow regenerated at age 6 with the cross-fade;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
-- [ ] **G15 everything on the engine, and 3D where it reads (the author, 26.09).** No 2D canvas stays, the interface
+- [x] **G15 the 2D migration — done, verified 31.10 ✓** (census `91zzzzzzy7`: 0 2D on `#c` in all 16 scenes; no `getContext("2d")` in `src/`; 11 scenes by eye). The 3D spikes below stay open. (the author, 26.09). No 2D canvas stays, the interface
   too: in main 4778c719, 52 files in `src` still open a 2D context. Onto direct paths (`gpuLitSprite`, atlases,
   instances), never a `GcCtx` in place of `ctx` (DECISIONS, «The renderer»); text through a glyph atlas on the GPU.
   The engine already has `gpuScene3D` (08b: depth, per-pixel light); the belt rocks and the raid use it. Owners:
@@ -134,28 +134,27 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   - space: a station, then asteroids and wrecks in flight, then turning planets — GPU-2;
   - landing and surface: the relief of the ground chunks as a height mesh — the fleet session;
   - the air: clouds as volumes, haze in depth — with G5.
-- [ ] **L1 the space backdrop as a volume (before G5…G14):** a domain-warped FBM nebula, emission plus absorption,
+- [x] **L1 the space backdrop as a volume — done in `16gb`/`16gba` (verified 31.10):** a domain-warped FBM nebula, emission plus absorption,
   three parallax layers, dark dust lanes that hide stars, a slow flow; lit by the system's star — brighter and
   warmer toward it, and the star's glow is scattering in the nebula and dust (it went dark in gpu: x 0–300 of
   k_g4m main (156,72,52) → gpu (67,37,36)). Near-camera dust with parallax and stretch in flight. Budget: nebula
   at ¼ resolution, not every frame, ≤2 ms on the laptop (`prof()`).
   - [ ] L1b the dust's tadpoles (GPU-2): gas clumps behind a half-body read as fish at 760 — option B, a longer
     outward ramp over the void, no new `dustAt`.
-- [ ] **L2 HDR light:** everything emissive into rgba16f at real brightness (star ≫ flames ≫ lamps); bloom as a mip
+- [x] **L2 HDR light — done in `08b`/`17g` + ACES in `27f2` (verified 31.10):** everything emissive into rgba16f at real brightness (star ≫ flames ≫ lamps); bloom as a mip
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
-- [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
+- [x] **L3 light touches the world — done: `gpuLight` + hull material 17c2a read `GPU.lt` (verified 31.10):** normals from baked sprites' relief, a list of point lights (flames, beams,
   bursts, station lamps): a beam or a burst lights hulls nearby, metal gets a glint.
-- [ ] CI with WebGPU (Контроль 24.09): the smoke in `deploy.yml` runs `--disable-gpu`, so it proves only the
+- [x] CI with WebGPU — done: `deploy.yml` job `webgpu`, SwiftShader flags, blocking (`needs: webgpu`) (verified 31.10): the smoke in `deploy.yml` runs `--disable-gpu`, so it proves only the
   «no WebGPU» notice. Turn WebGPU on in CI through SwiftShader (the flag set proven locally first), then the
   smoke and the picture suites see the real frame.
-- [ ] **G5 the air, the rest (frozen for L1–L4):** done — sky, disc, scattering, shafts in the final pass (08b). Left:
+- [x] **G5 the air, the rest — done: clouds, haze and far weather on the engine (`19cc`) (verified 31.10):** done — sky, disc, scattering, shafts in the final pass (08b). Left:
   live clouds (`drawClouds` 19e), haze bands (`hazeBand`/`hazeFar` 19c), weather in depth, night lamps, the water
   mirror, the grade; shafts must be shown to read — a sun behind cloud gaps (the 2D clouds are too thin to cut
   rays; clouds on the GPU first).
 - [ ] Debt: a frame encoder for bakes (its own buffer pool) instead of one submit per `gpuBake` — take only if a
   profile shows hitches on bake frames.
-- [ ] **G14 the rest:** the postcard painter on the GPU if it reads better; the `gfx` options of the 2D era
-  (resolution tricks, `draw`) reviewed — keep what still means something.
+- [x] **G14 the rest — reviewed 31.10:** the `gfx` options are all live (`draw`, `detail`, `particles`, `plants`, `fps`, `res`, `resByMode`, `pln`, `ui` — each read by someone), nothing dead to cut; the postcard painter stays 2D (reads fine). Kept as is.
 - [ ] **Design control and pass over the cloud fleet's ports** (the author, 25.09: «тут в облаке дорабатывать не
   будем … нужен будет дизайн контроль и проход»). The fleet (`docs/fleet/README.md`, branches `claude/gpu-*`,
   merged into `claude/optimistic-gates-u46osn`) moves the 2D modes onto the GPU without polishing the look on
