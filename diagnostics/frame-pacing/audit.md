@@ -52,6 +52,35 @@ flowchart TB
 | `gpuPipesLate` | `08b0-gpu-pipe.js:114` | `GPU_LATE_GAP=30/PLANET=500/FLIGHT=2500` | нет (async) |
 | `cave3PipesAhead` | `22d-cave-pln.js:122` | своя цепочка, без общего темпа | нет (async) |
 
+## 2b. Переходы: кто что тянет
+
+| Переход | Стартует синхронно (в кадре) | Тянется фоном | Что инвалидируется | Риск |
+|---|---|---|---|---|
+| `system → landing` | `plnLand` первый кадр (`PLN_BUILD.first=40`), `plnWarmStep` (7, до первого `fbSpend`), `cave3PipesAhead` | `gpuPipesLate` (`PLANET 500`), `prebake` (4) | `L.warm`/`L.jobs`, `PLN_FLORA.kit` если генерация сменилась | **высокий** |
+| `landing → surface` | `plnLandStep` (`fbLeft`→10), `plnPlantStep`, `caveTick` (3) | `gpuPipesLate` (`PLANET 500`) | `L.flora.src` при смене `deposits` (`plnPlantRefit`) | средний |
+| `surface → cave` | `caveMake` через `cavePreMake` (сетка уже посчитана `caveGridStep`), `CAVE3_CH` 8, `CAVE3_DR` 5, `caveTick` | `gpuPipesLate`, `cave3PipesAhead` | `CAVE_PRE.st`, `CAVE_DECO.defer` | **высокий** |
+| `surface → dig` | `dig3Chunks` (`DIG3_CH` 8), `DIG3_TOP.hand` | `gpuPipesLate` | `DIG3.ch` | средний |
+| `map → system` | `arrWarm` (`WORK` prio 1) | `gpuPipesLate` (`FLIGHT 2500`) | `BELT_ROCK` при смене системы | низкий |
+| возврат/повтор | кэши (`L.warmDone`, `CAVE_PRE`, `DIG3.ch`) живы | — | — | низкий |
+| холодный старт | `gpuPipesWarm` (таблица полёта), gate «Начать» | `gpuPipesLate` стартует через `setTimeout(300)` | — | средний |
+
+Ключевое наблюдение: в `system → landing` и `surface → cave` в одном кадре сходятся
+**три независимых счётчика** — `PLN_BUILD`/`CAVE3_*` (общий `FB`), `plnWarmStep` (свои 7, вне `FB`),
+`prebake` (свои `PB_MS=4`, вне `FB`). Их сумма кодом не ограничена.
+
+## 2c. Синхронные блокировки (аудит)
+
+| Место | Что синхронно | Потолок | Достижимо на переходе |
+|---|---|---|---|
+| `17a0-prebake.js:32` | `while(sync\|\|…)` — генератор до `r.done` | **нет** при `sync` | да: `12ai1:29`, `17k:119`, `17l:118` |
+| `08b0-gpu-pipe.js:29` | `d.createRenderPipeline(mk())` — **синхронная** компиляция в воронке | нет | да, если ключ не прогрет (сторож `91zzzzzzy5`) |
+| `21pz-pln-frame.js:311` | `while(wallMs()-t0<B&&plnFloraKitStep())` | 7 мс, но шаг неделим | да, первый кадр захода |
+| `22d-cave-pln.js:155` | `while(g.k<N)` — сетка `caveGridStep` | `ms` на шаг | да, `caveTick` |
+| `08b0-gpu-pipe.js:131` | `while(!flat.length&&todo.length)` — разворачивание групп | нет, но только дескрипторы | низкий |
+| `21pf-pln-land.js:514` | `PLN_BUILD.first=40` | 40 мс | **да, первый кадр спуска** |
+| `17c2a-hull3d.js` / `hullStudio` | построение меша корпуса | нет в кадре | при смене корпуса |
+| `prebake`-вызовы (hotel/billboard/neon/fleet/rack) | запись команд выпечки | `PB_MS`/`PB_PX`/1 выпечка | да, на переходах |
+
 ## 3. Подтверждённые проблемы
 
 ### P0. Deep-бенчмарк пропускает кадры перехода — `28z-fps-probe.js:347,354,364`
