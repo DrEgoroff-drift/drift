@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.75 — M476 fixpoint covers ordered unique hulls
+
+- M476: plan-factors suite also plants a СТАПЕЛЬ unique (`stapelShip`) — no-draft / typical stay ×1 with fleet and NPC.
+
 ## 0.499.74 — M476 fixpoint on fleet and NPC hulls
 
 - M476/M478: `чертёж: числа M478` covers strizh, a serial fleet hull and a planted NPC — no-draft and saved-typical stay ×1.
