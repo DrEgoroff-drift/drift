@@ -72,57 +72,22 @@ function placeSun(p){
   const sky=(p&&p.T&&p.T.sky)?p.T.sky[0]:[120,150,190];
   return {k,col,sx,sky};
 }
-/* тело вещи: path() — контур, (x0,y0,x1,y1) — его рамка, base — [r,g,b] */
-function placeShade(path,x0,y0,x1,y1,base,p,seed,o){
-  o=o||{};
-  const L=placeSun(p),w=x1-x0,h=y1-y0;
-  ctx.save();
-  ctx.beginPath();path();
-  ctx.fillStyle=sdRGB(base);ctx.fill();
-  ctx.clip();
-  /* бок к звезде и бок от неё */
-  const gx=L.sx>0?ctx.createLinearGradient(x0,0,x1,0):ctx.createLinearGradient(x1,0,x0,0);
-  gx.addColorStop(0,"rgba(8,10,16,"+(.34+.10*L.k).toFixed(3)+")");
-  gx.addColorStop(.55,"rgba(0,0,0,0)");
-  gx.addColorStop(1,rgba(L.col,.26*L.k));
-  ctx.fillStyle=gx;ctx.fillRect(x0-1,y0-1,w+2,h+2);
-  /* небо сверху, земля снизу */
-  const gy=ctx.createLinearGradient(0,y0,0,y1);
-  gy.addColorStop(0,rgba(L.sky,.16));
-  gy.addColorStop(.45,"rgba(0,0,0,0)");
-  gy.addColorStop(1,"rgba(6,6,10,"+(o.ao==null?.34:o.ao).toFixed(3)+")");
-  ctx.fillStyle=gy;ctx.fillRect(x0-1,y0-1,w+2,h+2);
-  /* зерно: краска, пыль и время — не заливка */
-  const r=rng(hashi(seed|0,0x9A,0x6A));
-  const n=Math.min(160,Math.round(w*h/90));
-  for(let i=0;i<n;i++){
-    const lt=r()<.45;
-    ctx.fillStyle=lt?"rgba(255,246,226,.06)":"rgba(0,0,0,.09)";
-    ctx.fillRect(x0+r()*w,y0+r()*h,1+r()*2,1);
-  }
-  ctx.restore();
-  /* кромка: светится только край к звезде; остальное — тонкая тёмная линия */
-  ctx.save();
-  ctx.beginPath();path();
-  ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke();
-  if(L.k>.02){
-    ctx.clip();
-    ctx.beginPath();path();
-    ctx.translate(-L.sx*1.2,1.2);
-    ctx.strokeStyle=rgba(sdMix(L.col,[255,255,255],.4),.55*L.k);ctx.lineWidth=1.4;ctx.stroke();
-  }
-  ctx.restore();
-}
-/* человек-силуэт мест: тело, голова, тень от звезды и край света с её стороны */
+/* человек-силуэт мест: тело, голова, тень от звезды и край света с её стороны.
+   Только фигуры видеокарты; dark — rgba-строка или [r,g,b,a]. */
 function placeFigure(x,y,h,p,dark){
-  const L=placeSun(p),hw=h*.14;
-  ctx.fillStyle="rgba(0,0,0,"+(.22*L.k+.08).toFixed(3)+")";
-  ctx.beginPath();ctx.ellipse(x-L.sx*h*.35,y,h*.42,1.6,0,0,TAU);ctx.fill();
-  ctx.fillStyle=dark||"rgba(22,26,32,.94)";
-  ctx.beginPath();ctx.moveTo(x-hw*1.1,y);ctx.lineTo(x-hw,y-h*.78);ctx.lineTo(x+hw,y-h*.78);ctx.lineTo(x+hw*1.1,y);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.arc(x,y-h*.88,h*.13,0,TAU);ctx.fill();
+  const pass=gpuNext();if(!pass)return;
+  const o=lifeHere(0,0),K=o.s,L=placeSun(p),hw=h*.14;
+  const X=v=>o.x+v*K,Y=v=>o.y+v*K,SH=[];
+  let c=[22,26,32,.94];
+  if(Array.isArray(dark))c=dark;
+  else if(dark){const m=String(dark).match(/[\d.]+/g);if(m)c=[+m[0],+m[1],+m[2],+(m[3]||1)];}
+  SH.push([1,X(x-L.sx*h*.35),Y(y),h*.42*K,0,0,1.6*K,0,0,0,.22*L.k+.08]);
+  const P=(lx,ly)=>[X(lx),Y(ly)],T=[c[0],c[1],c[2],c[3]];
+  gpuQuad(SH,P(x-hw*1.1,y),P(x-hw,y-h*.78),P(x+hw,y-h*.78),P(x+hw*1.1,y),T,2);
+  SH.push([1,X(x),Y(y-h*.88),h*.13*K,0,0,.3*K,c[0],c[1],c[2],c[3]]);
   if(L.k>.02){
-    ctx.fillStyle=rgba(L.col,.45*L.k);
-    ctx.fillRect(L.sx>0?x+hw-1:x-hw,y-h*.78,1,h*.72);
+    const lx=L.sx>0?x+hw-1:x-hw;
+    SH.push([0,X(lx),Y(y-h*.78),X(lx+1),Y(y-h*.06),0,0,L.col[0],L.col[1],L.col[2],.45*L.k]);
   }
+  gpuShapes(pass,SH,{blend:"over"});
 }

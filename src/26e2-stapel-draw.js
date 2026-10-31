@@ -40,7 +40,7 @@ function stapelSheet(o,cw,ch,st){
   /* корпус — своей выпечкой (кадр печёт её первой): обшивка и набор в сурике там же, source-atop */
   const hull=oc=>{
     oc.save();oc.translate(X0,Y0);oc.scale(sc,sc);
-    hullPart1(hl,STAPEL_PV,0,false);hullPart2(hl);hullPart3(hl,STAPEL_PV);   /* тело — кисти выпечки корпуса (17c2) */
+    hullPart1(hl,STAPEL_PV,0);hullPart2(hl);hullPart3(hl,STAPEL_PV);   /* тело — кисти выпечки корпуса (17c2) */
     oc.restore();
     if(prog<1){
       oc.save();oc.beginPath();oc.rect(xf,0,cw-xf,ch);oc.clip();
@@ -281,7 +281,7 @@ function stapelHullBox(hl,ink){
   g.setTransform(K,0,0,K,0,0);ctx=g;
   /* без холста (Node) текст кистей не меряется — тогда рамка по числам генератора */
   let bad=false;
-  try{hullPart1(hl,STAPEL_PV,0,false);hullPart2(hl);hullPart3(hl,STAPEL_PV);}catch(e){bad=true;}finally{ctx=prev;}
+  try{hullPart1(hl,STAPEL_PV,0);hullPart2(hl);hullPart3(hl,STAPEL_PV);}catch(e){bad=true;}finally{ctx=prev;}
   if(!bad)for(const q of g._ops)take(q,null);   /* текст и картинки */
   if(bad||U[2]<U[0])return {x0:hl.tail,x1:hl.nose,y0:-hl.halfW,y1:hl.halfW,ink:[]};
   return {x0:U[0]/K,x1:U[2]/K,y0:U[1]/K,y1:U[3]/K,ink:L};

@@ -3,57 +3,7 @@ function tracePoly(pts,sy){
   for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]*(sy||1));
   ctx.closePath();
 }
-/* факел: мягкое зарево + перо + добела раскалённое ядро.
-   `cool` — люксовая тяга: вдвое короче, бело-голубая и почти без зарева.
-   Оранжевый костёр на корме читается работой и топливом; дорогая вещь
-   уходит тихо, и это видно раньше, чем читается название класса. */
-function drawFlame(x,y,rad,pow,cool,tint){
-  const f=rad*(cool?1.5+rndFx()*.8:2.4+rndFx()*1.7)*pow;
-  const gl=ctx.createRadialGradient(x-f*.25,y,0,x-f*.25,y,f*1.15);
-  /* цвет факела — подпись изготовителя (M369, §19.4 измерение 7): у Орднунга
-     короткая белая игла, у Коммуны длинный фиалковый шлейф, у Хай-Фронта
-     тонкая бирюза. Без тона факел остаётся прежним оранжевым */
-  if(tint&&!cool){
-    gl.addColorStop(0,rgba(mixc(tint,[255,255,255],.3),.34));
-    gl.addColorStop(1,rgba(tint,0));
-  }else if(cool){gl.addColorStop(0,"rgba(150,205,255,.2)");gl.addColorStop(1,"rgba(110,170,255,0)");}
-  else{gl.addColorStop(0,"rgba(255,180,110,.34)");gl.addColorStop(1,"rgba(255,120,60,0)");}
-  ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x-f*.25,y,f*1.15,0,TAU);ctx.fill();
-  const g=ctx.createLinearGradient(x,y,x-f,y);
-  if(tint&&!cool){
-    g.addColorStop(0,"rgba(255,252,244,.95)");
-    g.addColorStop(.22,rgba(mixc(tint,[255,255,255],.35),.86));
-    g.addColorStop(.6,rgba(tint,.42));
-    g.addColorStop(1,rgba(mixc(tint,[0,0,0],.2),0));
-  }else if(cool){
-    g.addColorStop(0,"rgba(255,255,255,.95)");g.addColorStop(.24,"rgba(198,232,255,.8)");
-    g.addColorStop(.62,"rgba(126,178,255,.34)");g.addColorStop(1,"rgba(90,140,240,0)");
-  }else{
-  g.addColorStop(0,"rgba(255,246,220,.95)");g.addColorStop(.2,"rgba(255,194,112,.86)");
-  g.addColorStop(.58,"rgba(255,116,62,.42)");g.addColorStop(1,"rgba(255,70,40,0)");}
-  ctx.fillStyle=g;ctx.beginPath();
-  ctx.moveTo(x,y-rad);
-  ctx.quadraticCurveTo(x-f*.45,y-rad*.55,x-f,y);
-  ctx.quadraticCurveTo(x-f*.45,y+rad*.55,x,y+rad);
-  ctx.closePath();ctx.fill();
-  /* ядро. Раскалённая сердцевина треугольником вблизи читается стрелкой —
-     на венце из четырёх сопел получался ряд белых указателей. У холодной
-     тяги ядро мягкое: вытянутая капля вдвое уже пера */
-  if(cool){
-    const cg=ctx.createLinearGradient(x,y,x-f*.5,y);
-    cg.addColorStop(0,"rgba(255,255,255,.85)");
-    cg.addColorStop(1,"rgba(210,235,255,0)");
-    ctx.fillStyle=cg;
-    ctx.beginPath();
-    ctx.moveTo(x,y-rad*.3);
-    ctx.quadraticCurveTo(x-f*.3,y-rad*.12,x-f*.5,y);
-    ctx.quadraticCurveTo(x-f*.3,y+rad*.12,x,y+rad*.3);
-    ctx.closePath();ctx.fill();
-  }else{
-  ctx.fillStyle="rgba(255,255,242,.8)";
-  ctx.beginPath();ctx.moveTo(x,y-rad*.46);ctx.lineTo(x-f*.4,y);ctx.lineTo(x,y+rad*.46);
-  ctx.closePath();ctx.fill();}
-}
+/* 2D-факел drawFlame снят (G15): живой факел — фигурами в hullGpuDraw (17c2) */
 /* ── отделка по тиру ──
    Тир — не строчка в карточке, а то, как корпус выглядит. Рабочая лошадка ходит
    в заплатах и потёках, редкий носит акцентную окантовку, легендарный — двойной

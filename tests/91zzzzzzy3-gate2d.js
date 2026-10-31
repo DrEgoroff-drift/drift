@@ -5,7 +5,7 @@
    (облик флота печёт fleetArtOf с именем борта текстом) не прячет наши вызовы: считается
    всё, в чьём стеке есть художник сцены и нет дыры. Новый перенос — новая сцена в GATE2D. */
 /* облик флота (12ai1) — 2D-холст с именем борта (fillText), ждёт текст v2: fleetArtOf печёт,
-   fleetShipAt грузит его мипы 2D-спуском (gpuMipTex). Уйдёт с переносом облика флота */
+   fleetShipAt раньше грузил мипы 2D-спуском; облик флота на gpuBake */
 /* текст v2 (08cb): маску строки растрит одна 2D-канва на всю игру (GC_GLYPHS.raster/.measure),
    раз на строку — так устроен текст GPU-холста, это его источник глифов, а не 2D печи */
 /* материал грунта (18a) дырой больше не числится (26.09): кадр планеты двигает только строки
@@ -48,7 +48,7 @@ const GATE2D=[
    done(){ok(!!TRC.it,"чужой след: тело собрано");
      if(G.surf)G.surf.trace=null;}},
   {name:"мат свидетеля (21piid, 20c): пластинки и свечение затмения — тела в кадре планеты, на #c ни штриха",
-   painters:["peepDrawMat","plnPeepStep","plnPeepFrame","plnPeepMesh"],probe:["plnPeepFrame"],
+   painters:["plnPeepStep","plnPeepFrame","plnPeepMesh"],probe:["plnPeepFrame"],
    place(first){
      if(first){const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];startLanding(p);
        const L=G.land;L.x=L.tr.padX;L.y=groundAt(L.tr,L.x)-LAND_GY;enterSurface();G.mode="surface";}
@@ -290,7 +290,7 @@ const GATE2D=[
    probe:["opisGpu"]},
   /* альбом (25g1): лист карточек и большая карточка с пятью фильтрами — кисть открытки выпечкой, фильтр
      матрицей ovImage; виньетка и зерно печати — свои выпечки, сброшены, чтобы печься под записью.
-     Снимок себе (albumSave) — страница PNG в 2D намеренно: это файл, не кадр, — в сцене его нет.
+     Снимок себе (albumSave) — страница PNG с видеокарты: файл, не кадр, в сцене его нет.
      Почтовая карточка (25k) и картинка главы «Смены» (12ud1) — та же карточка альбома */
   {name:"альбом (25g1): карточки и фильтры выпечкой, без 2D",
    painters:["albumCanvas","albumBake","albumPut","albumVig","albumLightbox","drawPostcard","pcPrint","pcGrainBake","mailCard","smenaPlate"],

@@ -76,12 +76,12 @@ function drawHomeOut(tr,camx,camy,p){
   const bx=homeSpotX(p,tr);if(bx==null)return;
   const sx=bx-camx;
   if(sx<-420||sx>W+420)return;
-  if(!HOME_BAKING&&homeOutGpu(tr,camx,camy,p,bx,sx))return;
+  /* кадр — выпечкой в слой стоящего (21fa); тело ниже зовёт только печь */
+  if(!HOME_BAKING){homeOutGpu(tr,camx,camy,p,bx,sx);return;}
   const H0=G.home,tier=H0.tier|0;
   const pal=homeOutPal(p);
   const gy=groundAt(tr,bx)+2-camy;   /* дом стоит на срезанной полке (см. ниже) */
   const nite=(typeof surfNight==="function")?surfNight(p):0;
-  const wind=(typeof WIND==="number")?WIND*2:0;
   const M=HOME_MAN;
   const plan=homePlan(p);                            /* план сеян (M307) */
   const w=M*plan.w, wallH=M*plan.wallH, roofH=M*plan.roofH;   /* дом: два с половиной роста */
@@ -131,6 +131,8 @@ function drawHomeOut(tr,camx,camy,p){
     ctx.moveTo(gx-gw/2-3,gyy-gh);ctx.lineTo(gx+gw/2+3,gyy-gh-M*.5);
     ctx.lineTo(gx+gw/2+3,gyy-gh-M*.5+3);ctx.lineTo(gx-gw/2-3,gyy-gh+3);
     ctx.closePath();ctx.fill();
+    /* слот для корпуса в воротах — живым поверх выпечки (21fa, G15 / PLAN garage hull) */
+    if(HOME_BAKING)HOME_BAKING.garage=[gx-sx,gyy-gy-gh*.42,gw];
   }
   /* ── тело дома ── */
   const fh=Math.max(3,M*.22);
@@ -167,7 +169,6 @@ function drawHomeOut(tr,camx,camy,p){
   ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.25));
   ctx.fillRect(chX-1.5,chTop-2,chW+3,2.5);
   if(HOME_BAKING)HOME_BAKING.smoke=[chX+chW*.5-sx,chTop-3-gy];
-  else homeSmoke(chX+chW*.5,chTop-3,wind);
   /* окно: главный признак жилья — в нём свет */
   const ww=w*.26,wh=wallH*.30,wx=sx+w*plan.win,wy=gy-wallH*.70;
   sdWindow(wx,wy,ww,wh,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
@@ -221,7 +222,7 @@ function drawHomeOut(tr,camx,camy,p){
   /* ── причал с маяком (ступень 8): мачта выше всего, огонь мигает ── */
   if(homeHas("dock")){
     const mx=sx+w*1.15, myy=gy;
-    if(HOME_BAKING)HOME_BAKING.dock=[mx-sx,myy-gy];else homeDock(mx,myy,M,pal);
+    if(HOME_BAKING)HOME_BAKING.dock=[mx-sx,myy-gy];
     ctx.strokeStyle=sdRGB(sdMix(pal.metal,[0,0,0],.2));ctx.lineWidth=2.4;
     ctx.beginPath();ctx.moveTo(mx,myy);ctx.lineTo(mx,myy-M*4.4);ctx.stroke();
     ctx.lineWidth=1.2;
@@ -246,7 +247,7 @@ function drawHomeOut(tr,camx,camy,p){
     const ax=sx+w*.58, ay=gy-M*2.25, dx=w*.62, dy=M*.30;
     ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(ax+dx,ay+dy);ctx.lineTo(ax+dx,gy);ctx.stroke();
-    if(HOME_BAKING)HOME_BAKING.wash=[ax-sx,ay-gy,dx,dy];else homeWash(ax,ay,dx,dy,M,pal);
+    if(HOME_BAKING)HOME_BAKING.wash=[ax-sx,ay-gy,dx,dy];
   }
   if(homeHas("shop")){                                /* мастерская — верстак во дворе */
     const tx=sx-w*.95, tyy=gy;
@@ -262,8 +263,8 @@ function drawHomeOut(tr,camx,camy,p){
   ctx.beginPath();ctx.ellipse(dX+dw*.5,gy+1,M*1.1,3,0,0,TAU);ctx.fill();
 }
 /* ── живое у дома: дым, растяжки и огонь маяка, бельё (M245) ──
-   В 2D зовутся из drawHomeOut на месте; с видеокартой (21fa) — из кадра поверх
-   выпечки, с приёмником фигур VSINK (08c): верёвка, ткань и дым идут фигурами */
+   Из кадра поверх выпечки (21fa), с приёмником фигур VSINK (08c): верёвка,
+   ткань и дым идут фигурами. 2D-пути нет. */
 function homeSmoke(x,y,wind){
   if(typeof sdSmoke==="function")sdSmoke(x,y,wind,.7,3,9);
 }
@@ -291,8 +292,7 @@ function homeDock(mx,myy,M,pal){
     /* огонь маяка дышит, а не мигает: синус, не ступенька; ореол — светом (11va) */
     const bl=(Math.sin(G.t*.06)+1)*.5;
     const bc="rgba(255,150,90,"+(.35+bl*.6).toFixed(2)+")";
-    if(VSINK)vsinkDisc(mx,myy-M*4.6,3.2,bc,.6);
-    else{ctx.fillStyle=bc;ctx.beginPath();ctx.arc(mx,myy-M*4.6,3.2,0,TAU);ctx.fill();}
+    if(VSINK)vsinkDisc(mx,myy-M*4.6,3.2,bc,.6);   /* без приёмника огонь маяка не кладётся */
     placeLamp(mx,myy-M*4.6,M*5,[1,.56,.32],.35+.65*bl,M*.8);
 }
 function homeWash(ax,ay,dx,dy,M,pal){

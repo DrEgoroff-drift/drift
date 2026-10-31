@@ -689,11 +689,9 @@ function drawAllies(zx,zy,Z){
        без слова «перевозка» под именем это читалось сломанным ИИ.
        Подписи — слоем подписей (domLabel): на #c текст перекрашивался каждый кадр */
     const K=A.c.order&&ORDERS[A.c.order.kind],lk="al"+domLabelId(A.c);
-    ctx.font="9px ui-monospace,monospace";
-    domLabel(lk,x,y-26*clamp(Z,.3,1.4)-6,A.c.name.toUpperCase()+(K?" · "+K.ru.toUpperCase():""),ctx.font,"rgba(127,230,216,.75)","center");
-    ctx.font="7px ui-monospace,monospace";
-    domLabel(lk+"c",x,y+26*clamp(Z,.3,1.4)+10,"ВАШ ЭКИПАЖ",ctx.font,"rgba(127,230,216,.45)","center");
-    ctx.textAlign="left";
+    /* шрифт строкой в domLabel — без ctx.font на MAIN_CTX (G15) */
+    domLabel(lk,x,y-26*clamp(Z,.3,1.4)-6,A.c.name.toUpperCase()+(K?" · "+K.ru.toUpperCase():""),"9px ui-monospace,monospace","rgba(127,230,216,.75)","center");
+    domLabel(lk+"c",x,y+26*clamp(Z,.3,1.4)+10,"ВАШ ЭКИПАЖ","7px ui-monospace,monospace","rgba(127,230,216,.45)","center");
   }
 }
 /* сглаживание факела в 17c2 живёт по номеру корпуса (HG_THR): союзник на том же корпусе,

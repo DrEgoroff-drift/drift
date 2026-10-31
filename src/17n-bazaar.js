@@ -96,7 +96,7 @@ function bazHulk(id,dk){
         g.strokeStyle=rgba(mixc(luxPal(h).trim,[255,244,214],.3),.9);g.lineWidth=.4;g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);g.stroke();
         g.fillStyle="rgba(170,215,255,.21)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.3,0,TAU);g.fill();}
       else{g.fillStyle="rgba(255,140,70,.26)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);g.fill();}}
-    hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);
+    hullPart1(h,id,0);hullPart2(h);hullPart3(h,id);
     /* мёртвый: тёмная плёнка по силуэту, чтобы не читался живым бортом. Утоплена на 5 %:
        полоска корпуса из-под неё — обвод (тело, обвод, один свет). В 2D его давала
        случайно сглаженная кромка плёнки, на дальнем плане это был весь свет силуэта */
@@ -130,8 +130,10 @@ function drawBazaar(zx,zy,Z){
     hulks.push([hx,hy,hl.len*sc,ha]);
     /* точка остова (px,py) → экран: сдвиг к середине корпуса, поворот, масштаб */
     const P=(px,py)=>[hx+(px-c0)*cs-py*sn,hy+(px-c0)*sn+py*cs];
-    const [ox,oy]=P(0,0),K=bazHulk(id,dk);
-    if(K)gpuImage(pass,K.B,[{x:ox,y:oy,w:K.E*2*sc,h:K.E*2*sc,rot:ha}],{lod});
+    const [ox,oy]=P(0,0),[lx,ly]=sysLightDir(B.x,B.y);
+    /* остов телом под звездой (G15); без GPU — прежняя тёмная выпечка */
+    if(!hullGpuDraw(id,ox,oy,ha,sc,false,false,0,0,lx,ly)){
+      const K=bazHulk(id,dk);if(K)gpuImage(pass,K.B,[{x:ox,y:oy,w:K.E*2*sc,h:K.E*2*sc,rot:ha}],{lod});}
     if(GPU.sepH.length<8){if(!hl._R){let q=0;for(const p of hl.poly)q=Math.max(q,Math.hypot(p[0],p[1]));hl._R=q*1.3;}
       GPU.sepH.push([ox,oy,hl._R*sc]);}
     /* тент над остовом: два шеста по бортам и провисшая ткань между ними */

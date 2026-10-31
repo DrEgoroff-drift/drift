@@ -27,7 +27,7 @@ function earn(){}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.38";
+const VER="0.499.39";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -486,20 +486,11 @@ function makerJoint(h,x,y,s){
   }
   ctx.restore();
 }
-/* ── приметы и огни на корпусе ──
+/* ── приметы на корпусе ──
    Рисуется после тела и до общего света: примета — часть корабля, а не
-   наклейка поверх кадра. */
-/* бегущие огни строки Компании — единственное живое в навеске: испечённый
-   корпус (03e1) кладёт строку без них, а огни идут поверх отдельным проходом */
-function makerTicks(o,y){
-  ctx.fillStyle="rgba(200,235,255,.9)";
-  for(let k=0;k<5;k++)ctx.fillRect(o.x-o.l+k*o.l*.2+((G.t*.6)%(o.l*.2)),y-o.w*.4,o.l*.05,o.w*.8);
-}
-function makerLive(h){
-  for(const o of (h.outs||[]))if(o.k==="runline")
-    for(const s of [1,-1]){ctx.save();makerTicks(o,o.y*s);ctx.restore();}
-}
-function makerDraw(h,noTicks){
+   наклейка поверх кадра. Бегущие огни строки Компании — живым в
+   hullGpuInserts (17c2); 2D makerTicks/makerLive сняты (G15). */
+function makerDraw(h){
   const M=makerRow(h.by),u=h.bw;
   for(const o of (h.outs||[])){
     const sides=(o.k==="hook"||o.k==="plinth"||o.k==="comb"||o.k==="bowsprit"||o.k==="pennant")?[0]:[1,-1];
@@ -528,7 +519,6 @@ function makerDraw(h,noTicks){
       }else if(o.k==="runline"){
         ctx.fillStyle="rgba(120,190,255,.55)";
         ctx.fillRect(o.x-o.l,y-o.w*.5,o.l,o.w);
-        if(!noTicks)makerTicks(o,y);
       }else if(o.k==="plinth"){
         /* тумба под турель: Орднунг возит её даже на грузовике */
         ctx.fillStyle=rgba(h.body,1);ctx.strokeStyle=rgba(h.iron,.9);ctx.lineWidth=.5;

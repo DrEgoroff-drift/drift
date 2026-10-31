@@ -84,24 +84,4 @@ function hexa(h,a){
   const n=parseInt(h.slice(1),16);
   return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")";
 }
-/* ── полка в кабинете (M100) ──
-   Не вторая сотня ячеек: стена-музей считает редкости, а полка под ней —
-   отчёт, сложенный в том порядке, в каком его нашёл ЭТОТ игрок. Поэтому у
-   каждого прохождения она своя, и никакого текста на ней нет. */
-function drawAccountShelf(c,x0,fy,wall){
-  const list=loreList();
-  if(!list.length)return;
-  const y=fy-46;
-  c.fillStyle="rgba(0,0,0,.45)";c.fillRect(x0+5,y+4,46,1.6);   // сама полка
-  c.fillStyle="rgba(255,255,255,.07)";c.fillRect(x0+5,y+4,46,.6);
-  const n=Math.min(list.length,46);
-  for(let i=0;i<n;i++){
-    const R=LORE_BY_ID[list[i]];if(!R)continue;
-    const base=hex2rgb(surveyColor(R.chap));
-    /* планки стоят корешками, как папки: цвет приглушён к стене, иначе полка
-       перекрикивает стену-музей над ней */
-    const col=mixc(base,wall,.5);
-    const h=3+((R.seed>>>4)%3);
-    c.fillStyle=rgba(col,.85);c.fillRect(x0+5.5+i,y+4-h,.8,h);
-  }
-}
+/* 2D drawAccountShelf снят (G15): полка отчёта — в выпечке дома */

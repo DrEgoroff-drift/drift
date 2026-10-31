@@ -29,9 +29,9 @@ function peaceRite(by){
 function peaceSubbot(){const R=peaceRite("gt");return !!(R&&R.key==="subbot")||peaceDay()%7===5;}
 function peaceShip(k,seed,by,x,y,a,Z,al){
   if(x<-200||x>W+200||y<-200||y>H+200)return;
-  const s=fleetScale(Z)*.55;
-  ctx.save();if(al!=null)ctx.globalAlpha=al;ctx.translate(x,y);ctx.rotate(a);ctx.scale(s,s);
-  drawFleetShip({k,seed,by});ctx.restore();
+  const s=fleetScale(Z)*.55,c=Math.cos(a)*s,q=Math.sin(a)*s;
+  /* матрица прямо в fleetShipAt — без save/translate на MAIN_CTX (G15) */
+  fleetShipAt({k,seed,by},null,c,q,-q,c,x,y,al==null?1:al);
 }
 /* красный флаг Коммуны: полотнище — 14 полос, каждая сдвинута волной и затенена
    по наклону; звезда у древка. Ветра в пустоте нет — его делает поток станции */
@@ -64,10 +64,10 @@ const PEACE_SHIPS={gt:[["tug",0,"gt"],["tug",1,"gt"]],co:[["ferry",0,"co"],["pat
   or:[["fridge",0,"co"],["patrol",1,"or"],["patrol",2,"or"]],ra:[["tug",0,"ra"]]};
 function peaceShipsOf(S){return (S&&PEACE_SHIPS[S.by]||[]).map(q=>({k:q[0],seed:S.seed+q[1],by:q[2]}));}
 function drawPeaceFleet(zx,zy,Z){
-  const S=peaceHere();if(!S||typeof drawFleetShip!=="function")return;
+  const S=peaceHere();if(!S||typeof fleetShipAt!=="function")return;
   const t=G.t/60,{by,cx,cy,seed}=S,Q=PEACE_SHIPS[by],ps=(i,x,y,a)=>peaceShip(Q[i][0],seed+Q[i][1],Q[i][2],x,y,a,Z);
   /* только видеокарта (M818): табло, флаг, дроны и камень — фигурами в проходе сцены,
-     подписи — слоем подписей (DOM); корабли флота уже там (12ai1 fleetShipGpu). Без прохода сцены нет */
+     подписи — слоем подписей (DOM); корабли флота — fleetShipAt. Без прохода сцены нет */
   const pass=gpuScene();if(!pass)return;
   const SH=[],lab=(k,text,x,y,col)=>domLabel("pf"+k,x,y,text,uiFont(8),col,"center");
   if(by==="gt"&&!peaceSubbot()){

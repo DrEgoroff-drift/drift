@@ -110,7 +110,7 @@ function ckgPaint(c,P,FS){
   c.restore();
   cockpitPaint(c,P);
   /* на время выпечки глобальный ctx — этот холст (08ca): панель и лента рисуют свою неподвижную часть */
-  instrPanel(P,FS,"base");tapeStrip(P,FS,"base");
+  instrPanel(P,FS);tapeStrip(P);
   /* погашенные лампы стоек; горящая ложится поверх живой */
   c.fillStyle="rgba(255,255,255,.05)";
   for(let s=-1;s<=1;s+=2)for(const L of P.leds){c.beginPath();c.arc(s<0?P.pw*.42:W-P.pw*.42,L.y,L.r,0,TAU);c.fill();}

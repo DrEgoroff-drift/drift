@@ -33,7 +33,7 @@ function hullGpuBake(h,id,sb){
   if(b){const q=b.q;HG_LRU.delete(q);HG_LRU.set(q,[M,key]);return b;}
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
   /* кисти читают только корпус и ключ — выпечка после потери устройства та же */
-  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1,mat:sb});   /* mat — материал раз на корпус (08cd) */
+  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0);hullPart2(h);hullPart3(h,id);},{ss:1,mat:sb});   /* mat — материал раз на корпус (08cd) */
   if(!B)return null;
   if(M.size>=4){const k=M.keys().next().value;HG_LRU.delete(M.get(k).q);gpuBakeDrop(M.get(k).B);M.delete(k);}
   b={B,E:side/(2*sb),sb,q:{}};M.set(key,b);HG_LRU.set(b.q,[M,key]);
@@ -121,7 +121,7 @@ function hullGpuFlames(pass,h,id,x,y,a,sc,cb,thr,lvl){
   const r0=sp+rm*1.5,gc=cool?[.588,.804,1]:tint?mixc(tint,[255,255,255],.3).map(v=>v/255):[1,.62,.34];
   return {x:sx,y:sy,r0,r:r0+Math.max(fm*.3,rm*2.5),k:p,c:gc};
 }
-/* живые вставки поверх тела: огни строки Компании (makerTicks) и венцы (drawCrowns) —
+/* живые вставки поверх тела: огни строки Компании и венцы —
    те же места и цвета в осях корпуса; повёрнутые прямоугольники — капсулами */
 function hullGpuInserts(pass,h,id,S,sc,live){
   const O=[],A=[];
@@ -152,7 +152,7 @@ function hullStudioBake(S,h,id,sb){
   const key=hullBakeKey(id,sb),b=S.bk;if(b&&b.key===key&&b.h===h)return b;
   if(b)gpuBakeDrop(b.B);
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
-  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1,mat:sb,once:true});
+  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0);hullPart2(h);hullPart3(h,id);},{ss:1,mat:sb,once:true});
   return S.bk=B?{B,E,sb,key,h}:null;
 }
 /* S — студия держателя (объект, живёт у него): рамка w×h пикселей CSS при плотности nd, корабль id

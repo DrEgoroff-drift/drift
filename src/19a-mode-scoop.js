@@ -185,57 +185,48 @@ function scoopScrX(S,wx){return W*.34+(wx-S.x)*SCOOP_PX;}
 function drawScoop(){
   const S=G.scoop;
   const sh=(S.shake>0?(rndFx()-.5)*S.shake*7:0);
-  ctx.save();ctx.translate(0,sh);
   /* небо гиганта, глубина и гроза — одно живое поле на видеокарте (19a1) */
-  const pass=gpuScene(),LS=scoopGpuAir(pass,S,sh);
+  const pass=gpuScene();if(!pass)return;
+  const LS=scoopGpuAir(pass,S,sh);
   /* кромки сдвига с валами, набегающий поток и коридор сбора — второе поле (19a1).
      Коридор рисуется по тем же координатам, по каким считается столкновение
      (scoopCenter), иначе картинка врёт про правила */
   scoopGpuFlow(pass,S,sh,LS);
   const hband=H*(SCOOP_BAND[1]-SCOOP_BAND[0]);
-  /* подпись полосы читается поверх газа: плашка под ней, как у фишек, и
-     кегль по линейке интерфейса. На .55 без подложки лиловый газ съедал её
-     до контраста 2.6 (M443, детектор текста) */
+  /* подпись полосы — на #ovl (08bi): плашка и кегль по линейке; 2D-пути нет.
+     На .55 без подложки лиловый газ съедал её до контраста 2.6 (M443) */
   {
-    const u=uiK(),ly=scoopCenter(S.x-W*.34/SCOOP_PX)-hband*.5-6*u;
-    ctx.font=uiFont(9);ctx.textAlign="left";
-    const lw=ctx.measureText("ПОЛОСА СБОРА").width;
-    ctx.fillStyle="rgba(5,7,12,.62)";ctx.fillRect(10,ly-10*u,lw+8*u,13*u);
-    ctx.fillStyle="rgba(127,224,200,.92)";
-    ctx.fillText("ПОЛОСА СБОРА",14,ly);
+    const u=uiK(),ly=scoopCenter(S.x-W*.34/SCOOP_PX)-hband*.5-6*u+sh;
+    const fnt=uiFont(9),lw=gcMeasure(fnt,"ПОЛОСА СБОРА").width;
+    ovRect(10,ly-10*u,10+lw+8*u,ly+3*u,"rgba(5,7,12,.62)");
+    ovText(OVL.uq,14,ly,"ПОЛОСА СБОРА",fnt,"rgba(127,224,200,.92)","left","alphabetic",1,1);
   }
   /* помехи, след, раструбы и сам корабль — на видеокарте, тем же светом звезды (19a1).
      Ядро — тело с глазом и рукавами, плюмаж несёт, град — колотый лёд */
   scoopGpuThings(pass,S,sh,LS);
   hangAt("scoop",W*.34,S.y+sh,30);   /* корабль ковша — точка слов (M803) */
-  ctx.restore();
-  /* приборы: нагрев — главный, он же и убивает */
+  /* приборы: нагрев — главный, он же и убивает. На #ovl, растёт с бортом (M221) */
   /* ── прибор, а не пустая рамка (M233) ──
-     Плашка была на 20 px, а подпись печаталась на by+16 — то есть НА нижней
-     кромке рамки, наполовину снаружи; при нуле нагрева заливки нет вовсе, и
-     весь прибор читался пустым прямоугольником с приблудной строкой. У шкалы
-     обязан быть жёлоб (видно, что это шкала, даже когда пусто) и порог, за
+     У шкалы обязан быть жёлоб (видно, что это шкала, даже когда пусто) и порог, за
      которым горит корпус, — тогда ноль означает «холодно», а не «сломано». */
-  /* прибор — интерфейс и растёт с бортом (M221): в окне 1920 плашка и её
-     подпись стояли в 9 px рядом с раздутыми панелями (M443, детектор кегля) */
-  withScale(uiK(),()=>{
+  withFrame(uiK(),()=>{
+    const U=(typeof UIK==="number"&&UIK>0)?UIK:1,Q=OVL.uq,n=()=>ovNd()*U;
+    const R=(x0,y0,x1,y1,c)=>{const k=n();ovPush(Q,x0*k,y0*k,x1*k,y1*k,c,0,0,0,0,null);};
     const bw=Math.min(W-40,300),bx=W/2-bw/2,by=H*.145;   /* ниже угловых панелей: на 26 полоса налезала на них */
-    ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(bx-8,by-7,bw+16,30);
-    ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1;ctx.strokeRect(bx-8.5,by-7.5,bw+17,31);
+    R(bx-8,by-7,bx-8+bw+16,by-7+30,ovPm("rgba(6,10,16,.72)"));
+    /* волосяной обвод — четыре полосы, как strokeRect со сдвигом .5 */
+    {const c=ovPm("rgba(242,178,92,.5)"),x0=bx-8.5,y0=by-7.5,x1=x0+bw+17,y1=y0+31;
+      R(x0,y0,x1,y0+1,c);R(x0,y1-1,x1,y1,c);R(x0,y0+1,x0+1,y1-1,c);R(x1-1,y0+1,x1,y1-1,c);}
     const hk=clamp(S.heat/100,0,1);
-    ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(bx,by,bw,8);          // жёлоб шкалы
-    ctx.fillStyle="rgba(242,178,92,.16)";ctx.fillRect(bx,by,bw,1);
-    ctx.fillStyle="rgba(255,80,60,.18)";ctx.fillRect(bx+bw*.8,by,bw*.2,8);  // порог пожара
-    ctx.fillStyle=hk>.8?"rgba(255,80,60,.95)":(hk>.5?"rgba(255,180,80,.9)":"rgba(127,224,200,.85)");
-    ctx.fillRect(bx,by,bw*hk,8);
-    ctx.fillStyle="rgba(242,178,92,.35)";                              // деления по четвертям
-    for(let i=1;i<4;i++)ctx.fillRect(bx+bw*i/4,by,1,8);
-    ctx.fillStyle="rgba(242,178,92,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText("НАГРЕВ КОРПУСА "+Math.round(S.heat)+"%",W/2,by+19);
+    R(bx,by,bx+bw,by+8,ovPm("rgba(0,0,0,.45)"));          // жёлоб шкалы
+    R(bx,by,bx+bw,by+1,ovPm("rgba(242,178,92,.16)"));
+    R(bx+bw*.8,by,bx+bw,by+8,ovPm("rgba(255,80,60,.18)"));  // порог пожара
+    R(bx,by,bx+bw*hk,by+8,ovPm(hk>.8?"rgba(255,80,60,.95)":(hk>.5?"rgba(255,180,80,.9)":"rgba(127,224,200,.85)")));
+    for(let i=1;i<4;i++)R(bx+bw*i/4,by,bx+bw*i/4+1,by+8,ovPm("rgba(242,178,92,.35)"));
+    ovText(Q,(W/2)*U,(by+19)*U,"НАГРЕВ КОРПУСА "+Math.round(S.heat)+"%","9px ui-monospace,monospace","rgba(242,178,92,.85)","center","alphabetic",1,U);
     if(S.heat>=100){
-      ctx.fillStyle=(Math.sin(G.t*.3)>0)?"rgba(255,70,50,.9)":"rgba(255,70,50,.3)";
-      ctx.textAlign="center";ctx.font="12px ui-monospace,monospace";
-      ctx.fillText("ПЕРЕГРЕВ · КОРПУС ГОРИТ",W/2,by+42);   /* под выросшей плашкой */
+      const a=(Math.sin(G.t*.3)>0)?.9:.3;
+      ovText(Q,(W/2)*U,(by+42)*U,"ПЕРЕГРЕВ · КОРПУС ГОРИТ","12px ui-monospace,monospace","rgba(255,70,50,"+a+")","center","alphabetic",1,U);
     }
   });
 }

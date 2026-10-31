@@ -143,6 +143,7 @@ function settlePlan(S,tr,p){
    Подпорная стенка снизу, срезанный борт сверху, улица между. Рисуется по
    настоящему профилю: где склон ниже полки — насыпь, где выше — врез. */
 function sdTerrace(P,tr,camx,camy,pal,p){
+  if(ctx===MAIN_CTX)return;   /* только печка дома (21f); на #c полки нет (G15) */
   const y0=P.baseY-camy, pad=SD_MAN*1.6;
   const xa=P.x0-pad, xb=P.x1+pad;
   const rr=rng(hashi(P.seed,7,0x5A11));
@@ -215,6 +216,7 @@ function sdTerrace(P,tr,camx,camy,pal,p){
    Общий приём для всех построек: сначала силуэт одной заливкой, потом свет
    одним градиентом, потом один обвод. Детали кладутся внутрь. */
 function sdBody(path,fill,lit,alpha){
+  if(ctx===MAIN_CTX)return;   /* кисти старого дома — только печка (G15) */
   ctx.save();
   ctx.beginPath();path();
   ctx.fillStyle=fill;ctx.fill();
@@ -234,18 +236,19 @@ function sdBody(path,fill,lit,alpha){
 let SD_SHSINK=null;
 function sdShadow(x,y,w,h){
   if(SD_SHSINK){SD_SHSINK.push([x,y,w,h]);return;}
+  /* без приёмника — только печка (старый дом 21f); на #c тень не кладём (G15) */
+  if(ctx===MAIN_CTX)return;
   const sx=(typeof SUN_DIR==="object")?SUN_DIR.x:.55;
   const sy=(typeof SUN_DIR==="object")?SUN_DIR.y:-.83;
   const low=clamp(1-Math.abs(sy),0,1);
-  ctx.save();
   ctx.fillStyle="rgba(0,0,0,"+(.30*(1-low*.35)).toFixed(3)+")";
   ctx.beginPath();
   ctx.ellipse(x-sx*w*(.18+low*.75),y-1,w*(.62+low*.5),Math.max(2.5,h*.09),0,0,TAU);
   ctx.fill();
-  ctx.restore();
 }
 /* доски, брёвна, камень — микрорельеф стены; без него дом остаётся плашкой */
 function sdWallTex(x,y,w,h,kind,seed,col){
+  if(ctx===MAIN_CTX)return;
   const r=rng(hashi(seed,11,0x117));
   ctx.save();
   ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
@@ -282,6 +285,7 @@ function sdWallTex(x,y,w,h,kind,seed,col){
 }
 /* кровля: солома, доска, плитка — три разных силуэта, а не один треугольник */
 function sdRoof(x,y,w,h,kind,pal,seed){
+  if(ctx===MAIN_CTX)return;
   const lit=sdRGB(pal.roofLit),dark=sdRGB(pal.roofDark),mid=sdRGB(pal.roof);
   const eave=w*.14;
   if(kind==="thatch"){
@@ -347,6 +351,7 @@ function sdRoof(x,y,w,h,kind,pal,seed){
 }
 /* окно: рама, стекло, ночью свет и тень живущего за ним */
 function sdWindow(x,y,w,h,pal,nite,seed){
+  if(ctx===MAIN_CTX)return;
   /* Окно из двух прямоугольников читалось наклейкой (крупный план M169).
      Настоящее окно — это ПРОЁМ (тень в толщину стены), стекло с косым бликом,
      переплёт и подоконник со своей тенью на стене. */
@@ -385,6 +390,7 @@ function sdWindow(x,y,w,h,pal,nite,seed){
 }
 /* дверь: косяк, полотно с доской, петли и порог */
 function sdDoor(x,y,w,h,wood,flip){
+  if(ctx===MAIN_CTX)return;
   ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(x-1,y-h-1,w+2,h+1);
   const g=ctx.createLinearGradient(x,0,x+w,0);
   g.addColorStop(0,sdRGB(sdMix(wood,[0,0,0],.45)));
@@ -404,6 +410,7 @@ function sdDoor(x,y,w,h,wood,flip){
 }
 /* поленница: торцы брёвен кружками, а не решётка из квадратов */
 function sdWoodpile(x,y,w,h,wood,seed){
+  if(ctx===MAIN_CTX)return;
   const r=rng(hashi(seed,23,0x10CD));
   ctx.fillStyle="rgba(0,0,0,.26)";
   ctx.fillRect(x,y-h,w,h);

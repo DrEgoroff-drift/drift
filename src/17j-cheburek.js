@@ -80,9 +80,14 @@ function drawCheburek(zx,zy,Z){
   const x=zx(C.x),y=zy(C.y);
   if(x<-80||x>W+80||y<-80||y>H+80){if(GPU.dev&&pbOnScreen(x-80,y-80,160,160,.6))chebAhead(Z);return;}
   const pass=gpuScene();if(!pass)return;
-  const s=clamp(Z,.6,1.5),br=.86+.1*Math.sin(G.t*.045),A=chebBake(),ca=Math.cos(C.a),sa=Math.sin(C.a);
-  if(!A)return;
+  const s=clamp(Z,.6,1.5),br=.86+.1*Math.sin(G.t*.045),ca=Math.cos(C.a),sa=Math.sin(C.a);
   const P=(px,py)=>[x+(px*ca-py*sa)*s,y+(px*sa+py*ca)*s];   /* точка лодки → экран */
+  /* тело (17c2k); спрайт cv/em — только если тело не легло */
+  const onBody=bodyCheburek(x,y,C.a,s,C.x,C.y,CHEB_LAMP*br);
+  if(!onBody){const A=chebBake();if(!A)return;
+    const [cx,cy]=P(CHEB_X0+CHEB_BW/2,CHEB_Y0+CHEB_BH/2),bw=CHEB_BW*s,bh=CHEB_BH*s;
+    gpuImage(pass,A.cv,[{x:cx,y:cy,w:bw,h:bh,rot:C.a}],{lod:CHEB_LOD});
+    gpuImage(pass,A.em,[{x:cx,y:cy,w:bw,h:bh,rot:C.a,a:CHEB_LAMP*br}],{blend:"add",lod:CHEB_LOD});}
   /* пар — назад и в сторону; у окна подсвечен снизу тёплым (низ клуба ближе к лампе) */
   const steam=[],warm=[];
   for(let i=0;i<4;i++){
@@ -95,25 +100,22 @@ function drawCheburek(zx,zy,Z){
   const noz=[1,nx,ny,(1.2+fl*.5)*s,0,0,.8*s,255,150,70,.55+.3*fl];   /* сопло */
   const k=Math.max(1,s)*(typeof UIK==="number"?UIK:1),by=y-20*s-8*k,S=chebSignBake(Math.round(8*k),Math.round(8*k)/8);
   const d=DPR,sl=Math.round((x-S.tw/2)*d)/d,st=Math.round((by-7.5*k)*d)/d,sw=S.w/d,sh=S.h/d;
-  {
-    const [cx,cy]=P(CHEB_X0+CHEB_BW/2,CHEB_Y0+CHEB_BH/2),bw=CHEB_BW*s,bh=CHEB_BH*s;
-    gpuImage(pass,A.cv,[{x:cx,y:cy,w:bw,h:bh,rot:C.a}],{lod:CHEB_LOD});
-    gpuImage(pass,A.em,[{x:cx,y:cy,w:bw,h:bh,rot:C.a,a:CHEB_LAMP*br}],{blend:"add",lod:CHEB_LOD});
-    gpuShapes(pass,steam);
-    gpuShapes(pass,warm.concat([noz]),{blend:"add"});
-    /* вывеска — в экранных координатах, чтобы читалась при любом курсе лодки; без
-       поворота: детекторы и глаз читают доску там, где она стоит */
-    gpuShapes(pass,[[2,x-S.tw*.3,by+7.5*k,x-4*s,y-6*s,.4,0,200,190,170,.45],[2,x+S.tw*.3,by+7.5*k,x+4*s,y-6*s,.4,0,200,190,170,.45]]);
-    if(S.B)gpuImage(pass,S.B,[{x:sl+sw/2,y:st+sh/2,w:sw,h:sh}]);
-  }
+  gpuShapes(pass,steam);
+  gpuShapes(pass,warm.concat([noz]),{blend:"add"});
+  /* вывеска — в экранных координатах, чтобы читалась при любом курсе лодки; без
+     поворота: детекторы и глаз читают доску там, где она стоит */
+  gpuShapes(pass,[[2,x-S.tw*.3,by+7.5*k,x-4*s,y-6*s,.4,0,200,190,170,.45],[2,x+S.tw*.3,by+7.5*k,x+4*s,y-6*s,.4,0,200,190,170,.45]]);
+  if(S.B)gpuImage(pass,S.B,[{x:sl+sw/2,y:st+sh/2,w:sw,h:sh}]);
 }
 /* лодка на подлёте (за краем, в экране от края): лодку, её свет и доску печём заранее, в
    бюджете prebake (17a0) — на глаза выходит готовой, в кадре ни одной новой цели */
 function chebAhead(Z){
   const s=clamp(Z,.6,1.5),F=Math.round(8*Math.max(1,s)*(typeof UIK==="number"?UIK:1)),d=DPR;
   const ok=B=>B&&B.dev===GPU.dev,Sg=CHEB_SIGN.get(F+"|"+F/8+"|"+d);
-  if(ok(CHEB_ART.get("cv"))&&ok(CHEB_ART.get("em"))&&Sg&&ok(Sg.B))return;
-  prebake("cheb|"+F+"|"+d,function*(){chebBake();yield;chebSignBake(F,F/8);},false);
+  /* корпус — тело 17c2k: печь cv/em только запасным путём */
+  const needHull=!bodyGpu();
+  if((!needHull||(ok(CHEB_ART.get("cv"))&&ok(CHEB_ART.get("em"))))&&Sg&&ok(Sg.B))return;
+  prebake("cheb|"+F+"|"+d,function*(){if(needHull){chebBake();yield;}chebSignBake(F,F/8);},false);
 }
 function chebInteract(sh){
   const C=chebHere();if(!C)return false;

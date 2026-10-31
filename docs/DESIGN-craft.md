@@ -220,10 +220,11 @@ Variance is inherited by child segments with reduction, and is **assigned per se
 what makes one edge of a blot sharp and another diffuse. Colours are not blended but interleaved
 by layer — five red, then five yellow.
 
-Drift's `nebula()` (`16-flight:49`) is `createImageData` at 192×192 with two fbm fields stretched
-over the screen. Honest noise, but it has no edges: the cloud is uniformly soft everywhere,
-because its softness comes from one function. That is precisely the failure watercolour cures.
-The cost is one-off, not per-frame — it bakes into `screenLayer`.
+The title used to bake that failure: `nebula()` in `16-flight` was `createImageData` at 192×192,
+two fbm fields stretched over the screen, soft everywhere because the softness was one function.
+That tile is gone. `gpuSpaceTitle` (`16g`) evaluates the two fields per pixel and keeps a sixth
+octave the grid had cut off; the system gas is the volume in `16gb`. The diagnosis still binds
+anything filled by a single smooth function.
 
 **Flow fields.** A grid of angles from noise; particles follow it and leave trails. Drift has
 fbm, but uses it only as a *height* — a value at a point. It is used as a *direction* nowhere.

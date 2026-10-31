@@ -307,8 +307,11 @@ fn hole(p:vec2f,hv:vec4f,nb:vec4f,t:f32,px:f32)->vec4f{
     /* четыре выборки поперёк кольца мешают медь с синим — выходит серое; цвет
        возвращаем, растягивая от максимума */
     let bm=max(bg.r,max(bg.g,bg.b));bg=max(vec3f(bm)-(vec3f(bm)-bg)*1.8,vec3f(0.));
-    let us=(src-nb.xy)/nb.zw;
-    let a=wl*select(0.,1.,nb.z>0.)*smoothstep(0.,.03,min(min(us.x,us.y),min(1.-us.x,1.-us.y)));
+    /* nb.z==0 — объёма ещё нет, делить на нулевую рамку нельзя: NaN красит кольцо */
+    var edge=1.;
+    if(nb.z>0.){let us=(src-nb.xy)/nb.zw;
+      edge=smoothstep(0.,.03,min(min(us.x,us.y),min(1.-us.x,1.-us.y)));}
+    let a=wl*select(0.,1.,nb.z>0.)*edge;
     acc=vec4f(bg*(.85+.15*min(mag,3.))*a+vec3f(1.,.96,.9)*st*wl,a);
   }
   /* 2. задняя половина диска — за тенью */
@@ -425,13 +428,9 @@ function gsyStarU(sys,ox,oy,R){
   let kind=0,big=0;
   let tex=null;
   if(st.kind==="hole"){kind=2;S[28]=ox;S[29]=oy;S[30]=R;S[31]=(sys.seed%997)*.013;
-    /* линзе нужна туманность фона — та же текстура и та же рамка, что у 16g */
-    /* объёмная туманность (16gb) есть — линза собирает её: старый тайл поверх неё
-       прятал у дыры и газ, и джеты. Рамка — ровно экран, за его краем линза гаснет */
-    const C=GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys?null:sysNebComp(sys);
-    if(!C&&GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys){S[32]=0;S[33]=0;S[34]=W;S[35]=H;tex={view:GNB.view};}
-    if(C){const cx=(W/2-ox)*.06,cy=(H/2-oy)*.06,ex=W*.24,ey=H*.24;
-      S[32]=-ex/2+clamp(-cx*.012,-ex/2,ex/2);S[33]=-ey/2+clamp(-cy*.012,-ey/2,ey/2);S[34]=W+ex;S[35]=H+ey;tex=C.cv;}}
+    /* линза собирает объём (16gb). Пока его нет — фон чёрный: старый тайл
+       прятал у дыры и газ, и джеты. Рамка — ровно экран, за краем линза гаснет */
+    if(GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys){S[32]=0;S[33]=0;S[34]=W;S[35]=H;tex={view:GNB.view};}}
   else if(st.kind==="neutron"){kind=1;const per=110;
     S[28]=ox;S[29]=oy;S[30]=R;S[31]=Math.pow(Math.max(0,Math.sin((G.t%per)/per*Math.PI)),8);}
   else if(st.kind==="binary"){const a=G.t*.0022+st.phase,d=R*st.sep*1.6;

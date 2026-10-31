@@ -102,10 +102,10 @@ const WX_PLANES=[
   {s:1.95,sr:.75,l:2.1,w:2.3,a:.78,px:.26,r:1.5}
 ];
 /* ── ближние осадки на видеокарте (G15) ──
-   Тот же расчёт, что у 2D ниже (те же числа h01, планы, ветер), но фигурами набора
-   (08c) в проход поверх мира, без #c: пелена — вид 8, полосы тумана и пласты пыли — вид 7,
+   Те же числа h01, планы и ветер, что были на холсте; фигурами набора (08c) в проход
+   поверх мира, без #c: пелена — вид 8, полосы тумана и пласты пыли — вид 7,
    штрихи — капсулы, снег, пепел и угли — круги, молния — вспышка и ломаная капсулами.
-   Точки — в мерке мира 2D; в кадр — через lifeHere (withScale) */
+   Точки — в мерке мира 2D; в кадр — через lifeHere (withScale). Запасного кадра нет. */
 function weatherGpu(p,camx,camy,layer,w,k){
   if(!GPU.on)return false;
   const pass=gpuNext();if(!pass)return false;
@@ -189,130 +189,5 @@ function drawWeather(p,camx,camy,layer){
   if(!w.kind)return;
   const k=weatherPower(p);
   if(k<.04)return;
-  if(weatherGpu(p,camx,camy,layer,w,k))return;
-  const W0=WEATHER[w.kind];
-  const gp=G.opts.gfx.particles;
-  const n=Math.round(W0.n*k*gp);
-  const wind=WIND*2.2+ (w.kind==="dust"?2.6*k:0);
-  ctx.save();
-  /* общая пелена: она делает бурю бурей сильнее, чем сами частицы */
-  if(k>.12){
-    const c=W0.col,kq=Math.round(k*40)/40;
-    /* пелена — слой (18c): сила бури квантуется до 1/40, чтобы слоёв было
-       штук десять за всю бурю, а не по одному на кадр */
-    ctx.drawImage(screenLayer("veil|"+w.kind+"|"+kq,()=>{
-      const g=ctx.createLinearGradient(0,0,0,H);
-      g.addColorStop(0,"rgba("+c.join(",")+","+(W0.tint*kq*.5).toFixed(3)+")");
-      g.addColorStop(.55,"rgba("+c.join(",")+","+(W0.tint*kq).toFixed(3)+")");
-      g.addColorStop(1,"rgba("+c.join(",")+","+(W0.tint*kq*.7).toFixed(3)+")");
-      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    }),0,0,W,H);
-  }
-  const c=W0.col;
-  const t=G.t;
-  if(w.kind==="fog"){
-    /* туман — не частицы, а полосы, ползущие с разной скоростью */
-    for(let i=0;i<n;i++){
-      const r1=h01(i,1,0xF06), r2=h01(i,2,0xF06), r3=h01(i,3,0xF06);
-      const y=r1*H;
-      const spd=.12+r2*.5;
-      const x=((r3*2400+t*spd*(1+wind*.2)-camx*.35)%(W+520)+W+520)%(W+520)-260;
-      const ww=140+r2*320, hh=14+r3*40;
-      const g=ctx.createLinearGradient(x,0,x+ww,0);
-      g.addColorStop(0,"rgba("+c.join(",")+",0)");
-      g.addColorStop(.5,"rgba("+c.join(",")+","+(.05+r2*.09)*k+")");
-      g.addColorStop(1,"rgba("+c.join(",")+",0)");
-      ctx.fillStyle=g;
-      ctx.fillRect(x,y,ww,hh);
-    }
-    ctx.restore();return;
-  }
-  ctx.lineCap="round";
-  /* четыре плана глубины (дизайн 23.09): дальний — тонкий, бледный, ленивый,
-     ближний — толстый, яркий, быстрый; у каждого свой параллакс от камеры.
-     Скорость по-прежнему своя у каждой капли (разброс внутри плана), а
-     прозрачность — у плана: все капли плана идут ОДНИМ контуром. Было 160
-     штрихов со своей альфой каждый — стало до восьми (план × небо/грунт) */
-  const PL=WX_PLANES,Q=layer==="far"?[0,1]:layer==="near"?[2,3]:[0,1,2,3];
-  const paths=[],cnt=[];for(let j=0;j<8;j++){paths.push(new Path2D());cnt.push(0);}
-  const dr=W0.dir||0,sgn=wind<0?-1:1,hor=H*SURF_HOR;
-  for(let i=0;i<n;i++){
-    const r1=h01(i,1,0x5E7), r2=h01(i,2,0x5E7), r3=h01(i,3,0x5E7);
-    const q=r2<.45?0:r2<.74?1:r2<.9?2:3;
-    if(Q.indexOf(q)<0)continue;
-    const P=PL[q],rs=h01(i,4,0x5E7);
-    const spd=W0.spd*(P.s+rs*P.sr);
-    const fall=(r1*1400+t*spd)%(H+80);
-    const drift=(r3*1600+t*spd*wind*.5-camx*P.px)%(W+160);
-    const x=((drift)%(W+160)+W+160)%(W+160)-80;
-    const y=fall-40;
-    if(W0.len>0){
-      /* штрих по земле глуше и короче неба (§14) — свой контур плана */
-      const gnd=y>hor?1:0,lk=P.l*(gnd?.7:1);
-      const vx=sgn*W0.len*lk*(dr*3.4+Math.abs(wind)*.4),vy=W0.len*lk*(1-dr*.82);
-      const pa=paths[q*2+gnd];pa.moveTo(x,y);pa.lineTo(x+vx,y+vy);cnt[q*2+gnd]++;
-    }else{
-      /* снег и пепел планируют: фаза покачивания своя у каждой частицы */
-      const sw=Math.sin(t*.02*(.5+r2)+r3*TAU)*(10+r2*22),rr=(.9+r2*2.1)*P.r;
-      const pa=paths[q*2];pa.moveTo(x+sw+wind*8+rr,y);pa.arc(x+sw+wind*8,y,rr,0,TAU);cnt[q*2]++;
-    }
-  }
-  const cs=c.join(",");
-  for(const q of Q){
-    const P=PL[q];
-    if(W0.len>0){
-      ctx.lineWidth=(w.kind==="rain"?1:1.4)*P.w;
-      for(let g=0;g<2;g++)if(cnt[q*2+g]){ctx.strokeStyle="rgba("+cs+","+(P.a*k*(g?.45:1)).toFixed(3)+")";ctx.stroke(paths[q*2+g]);}
-    }else if(cnt[q*2]){ctx.fillStyle="rgba("+cs+","+(P.a*k*.9).toFixed(3)+")";ctx.fill(paths[q*2]);}
-  }
-  /* полотна пыли: широкие полупрозрачные пласты, проносящиеся поперёк кадра.
-     Именно они делают бурю бурей — отдельные штрихи глаз читает как помехи,
-     а пласт закрывает половину мира и заставляет ждать, пока пройдёт. */
-  if(W0.sheets&&k>.25){
-    const sgn=wind<0?-1:1;
-    for(let i=0;i<4;i++){
-      const r1=h01(i,21,0xD457), r2=h01(i,22,0xD457);
-      const spd=(1.6+r1*3.2)*(1+k);
-      const x=((r2*3000+t*spd*sgn)%(W+900)+W+900)%(W+900)-450;
-      const y=H*(.15+r1*.6), hh=H*(.18+r2*.35);
-      const g=ctx.createLinearGradient(x,0,x+520,0);
-      g.addColorStop(0,"rgba("+c.join(",")+",0)");
-      g.addColorStop(.5,"rgba("+c.join(",")+","+(.10+r1*.12)*k+")");
-      g.addColorStop(1,"rgba("+c.join(",")+",0)");
-      ctx.fillStyle=g;ctx.fillRect(x,y-hh*.5,520,hh);
-    }
-  }
-  /* угли в пепле: редкие, живые, единственный тёплый свет в сером */
-  if(w.kind==="ash"&&k>.3){
-    for(let i=0;i<Math.round(12*k*gp);i++){
-      const r1=h01(i,7,0xE12), r2=h01(i,8,0xE12);
-      const y=((r1*1400+t*1.1)%(H+60))-30;
-      const x=((r2*1700+t*.7*wind-camx*.1)%(W+120)+W+120)%(W+120)-60;
-      const gl=.4+.6*Math.abs(Math.sin(t*.05+i));
-      ctx.fillStyle="rgba(255,"+Math.round(120+80*gl)+",60,"+(.5*gl*k).toFixed(2)+")";
-      ctx.beginPath();ctx.arc(x,y,1.4+gl,0,TAU);ctx.fill();
-    }
-  }
-  /* молния в сильном дожде: вспышка кадром, потом ветвистый разряд */
-  if(w.kind==="rain"&&k>.5){
-    const per=420;
-    const ph=(t%per)/per;
-    if(ph<.06){
-      const f=Math.pow(1-ph/.06,2);
-      ctx.fillStyle="rgba(200,225,255,"+(.30*f*k).toFixed(3)+")";
-      ctx.fillRect(0,0,W,H);
-      const bx=W*(((t/per)|0)%7)/7+W*.08;
-      ctx.strokeStyle="rgba(226,240,255,"+(.8*f).toFixed(2)+")";
-      ctx.lineWidth=1.8;
-      ctx.beginPath();
-      let lx=bx,ly=0;
-      ctx.moveTo(lx,ly);
-      for(let s=0;s<7;s++){
-        lx+=(h01(s,(t/per)|0,0x1177)-.5)*70;ly+=H*.09;
-        ctx.lineTo(lx,ly);
-      }
-      ctx.stroke();
-    }
-  }
-  ctx.restore();
+  weatherGpu(p,camx,camy,layer,w,k);   /* ближние — фигурами (G15); запасного кадра на холсте нет */
 }

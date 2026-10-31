@@ -1,15 +1,15 @@
 /* ══════════════ космос на видеокарте (G1, docs/DESIGN-gpu.md) ══════════════
-   Фон системы и заставки: туманность (её печёт 2D — сюда она ложится текстурой),
-   звёзды и пыль — формулами в шейдере, один вызов на слой вместо сотен fillRect.
-   Логика та же, что у drawStars / drawSpaceDust (16-flight, 16a-space): те же
+   Фон системы — объём (16gb). Заставка — два слоя газа формулой на пиксель,
+   без тайла 192². Звёзды и пыль — формулами в шейдере, один вызов на слой.
+   Логика та же, что у таблиц 16-flight и пыли 16a: те же
    таблицы, тот же ход камеры starMove и закон «движение, а не мигание».
    Лучше, чем в 2D:
    · звезда — точка с ореолом: круглое тело той же площади, мягкий гауссов ореол
      у ярких и близких, лучи крестика — сходящие на нет, а не палочки в пиксель;
      на ходу тело — капсула-прочерк, ореол и лучи гаснут плавно, без щелчка;
-   · туманность живая: печёная текстура (192² на заставке, свой холст в системе)
-     растянута на весь экран и была мыльной — шейдер добавляет ей нити и тёмные
-     прожилки в полном разрешении экрана и медленно ведёт их течением;
+   · заставка: те же два поля, что были в тайле 192², но на каждом пикселе.
+     Тайл, растянутый на экран, мылил кромку; шестая октава рвёт её там, где
+     сетка 192 её срезала. Нити и тёмные прожилки едут течением, как раньше;
    · пыль с глубиной резкости: дальний слой — мелкий и резкий, ближний — крупные
      размытые пятна. В 2D было наоборот — самые крупные пылинки летели в самом
      дальнем слое (s 1.7 при par .22), и ближний план читался как дальний. */
@@ -100,19 +100,30 @@ const GSP_DUST=`
     o.col=vec4f(col,al);o.g=vec4f(c*dpr,r*dpr,0.);o.h=vec4f(select(1.,3.,soft),0.,0.,0.);
   }
   return o;}`;
-/* туманность: прямоугольник с текстурой (x,y,w,h) в пикселях CSS, (альфа, бикубика,
-   сила живой детали); деталь — шум в пикселях CSS прямоугольника, едет вместе с ним */
+/* заставка: прямоугольник газа (x,y,w,h) в пикселях CSS, (альфа слоя, —, сила нитей,
+   сдвиг нитей). Цвет — два поля на пиксель, как у бывшего тайла 192², плюс октава,
+   которую та сетка срезала. Нити едут в пикселях прямоугольника. */
 const GSP_QUAD=`
 @group(0) @binding(1) var<storage,read> q:array<vec4f>;
-@group(0) @binding(2) var tx:texture_2d<f32>;
-@group(0) @binding(3) var sm:sampler;
 struct QO{@builtin(position) p:vec4f,@location(0) uv:vec2f,@location(1) @interpolate(flat) k:vec4f,@location(2) @interpolate(flat) r:vec4f};
-fn gh(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
-fn gn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
-  return mix(mix(gh(i),gh(i+vec2f(1.,0.)),w.x),mix(gh(i+vec2f(0.,1.)),gh(i+vec2f(1.,1.)),w.x),w.y);}
+fn gh(p:vec2f,s:f32)->f32{var q=fract(vec3f(p.x+s,p.y,p.x)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
+fn gn(p:vec2f,s:f32)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
+  return mix(mix(gh(i,s),gh(i+vec2f(1.,0.),s),w.x),mix(gh(i+vec2f(0.,1.),s),gh(i+vec2f(1.,1.),s),w.x),w.y);}
 fn gf(p0:vec2f)->f32{var p=p0;var s=0.;var a=.5;
-  for(var k=0;k<5;k++){s=s+a*gn(p);p=mat2x2f(1.6,1.2,-1.2,1.6)*p+vec2f(3.1,7.7);a=a*.5;}
+  for(var k=0;k<5;k++){s=s+a*gn(p,0.);p=mat2x2f(1.6,1.2,-1.2,1.6)*p+vec2f(3.1,7.7);a=a*.5;}
   return s;}
+fn gfn(p0:vec2f,n:i32,sd:f32)->f32{var p=p0;var s=0.;var a=.5;var m=0.;
+  for(var k=0;k<6;k++){if(k<n){s=s+a*gn(p,sd);m=m+a;}
+    p=mat2x2f(1.6,1.2,-1.2,1.6)*p+vec2f(3.1,7.7);a=a*.5;}
+  return s/max(m,1e-4);}
+fn nebCol(p:vec2f)->vec4f{
+  /* два зерна, как у бывших fbm2(1337) и fbm2(911): одно поле синее, другое тёплое */
+  let nick=gfn(p*2.15+vec2f(1.7,4.2),3,4.2)-.5;
+  let a=clamp((gfn(p,5,1.7)+nick*.14-.44)*2.5,0.,1.);
+  let b=clamp((gfn(p+vec2f(5.3,-2.1),4,9.1)+nick*.08-.46)*2.3,0.,1.);
+  let rgb=vec3f(36.+b*140.,26.+a*74.+b*38.,66.+a*158.)/255.;
+  let al=clamp(pow(a,1.8)*.52+pow(b,2.1)*.3,0.,1.);
+  return vec4f(rgb,al);}
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->QO{
   let r=q[ii*2u];let k=q[ii*2u+1u];let cn=corn(vi);
   var o:QO;o.p=toClip((r.xy+cn*r.zw)*u.b.x);o.uv=cn;o.k=k;o.r=r;return o;}
@@ -120,17 +131,16 @@ fn gf(p0:vec2f)->f32{var p=p0;var s=0.;var a=.5;
   let t=u.b.y*.0005;let det=i.k.z;
   let qp=i.uv*i.r.zw/170.+i.k.w;
   let w=vec2f(gf(qp+vec2f(t,0.)),gf(qp+vec2f(5.2,1.3)-vec2f(0.,t)));
-  let uv=i.uv+(w-.5)*.018*det;
-  var c:vec4f;
-  if(i.k.y>.5){c=texCubic(tx,sm,uv);}else{c=textureSampleLevel(tx,sm,uv,0.);}
+  let p=i.uv*3.2+(w-.5)*.058*det;
+  var c=nebCol(p);
   let lum=max(c.r,max(c.g,c.b));
   let fil=gf(qp*2.6+w*2.2);
   let rid=1.-abs(2.*gf(qp*1.3+w*1.1+vec2f(9.,4.))-1.);
   let lane=smoothstep(.72,.97,rid);
   let body=smoothstep(.02,.22,lum);
   let wisp=smoothstep(.46,.74,fil);let gap=1.-smoothstep(.28,.48,fil);
-  let k=1.+det*body*(.95*wisp-.5*gap-.45*lane);
-  c=vec4f(c.rgb*k,c.a);
+  let kk=1.+det*body*(.95*wisp-.5*gap-.45*lane);
+  c=vec4f(c.rgb*kk,c.a);
   return c*i.k.x;}`;
 
 function gspPipes(){
@@ -138,13 +148,13 @@ function gspPipes(){
   return {stars:gpuPipe("gsp.stars",S["gsp.stars"]()[0]),dust:gpuPipe("gsp.dust",S["gsp.dust"]()[0]),
           quad:gpuPipe("gsp.quad",S["gsp.quad"]()[0])};
 }
-/* таблица звёзд — та же, что у 2D (BG_GROUP по цветам, затем BG_BRIGHT), один раз */
+/* таблица звёзд — группы 16-flight, затем яркие; один раз */
 function gspStarBuf(){
   if(GSP.stars&&GPU.bufs["gsp.st"]===GSP.stars)return GSP.stars;
   const a=[];
   for(let gi=0;gi<BG_GROUP.length;gi++){const c=STAR_COLS[gi];
     for(const s of BG_GROUP[gi].list)a.push(s.x,s.y,s.z,s.ph,c[0]/255,c[1]/255,c[2]/255,0);}
-  for(const s of BG_BRIGHT){const c=s.css.match(/\d+/g).map(Number);a.push(s.x,s.y,s.z,s.ph,c[0]/255,c[1]/255,c[2]/255,1);}
+  for(const s of BG_BRIGHT){const c=s.c;a.push(s.x,s.y,s.z,s.ph,c[0]/255,c[1]/255,c[2]/255,1);}
   const f=new Float32Array(a),U=GPUBufferUsage;
   const b=gpuBuf("gsp.st",f.byteLength,U.STORAGE|U.COPY_DST);
   GPU.dev.queue.writeBuffer(b,0,f);GSP.nStars=a.length/8;
@@ -176,13 +186,13 @@ function gspUni(cx,cy,par,M,dcx,dcy){
 }
 /* до трёх прямоугольников туманности за кадр — в одном буфере:
    [x, y, w, h, альфа, сила детали, сдвиг шума] */
-function gspQuads(pass,P,ub,tex,list,cubic){
+function gspQuads(pass,P,ub,list){
   const a=GSP.QA;let n=0;
-  for(const r of list){a.set([r[0],r[1],r[2],r[3],r[4],cubic?1:0,r[5]||0,r[6]||0],n*8);n++;}
+  for(const r of list){a.set([r[0],r[1],r[2],r[3],r[4],0,r[5]||0,r[6]||0],n*8);n++;}
   const U=GPUBufferUsage,qb=gpuBuf("gsp.q",96,U.STORAGE|U.COPY_DST);
   GPU.dev.queue.writeBuffer(qb,0,a);
   pass.setPipeline(P.quad);
-  pass.setBindGroup(0,gpuBind("gsp.quad",P.quad,[ub,qb,tex.view,GPU.S.lin]));
+  pass.setBindGroup(0,gpuBind("gsp.quad",P.quad,[ub,qb]));
   pass.draw(6,n);
 }
 function gspStarsDust(pass,P,ub,dustBase,noStars){
@@ -220,7 +230,7 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   else{gspStarsDust(pass,P,ub,0);gpuSeg("motes");pass=gpuScene();}
   gspStarsDust(pass,P,ub,Math.round(46*sysStyle(sys).dust*G.opts.gfx.particles),true);
 }
-/* заставка: две туманности на разной глубине и звёзды (drawNebula + drawStars) */
+/* заставка: два слоя одного поля на разной глубине (сдвиг зажат — шва нет) и звёзды */
 function gpuSpaceTitle(c){
   GPU.sceneBg=SPACE_BG;GSP.star=null;
   const pass=gpuScene();if(!pass)return;
@@ -230,6 +240,6 @@ function gpuSpaceTitle(c){
   const ex=W*.2,ey=H*.2,ex2=W*.5,ey2=H*.5;
   const ox=-ex/2+clamp(-c*.01,-ex/2,ex/2),oy=-ey/2;
   const ox2=-ex2/2+clamp(-c*.03,-ex2/2,ex2/2)+W*.18,oy2=-ey2/2-H*.12;
-  gspQuads(pass,P,ub,gpuCanvasTex(nebula()),[[ox,oy,W+ex,H+ey,.6,1,0],[ox2,oy2,W+ex2,H+ey2,.26,.8,40]],true);
+  gspQuads(pass,P,ub,[[ox,oy,W+ex,H+ey,.6,1,0],[ox2,oy2,W+ex2,H+ey2,.26,.8,40]]);
   gspStarsDust(pass,P,ub,0);
 }

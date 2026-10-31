@@ -18,31 +18,28 @@ function surfaceHint(){
   }
   return null;
 }
-/* перо подсказки и фишек (G15): с видеокартой — верхний слой #ovl (08bi), в мерке U (рисуем под
-   withScale), без неё — ctx, как раньше. Раскладка одна, меняется только перо */
-function surfHudPen(U){
-  if(!GPU.ok||!GPU.on)return {
-    rect:(x,y,w,h,col)=>{ctx.fillStyle=col;ctx.fillRect(x,y,w,h);},
-    frame:(x,y,w,h,col,al)=>{ctx.strokeStyle=col;ctx.globalAlpha=al;ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,w-1,h-1);ctx.globalAlpha=1;},
-    tri:(t,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(t[0],t[1]);ctx.lineTo(t[2],t[3]);ctx.lineTo(t[4],t[5]);ctx.closePath();ctx.fill();},
-    text:(t,x,y,col,align)=>{ctx.fillStyle=col;ctx.textAlign=align;ctx.fillText(t,x,y);}};
+/* перо подсказки и фишек (G15): верхний слой #ovl (08bi), в мерке U (рисуем под withFrame).
+   2D-пути нет: без видеокарты фишек не видно (плашка 08b2). */
+function surfHudPen(U,font){
+  if(!GPU.ok||!GPU.on)return {font:()=>{},rect:()=>{},frame:()=>{},tri:()=>{},text:()=>{}};
   const Q=OVL.cq,n=()=>ovNd()*U,R=(x0,y0,x1,y1,c)=>{const k=n();ovPush(Q,x0*k,y0*k,x1*k,y1*k,c,0,0,0,0,null);};
+  let F=font||"10px ui-monospace,monospace";
   return {
+    font(f){F=f;},
     rect:(x,y,w,h,col)=>R(x,y,x+w,y+h,ovPm(col)),
     /* волосяной обвод — четыре полосы в пиксель мерки, как strokeRect со сдвигом .5 */
     frame:(x,y,w,h,col,al)=>{const c=ovPm(col,al),x1=x+w,y1=y+h;
       R(x,y,x1,y+1,c);R(x,y1-1,x1,y1,c);R(x,y+1,x+1,y1-1,c);R(x1-1,y+1,x1,y1-1,c);},
     tri:(t,col)=>{const k=n(),q=t.map(v=>v*k);
       ovPush(Q,Math.min(q[0],q[2],q[4]),Math.min(q[1],q[3],q[5]),Math.max(q[0],q[2],q[4]),Math.max(q[1],q[3],q[5]),ovPm(col),2,0,0,0,q);},
-    text:(t,x,y,col,align)=>ovText(Q,x*U,y*U,t,ctx.font,col,align,"alphabetic",1,U)};
+    text:(t,x,y,col,align)=>ovText(Q,x*U,y*U,t,F,col,align,"alphabetic",1,U)};
 }
 /* кегль фишек у кромки: на телефоне (UIK=1) 9px выходил ≈10 px на полу шрифта — «КОРАБЛЬ 1848 м»
-   читался с трудом; на ПК фишки идут под withScale(UIK) и остаются прежними */
+   читался с трудом; на ПК фишки идут под withFrame(UIK) и остаются прежними */
 function surfChipPx(){return W<=760?11:9;}
 function drawSurfaceHud(camx,camy,K){
   K=K||1;
   const S=G.surf;
-  ctx.textAlign="center";
   /* строка-подсказка сверху */
   /* Полоса идёт ниже приборов: сверху слева датчики, справа сводка системы,
      справа же колонка кнопок — туда текст залезать не должен.
@@ -53,7 +50,9 @@ function drawSurfaceHud(camx,camy,K){
   /* HUD_BAND измерен по DOM, то есть в настоящих пикселях экрана; здесь мы
      рисуем в UI-мерке, поэтому его надо в неё же и перевести (M221) */
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-  const TOP=Math.max(58,(typeof HUD_BAND==="number"?HUD_BAND/U:58)+10), RIGHT_PAD=118, pen=surfHudPen(U);
+  const TOP=Math.max(58,(typeof HUD_BAND==="number"?HUD_BAND/U:58)+10), RIGHT_PAD=118;
+  const hf="10px ui-monospace,monospace",cf=surfChipPx()+"px ui-monospace,monospace";
+  const pen=surfHudPen(U,hf);
   let hint=surfaceHint();
   /* под движком планеты подсказка — табличка у человека (M826, 08bj hangHint), а не полоса капсом
      поперёк неба. Полоса остаётся запасной: табличке прошлого кадра не нашлось места */
@@ -63,12 +62,11 @@ function drawSurfaceHud(camx,camy,K){
     if(!was||hung)hint=null;
   }
   if(hint){
-    ctx.font="10px ui-monospace,monospace";
     /* длинная подсказка не вылезает за плашку — ужимается с многоточием (M167) */
     let ht=hint;
     const maxW=W-RIGHT_PAD-34;
-    while(ht.length>4&&ctx.measureText(ht).width>maxW)ht=ht.slice(0,-4)+"…";
-    const w=Math.min(W-RIGHT_PAD-20,ctx.measureText(ht).width+22);
+    while(ht.length>4&&gcMeasure(hf,ht).width>maxW)ht=ht.slice(0,-4)+"…";
+    const w=Math.min(W-RIGHT_PAD-20,gcMeasure(hf,ht).width+22);
     const cx=(W-RIGHT_PAD)/2;
     pen.rect(cx-w/2,TOP,w,20,"rgba(5,7,12,.72)");
     pen.frame(cx-w/2,TOP,w,20,"rgba(127,230,216,.28)",1);
@@ -99,7 +97,7 @@ function drawSurfaceHud(camx,camy,K){
   /* фишки у кромки (M167): далёкая цель — плашка у левого или правого края,
      по стороне, где она; фишки одной стороны стоят столбиком и не наезжают
      ни друг на друга, ни на солнце в небе. Ближняя цель — засечка на месте. */
-  ctx.font=surfChipPx()+"px ui-monospace,monospace";
+  pen.font(cf);
   let leftY=(hint?TOP+34:TOP+6),rightY=leftY,rowY=leftY;
   /* два прохода (M352): сперва фишки у кромок, потом засечки на месте — засечка
      у самого края ложилась текстом поперёк второй фишки того же столбика
@@ -116,7 +114,7 @@ function drawSurfaceHud(camx,camy,K){
     if(ad*K>W*.45){                       // цель за краем — фишка у своей кромки
       const dir=Math.sign(d);
       const label=m.ru+" "+Math.round(ad)+" м";
-      const tw=ctx.measureText(label).width,cw=tw+24,ch=surfChipPx()+6;
+      const tw=gcMeasure(cf,label).width,cw=tw+24,ch=surfChipPx()+6;
       const rx=dir>0?W-RIGHT_PAD-8-cw:8;
       const ry=dir>0?(rightY+=0,rightY):(leftY+=0,leftY);
       if(dir>0)rightY+=ch+4;else leftY+=ch+4;
@@ -136,7 +134,7 @@ function drawSurfaceHud(camx,camy,K){
       /* и лежит на плашке, как фишка у кромки: голая подпись на дневном небе
          читалась с контрастом 1.2 — оранжевое «КОРАБЛЬ» по светлой дымке
          (M443, детектор текста) */
-      {const tw=ctx.measureText(m.ru).width;
+      {const tw=gcMeasure(cf,m.ru).width;
        pen.rect(right?sx-tw-4:sx-4,rowY+7,tw+8,12,"rgba(5,7,12,.72)");
        if(typeof hangBlock==="function"){const k=ovNd()*U,x0=right?sx-tw-4:sx-4;hangBlock(x0*k,(rowY-5)*k,(x0+tw+8)*k,(rowY+19)*k);}}
       pen.text(m.ru,sx,rowY+16,m.col,right?"right":"left");

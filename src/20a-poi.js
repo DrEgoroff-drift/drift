@@ -118,7 +118,7 @@ function poiPoly(pts,fill,line,amp){
    стена перестаёт быть заливкой. Всё внутри клипа по силуэту самой постройки. */
 function poiSkin(P){
   if(!POI_MAT)return;
-  fillMaterial(POI_MAT,POI_OX,POI_OY,.34,.22,P);
+  /* fillMaterial снят (M807 stub) — копоть и трещины ниже */
   ctx.save();ctx.clip(P);
   /* потёки: вертикальные грязные полосы, шире книзу — так стекает вода и пыль */
   for(let i=0;i<7;i++){
@@ -194,50 +194,7 @@ function poiShape(q,rr,dark,lite,pal){
 }
 function drawPOI(tr,camx,camy,p){
   const list=tr.poi;if(!list||!list.length)return;
-  /* с видеокартой — выпечкой и фигурами (20ab); ниже — прежний 2D */
-  if(poiGpu(tr,camx,camy,p))return;
-  const pal=p.T.pal;
-  /* всё, что ниже линии грунта, срезается: иначе упавший корпус лежит поверх
-     земли, как наклейка, вместо того чтобы уходить в неё. Запас в 6 px оставлен
-     контактным теням — без них постройка висит в воздухе. */
-  /* Тени рисуем ДО клипа. Раньше groundShadow вызывался внутри самих построек,
-     то есть уже под клипом «всё ниже линии грунта срезать» — от эллипса
-     оставался тонкий обрезок сверху, и это читалось как странная полоска под
-     объектом. Заодно пропорция: тень широкая и низкая (ry ≈ rx/7), а не
-     блин на девять пикселей при двухстах в ширину. */
-  for(const q of list){
-    const x=q.x-camx, y=q.y-camy;
-    if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;
-    const rx=q.h*(q.k==="wreck"?1.1:(q.k==="ring"?.9:.55));
-    ctx.save();
-    ctx.globalAlpha=.55;
-    groundShadow(x+rx*.12,y+3,rx,Math.max(4,rx*.15));
-    ctx.restore();
-  }
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(0,0,W,H);
-  const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
-  const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
-  ctx.moveTo(i0*tr.step-camx,tr.h[i0]-camy+6);
-  for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy+6);
-  ctx.lineTo(i1*tr.step-camx,H+10);ctx.lineTo(i0*tr.step-camx,H+10);
-  ctx.closePath();
-  ctx.clip("evenodd");
-  for(const q of list){
-    const x=q.x-camx, y=q.y-camy;
-    /* запас по ширине большой: постройка видна задолго до того, как игрок
-       на неё наступит — в этом весь смысл */
-    if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;
-    ctx.save();ctx.translate(x,y);
-    /* всё, что нужно «скину», кладём в общие переменные: тащить пять
-       аргументов через десять функций рисования — только шум */
-    POI_SEED=q.seed;POI_MAT=tr.mat;POI_OX=camx-x;POI_OY=camy-y;
-    const [dark,lite]=poiTone(pal);
-    poiShape(q,rng(q.seed),dark,lite,pal);
-    ctx.restore();
-  }
-  ctx.restore();
+  poiGpu(tr,camx,camy,p);   /* выпечка и фигуры (20ab); запасного кадра на холсте нет */
 }
 /* Сами фигуры — в `20aa-poi-shapes`: развилка выше берёт их по ключу вида. */
 function nearestPOI(tr,x){

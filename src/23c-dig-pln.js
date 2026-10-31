@@ -277,7 +277,7 @@ function dig3Draw(){
   }
   DIG3.live=ok;
   if(!ok){DIG3.D=null;return;}
-  withScale(G.viewK,dig3Over);
+  withScale(G.viewK,dig3Over);   /* LIFE_XF → lifeHere, без scale на MAIN_CTX */
 }
 /* тычок по клетке: та клетка, что показана, — окно кадра лежит на плоскости человека */
 const DIG3_OLD_WALK=mouseWalkAt;

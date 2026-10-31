@@ -208,8 +208,15 @@ function drawGestPost(zx,zy,Z){
   const pass=gpuScene();if(!pass)return;
   const g=GEST&&GEST.sx===G.sx&&GEST.sy===G.sy?GEST:{seed:hashi(G.sx,G.sy,0x6E57)>>>0};
   const text=by==="gt"?GEST_POST.gt+gestPostNo(g):GEST_POST[by];
-  const B=gestPostSprite(by,text);
-  if(B)gpuImage(pass,B,[{x,y:y-33*k,w:120*k,h:70*k}]);
+  /* тело фермы и доски (17c2l); без GPU — прежний печёный пост */
+  if(!bodyGestPost(x,y,k,by,px,py)){
+    const B=gestPostSprite(by,text);
+    if(B)gpuImage(pass,B,[{x,y:y-33*k,w:120*k,h:70*k}]);}
+  else{
+    const gnd=(typeof makerGround==="function")?makerGround(by):[200,200,200];
+    const ink=by==="km"?"#faecd2":rgba(mixc(gnd,[255,255,255],.55),1);
+    domLabel("gp"+by+(G.sx|0)+"_"+(G.sy|0),x,y-22*k,text.toUpperCase(),uiFont(text.length>14?9:11),ink,"center");
+    if(by==="gt")domLabel("gpstar"+(G.sx|0),x-34*k,y-22*k,"★",uiFont(11),"rgba(210,50,40,.95)","center");}
   /* одна лампа — у каждого своё движение: ровно, вращаясь, дыша */
   const col=(typeof laneLampCol==="function")?laneLampCol(by):[255,190,110];
   const ts=G.t/60;

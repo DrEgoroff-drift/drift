@@ -101,37 +101,39 @@ function lightsGroundLine(){
    Всё стоит на своём месте всегда; свет лишь делает его видимым. */
 function lightsDrawReveal(tr,camx,camy,p){
   if(!lightsOpen(p))return;
+  const pass=gpuNext();if(!pass)return;
   const k=lightsConj().k,ex=lightsEntryX(tr,p);
   const a=clamp((k-.12)/.5,0,1);
   const r=rng(hashi(p.seed|0,0x7E1,0x12));
-  /* дорога: пунктир по грунту на полтора экрана в обе стороны */
-  ctx.strokeStyle="rgba(255,240,206,"+(.42*a).toFixed(3)+")";ctx.lineWidth=1.2;
-  ctx.setLineDash([9,7]);ctx.beginPath();
-  let pen=false;
+  const o=lifeHere(0,0),K=o.s,X=v=>o.x+v*K,Y=v=>o.y+v*K,SH=[];
+  /* дорога: пунктир по грунту — капсулами через шаг (как setLineDash 9/7) */
+  let prev=null,n=0;
   for(let wx=ex-1400;wx<=ex+1400;wx+=12){
-    const sx=wx-camx;if(sx<-20||sx>W+20){pen=false;continue;}
+    const sx=wx-camx;if(sx<-20||sx>W+20){prev=null;continue;}
     const sy=groundAt(tr,wx)-camy-1.5;
-    pen?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy);pen=true;
+    if(prev&&(n&1))SH.push([2,X(prev[0]),Y(prev[1]),X(sx),Y(sy),.6*K,0,255,240,206,.42*a]);
+    prev=[sx,sy];n++;
   }
-  ctx.stroke();ctx.setLineDash([]);
-  /* фундаменты: прямоугольники, вросшие в склон, по нескольку в обе стороны */
-  ctx.strokeStyle="rgba(255,236,196,"+(.55*a).toFixed(3)+")";ctx.lineWidth=1;
+  /* фундаменты: прямоугольники и поперечина */
   for(let i=0;i<6;i++){
     const wx=ex+(i-2.5)*(260+r()*160),w=40+r()*70,h=6+r()*10;
     const sx=wx-camx;if(sx<-120||sx>W+120)continue;
-    const sy=groundAt(tr,wx)-camy;
-    ctx.strokeRect(sx-w/2,sy-h,w,h);
-    ctx.beginPath();ctx.moveTo(sx-w/2,sy-h*.5);ctx.lineTo(sx+w/2,sy-h*.5);ctx.stroke();
+    const sy=groundAt(tr,wx)-camy,hw=.5*K;
+    const x0=sx-w/2,x1=sx+w/2,y0=sy-h,y1=sy;
+    SH.push([2,X(x0),Y(y0),X(x1),Y(y0),hw,0,255,236,196,.55*a],
+            [2,X(x0),Y(y1),X(x1),Y(y1),hw,0,255,236,196,.55*a],
+            [2,X(x0),Y(y0),X(x0),Y(y1),hw,0,255,236,196,.55*a],
+            [2,X(x1),Y(y0),X(x1),Y(y1),hw,0,255,236,196,.55*a],
+            [2,X(x0),Y(sy-h*.5),X(x1),Y(sy-h*.5),hw,0,255,236,196,.55*a]);
   }
-  /* вход: арка */
+  /* вход: тёмная арка и светлая кромка */
   const cx=ex-camx;
   if(cx>-60&&cx<W+60){
     const cy=groundAt(tr,ex)-camy;
-    ctx.fillStyle="#060709";
-    ctx.beginPath();ctx.ellipse(cx,cy-2,18,22,0,0,Math.PI,true);ctx.fill();
-    ctx.strokeStyle="rgba(255,244,214,"+(.8*a).toFixed(3)+")";ctx.lineWidth=1.6;
-    ctx.beginPath();ctx.ellipse(cx,cy-2,19,23,0,0,Math.PI,true);ctx.stroke();
+    SH.push([1,X(cx),Y(cy-2),18*K,0,0,4*K,6,7,9,1],
+            [3,X(cx),Y(cy-2),19*K,0,.8*K,0,255,244,214,.8*a]);
   }
+  if(SH.length)gpuShapes(pass,SH,{blend:"over"});
 }
 /* вход под третьим светом: та же пещера, другое зерно, без кусачих (22) */
 function lightsEnter(){

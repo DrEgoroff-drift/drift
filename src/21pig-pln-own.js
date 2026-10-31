@@ -16,6 +16,8 @@
    крыльцо под фонарём, сводчатый гараж, решётчатая мачта 9 м с дышащим маяком; теплица — свод
    из рёбер на дальней стороне двора, внутри четыре гряды 21g, на каждой — тела своего вида (M204), и холодная лампа.
    Двор кончается до человека: передний забор стоит за линией хода и режет его по поясу.
+   Корпус в гараже (G15 / PLAN garage hull) — не сетка дома, а живой hullGpuDraw в рот ворот
+   (plnOwnGarageHull из plnOver): нос к объективу, тот же путь, что у старой наклейки 21fa.
 
    Вымпел (21h) у той базы, что держит его в этот квартал, — полотно на её мачте, по ветру.
    Сетки строятся раз на посадку и состав (ключ: клетки, батарея, грядки, вымпел), ставятся
@@ -378,10 +380,17 @@ function plnOwnHomeMesh(L,A,sd,beds,penn){
   /* заслонки фонаря (M628b): стойки навеса и передний ряд забора — [a, b, r, сила] в местных метрах */
   const occ=[-1,1].map(s=>[[dr+s*1.45,.2,-2.9],[dr+s*1.45,2.58,-2.9],.07,.8]);
   /* гараж: свод 3 × 5 вдоль глубины, ворота-жалюзи к объективу */
-  const gx=-6.2;
+  const gx=-6.2,park=!!(typeof homeHas==="function"&&homeHas("garage")&&G.home&&(G.home.garage||[]).length);
   plnBlob(m,{c:[gx,0,1.2],r:[1.55,2,2.6],sub:3,box:.55,cut:0,col:steel,mat:PLN_MAT.man,x:.2});
   K.box([gx,.9,-1.36],[1.1,.9,.06],plnOwnSteel(C.steelLt,.4,sd+7),{box:.2});
   for(let k=1;k<6;k++)K.rod([gx-1.05,k*.3,-1.44],[gx+1.05,k*.3,-1.44],.012,C.steelDk,{sides:4,cap:false});
+  /* киль в своде, когда в гараже кто-то стоит: тело PLN даёт контакт с полом, живой
+     корпус (plnOwnGarageHull) — поверх; без киля корабль читался дроном в воздухе */
+  if(park){
+    K.box([gx,.18,.2],[.85,.16,1.25],plnOwnSteel(C.steelDk,.25,sd+19),{box:.3});
+    K.box([gx,.4,.5],[.5,.2,.85],plnOwnSteel(C.steelLt,.2,sd+23),{box:.28});
+    K.box([gx,.32,-.3],[.32,.1,.4],C.soot,{box:.2});
+  }
   /* мачта 9 м: решётка с полосами, маяк дышит (свечение, не лампа) */
   const mx=1.8,mz=4.6;
   const legs=[0,1,2].map(i=>{const a=i/3*TAU+.2;return [Math.cos(a)*.5,Math.sin(a)*.5];});
@@ -430,7 +439,11 @@ function plnOwnHomeMesh(L,A,sd,beds,penn){
       if(prev)for(const h of [.45,.9])K.rod([prev[0],h,prev[1]],[x,h,z],.008,C.steelLt,{sides:3,cap:false});
       prev=[x,z];}};
   run([-fx,-fz],[fx,-fz],dr);run([-fx,-fz],[-fx,fz]);run([fx,-fz],[fx,fz]);run([-fx,fz],[fx,fz]);
-  return {body:m,light:lm,beacon:bm,grow:gm,penn:pm,film:fm,veil:vm,occ,lampAt:{porch:[dr+.95,2.3,-2.75],grow:[tx,ky-.3,tz]},blots:[[0,1,4.2,.45],[5.8,1.2,2.4,.4]]};
+  /* рот гаража — якорь корпуса (plnOwnGarageHull): чуть за жалюзи, у пола свода */
+  const blots=[[0,1,4.2,.45],[5.8,1.2,2.4,.4]];
+  if(park)blots.push([gx,.32,1.6,.42]);
+  return {body:m,light:lm,beacon:bm,grow:gm,penn:pm,film:fm,veil:vm,occ,lampAt:{porch:[dr+.95,2.3,-2.75],grow:[tx,ky-.3,tz]},blots,
+    garageMouth:[gx,.48,-.5]};
 }
 
 /* ── сборка: раз на посадку и состав ── */
@@ -463,9 +476,12 @@ function plnOwnStep(L,S,lim){
   if(made&&lim!=null&&wallMs()-t0>lim)return false;
   const H=(typeof homeHereP==="function"&&homeHereP(p))?plnOwnHomeAt(L,tr,p):null;
   if(H){
-    const beds=greenAll().beds.map(b=>({g:greenGrow(b),name:b.name})),pn=plnOwnPennHere(p),key=beds.map(b=>b.name+":"+Math.round(b.g*8)).join(",")+"|"+pn;
+    const beds=greenAll().beds.map(b=>({g:greenGrow(b),name:b.name})),pn=plnOwnPennHere(p);
+    const park=(G.home&&G.home.garage&&G.home.garage[0])||"";
+    const key=beds.map(b=>b.name+":"+Math.round(b.g*8)).join(",")+"|"+pn+"|"+park;
     if(!O.home||O.home.key!==key){plnOwnFree(O.home);
-      const sd=hashi(G.sx,G.sy,0x40E7);O.home=plnOwnItem("home",H,plnOwnHomeMesh(L,H,sd,beds,pn),sd,key);
+      const sd=hashi(G.sx,G.sy,0x40E7),M=plnOwnHomeMesh(L,H,sd,beds,pn);
+      O.home=plnOwnItem("home",H,M,sd,key);O.home.mouth=M.garageMouth||null;
       O.home.green=plnOwnGreenBuild(H,beds,p,sd);}
     O.porch=(H.x+H.door)*PLN_M;
   }else{plnOwnFree(O.home);O.home=null;O.porch=null;}
@@ -549,6 +565,34 @@ function plnOwnFrame(L,F,S,p,ex,V,nk){
       if(Math.abs(mx-w.l.p[0])<w.l.r+1)OWN.occ.push([[mx,my+.18,0],[mx,my+1.52,0],.27,1]);
       for(const o of w.it.occ||[])OWN.occ.push([W(o[0]),W(o[1]),o[2],o[3]]);}
   }
+}
+/* корпус в гараже поверх тел (G15): якорь mouth меша → экран через plnOverAt.
+   Профиль боком (a=π): нос к объективу. Без глубины PLN — поверх; жалюзи рта
+   рисуются после корпуса, чтобы нос ушёл за ворота (не дроном перед сводом). */
+function plnOwnGarageHull(){
+  if(!OWN.on||!OWN.home||!GPU.on)return;
+  if(typeof homeHas!=="function"||!homeHas("garage"))return;
+  const ids=G.home&&G.home.garage;if(!ids||!ids.length)return;
+  if(typeof hullGpuDraw!=="function"||typeof plnOverAt!=="function")return;
+  const C=PLN.cam,A=OWN.home.A,m=OWN.home.mouth;if(!C||!A||!m)return;
+  const id=ids[0];if(!shipData(id))return;
+  const p=[A.x+m[0],A.y+m[1],A.z+m[2]];
+  if(Math.abs(p[0]-C.ex)>C.hw*(1+Math.max(0,p[2])/C.D)+10)return;
+  const scr=plnOverAt(C,p),o=lifeHere(0,0),K=o.s;
+  const pers=C.D/(C.D+Math.max(.5,p[2]));
+  /* в проёме ~2.2×1.8 м; без глубины PLN корпус поверх тел — компактнее полёта */
+  const sc=Math.max(.38,1.35*PLN_M*pers*.03)*K;
+  const sx=o.x+scr[0]*K,sy=o.y+scr[1]*K;
+  hullGpuDraw(id,sx,sy,Math.PI,sc,false,false,0,0,.18,-.4);
+  /* рот поверх корпуса: рама и жалюзи на #ovl (после сцены) — нос читается за воротами */
+  if(typeof ovRect!=="function")return;
+  const mw=1.05*PLN_M*pers*K,mh=1.55*PLN_M*pers*K,tw=Math.max(1.2,1.6*K);
+  const rim="rgb(92,86,76)",bar="rgb(55,50,44)";
+  ovRect(sx-mw-tw*.5,sy-mh*.5,sx-mw+tw*.5,sy+mh*.32,rim,.9);
+  ovRect(sx+mw-tw*.5,sy-mh*.5,sx+mw+tw*.5,sy+mh*.32,rim,.9);
+  ovRect(sx-mw,sy-mh*.5-tw*.5,sx+mw,sy-mh*.5+tw*.5,rim,.85);
+  for(let k=1;k<6;k++){const yy=sy-mh*.36+k*(mh*.12);
+    ovRect(sx-mw*.9,yy-tw*.35,sx+mw*.9,yy+tw*.35,bar,.78);}
 }
 /* хвост пятен — заслонки ключевой лампы (M628b): капсула — два vec4 (a, r) и (b, сила) с конца массива,
    их число — blobs.n.y, лампа — blobs.n.z − 1. Зовёт 21pz последним, когда пятна уже легли */

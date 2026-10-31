@@ -67,37 +67,7 @@ function drawBuilt(tr,camx,camy,p){
     const sp=builtSpot(tr,p,b.kind);
     const x=sp.x-camx,y=sp.y-camy;
     if(x<-360||x>W+360)continue;
-    const hgt=150;
-    if(builtGpu(b,sp,tr,p,x,y,hgt))continue;
-    ctx.save();ctx.globalAlpha=.7;
-    groundShadow(x-60,y+2,140,7);
-    ctx.restore();
-    /* клип по профилю: постройка стоит НА земле — ниже линии грунта её нет */
-    const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
-    const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
-    const SKY=new Path2D();
-    SKY.moveTo(i0*tr.step-camx,-4000);
-    for(let i=i0;i<=i1;i++)SKY.lineTo(i*tr.step-camx,tr.h[i]-camy+8);
-    SKY.lineTo(i1*tr.step-camx,-4000);
-    SKY.closePath();
-    ctx.save();ctx.clip(SKY);
-    ctx.translate(x,y);
-    drawBaseBuilding(b,hgt);
-    ctx.restore();
-    /* подпись: постройку видно издалека, но чья она — только по метке */
-    /* подпись на подложке и выше конька: голый текст тонул в небе и налезал
-       на строку планеты */
-    const col="143,208,138";
-    ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-    const lab=b.ru+" · ячеек "+b.lvl;
-    const tw=ctx.measureText(lab).width;
-    const ly=y-hgt-30;
-    ctx.fillStyle="rgba(6,10,16,.8)";ctx.fillRect(x-tw/2-6,ly-10,tw+12,15);
-    ctx.strokeStyle="rgba("+col+",.5)";ctx.lineWidth=1;
-    ctx.strokeRect(x-tw/2-5.5,ly-9.5,tw+11,14);
-    ctx.fillStyle="rgba("+col+",.95)";ctx.fillText(lab,x,ly);
-    ctx.strokeStyle="rgba("+col+",.35)";                    // выноска к крыше
-    ctx.beginPath();ctx.moveTo(x,ly+5);ctx.lineTo(x,y-hgt*.82-3);ctx.stroke();
+    builtGpu(b,sp,tr,p,x,y,150);
   }
 }
 /* ── ангар базы ──
@@ -105,7 +75,7 @@ function drawBuilt(tr,camx,camy,p){
    (`21a-mode-base`), только снаружи и целиком. */
 /* с видеокартой (G15): тело печётся раз на свет и ложится в слой стоящего — тень
    и свет мира от него, как от находок; мигалка мачты живая, поверх выпечки;
-   подпись — в слой интерфейса (#ovl), тем же рисунком, что 2D */
+   подпись — в слой интерфейса (#ovl) */
 function builtGpu(b,sp,tr,p,x,y,hgt){
   if(typeof GPU==="undefined"||!GPU.ok||!GPU.on||!GPU.enc||typeof SUN_DIR!=="object")return false;
   const gp=standPass();if(!gp)return false;
@@ -115,7 +85,7 @@ function builtGpu(b,sp,tr,p,x,y,hgt){
   standAdd((ps,bl,layer)=>{if(!layer)gpuImage(ps,poiShadowTex(),shs);});
   bakeStand(bakeAt("built|"+b.kind,k,hw,top,12,g=>{
     groundClip(g,tr,sp.x,sp.y,hw,top,8);
-    drawBaseBuilding(b,hgt,true);
+    drawBaseBuilding(b,hgt);
     poiLight(g,{h:hgt},hw,top,p,tr,sp.x,sp.y);
   }),x,y);
   const M=builtMast(hgt),m=lifeHere(x+M.x,y+M.y),on=Math.sin(G.t*.2)>0;
@@ -139,7 +109,7 @@ function builtGpu(b,sp,tr,p,x,y,hgt){
 }
 /* мачта базы: подножие на крыше и мигалка — одно место для 2D и для живой мигалки */
 function builtMast(h){return {x0:104*.22+8,y0:-h*.82-4.5,x:104*.25+8,y:-h*1.12};}
-function drawBaseBuilding(b,hgt,still){
+function drawBaseBuilding(b,hgt){
   const w=104,h=hgt,d=16,e=-9;            // глубина: грань уходит вправо-вверх
   const hw=w/2,hr=h*.62,ht=h*.82,wt=w*.3;
   const poly=(pts,f)=>{ctx.beginPath();ctx.moveTo(pts[0],pts[1]);
@@ -195,8 +165,5 @@ function drawBaseBuilding(b,hgt,still){
   ctx.beginPath();ctx.moveTo(mx0,my0-5);ctx.lineTo(M.x,M.y+2.6);ctx.stroke();
   const my=lerp(my0,M.y,.55),mx=lerp(mx0,M.x,.55);
   ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(mx-6,my);ctx.lineTo(mx+6,my);ctx.stroke();
-  if(!still){            /* выпечка (builtGpu) мигалку не держит — она живая, поверх */
-    ctx.fillStyle=(Math.sin(G.t*.2)>0)?"rgba(255,90,70,.95)":"rgba(255,90,70,.25)";
-    ctx.beginPath();ctx.arc(M.x,M.y,2.6,0,TAU);ctx.fill();
-  }
+  /* мигалка — живая фигурой поверх выпечки (builtGpu); в тело не печётся */
 }

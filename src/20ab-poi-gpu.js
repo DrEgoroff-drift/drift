@@ -1,17 +1,17 @@
 /* ══════════════ постройки на движке (G15) ══════════════
    Постройка от кадра к кадру не меняется — камера её только двигает. Поэтому тело
    (силуэт, порода, потёки, срез по грунту, статичные огни) печётся один раз на
-   постройку в свой холст и дальше ложится одной картинкой в проход видеокарты, как
+   постройку в GPU-холст (08ca) и дальше ложится одной картинкой в проход, как
    ломти грунта. Живое — маяк остова, кабина лифта, блики кристаллов, импульс кольца,
    обломки аномалии, насечки монолита, дым и огонь завода, кольца врат, тарелка
    обсерватории — каждый кадр фигурами (gpuShapes) поверх выпечки.
 
-   Одна и та же функция фигуры (20aa) рисует все три фазы, POI_PH говорит какую:
-   ""     — по-старому, всё в ctx (нет видеокарты, ярус тестов);
+   Одна и та же функция фигуры (20aa) рисует две фазы, POI_PH говорит какую:
    "base" — выпечка: живые кисти poiL* молчат;
    "live" — кадр: ctx подменён пустышкой POI_NULL, которая помнит только матрицу,
             а poiL* кладут фигуры в POI_SH по этой матрице. Остальное рисование
-            уходит в пустоту — зато порядок rng и все размеры те же, что у выпечки. */
+            уходит в пустоту — зато порядок rng и все размеры те же, что у выпечки.
+   2D-запасного пути нет: без видеокарты построек на поверхности не видно. */
 let POI_PH="";
 const POI_SH=[];
 const POI_NULL_G={addColorStop(){}};
@@ -32,28 +32,24 @@ function poiPt(x,y){const m=POI_NULL.m;return [m[0]*x+m[2]*y+m[4],m[1]*x+m[3]*y+
 function poiSc(){const m=POI_NULL.m;return Math.sqrt(Math.abs(m[0]*m[3]-m[1]*m[2]));}
 function poiC(col,a){const c=gcColor(col);return [c[0]*255,c[1]*255,c[2]*255,c[3]*(a==null?1:a)];}
 
-/* ── живые кисти: в 2D — ровно прежний вызов, в выпечке — ничего, в кадре — фигуры ── */
+/* ── живые кисти: в выпечке молчат, в кадре — фигуры; 2D-пути нет ── */
 function poiLGlow(x,y,rad,col,a){
-  if(POI_PH==="base")return;
-  if(POI_PH!=="live"){poiGlow(x,y,rad,col,a);return;}
+  if(POI_PH!=="live")return;
   /* радиальный спад 1 → .28 к середине → 0: мягкий круг шириной в радиус */
   const [X,Y]=poiPt(x,y),R=rad*poiSc(),c=col.split(",").map(Number);
   POI_SH.push([1,X,Y,0,0,0,R,c[0],c[1],c[2],a*.8]);
 }
 function poiLDisc(x,y,r,col){
-  if(POI_PH==="base")return;
-  if(POI_PH!=="live"){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();return;}
+  if(POI_PH!=="live")return;
   const [X,Y]=poiPt(x,y),C=poiC(col);POI_SH.push([1,X,Y,r*poiSc(),0,0,0,C[0],C[1],C[2],C[3]]);
 }
 function poiLRect(x,y,w,h,col){
-  if(POI_PH==="base")return;
-  if(POI_PH!=="live"){ctx.fillStyle=col;ctx.fillRect(x,y,w,h);return;}
+  if(POI_PH!=="live")return;
   gpuQuad(POI_SH,poiPt(x,y),poiPt(x+w,y),poiPt(x+w,y+h),poiPt(x,y+h),poiC(col));
 }
-/* многоугольник: в 2D — poiPoly со сколом кромки и кожей, в кадре — веер треугольников и обвод */
+/* многоугольник: в кадре — веер треугольников и обвод */
 function poiLPoly(pts,fill,line){
-  if(POI_PH==="base")return;
-  if(POI_PH!=="live"){poiPoly(pts,fill,line);return;}
+  if(POI_PH!=="live")return;
   const P=pts.map(p=>poiPt(p[0],p[1]));
   if(fill){const C=poiC(fill);
     for(let i=1;i+1<P.length;i++)POI_SH.push([5,P[0][0],P[0][1],P[i][0],P[i][1],P[i+1][0],P[i+1][1],C[0],C[1],C[2],C[3],
@@ -63,8 +59,7 @@ function poiLPoly(pts,fill,line){
 }
 /* дуга обводкой: в кадре — ломаная из капсул */
 function poiLArc(cx,cy,R,a0,a1,w,col){
-  if(POI_PH==="base")return;
-  if(POI_PH!=="live"){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.arc(cx,cy,R,a0,a1);ctx.stroke();return;}
+  if(POI_PH!=="live")return;
   const C=poiC(col),hw=w*.5*poiSc(),n=Math.max(4,Math.ceil(Math.abs(a1-a0)*R/6));
   let p=poiPt(cx+Math.cos(a0)*R,cy+Math.sin(a0)*R);
   for(let i=1;i<=n;i++){const a=a0+(a1-a0)*i/n,q=poiPt(cx+Math.cos(a)*R,cy+Math.sin(a)*R);
@@ -72,9 +67,7 @@ function poiLArc(cx,cy,R,a0,a1,w,col){
 }
 /* эллипс под углом: w>0 — обвод, иначе заливка */
 function poiLEll(cx,cy,rx,ry,rot,col,w){
-  if(POI_PH==="base")return;
-  if(POI_PH!=="live"){ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,rot,0,TAU);
-    if(w>0){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.stroke();}else{ctx.fillStyle=col;ctx.fill();}return;}
+  if(POI_PH!=="live")return;
   const C=poiC(col),n=Math.max(12,Math.min(48,Math.ceil(Math.max(rx,ry)*poiSc()/3))),cr=Math.cos(rot),sr=Math.sin(rot),P=[];
   for(let i=0;i<n;i++){const a=i/n*TAU,u=Math.cos(a)*rx,v=Math.sin(a)*ry;P.push(poiPt(cx+u*cr-v*sr,cy+u*sr+v*cr));}
   if(w>0){const hw=w*.5*poiSc();
@@ -122,8 +115,8 @@ function poiBake(q,tr,p,dark,lite){
   const key=p.seed+"|"+DPR+"|"+SCK+"|d"+dayKq(p)+"|a"+sunAzQ(p)+"|"+(tr.mat?1:0);
   const o=POI_BK.get(q);if(o&&o.key===key)return o;
   const bx=POI_BOX[q.k]||[2.1,1.7],hw=Math.ceil(q.h*bx[0]),top=Math.ceil(q.h*bx[1]),bot=16,w=hw*2,h=top+bot;
-  const cn=mkCanvas(w,h);
-  withCtx(cn,w,h,0,0,g=>{
+  /* выпечка на GPU-холсте (08ca): без mkCanvas/getContext — hitch первого кадра уходит */
+  const cn=gpuBake(w,h,g=>{
     g.translate(hw,top);
     /* срез по грунту — тот же, что клип кадра: ниже линии грунта плюс 6 px постройки нет */
     groundClip(g,tr,q.x,q.y,hw,top,6);
@@ -132,6 +125,7 @@ function poiBake(q,tr,p,dark,lite){
     try{poiShape(q,rng(q.seed),dark,lite,p.T.pal);}finally{POI_PH=p0;}
     poiLight(g,q,hw,top,p,tr,q.x,q.y);
   });
+  if(!cn)return null;
   const B={key,cn,cx:0,cy:(bot-top)/2,w,h};POI_BK.set(q,B);return B;
 }
 /* проход для стоящего на земле: на грунте — его собственный проход (SURF_P2), даже если
@@ -147,14 +141,16 @@ function standPass(){
 const BK_AT=new Map();
 function bakeAt(id,key,hw,top,bot,f){
   const o=BK_AT.get(id);if(o&&o.key===key)return o;
-  const w=hw*2,h=top+bot,cn=mkCanvas(w,h);
-  withCtx(cn,w,h,0,0,g=>{g.translate(hw,top);f(g);});
+  const w=hw*2,h=top+bot;
+  /* как poiBake: GPU-холст, без mkCanvas/getContext — hitch первого кадра уходит */
+  const cn=gpuBake(w,h,g=>{g.translate(hw,top);f(g);});
+  if(!cn)return null;
   const B={key,cn,w,h,cy:(bot-top)/2};BK_AT.set(id,B);return B;
 }
 function bakeRect(B,x,y){const o=lifeHere(0,0),K=o.s;return {x:o.x+x*K,y:o.y+(y+B.cy)*K,w:B.w*K,h:B.h*K};}
-function bakePut(pass,B,x,y,blend){gpuImage(pass,B.cn,[bakeRect(B,x,y)],blend?{blend}:undefined);}
+function bakePut(pass,B,x,y,blend){if(!B)return;gpuImage(pass,B.cn,[bakeRect(B,x,y)],blend?{blend}:undefined);}
 /* выпечка в слой стоящего (21e2): место считается сейчас, по матрице этого кадра */
-function bakeStand(B,x,y){const r=bakeRect(B,x,y);standAdd((ps,bl)=>gpuImage(ps,B.cn,[r],{blend:bl}));}
+function bakeStand(B,x,y){if(!B)return;const r=bakeRect(B,x,y);standAdd((ps,bl)=>gpuImage(ps,B.cn,[r],{blend:bl}));}
 /* мягкое пятно тени: радиальный спад, растянутый в эллипс — одна выпечка на всю игру */
 let POI_SHTEX=null;
 function poiShadowTex(){
@@ -171,7 +167,7 @@ function poiShadowRect(x,y,rx,ry,al,o){
   const off=-sx*rx*(.35+low*1.6),kx=1+low*1.2,a=.32*(1-low*.40);
   const K=o.s;return {x:o.x+(x+off)*K,y:o.y+y*K,w:2*rx*kx*K,h:2*ry*K,a:a*al};
 }
-/* кадр построек на видеокарте; false — пусть рисует 2D */
+/* кадр построек на видеокарте; false — прохода нет, кадра не будет */
 function poiGpu(tr,camx,camy,p){
   if(typeof GPU==="undefined"||!GPU.ok||!GPU.on||!GPU.enc||typeof SUN_DIR!=="object")return false;
   const vis=[];
@@ -185,7 +181,7 @@ function poiGpu(tr,camx,camy,p){
     sh.push(poiShadowRect(q.x-camx+rx*.12,q.y-camy+3,rx,Math.max(4,rx*.15),.55,o));}
   const c0=ctx;
   for(const q of vis){
-    const x=q.x-camx,y=q.y-camy,B=poiBake(q,tr,p,dark,lite);
+    const x=q.x-camx,y=q.y-camy,B=poiBake(q,tr,p,dark,lite);if(!B)continue;
     POI_SH.length=0;POI_NULL.m=[K,0,0,K,o.x+x*K,o.y+y*K];POI_NULL.st.length=0;
     POI_SEED=q.seed;POI_MAT=null;POI_PH="live";ctx=POI_NULL;
     try{poiShape(q,rng(q.seed),dark,lite,pal);}finally{ctx=c0;POI_PH="";}

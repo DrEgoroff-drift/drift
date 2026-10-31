@@ -333,13 +333,6 @@ function digFauna(dt,st){
       "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
   }
 }
-function drawDigFauna(camx,camy){
-  const D=G.dig;
-  for(const b of D.bugs)drawBeast(b,b.x-camx,b.y-camy+b.r*.9,true,b.stun);
-  if(D.zapT>0){
-    const px=D.col*DIG_CELL+DIG_CELL/2-camx, py=D.row*DIG_CELL+DIG_CELL/2-camy;
-    const k=1-D.zapT/16;
-    ctx.strokeStyle="rgba(150,225,255,"+((1-k)*.85).toFixed(2)+")";ctx.lineWidth=3-k*2;
-    ctx.beginPath();ctx.arc(px,py,ZAP_R*k,0,TAU);ctx.stroke();
-  }
+function drawDigFauna(){
+  throw new Error("2D: drawDigFauna снят — зверей и импульс рисует движок (23ce)");
 }

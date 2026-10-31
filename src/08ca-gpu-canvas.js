@@ -522,7 +522,7 @@ function gcPoolBuf(role,us,a){
   GPU.dev.queue.writeBuffer(b,0,a);return b;}
 
 /* ── выпечка: gpuBake(w,h,draw,o) → B {tex,view,w,h,n,dev}. B годится везде, где мастер
-   gpuMipTex (gpuImage, gpuLitSprite). На время draw глобальный ctx — этот холст, так что
+   gpuBake (gpuImage, gpuLitSprite). На время draw глобальный ctx — этот холст, так что
    кисти, что рисуют в ctx, переносятся без переписи. o.ss — во сколько крупнее рисовать
    (по умолчанию 2 для выпечек до 512², иначе 1); o.mips:false — один уровень.
    Без видеокарты (Node, gpuNone) — null: 2D-пути у выпечек больше нет ── */

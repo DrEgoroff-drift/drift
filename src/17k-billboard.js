@@ -107,8 +107,7 @@ function bbPanelMake(s,GP,d,key,gk){
   const pw=120*s,ph=40*s,cw=Math.ceil((pw+2)*d),ch=Math.ceil((ph*1.6+2)*d);
   const B=gpuBake(cw,ch,g=>{
   g.setTransform(d,0,0,d,(pw/2+1)*d,(ph/2+1)*d);   /* начало — середина панели */
-  g.strokeStyle="rgba(150,164,180,.6)";g.lineWidth=1;
-  g.beginPath();g.moveTo(-pw*.3,ph*.5);g.lineTo(-pw*.3,ph*1.1);g.moveTo(pw*.3,ph*.5);g.lineTo(pw*.3,ph*1.1);g.stroke();
+  /* стойки — телом 17c2m; на выпечке только табло */
   g.fillStyle="#0e1217";g.fillRect(-pw/2,-ph/2,pw,ph);
   g.strokeStyle="rgba(40,48,58,.9)";g.strokeRect(-pw/2,-ph/2,pw,ph);
   if(GP){
@@ -157,6 +156,8 @@ function bbDrawGpu(pass,B,x,y,s,col,rd,Z){
   let Pn=(!still&&show&&c0.gk===gk)?c0:bbPanelBake(s,GP,!show);
   if(Pn)BB_BAKE.cur=Pn;else Pn=show?c0:null;
   if(!Pn)return;
+  /* стойки телом под панелью (17c2m); панель с буквами — выпечка */
+  bodyBb(x,y+ph*.55,s,B.x,B.y);
   const q=s/Pn.s,l=px(x-Pn.ox*q),t=px(y-Pn.oy*q);
   gpuImage(pass,Pn.B,[{x:l+Pn.w*q/2,y:t+Pn.h*q/2,w:Pn.w*q,h:Pn.h*q,a:rd}]);
   const buzz=B.by==="gt"&&((G.t/60)%60)<.2?.35:1;

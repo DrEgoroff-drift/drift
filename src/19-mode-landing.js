@@ -143,16 +143,6 @@ function updateLanding(dt){
     }
   }
 }
-function skyGrad(p){
-  /* небо знает час (M232): в полдень зенит — светлый насыщенный цвет
-     собственной палитры мира, горизонт — светлый воздух; к ночи градиент
-     сходится к прежнему. Полдень перестаёт читаться пасмурным прямо здесь. */
-  const D=skyDay(p),g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgb("+D.top.join(",")+")");
-  g.addColorStop(.62,"rgb("+D.top.map((v,i)=>Math.round(lerp(v,D.bot[i],.55))).join(",")+")");
-  g.addColorStop(1,"rgb("+D.bot.join(",")+")");
-  return g;
-}
 /* тень-контакт: приплюснутый мягкий эллипс под ногами/стволом — единственное,
    что реально "приклеивает" объект к рельефу, а не даёт ему висеть на глаз */
 /* ── тень ложится ОТ света, а не строго под предметом (M243) ──
@@ -161,18 +151,25 @@ function skyGrad(p){
    у высоты светила: чем ниже солнце, тем длиннее и слабее тень. Функция одна
    на всю игру, поэтому чинит разом ходока, корабль, валуны, растения и копёр. */
 function groundShadow(x,y,rx,ry){
+  /* контактная тень: в выпечке — мягкий эллипс на кисти печки; в кадре — та же
+     текстура, что у построек (poiShadowTex, 20ab), без штриха на #c (G15) */
   const sx=(typeof SUN_DIR==="object")?SUN_DIR.x:0;
   const sy=(typeof SUN_DIR==="object")?SUN_DIR.y:-1;
   const low=clamp(1-Math.abs(sy),0,1);          /* 0 в зените, 1 у горизонта */
   const off=-sx*rx*(.35+low*1.6);
   const kx=1+low*1.2;
-  const a=.32*(1-low*.40);
-  ctx.save();
+  const ga=typeof ctx.globalAlpha==="number"?ctx.globalAlpha:1;
+  const a=.32*(1-low*.40)*ga;
+  if(typeof GPU!=="undefined"&&GPU.on&&ctx===MAIN_CTX){
+    const pass=gpuNext();if(!pass||typeof poiShadowTex!=="function")return;
+    gpuImage(pass,poiShadowTex(),[{x:x+off,y:y,w:2*rx*kx,h:2*ry,a}]);
+    return;
+  }
+  if(ctx===MAIN_CTX)return;   /* без видеокарты / пустышка POI_NULL — тень не на #c */
   const g=ctx.createRadialGradient(x+off,y,0,x+off,y,rx*kx);
   g.addColorStop(0,"rgba(0,0,0,"+a.toFixed(3)+")");g.addColorStop(1,"rgba(0,0,0,0)");
   ctx.fillStyle=g;
   ctx.beginPath();ctx.ellipse(x+off,y,rx*kx,ry,0,0,TAU);ctx.fill();
-  ctx.restore();
 }
 /* небо над горизонтом: тела сцены, календарь, три света и облака — на движке
    (19cb, 19cc). Состав от зерна посадки, лицо от планеты (19ca) */
@@ -183,20 +180,9 @@ function drawSkyLayer(p,camx,camy){
 /* пыль/пыльца в воздухе — только там, где есть атмосфера, для ощущения глубины */
 function drawDustMotes(camx,camy,p){
   if(p.T.atm==="отсутствует")return;
-  const gp=lgGpu();if(gp&&dustMotesGpu(gp,camx,camy,p))return;   /* с видеокартой — кругами в проход (21e3) */
-  const n=26;
-  for(let i=0;i<n;i++){
-    const r=rng(hashi(Math.floor(p.seed),i,0xD05));
-    /* пыль несёт тем же ветром, что и траву, и по той же оси: разнонаправленное
-       движение мелочи сразу выдаёт, что это отдельные генераторы */
-    const wx=(r()*3000+G.t*(6+r()*10)*(1+WIND*1.6))%3000;
-    const x=((wx-camx*.6)%(W+60)+W+60)%(W+60)-30;
-    const y=(r()*H*.8+Math.sin(G.t*.03+i)*14+WIND*Math.sin(G.t*.02+i*2)*8);
-    ctx.fillStyle="rgba(255,255,255,"+(.05+r()*.12).toFixed(2)+")";
-    ctx.beginPath();ctx.arc(x,y,.8+r()*1.2,0,TAU);ctx.fill();
-  }
+  const gp=lgGpu();if(gp)dustMotesGpu(gp,camx,camy,p);   /* кругами в проход (21e3) */
 }
-/* проход видеокарты для живого заходa или null — тогда рисует 2D */
+/* проход видеокарты для живого захода или null */
 function lgGpu(){return (typeof GPU!=="undefined"&&GPU.ok&&GPU.on&&GPU.enc)?gpuNext():null;}
 /* мягкое пятно цвета col ("r,g,b"): спад 1 → .35 к середине → 0, выпечка на цвет (зарево захода) */
 const LG_GLOW=new Map();
@@ -212,7 +198,7 @@ function drawLanding(){
   tr.mat=planetMat(p);tr.p=p;
   sunDirSet(p);            /* свет идёт оттуда, где нарисован диск (M242) */
   WIND=windOf(p);
-  drawSkyBase(p,L.x,L.y);
+  gpuSky(p,L.x,L.y);
   drawSkyLayer(p,L.x,L.y);
   const camx=L.x-W/2;
   /* ── садиться нужно НА ЧТО-ТО (M233) ──
@@ -243,12 +229,6 @@ function drawLanding(){
   if(alt>160&&p.T.atm!=="отсутствует"){
     const hi=clamp((alt-160)/1400,0,1)*.42, s1=p.T.sky[1],gz=lgGpu();
     if(gz)gpuShapes(gz,[[8,0,0,W,H*.62,0,0,s1[0],s1[1],s1[2],hi]],{blend:"over"});
-    else{
-    const zg=ctx.createLinearGradient(0,0,0,H*.62);
-    zg.addColorStop(0,"rgba("+s1.join(",")+","+hi.toFixed(3)+")");
-    zg.addColorStop(1,"rgba("+s1.join(",")+",0)");
-    ctx.fillStyle=zg;ctx.fillRect(0,0,W,H*.62);
-    }
   }
   /* гряды — поле видеокарты (19g): форма, зерно, подошва в воздухе; слой поверх
      небесных тел и облаков, дымка горизонта ляжет уже на него */
@@ -274,15 +254,6 @@ function drawLanding(){
       const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04,gw=lgGpu();
       /* на видеокарте — пятно, растянутое в тот же эллипс, сложением */
       if(gw)gpuImage(gw,lgGlowTex(wc.join(",")),[{x:gx,y:gy,w:W*.72,h:H*.32,a:k}],{blend:"add"});
-      else{
-      const g=ctx.createRadialGradient(gx,gy,0,gx,gy,W*.36);
-      g.addColorStop(0,"rgba("+wc.join(",")+","+k.toFixed(3)+")");
-      g.addColorStop(.45,"rgba("+wc.join(",")+","+(k*.35).toFixed(3)+")");
-      g.addColorStop(1,"rgba("+wc.join(",")+",0)");
-      ctx.save();ctx.globalCompositeOperation="lighter";
-      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(gx,gy,W*.36,H*.16,0,0,TAU);ctx.fill();
-      ctx.restore();
-      }
     }
   }
   /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
@@ -322,37 +293,17 @@ function drawLanding(){
       SH.push([1,px+sx,py-2,1.8,0,0,0,255,214,150,.35+.5*bl]);
     }
     gpuShapes(gc,SH,{blend:"over"});
-  }else{
-    const hUp=H*.85;
-    const g=ctx.createLinearGradient(0,py,0,py-hUp);
-    g.addColorStop(0,"rgba(242,178,92,.11)");
-    g.addColorStop(1,"rgba(242,178,92,0)");
-    ctx.fillStyle=g;
-    ctx.beginPath();
-    ctx.moveTo(px-10,py);ctx.lineTo(px+10,py);
-    ctx.lineTo(px+36,py-hUp);ctx.lineTo(px-36,py-hUp);
-    ctx.closePath();ctx.fill();
-    const u=(G.t*.22)%1;
-    const ry=py-hUp*(1-u);
-    ctx.fillStyle="rgba(255,220,150,"+(.10+.5*u*u).toFixed(2)+")";
-    ctx.beginPath();ctx.arc(px,ry,1.5+u*1.5,0,TAU);ctx.fill();
-    ctx.fillStyle="rgba(16,20,26,.9)";
-    ctx.fillRect(px-46,py,92,4);
-    ctx.strokeStyle="rgba(242,178,92,.85)";ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(px-46,py);ctx.lineTo(px+46,py);ctx.stroke();
-    for(const sx of [-46,46]){
-      const bl=.5+.5*Math.sin(G.t*.05+(sx>0?0:Math.PI));
-      ctx.fillStyle="rgba(255,214,150,"+(.35+.5*bl).toFixed(2)+")";
-      ctx.beginPath();ctx.arc(px+sx,py-2,1.8,0,TAU);ctx.fill();
-    }
   }
   /* корабль: выпечка тела под светом мира — в том же проходе, что и тень под ним
-     (19g), с факелами и пылью из-под струи; поверх — живое 2D: дым побитого корпуса */
+     (19g), с факелами и пылью из-под струи; дым побитого — фигурами поверх */
   lgLander(L,tr,camx,camy,p);
-  ctx.save();ctx.translate(L.x-camx,L.y-camy);ctx.rotate(L.a);
-  drawLander(L.over>0&&!L.ok,L.thrOn&&L.over<=0,
-    {gear:L.gear,sq:L.sq,hot:L.hot,landed:L.over>0&&L.ok,tr:tr,gx:L.x,gnd:true,live:true});
-  ctx.restore();
+  if(L.over>0&&!L.ok){   /* дым: четыре пятна, те же числа, что были у live 2D */
+    const pass=gpuNext();
+    if(pass){const o=lifeHere(L.x-camx,L.y-camy),K=o.s,ca=Math.cos(L.a),sa=Math.sin(L.a),SH=[];
+      for(let i=0;i<4;i++){const t=(G.t*.05+i*.9)%6,lx=(i-1.5)*5,ly=-12-t*7,r=3+t*2.2;
+        SH.push([1,o.x+(lx*ca-ly*sa)*K,o.y+(lx*sa+ly*ca)*K,r*K,0,0,0,90,80,78,.3-t*.05]);}
+      gpuShapes(pass,SH,{blend:"over"});}
+  }
   /* слова на корабле (M803): имя мира, автопосадка с высотой, тяготение первые 2,5 с захода */
   if(L.over<=0&&hangOk()){
     const ln=[(L.auto?"Автоматический заход на ":"Заход на ")+p.name];

@@ -123,15 +123,4 @@ function groveVisit(){
    источник света (placeLamp, 11va): он сам светится по своей поверхности,
    соседние камни ловят зелёное той стороной, что к нему, а сердце ореола
    ярче единицы, и свечение кадра даёт ему дышать. Один проход на всю рощу */
-const GROVE_LIT=[150/255,235/255,180/255];
-function groveDraw(b,proj){
-  if(!b.grove||!b.grove.length)return;
-  for(const a of b.grove){
-    const p=proj(a.x,a.y,a.z);if(!p)continue;
-    /* proj отдаёт {x,y,z}: масштаб — фокус на глубину, как у камней */
-    const sc=Math.min(W,H)*.95/p.z;
-    const rr=Math.max(3,a.r*sc*1.35),al=(.22+.4*(a.gl||0))*clamp(1-p.z/2600,.1,1);
-    placeLamp(p.x,p.y,rr*2.6,GROVE_LIT,al*1.6,-rr);
-  }
-  placesGlow();
-}
+/* 2D groveDraw снят (G15): ореол рощи — фигурами в 24ba-belt-gpu */

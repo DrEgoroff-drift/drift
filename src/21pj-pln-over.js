@@ -22,36 +22,35 @@ function plnOverAt(C,p){
 }
 function plnOverPlate(txt,x,y,plate,ink,u){
   const f=(8*u).toFixed(2)+"px ui-monospace,monospace";
-  ctx.font=f;const tw=ctx.measureText(txt).width;
+  const tw=gcMeasure(f,txt).width;   /* мерка атласа (08cb), без #c */
   ovRect(x-tw/2-5*u,y-10*u,x+tw/2+5*u,y+4*u,plate,1);
   ovText(OVL.uq,x,y,txt,f,ink,"center","alphabetic",1,1);
 }
 /* то, что ещё не перерисовано: старые рисовалки в том же порядке, что клал старый кадр */
 function plnOverOld(tr,camx,camy,p){
   if(!tr.mat)tr.mat=planetMat(p);
-  /* база и дом — тела движка (21pig, M628a); наклейки — только со старым видом ?own=0 */
+  /* база и дом — тела движка (21pig, M628a); наклейки — только со старым видом ?own=0.
+     Корпус в гараже при OWN.on — живым поверх тел (plnOwnGarageHull, G15). */
   if(!OWN.on){
     drawBuilt(tr,camx,camy,p);
     if(typeof drawHomeOut==="function"&&typeof homeHereP==="function"&&homeHereP(p))drawHomeOut(tr,camx,camy,p);
-  }
+  }else if(typeof plnOwnGarageHull==="function")plnOwnGarageHull();
   if(settleCanLive(p)&&typeof hoursDrawPeople==="function")hoursDrawPeople(null,tr,camx,camy,p);   /* прохожий затмения (11h); посёлок — тела движка (21pii) */
-  /* мат свидетеля — тела движка (21piid); peepDrawMat в 20c остаётся без вызова */
+  /* мат свидетеля — тела PLN (21piid) */
   /* корабль перевала — тело (21piif) */
   /* три места — тела (21piig) */
   if(typeof lightsDrawReveal==="function")lightsDrawReveal(tr,camx,camy,p);
   peepGhosts(camx,camy);
 }
-/* старые рисовалки — в мерке игры (withScale), всё своё — слоем интерфейса движка (08bi) в пикселях окна:
-   2D-кисть на #c будит копию всего холста в кадр (front2, 08b), а подписям она не нужна */
+/* старые рисовалки — в мерке игры (withScale → LIFE_XF), своё — слоем #ovl.
+   На GPU withScale не трогает MAIN_CTX; save/restore вокруг наклеек снят (G15) */
 function plnOver(){
   const S=G.surf,tr=S.tr,p=S.p,C=PLN.cam,L=PLN_LAND.cur,M=PLN_M,O=PLN_OVER;
   if(!C||!L)return;
   const camx=C.vx,camy=C.vy,gy=(x,z)=>plnLandRibAt(L,x,z);
   if(O.old)withScale(G.viewK,()=>{
-    ctx.save();
     try{plnOverOld(tr,camx,camy,p);}
     catch(e){O.old=false;O.err=String((e&&e.stack)||e).slice(0,400);plnLog("старые рисовалки: "+O.err);}
-    ctx.restore();
   });
   /* мерка игры → пиксели окна: кадр стоит в ней с увеличением G.viewK (как 21pzb) */
   const kk=G.viewK>1?G.viewK:1,at=q=>{const r=plnOverAt(C,q);return [r[0]*kk,r[1]*kk];};
@@ -89,7 +88,6 @@ function plnOver(){
   }
   /* подписи залежей рядом с человеком: ближняя стоит на своём месте, соседняя, если легла на неё, поднимается */
   const tags=[];
-  ctx.font=font;
   /* залежь под ногами названа табличкой-словом «ЛЁД · ЗАЛЕЖЬ 3» (08bj hangSurface, то же правило выбора) — второй подписи ей не надо */
   let said=null;
   if(typeof hangIn==="function"&&plnWordsOn()&&hangIn()&&String(G.prompt||"").indexOf("ЗАЛЕЖЬ")>=0){
@@ -98,7 +96,7 @@ function plnOver(){
   for(const d of S.deposits||[]){
     if(!(d.left>0)||!(Math.abs(d.x-S.x)<70)||d===said)continue;
     const x=d.x/M,z=plnThingDepZ(d),q=at([x,gy(x,z)+1.75,z]),txt=RES[d.res].ru.toUpperCase()+" "+d.left;
-    tags.push({txt,x:q[0],y:q[1]-(Math.round(d.x/60)%2)*11*u,w:ctx.measureText(txt).width+10*u,col:RES[d.res].col,far:Math.abs(d.x-S.x)});
+    tags.push({txt,x:q[0],y:q[1]-(Math.round(d.x/60)%2)*11*u,w:gcMeasure(font,txt).width+10*u,col:RES[d.res].col,far:Math.abs(d.x-S.x)});
   }
   tags.sort((a,b)=>a.far-b.far);
   for(let k=0;k<tags.length;k++){

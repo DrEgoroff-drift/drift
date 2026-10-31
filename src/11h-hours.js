@@ -120,7 +120,11 @@ function hoursDrawPeople(S,tr,camx,camy,p,sx,n,r){
     /* G6: тот же силуэт мест, что у паломников перевала (11va): тень от звезды
        — в затмение её почти нет, и это видно; край света с её стороны */
     placeFigure(ox,oy,19,p,"rgba(20,24,30,.94)");
-    if(d<26&&H0.stop>0&&H0.stop<60){ctx.fillStyle="rgba(226,236,240,.8)";ctx.fillRect(ox+(wx<px?1:-2),oy-17,1.2,1.2);}   /* смотрит */
+    if(d<26&&H0.stop>0&&H0.stop<60){   /* смотрит — точкой в проход */
+      const pass=gpuNext();
+      if(pass){const o=lifeHere(0,0),K=o.s,ex=ox+(wx<px?1:-2),ey=oy-17;
+        gpuShapes(pass,[[0,o.x+ex*K,o.y+ey*K,o.x+(ex+1.2)*K,o.y+(ey+1.2)*K,0,0,226,236,240,.8]],{blend:"over"});}
+    }
     if(wx>px+320){H0.man=1;delete H0.walk;delete H0.stop;logAdd("dim","Прошёл мимо. Посмотрел. Больше никого.");}
   }else if(dark<=.3&&H0.walk!=null){delete H0.walk;delete H0.stop;}   /* затмение кончилось раньше — не судьба */
 }

@@ -33,19 +33,6 @@ function sbeltDens(B,x,y){
   }
   return Math.min(d,1.2);
 }
-/* заготовки гранёных скал для рисунка без видеокарты: единичный радиус */
-const ROCK_SHAPES=(function(){
-  const out=[];
-  for(let s=0;s<16;s++){
-    const r=rng(hashi(s,7,0x0CCA)),n=8+Math.floor(r()*7),p=[];
-    for(let k=0;k<n;k++){
-      const t=k/n*TAU, q=.55+r()*.6;
-      p.push([Math.cos(t)*q,Math.sin(t)*q]);
-    }
-    out.push(p);
-  }
-  return out;
-})();
 /* камни по ячейкам сетки мира: у каждой ячейки свой порог, камень есть, где плотность
    (с прибавкой у корабля) его перешла — с мягким краем, это и есть его прозрачность */
 /* три слоя по глубине (M825): камень лежит на своей глубине под камерой сверху — ближний крупнее и
@@ -70,11 +57,12 @@ const SBELT_ROCKS=12;
 function sbeltRock(B,k){const m=makeRock(hashi(B.seed,k,0x50C),1);return k>=8?sbeltChip(m,hashi(B.seed,k,0xC41)):m;}
 function drawBeltRocks(ox,oy,B,Z,shx,shy){
   if(Z<.24)return;
+  /* 2D-силуэтов нет: без прохода сцены камней пояса не видно */
+  if(!(GPU.on&&GPU.enc&&!GPU.overPass))return;
   const zf=clamp((Z-.24)/.1,0,1);
   const cx0=(W/2-ox)/Z,cy0=(H/2-oy)/Z;
   const M=Math.min(W,H),sx=ox+shx*Z,sy=oy+shy*Z;
   const cap=Math.round(320*G.opts.gfx.draw);
-  const p3ok=GPU.on&&GPU.enc&&!GPU.overPass;
   let cam=null,ub=null,ms=1,nf=0;const LIST=SBELT_LIST;LIST.length=0;
   for(let L=0;L<3;L++){
     const [dz,C,r0,tone]=SBELT_LAY[L],sc=1/(1+dz),zs=Z*sc;   /* zs — масштаб слоя на экране */
@@ -107,52 +95,31 @@ function drawBeltRocks(ox,oy,B,Z,shx,shy){
     }
   }
   if(!LIST.length)return;
-  if(p3ok){
-    if(!B.rm)B.rm=[];while(B.rm.length<SBELT_ROCKS)B.rm.push(sbeltRock(B,B.rm.length));
-    const D=2400/Z;
-    cam=B.cam3||(B.cam3={x:0,y:0,z:0});cam.x=cx0;cam.y=cy0;cam.z=-D;
-    const sys=G.sys,stl=sysStyle(sys),sc0=hex2rgb(sys.cls.col),scol=[sc0[0]*.6+92,sc0[1]*.6+90,sc0[2]*.6+88];
-    brockReset(cam);
-    /* светило чуть над плоскостью — камень виден освещённым боком, а не ровно в полутень */
-    ub=brockCam(cam,SBELT_BAS,Z*D,scol,stl.neb[0],stl.neb[1],Math.hypot(cx0,cy0)*.2+150,1e7);
-    ms=brockMs();BROCK.ni=0;
-    for(let pass=0;pass<2;pass++)for(const o of LIST){
-      if((o.al>=.99)===(pass===1))continue;
-      const m=B.rm[o.big||o.rad>9?8+o.hh%4:o.hh%8],tn=SBELT_TINT[(o.hh>>>8)%SBELT_TINT.length],rk=SBELT_RK;
-      for(let j=0;j<3;j++)rk[j]=m.rock[j]*tn[j]*o.tone;
-      const ore=o.ore?[150+o.r1*80,110+o.r2*60,64+o.r3*34]:rk;
-      /* ближние вертятся с периодом 20–60 с, средние втрое, дальние вшестеро медленнее */
-      const w=(o.r3<.5?-1:1)*TAU/(60*(20+40*o.r4))/[6,3,1][o.L];
-      brockPut(cam,m,o.wx,o.wy,SBELT_LAY[o.L][0]*D,o.rad,1,o.r1*TAU,o.r2*TAU+G.t*w,o.al>=.99?1:o.al,rk,ore,false);
-      /* треть камней вытянута 1:1.6–1:2.5 — столбцы поворота умножаются на оси масштаба */
-      if((o.hh>>>4)%3===0){const e=1.6+.9*o.r4,ex=Math.pow(e,.6),ey=Math.pow(e,-.4),I=BROCK.I,k=(BROCK.ni-1)*28;
-        for(const q of [4,8,12]){I[k+q]*=ex;I[k+q+1]*=ey;I[k+q+2]*=ey;}}
-      if(pass)nf++;
-    }
-    const p3=brockBegin(ms),n1=BROCK.ni-nf;
-    brockDraw(p3,ub,0,n1,false,ms);
-    brockDraw(p3,ub,n1,nf,true,ms);
-    brockEnd(ms);
-    return;
+  if(!B.rm)B.rm=[];while(B.rm.length<SBELT_ROCKS)B.rm.push(sbeltRock(B,B.rm.length));
+  const D=2400/Z;
+  cam=B.cam3||(B.cam3={x:0,y:0,z:0});cam.x=cx0;cam.y=cy0;cam.z=-D;
+  const sys=G.sys,stl=sysStyle(sys),sc0=hex2rgb(sys.cls.col),scol=[sc0[0]*.6+92,sc0[1]*.6+90,sc0[2]*.6+88];
+  brockReset(cam);
+  /* светило чуть над плоскостью — камень виден освещённым боком, а не ровно в полутень */
+  ub=brockCam(cam,SBELT_BAS,Z*D,scol,stl.neb[0],stl.neb[1],Math.hypot(cx0,cy0)*.2+150,1e7);
+  ms=brockMs();BROCK.ni=0;
+  for(let pass=0;pass<2;pass++)for(const o of LIST){
+    if((o.al>=.99)===(pass===1))continue;
+    const m=B.rm[o.big||o.rad>9?8+o.hh%4:o.hh%8],tn=SBELT_TINT[(o.hh>>>8)%SBELT_TINT.length],rk=SBELT_RK;
+    for(let j=0;j<3;j++)rk[j]=m.rock[j]*tn[j]*o.tone;
+    const ore=o.ore?[150+o.r1*80,110+o.r2*60,64+o.r3*34]:rk;
+    /* ближние вертятся с периодом 20–60 с, средние втрое, дальние вшестеро медленнее */
+    const w=(o.r3<.5?-1:1)*TAU/(60*(20+40*o.r4))/[6,3,1][o.L];
+    brockPut(cam,m,o.wx,o.wy,SBELT_LAY[o.L][0]*D,o.rad,1,o.r1*TAU,o.r2*TAU+G.t*w,o.al>=.99?1:o.al,rk,ore,false);
+    /* треть камней вытянута 1:1.6–1:2.5 — столбцы поворота умножаются на оси масштаба */
+    if((o.hh>>>4)%3===0){const e=1.6+.9*o.r4,ex=Math.pow(e,.6),ey=Math.pow(e,-.4),I=BROCK.I,k=(BROCK.ni-1)*28;
+      for(const q of [4,8,12]){I[k+q]*=ex;I[k+q+1]*=ey;I[k+q+2]*=ey;}}
+    if(pass)nf++;
   }
-  /* без видеокарты — гранёные силуэты, свет со стороны светила */
-  for(const o of LIST){
-    const P=ROCK_SHAPES[o.hh%ROCK_SHAPES.length],s=o.rad*Z;
-    const ll=Math.hypot(o.wx,o.wy)||1,lx=-o.wx/ll,ly=-o.wy/ll;
-    const rot=o.r1*TAU+G.t*(o.r3-.5)*.004,cr=Math.cos(rot),sr=Math.sin(rot);
-    const g=.42+o.r2*.6,col=[54+96*g,53+92*g,60+98*g];
-    ctx.save();ctx.globalAlpha=o.al;ctx.translate(o.x,o.y);ctx.rotate(rot);ctx.scale(s,s);
-    for(let i=0;i<P.length;i++){
-      const A=P[i],Bp=P[(i+1)%P.length];
-      const mx=(A[0]+Bp[0])*.5,my=(A[1]+Bp[1])*.5,ml=Math.hypot(mx,my)||1;
-      const nx=(mx/ml)*cr-(my/ml)*sr, ny=(mx/ml)*sr+(my/ml)*cr;
-      const li=clamp(.2+(nx*lx+ny*ly)*.9,.07,1.15);
-      ctx.fillStyle="rgb("+(col[0]*li|0)+","+(col[1]*li|0)+","+(col[2]*li|0)+")";
-      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(A[0],A[1]);ctx.lineTo(Bp[0],Bp[1]);
-      ctx.closePath();ctx.fill();
-    }
-    ctx.restore();
-  }
+  const p3=brockBegin(ms),n1=BROCK.ni-nf;
+  brockDraw(p3,ub,0,n1,false,ms);
+  brockDraw(p3,ub,n1,nf,true,ms);
+  brockEnd(ms);
 }
 const SBELT_LIST=[];
 /* тон породы: холодный серый, тёплый бурый, пыльная олива, сизый — по кругу, не в одну сторону */

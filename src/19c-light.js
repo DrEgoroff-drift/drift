@@ -223,33 +223,15 @@ function lightShafts(p){
   const sun=starRGB();
   /* один и тот же веер из пяти лучей под одним углом стоял на каждом мире
      штампом (G1): число, раскрытие и наклон — от планеты */
-  /* на видеокарте лучи честные: общий проход режет свет по облакам и хребтам (08b) */
-  if(GPU.on){GPU.shaft={x:sx/W,y:sy/H,rad:.045,k:.16*wk,r:sun[0]/255,g:sun[1]/255,b:sun[2]/255};return;}
-  const hs=hashi(p.seed,0x5AF7,1), nS=2+(hs&3), a0=.92+((hs>>>4)&15)/15*.4, spr=.12+((hs>>>8)&7)/7*.14;
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  for(let i=0;i<nS;i++){
-    const a=a0+i*spr+Math.sin(G.t*.0016+i)*.035;
-    const wdt=.030+((i*7)%3)*.012;
-    const len=H*1.25;
-    const al=(.020+((i*5)%3)*.010)*(1+Math.sin(G.t*.0021+i*2)*.35)*wk;
-    const g=ctx.createLinearGradient(sx,sy,sx+Math.cos(a)*len,sy+Math.sin(a)*len);
-    g.addColorStop(0,"rgba("+sun.join(",")+","+al.toFixed(3)+")");
-    g.addColorStop(1,"rgba("+sun.join(",")+",0)");
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.moveTo(sx,sy);
-    ctx.lineTo(sx+Math.cos(a-wdt)*len,sy+Math.sin(a-wdt)*len);
-    ctx.lineTo(sx+Math.cos(a+wdt)*len,sy+Math.sin(a+wdt)*len);
-    ctx.closePath();ctx.fill();
-  }
-  ctx.restore();
+  /* лучи честные: общий проход режет свет по облакам и хребтам (08b); запасного клина на холсте нет */
+  if(GPU.on)GPU.shaft={x:sx/W,y:sy/H,rad:.045,k:.16*wk,r:sun[0]/255,g:sun[1]/255,b:sun[2]/255};
 }
 /* ── финальная свёртка кадра ──
    виньетка и лёгкий цветовой сдвиг: две заливки, которые сводят разнородные
    слои в одну картинку. Всё, что тут делается, стоит два fillRect. */
 /* виньетка и тон на видеокарте (G15): та же радиальная рамка и тот же вертикальный сдвиг,
-   одним полем в последний проход мира, без слоя на #c и его загрузки. Затмение (насыщенность
-   уходит — режим saturation) поле не умеет: тогда вся свёртка 2D */
+   одним полем в последний проход мира. Затмение — холодной заливкой и серой пеленой
+   (насыщенность уходит без режима saturation); запасного слоя на #c нет */
 const GRADE_WGSL=`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let V=fu.v;
@@ -274,8 +256,6 @@ function gradeGpu(p,sun,amb,dk2){
   return true;
 }
 function gradePass(p){
-  const DK0=typeof celDark==="function"?celDark():0;
-  if(DK0<=.02&&gradeGpu(p,starRGB(),ambRGB(p),dayKq(p)))return;
   /* ── затмение сводится здесь, а не в небе ──
      Первый проход гасил только небо: сверху темнело, а грунт, флора и
      скафандр оставались дневными, и кадр разваливался на две картинки.
@@ -283,39 +263,20 @@ function gradePass(p){
      холодная заливка на всё сразу, и мир садится целиком (06a-celest). */
   const DK=typeof celDark==="function"?celDark():0;
   if(DK>.02){
-    ctx.fillStyle="rgba(10,16,34,"+(.52*DK).toFixed(3)+")";
-    ctx.fillRect(0,0,W,H);
-    /* и цвет уходит: в сумерках глаз теряет насыщенность раньше яркости */
-    ctx.save();ctx.globalCompositeOperation="saturation";
-    ctx.fillStyle="rgba(128,128,128,"+(.5*DK).toFixed(3)+")";
-    ctx.fillRect(0,0,W,H);ctx.restore();
+    const pass=gpuNext();
+    if(pass){
+      const o=lifeHere(0,0),K=o.s,x0=o.x,y0=o.y,x1=o.x+W*K,y1=o.y+H*K;
+      /* холодная пелена; серая сверху — глаз теряет насыщенность раньше яркости
+         (раньше — режим saturation на холсте) */
+      gpuShapes(pass,[
+        [0,x0,y0,x1,y1,0,0,10,16,34,.52*DK],
+        [0,x0,y0,x1,y1,0,0,128,128,128,.5*DK]
+      ],{blend:"over"});
+    }
   }
-  /* ── виньетка и тон — один слой ──
-     Два полноэкранных градиента на кадр стоили ~25 мс на ×2 (G0, 0.94):
-     в canvas 2D единица цены — полноэкранный проход, а градиент дороже
-     заливки в пять раз. Картинка при этом не меняется от кадра к кадру —
-     печётся один раз на планету и размер и кладётся одним drawImage (18c). */
-  const sun=starRGB(),amb=ambRGB(p),dk2=dayKq(p);
-  ctx.drawImage(screenLayer("grade|"+sun.join(",")+"|"+amb.join(",")+"|d"+dk2,()=>{
-    const g=ctx.createRadialGradient(W*.5,H*.46,Math.min(W,H)*.30,W*.5,H*.46,Math.max(W,H)*.78);
-    g.addColorStop(0,"rgba(0,0,0,0)");
-    /* виньетка днём легче: полуденный кадр не должен сидеть в сумеречной раме */
-    g.addColorStop(1,"rgba(0,0,0,"+lerp(.34,.22,dk2).toFixed(3)+")");
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    /* холодная тень внизу, тёплый свет сверху — сдвиг маленький, но именно он
-       не даёт кадру рассыпаться на «фон + фигуры». Раньше шёл в lighter;
-       при альфе .06 обычное наложение неотличимо, а в слое оно честнее. */
-    const t=ctx.createLinearGradient(0,0,0,H);
-    t.addColorStop(0,"rgba("+sun.join(",")+",.07)");
-    t.addColorStop(.5,"rgba(0,0,0,0)");
-    t.addColorStop(1,"rgba("+amb.join(",")+",.09)");
-    ctx.fillStyle=t;ctx.fillRect(0,0,W,H);
-  }),0,0,W,H);
+  gradeGpu(p,starRGB(),ambRGB(p),dayKq(p));
 }
 
-/* небо-подложка — на движке (19ca): градиент, заря, звёзды, полоса, диск.
-   2D-пути нет (DECISIONS: без WebGPU игра называет браузеры) */
-function drawSkyBase(p,cx,cy,hor){gpuSky(p,cx||0,cy||0,hor);}
 /* ══════════════ свечение (bloom) — M243 ══════════════
    «Свет не светит» — общая претензия ко всем сценам: лампа рисовалась пятном,
    но вокруг неё ничего не происходило. Настоящий ореол вокруг ярких мест —

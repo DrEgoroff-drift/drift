@@ -454,5 +454,5 @@ function drawSurface(){
   PLN_FRAME.live=ok;
   if(ok)plnOver();
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-  withScale(U,()=>drawSurfaceHud(G.viewX,G.viewY,G.viewK/U));
+  withFrame(U,()=>drawSurfaceHud(G.viewX,G.viewY,G.viewK/U));
 };

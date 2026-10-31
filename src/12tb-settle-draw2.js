@@ -34,12 +34,12 @@ function sdSmoke(x,y,wind,strength,seed,n){
      половине пути — над трубой в силу .55 не оставалось ничего, а над очагом
      дым таял ещё под крышей. Теперь плотность растёт от жерла до пика на
      .15 пути и тает степенью 1.6 к вершине; путь длиннее (70·сила). */
+  if(!VSINK)return;   /* 2D-пути нет: без приёмника дым не виден */
   const N=Math.max(n||10,6),P=smokePath(seed|0,wind,strength),K=P.length-1;
   /* тон от неба (§16): днём дым — ступень ТЕМНЕЕ неба, ночью — светлее; один
      светлый тон на всё был невидим днём, и дым в игре видели только ночью */
   const day=(typeof surfNight==="function"&&G.surf&&G.surf.p)?!surfNight(G.surf.p):false;
   const col=day?"rgba(88,90,98,":"rgba(210,216,224,";
-  ctx.save();
   for(let i=0;i<N;i++){
     /* у каждого клуба свой размер, свой снос и своя скорость: ровные одинаковые
        кольца через равный шаг читались позвоночником, а не дымом (M169) */
@@ -52,11 +52,6 @@ function sdSmoke(x,y,wind,strength,seed,n){
     const u=Math.min(K-1e-6,t*K*(.8+j2*.5)),k0=u|0,fr=u-k0;
     const px=P[k0][0]+(P[k0+1][0]-P[k0][0])*fr,py=P[k0][1]+(P[k0+1][1]-P[k0][1])*fr;
     const ex=x+px+Math.sin(t*6+i*1.7)*(1+j*2)*t+(j-.5)*3;
-    if(VSINK){vsinkDisc(ex,y+py,rr*1.05,col+(day?a*.8:a).toFixed(3)+")",rr*.5);continue;}   /* фигурой (08c) */
-    ctx.fillStyle=col+(day?a*.8:a).toFixed(3)+")";
-    ctx.beginPath();
-    ctx.ellipse(ex,y+py,rr*1.2,rr*.9,t*.5,0,TAU);
-    ctx.fill();
+    vsinkDisc(ex,y+py,rr*1.05,col+(day?a*.8:a).toFixed(3)+")",rr*.5);   /* фигурой (08c) */
   }
-  ctx.restore();
 }

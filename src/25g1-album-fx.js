@@ -26,6 +26,30 @@ function albumM(s,k){const F=ALBUM_FX[k];if(!F||!F.m)return null;
   return {m:F.m.map((v,i)=>i%4===3?v/255:v),grain:F.g/255,seed:hashi(s.sx|0,s.sy|0,(s.t|0)^0xF11A)>>>0};}
 /* виньетка: край темнеет, как у настоящего объектива; одна малая выпечка на карточку любого размера */
 const ALBUM_VIG=new Map();
+/* бумага страницы: волокно, а не соль в пиксель. Плитка одна на снимок, страница
+   заливается узором. Точка в пиксель на MSAA пропадает — волокно остаётся. */
+const ALBUM_PAPER=new Map();
+function albumPaper(seed){
+  seed=seed>>>0;
+  return gpuBaked(ALBUM_PAPER,seed,256,160,c=>{
+    const r=rng(seed);
+    for(let i=0;i<28;i++){
+      const x=r()*256,y=r()*160,rx=6+r()*18,ry=.8+r()*1.6,a=.04+r()*.05;
+      c.save();c.translate(x,y);c.rotate((r()-.5)*1.3);
+      const warm=r()<.68;
+      const g=c.createRadialGradient(0,0,0,0,0,rx);
+      g.addColorStop(0,warm?"rgba(255,228,196,"+a.toFixed(3)+")":"rgba(0,0,0,"+(.14+r()*.16).toFixed(3)+")");
+      g.addColorStop(1,"rgba(0,0,0,0)");
+      c.fillStyle=g;c.beginPath();c.ellipse(0,0,rx,ry,0,0,TAU);c.fill();
+      c.restore();
+    }
+    for(let i=0;i<180;i++){
+      c.fillStyle=i&1?"rgba(255,240,220,.055)":"rgba(0,0,0,.28)";
+      const s=1+(r()*2|0);
+      c.fillRect(r()*256|0,r()*160|0,s,s);
+    }
+  },{mips:false,ss:1,keep:8});
+}
 function albumVig(night){
   return gpuBaked(ALBUM_VIG,night?1:0,128,80,c=>{
     const g=c.createRadialGradient(64,40,28,64,40,Math.hypot(128,80)*.55);
@@ -60,11 +84,12 @@ function albumBake(s,cw,ch,nd){let ok=false;
   if(B)B.rig=PC_RIG.slice();
   return B;}
 /* люди выпечки — карточками рига поверх неё, фильтр M тот же */
-function albumRig(B,M){
+function albumRig(B,M,dx,dy){
+  dx=dx||0;dy=dy||0;
   for(const r of (B&&B.rig)||[]){
     const C=rigCard({pose:"stand",face:r.face,ppm:r.ppm,light:r.L,pal:"own"});if(!C)continue;
     const X=RIG_BOX,w=(X.x1-X.x0)*r.ppm,h=(X.y1-X.y0)*r.ppm;
-    ovImage(C,r.x+(X.x0+X.x1)/2*r.ppm,r.y-(X.y0+X.y1)/2*r.ppm,w,h,0,0,0,1,1,1,M);
+    ovImage(C,dx+r.x+(X.x0+X.x1)/2*r.ppm,dy+r.y-(X.y0+X.y1)/2*r.ppm,w,h,0,0,0,1,1,1,M);
   }
 }
 /* выпечку B — в канву cv с фильтром k; без выпечки — пустой бланк */
@@ -138,34 +163,43 @@ function albumLightbox(s,i){
    язык, что у большой карточки в игре, — снимок узнаётся своим */
 function albumSave(s){
   const cw=1200,ch=750,m=16,pad=64,capH=118,PW=cw+2*(pad+m),PH=ch+2*m+pad+capH;
-  /* карточка — с видеокарты тем же путём, что в игре; страница вокруг — 2D: это файл PNG */
-  const B=albumBake(s,cw,ch,1),M=B&&albumM(s,s.fx);let px=null;
-  try{px=ovRead(cw,ch,()=>{if(!B){ovRect(0,0,cw,ch,"#12161d");return;}ovImage(B,cw/2,ch/2,cw,ch,0,0,0,1,1,1,M);albumRig(B,M);
-    if(M)ovImage(albumVig(s.fx==="night"),cw/2,ch/2,cw,ch,0,0,0,1,1,1);});}finally{gpuBakeDrop(B);}
-  if(!px)return false;
+  /* страница, снимок и уголки — выпечки. Уголки поверх снимка: они его держат.
+     Канва WebGPU отдаёт PNG; 2D-страницы больше нет. */
+  const B=albumBake(s,cw,ch,1),M=B&&albumM(s,s.fx);
+  const seed=hashi(s.sx|0,s.sy|0,(s.t|0)^0xA1B)>>>0,paper=albumPaper(seed);
+  const x0=pad,y0=pad,fw=cw+2*m,fh=ch+2*m;
   const cv=document.createElement("canvas");cv.width=PW;cv.height=PH;
-  const c=cv.getContext("2d");if(!c)return false;
-  const g=c.createRadialGradient(PW/2,PH*.3,0,PW/2,PH*.3,PW*.8);
-  g.addColorStop(0,"#2a231c");g.addColorStop(.7,"#15110d");g.addColorStop(1,"#120e0b");
-  c.fillStyle=g;c.fillRect(0,0,PW,PH);
-  const r=rng(hashi(s.sx|0,s.sy|0,(s.t|0)^0xA1B));
-  for(let i=0;i<PW*PH/70;i++){c.fillStyle=i&1?"rgba(255,240,220,.035)":"rgba(0,0,0,.22)";c.fillRect(r()*PW|0,r()*PH|0,1,1);}
-  const x0=pad,y0=pad;
-  c.save();c.shadowColor="rgba(0,0,0,.72)";c.shadowBlur=28;c.shadowOffsetY=7;
-  c.fillStyle="#f3ecdc";c.fillRect(x0,y0,cw+2*m,ch+2*m);c.restore();
-  c.putImageData(new ImageData(new Uint8ClampedArray(px.buffer,px.byteOffset,px.length),cw,ch),x0+m,y0+m);
-  /* фотоуголки: тёмная бумага поверх рамки, светлая кромка по гипотенузе */
-  const L=46,o=10,C=[[x0-o,y0-o,1,1],[x0+cw+2*m+o,y0-o,-1,1],[x0-o,y0+ch+2*m+o,1,-1],[x0+cw+2*m+o,y0+ch+2*m+o,-1,-1]];
-  for(const [qx,qy,sx,sy] of C){
-    c.fillStyle="#3b2f22";c.beginPath();c.moveTo(qx,qy);c.lineTo(qx+sx*L,qy);c.lineTo(qx,qy+sy*L);c.closePath();c.fill();
-    c.strokeStyle="rgba(255,236,200,.14)";c.lineWidth=1.5;c.beginPath();c.moveTo(qx+sx*L,qy);c.lineTo(qx,qy+sy*L);c.stroke();
-  }
-  const cy=y0+ch+2*m+capH*.42;
-  c.textAlign="center";c.textBaseline="middle";
-  c.fillStyle="rgba(236,228,210,.9)";c.font="italic 32px Georgia,\"Times New Roman\",serif";
-  c.fillText("«Дрейф» · "+postCaption(s),PW/2,cy,PW-2*pad);
-  c.fillStyle="rgba(200,184,150,.55)";c.font="17px ui-monospace,monospace";
-  c.fillText("сектор "+(s.sx|0)+":"+(s.sy|0)+" · drift-game.ru",PW/2,cy+38);
+  const P=gpuBake(PW,PH,c=>{
+    const g=c.createRadialGradient(PW/2,PH*.3,0,PW/2,PH*.3,PW*.8);
+    g.addColorStop(0,"#2a231c");g.addColorStop(.7,"#15110d");g.addColorStop(1,"#120e0b");
+    c.fillStyle=g;c.fillRect(0,0,PW,PH);
+    if(paper){c.fillStyle=c.createPattern(paper,"repeat");c.fillRect(0,0,PW,PH);}
+    c.save();c.shadowColor="rgba(0,0,0,.72)";c.shadowBlur=28;c.shadowOffsetY=7;
+    c.fillStyle="#f3ecdc";c.fillRect(x0,y0,fw,fh);c.restore();
+    if(!B){c.fillStyle="#12161d";c.fillRect(x0+m,y0+m,cw,ch);}
+    const cy=y0+fh+capH*.42;
+    c.textAlign="center";c.textBaseline="middle";
+    c.fillStyle="rgba(236,228,210,.9)";c.font="italic 32px Georgia,\"Times New Roman\",serif";
+    c.fillText("«Дрейф» · "+postCaption(s),PW/2,cy,PW-2*pad);
+    c.fillStyle="rgba(200,184,150,.55)";c.font="17px ui-monospace,monospace";
+    c.fillText("сектор "+(s.sx|0)+":"+(s.sy|0)+" · drift-game.ru",PW/2,cy+38);
+  },{once:true,mips:false});
+  /* фотоуголки: тёмная бумага поверх снимка, светлая кромка по гипотенузе */
+  const K=gpuBake(PW,PH,c=>{
+    const L=46,o=10,Q=[[x0-o,y0-o,1,1],[x0+fw+o,y0-o,-1,1],[x0-o,y0+fh+o,1,-1],[x0+fw+o,y0+fh+o,-1,-1]];
+    for(const [qx,qy,sx,sy] of Q){
+      c.fillStyle="#3b2f22";c.beginPath();c.moveTo(qx,qy);c.lineTo(qx+sx*L,qy);c.lineTo(qx,qy+sy*L);c.closePath();c.fill();
+      c.strokeStyle="rgba(255,236,200,.14)";c.lineWidth=1.5;c.beginPath();c.moveTo(qx+sx*L,qy);c.lineTo(qx,qy+sy*L);c.stroke();
+    }
+  },{once:true,mips:false});
+  let ok=false;
+  try{ok=P&&K&&ovPaint(cv,1,()=>{
+    ovImage(P,PW/2,PH/2,PW,PH,0,0,0,1,1,1);
+    if(B){const x=pad+m,y=pad+m;ovImage(B,x+cw/2,y+ch/2,cw,ch,0,0,0,1,1,1,M);albumRig(B,M,x,y);
+      if(M)ovImage(albumVig(s.fx==="night"),x+cw/2,y+ch/2,cw,ch,0,0,0,1,1,1);}
+    ovImage(K,PW/2,PH/2,PW,PH,0,0,0,1,1,1);
+  });}finally{gpuBakeDrop(B);gpuBakeDrop(P);gpuBakeDrop(K);}
+  if(!ok)return false;
   const name="drift-"+(s.sx|0)+"_"+(s.sy|0)+"-"+(s.t|0)+".png";
   const go=url=>{const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();};
   if(cv.toBlob)cv.toBlob(b=>{if(!b)return;const u=URL.createObjectURL(b);go(u);setTimeout(()=>URL.revokeObjectURL(u),4000);},"image/png");

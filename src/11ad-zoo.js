@@ -93,17 +93,4 @@ function zooHomeBlock(){
     r.appendChild(b);$body.appendChild(r);
   }
 }
-/* угол в жилой части: клетка и силуэты по посеву зверя */
-function zooDrawPen(c,x0,fy){
-  const Z=zooAll();if(!Z.pen.length)return;
-  c.strokeStyle="rgba(180,170,150,.6)";c.lineWidth=1.2;
-  c.strokeRect(x0,fy-18,22,18);
-  for(let i=1;i<4;i++){c.beginPath();c.moveTo(x0+i*5.5,fy-18);c.lineTo(x0+i*5.5,fy);c.stroke();}
-  Z.pen.slice(0,3).forEach((b,i)=>{
-    const r=rng(b.seed^0x200);
-    c.fillStyle="rgba("+(120+Math.floor(r()*80))+","+(100+Math.floor(r()*60))+","+(80+Math.floor(r()*40))+",.9)";
-    const bx=x0+4+i*6,by=fy-4;
-    c.beginPath();c.ellipse(bx,by,2.6,1.8+r()*1.2,0,0,TAU);c.fill();
-    c.beginPath();c.arc(bx+2,by-2,1.2,0,TAU);c.fill();
-  });
-}
+/* 2D zooDrawPen снят (G15): угол с клеткой — в выпечке дома */

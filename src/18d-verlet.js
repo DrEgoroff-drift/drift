@@ -88,48 +88,28 @@ function vLink(B,a,b){
    Толщина сходит на нет к свободному концу, и это половина впечатления:
    ровная линия по всей длине снова читается палкой. */
 function vDrawRope(B,ox,oy,col,w){
-  if(!B||B.p.length<2)return;
-  if(VSINK){                                 /* с видеокартой — капсулами в приёмник (08c) */
-    const o=VSINK.o,K=o.s,c=vsinkCol(col);
-    for(let i=1;i<B.p.length;i++){const a=B.p[i-1],z=B.p[i],lw=(w||1.4)*(1-i/B.p.length*.55);
-      VSINK.SH.push([2,o.x+(a.x+ox)*K,o.y+(a.y+oy)*K,o.x+(z.x+ox)*K,o.y+(z.y+oy)*K,lw*K/2,.5,c[0],c[1],c[2],c[3]]);}
-    return;
-  }
-  ctx.save();ctx.lineCap="round";
-  for(let i=1;i<B.p.length;i++){
-    const a=B.p[i-1],z=B.p[i];
-    ctx.strokeStyle=col;
-    ctx.lineWidth=(w||1.4)*(1-i/B.p.length*.55);
-    ctx.beginPath();ctx.moveTo(a.x+ox,a.y+oy);ctx.lineTo(z.x+ox,z.y+oy);ctx.stroke();
-  }
-  ctx.restore();
+  if(!B||B.p.length<2||!VSINK)return;   /* 2D-пути нет: без приёмника верёвки не видно */
+  const o=VSINK.o,K=o.s,c=vsinkCol(col);
+  for(let i=1;i<B.p.length;i++){const a=B.p[i-1],z=B.p[i],lw=(w||1.4)*(1-i/B.p.length*.55);
+    VSINK.SH.push([2,o.x+(a.x+ox)*K,o.y+(a.y+oy)*K,o.x+(z.x+ox)*K,o.y+(z.y+oy)*K,lw*K/2,.5,c[0],c[1],c[2],c[3]]);}
 }
 /* ── ткань на экран ──
    Клетками, а не одной фигурой: у каждой своя светлота по наклону — так видно
    складку. Свет берётся сверху-сбоку от SUN_DIR, если он есть. */
 function vDrawCloth(B,ox,oy,base,alpha){
-  if(!B)return;
+  if(!B||!VSINK)return;   /* 2D-пути нет: без приёмника ткани не видно */
   const C=B.cols,R=B.rows;
   const sx=(typeof SUN_DIR==="object")?SUN_DIR.x:.55;
-  ctx.save();
   for(let r=0;r+1<R;r++)for(let c=0;c+1<C;c++){
     const a=B.p[r*C+c],b=B.p[r*C+c+1],d=B.p[(r+1)*C+c+1],e=B.p[(r+1)*C+c];
     /* наклон клетки к свету: горизонтальная разница даёт складку */
     const tilt=clamp(((b.x-a.x)/B.seg-1)*1.6*(sx>0?1:-1),-.5,.5);
     const k=clamp(1+tilt,.55,1.45);
-    if(VSINK){                               /* клетка — два треугольника; общие стороны жёсткие, без шва */
-      const o=VSINK.o,K=o.s,P=q=>[o.x+(q.x+ox)*K,o.y+(q.y+oy)*K];
-      gpuQuad(VSINK.SH,P(a),P(b),P(d),P(e),[base[0]*k,base[1]*k,base[2]*k,alpha===undefined?1:alpha],
-        (r>0?1:0)|(c+2<C?2:0)|(r+2<R?4:0)|(c>0?8:0));
-      continue;
-    }
-    ctx.fillStyle="rgba("+Math.round(base[0]*k)+","+Math.round(base[1]*k)+","+
-      Math.round(base[2]*k)+","+(alpha===undefined?1:alpha)+")";
-    ctx.beginPath();
-    ctx.moveTo(a.x+ox,a.y+oy);ctx.lineTo(b.x+ox,b.y+oy);
-    ctx.lineTo(d.x+ox,d.y+oy);ctx.lineTo(e.x+ox,e.y+oy);ctx.closePath();ctx.fill();
+    /* клетка — два треугольника; общие стороны жёсткие, без шва */
+    const o=VSINK.o,K=o.s,P=q=>[o.x+(q.x+ox)*K,o.y+(q.y+oy)*K];
+    gpuQuad(VSINK.SH,P(a),P(b),P(d),P(e),[base[0]*k,base[1]*k,base[2]*k,alpha===undefined?1:alpha],
+      (r>0?1:0)|(c+2<C?2:0)|(r+2<R?4:0)|(c>0?8:0));
   }
-  ctx.restore();
 }
 
 /* точка на верёвке по доле длины (0…1): чтобы вешать на неё вещи так, как

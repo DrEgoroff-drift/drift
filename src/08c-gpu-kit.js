@@ -68,10 +68,6 @@ function gpuCanvasTex(cv,ver){
    восемь мест перегружали их по кругу каждый кадр. Печи по кеглю (bakeKeep: неон, доски,
    бегущая строка — до 30 мелких холстов) держатся здесь же, иначе проезд зума их вытеснит */
 const GPU_CVTEX_CAP=128;   /* G15: формы рельефа и постройки — по холсту на штуку */
-/* уровень детализации печёного холста: gpuImage берёт нулевой уровень, и сильно сжатый
-   холст мерцает (окно дома — в пиксель). Уровни — половинки, печёт лениво; берётся тот,
-   что не мельче ширины на экране devW (пиксели устройства). ver — как у gpuCanvasTex */
-const CV_LVL=new WeakMap();
 /* печь по ключу (ступень 1, печки за зумом): свой холст на каждый ключ — кегль, плотность;
    недавние держатся, и зум туда-обратно берёт готовое — gpuCanvasTex грузит каждый размер
    один раз. Текст так и остаётся пиксель в пиксель, без мипов и без маски */
@@ -81,37 +77,8 @@ function bakeKeep(M,key,cap,make){
   if(M.size>cap){const k=M.keys().next().value,o=M.get(k);M.delete(k);if(o&&o.drop)o.drop();}   /* выпечки GPU-холста — освободить */
   return v;
 }
-function gpuCvLevel(cv,ver,devW){
-  let L=CV_LVL.get(cv);
-  if(!L||L.ver!==ver||L.w!==cv.width||L.h!==cv.height){L={ver,w:cv.width,h:cv.height,lv:[cv],pool:L?L.lv:[]};CV_LVL.set(cv,L);}
-  let i=0;while(i<5&&(cv.width>>(i+1))>=devW&&(cv.height>>(i+1))>=4)i++;
-  for(let j=1;j<=i;j++)if(!L.lv[j]){
-    const s=L.lv[j-1],c=L.pool[j]||document.createElement("canvas");
-    c.width=Math.max(1,s.width>>1);c.height=Math.max(1,s.height>>1);
-    const g=c.getContext("2d");g.clearRect(0,0,c.width,c.height);g.imageSmoothingQuality="high";g.drawImage(s,0,0,c.width,c.height);
-    L.lv[j]=c;
-  }
-  return L.lv[i];
-}
-/* печёный мастер с мипами: уровни — половинки 2D, как у gpuCvLevel, но грузятся все
-   сразу и один раз; трилинейный сэмплер (gpuMipSmp) берёт уровень между ними, и зум
-   не перепекает и не грузит ничего. Холст мастера не перерисовывать: новая выпечка —
-   новый холст, старый отдать gpuMipDrop */
-const GPU_MIP=new WeakMap();
-function gpuMipTex(cv){
-  let e=GPU_MIP.get(cv);if(e&&e.dev===GPU.dev)return e;   /* устройство потеряно и поднято — грузим заново */
-  let n=1;while(n<9&&(cv.width>>n)>=4&&(cv.height>>n)>=4)n++;
-  const U=GPUTextureUsage,tex=GPU.dev.createTexture({size:[cv.width,cv.height],mipLevelCount:n,format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
-  let s=cv;
-  for(let i=0;i<n;i++){
-    if(i){const c=document.createElement("canvas");c.width=Math.max(1,cv.width>>i);c.height=Math.max(1,cv.height>>i);
-      const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(s,0,0,c.width,c.height);s=c;}
-    GPU.dev.queue.copyExternalImageToTexture({source:s},{texture:tex,mipLevel:i,premultipliedAlpha:true},[s.width,s.height]);
-  }
-  e={tex,view:tex.createView(),w:cv.width,h:cv.height,n,dev:GPU.dev};GPU_MIP.set(cv,e);GPU.mipUp=(GPU.mipUp||0)+n;
-  return e;
-}
-function gpuMipDrop(cv){const e=GPU_MIP.get(cv);if(e){GPU.trash.push(e.tex);GPU_MIP.delete(cv);}}
+/* мипы 2D-спуском (gpuCvLevel / gpuMipTex) сняты: мастера — gpuBake (08ca) со своими
+   уровнями на видеокарте. Сэмплер остаётся для трилинейки готовых выпечек */
 function gpuMipSmp(){return GPU.S.mip||(GPU.S.mip=GPU.dev.createSampler({magFilter:"linear",minFilter:"linear",mipmapFilter:"linear"}));}
 /* пустой #c не грузится (ворота ступени 1: в ровном полёте выгрузок холстов 0).
    cState: 0 — слой вычищен целиком и с тех пор пуст, 1 — на нём что-то есть. Следим за

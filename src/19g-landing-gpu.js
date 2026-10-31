@@ -17,7 +17,7 @@
      они смотрели вверх, в корпус) и дрожат шумом, а не броском rndFx; ядро ярче
      единицы — свечение его подхватывает. Пыль из-под струи — поле по рельефу:
      клубится и уходит от корабля, а не перебрасывается кругами каждые два кадра.
-     Дым побитого корпуса — 2D поверх (live).
+     Дым побитого корпуса — фигурами поверх (19).
    Высота рельефа уходит на видеокарту один раз на заход: текстура N×1 (h−hMin). */
 
 /* ── высота рельефа текстурой ── одна на заход: сменился рельеф — старая в корзину */
@@ -380,7 +380,7 @@ function lgLanderBake(L,tr,dk){
   const side=Math.ceil(LG_E*2*sb);
   B=gpuBaked(LG_BAKE,key,side,side,g=>{
     g.setTransform(sb,0,0,sb,side/2,side/2-LG_OY*sb);
-    drawLander(broken,false,{gear,sq,hot:0,landed,tr,gx:L.x,bake:true});
+    drawLander(broken,{gear,sq,landed,tr,gx:L.x});
   });
   while(LG_BAKE.size>10){const k=LG_BAKE.keys().next().value;gpuBakeDrop(LG_BAKE.get(k));LG_BAKE.delete(k);}
   return B;

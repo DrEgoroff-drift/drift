@@ -11,38 +11,48 @@ const BODY_WARM=[255,194,118],BODY_COLD=[170,214,255];
 const BODY_ST_CORE={
   trade:(B)=>bodyStRing(B,false),
   bazaar:(B)=>bodyStRing(B,true),
-  indust:(B)=>{const {K,C,cx,base,dark,L,P}=B;
+  indust:(B)=>{const {K,C,cx,base,dark,steel,L,P}=B;
     K.box(cx-22,cx+22,-19,19,-5,6,1.2,C(mixc(base,[0,0,0],.12)),3,-.5);
     for(let i=-2;i<=2;i++)K.box(cx+i*8-.6,cx+i*8+.6,-19.3,19.3,5,6.6,.1,C(dark),3,.5);   /* рёбра крыши */
     for(const s of [-1,1]){B.cyl(cx+10,s*9,6,19,3.4,[64,58,54],.5,[30,26,24],0);   /* трубы: жерло в копоти, жар — малым кругом в глубине */
       const Q=[];for(let i=0;i<10;i++){const t=i/10*TAU;Q.push([cx+10+Math.cos(t)*1.3,s*9+Math.sin(t)*1.3,19.05]);}
       K.face(Q,[cx+10,s*9,18],C([196,84,36]),3,-.1,1.35);
+      for(let z=8;z<18;z+=3.5)K.lathe(cx+10,s*9,z,[[0,3.5],[.35,3.5]],C(steel),3,.55,0,10,null,null); /* хомуты трубы */
       B.cold(cx-20,cx-4,s*17.6,6.7);}
     K.face([[cx-13,-4,6.7],[cx-5,-4,6.7],[cx-5,4,6.7],[cx-13,4,6.7]],[cx-9,0,5],C([132,62,34]),3,-.1,1.25);   /* продух — тлеет под решёткой */
     for(let i=0;i<4;i++)K.box(cx-12.6+i*2.2,cx-11.8+i*2.2,-4.3,4.3,6.6,7.1,.05,C(dark),3,.4);
     B.wins(cx+14,cx+21,-17,17,6.7,3);P.push([cx,0,.8]);return {x0:cx-22,x1:cx+22,w:19};},
   yard:(B)=>{const {K,C,cx,steel,dark,L,P}=B;
     for(const s of [-1,1])K.box(cx-32,cx+32,s*24-1.6,s*24+1.6,-2,4,.4,C(steel),3,.5);   /* рельсы стапеля */
+    for(let x=cx-30;x<cx+30;x+=5)K.box(x-.4,x+.4,-25.2,25.2,-2.2,-1.6,.15,C(dark),3,.4); /* шпалы */
     /* одна рама: два рельса и две торцевые балки; внутри — только корпус, будка — на углу снаружи */
     for(const x of [cx-33,cx+31])K.box(x,x+2,-25.6,25.6,-2,4,.3,C(steel),3,.5);
     K.box(cx+24,cx+31,26,32,-1,7,.6,C(B.base),3,.5);B.wins(cx+25,cx+30,27,31,7.1,1);
     for(const s of [-1,1]){L.push({x:cx-30,y:s*24,c:BODY_WARM,r:.9,k:0,ph:0});P.push([cx-26,s*18,1]);}
     B.slip={x:cx,y:0};return {x0:cx-33,x1:cx+33,w:6};},
-  sci:(B)=>{const {K,C,cx,base,steel,L,P}=B,Sp=[];
+  sci:(B)=>{const {K,C,cx,base,steel,dark,L,P}=B,Sp=[];
     for(let k=0;k<=10;k++){const ph=-Math.PI/2+Math.PI*k/10;Sp.push([15*Math.sin(ph),Math.max(15*Math.cos(ph),.01)]);}
     K.lathe(cx,0,0,Sp,C(mixc(base,[230,236,244],.35)),3,-.7,0,20,null,null);
     for(let k=0;k<6;k++){const t=k/6*TAU+.3;B.win1(cx+Math.cos(t)*9,Math.sin(t)*9,13.5);}
+    for(let k=0;k<8;k++){const t=k/8*TAU; /* швы купола */
+      K.box(cx+Math.cos(t)*14.7-.2,cx+Math.cos(t)*14.7+.2,Math.sin(t)*14.7-.2,Math.sin(t)*14.7+.2,-2,12,.08,C(dark),3,.45);}
     K.tube([[cx-4,8,8],[cx-6,24,10]],1,C(steel),3,.5,6);
     K.lathe(cx-12,26,10,[[0,.8],[3,5],[5,9]],C([214,220,228]),3,.9,0,18,null,null);   /* тарелка */
+    for(const s of[-1,1])K.tube([[cx-8,s*4,12],[cx-12,26,10]],.35,C(steel),3,.45,5); /* растяжки тарелки */
+    for(let i=0;i<4;i++){const t=i/4*TAU;K.box(cx-12+Math.cos(t)*8-.2,cx-12+Math.cos(t)*8+.2,26+Math.sin(t)*8-.2,26+Math.sin(t)*8+.2,9.5,10.5,.05,C(dark),3,.6);}
     B.cold(cx-30,cx-18,-5.2,3.8);B.cold(cx+18,cx+30,5.2,3.8);P.push([cx,0,.7]);return {x0:cx-15,x1:cx+15,w:15};},
   outpost:(B)=>{const {K,C,cx,dark,steel,L,P}=B,Sp=[];
     K.box(cx-10,cx+10,-10,10,-3,4,1,C(B.base),3,-.5);
+    for(let i=0;i<4;i++)K.box(cx-9+i*5,cx-8.2+i*5,-10.2,10.2,3.8,4.3,.08,C(dark),3,.45); /* швы каземата */
     for(let k=0;k<=6;k++){const ph=-Math.PI/2+Math.PI*k/6;Sp.push([5.5*Math.sin(ph),Math.max(5.5*Math.cos(ph),.01)]);}
     K.lathe(cx,0,8,Sp,C(dark),3,.7,0,12,null,null);   /* башня орудия */
     K.tube([[cx+2,-2,9],[cx+8,-17,9]],1.1,C(steel),3,.6,6);K.tube([[cx-2,-2,9],[cx+3,-17,9]],1.1,C(steel),3,.6,6);
+    for(const [x0,y0,x1,y1] of[[cx+2,-2,cx+8,-17],[cx-2,-2,cx+3,-17]]) /* хомуты стволов */
+      for(let t=.2;t<.85;t+=.3){const x=x0+(x1-x0)*t,y=y0+(y1-y0)*t;K.box(x-.7,x+.7,y-.7,y+.7,8.2,9.8,.12,C(steel),3,.55);}
     L.push({x:cx-8,y:8,c:[255,96,80],r:1,k:.06,ph:0});B.wins(cx-8,cx-2,4,9,4.1,1);P.push([cx,0,.6]);return {x0:cx-10,x1:cx+10,w:10};},
-  fuel:(B)=>{const {K,C,cx,steel,L,P}=B,tk=[[0,1],[2,5.6],[5,7],[25,7],[28,5.6],[30,1]];
-    for(const y of [-11,11,-26,26])K.lathe(cx-15,y,0,tk,C(mixc(B.base,[200,206,214],.62)),3,.8,0,16,null,null);
+  fuel:(B)=>{const {K,C,cx,steel,L,P,dark}=B,tk=[[0,1],[2,5.6],[5,7],[25,7],[28,5.6],[30,1]];
+    for(const y of [-11,11,-26,26]){K.lathe(cx-15,y,0,tk,C(mixc(B.base,[200,206,214],.62)),3,.8,0,16,null,null);
+      for(let i=0;i<3;i++)K.lathe(cx-15+i*10,y,7.1,[[0,7.05],[.4,7.05]],C(dark),3,.5,0,12,null,null);} /* обручи цистерн */
     for(const y of [-18.5,18.5])K.box(cx-12,cx+12,y-.8,y+.8,-1,1.5,.2,C(steel),3,.5);
     K.tube([[cx+10,26,7],[cx+16,36,8],[cx+26,40,6]],1,C([160,120,60]),3,.5,6);   /* рукав заправки */
     L.push({x:cx+26,y:40,c:BODY_WARM,r:.9,k:.05,ph:.4});P.push([cx+14,30,.7]);return {x0:cx-15,x1:cx+15,w:28};},
@@ -55,7 +65,8 @@ function bodyStRing(B,cloth){
   /* палуба — второе кольцо внутри, ниже и темнее: обод читается обжитым, а не обручем */
   K.tube(Q.map(q=>[cx+(q[0]-cx)*.84,q[1]*.84,-1.2]),2.4,C(dark),3,.4,8);
   /* две спицы поперёк хребта: вдоль него спицей служит сам хребет, четверти свободны под модули */
-  for(const s of [-1,1])K.tube([[cx,s*5,0],[cx,s*(R-3),0]],1.4,C(steel),3,.5,6);
+  for(const s of [-1,1]){K.tube([[cx,s*5,0],[cx,s*(R-3),0]],1.4,C(steel),3,.5,6);
+    for(let d=8;d<R-4;d+=6)K.box(cx-.8,cx+.8,s*d-.8,s*d+.8,1.2,2.2,.1,C(dark),3,.55);} /* хомуты спиц */
   K.box(cx-7,cx+7,-7,7,-4,5,1,C(dark),3,-.5);
   /* окна полосой по верху кольца: часть погашена — люди спят */
   const r=rng(hashi(B.seed,0x71D,1));
@@ -88,6 +99,11 @@ function bodyStModules(B,cr,xa,xb){
       B.win1(x+len/2,yc,rr+.05);continue;}
     K.box(x,x+len,y0,y1,-ht*.6,ht,Math.min(1.2,ht*.2),C(col),3,asm==="block"?.9:.45);
     if(asm!=="block")for(let i=1;i<3;i++){const xx=x+len*i/3;K.box(xx-.35,xx+.35,y0-.2,y1+.2,ht-.4,ht+.5,.1,C(dark),3,.4);}
+    /* уголки и заклёпки на модуле — craft поверх блока */
+    const riv=C(steel);
+    for(const [ux,uy] of[[x+.4,y0+.4],[x+len-.4,y0+.4],[x+.4,y1-.4],[x+len-.4,y1-.4]])
+      K.box(ux-.25,ux+.25,uy-.25,uy+.25,ht-.15,ht+.35,.06,riv,3,.65);
+    if(r()<.55)K.box(x+len*.35,x+len*.65,Math.min(y0,y1)+.3,Math.max(y0,y1)-.3,ht+.05,ht+.45,.08,C(dark),3,.4); /* люк на крыше */
     const nw=asm==="block"?3:1+((r()*3)|0);B.wins(x+1.2,x+len-1.2,Math.min(y0,y1)+1.2,Math.max(y0,y1)-1.2,ht+.06,nw);
     if(asm==="spine"&&r()<.5)K.tube([[x+len/2,s*(wd+5),ht],[x+len/2,s*(wd+15),ht]],.4,C(steel),3,.5,5);   /* мачта иглы */
     if(asm==="block"&&r()<.6){const Sp=[];for(let j=0;j<=5;j++){const ph=-Math.PI/2+Math.PI*j/5;Sp.push([3*Math.sin(ph),Math.max(3*Math.cos(ph),.01)]);}
@@ -95,7 +111,7 @@ function bodyStModules(B,cr,xa,xb){
   }
 }
 function h3dStationMesh(S,ty,by,seed){
-  return bodyMesh("st:"+seed+ty+by,BODY_ST_KEEP,()=>{
+  return bodyMesh("st:"+seed+ty+by+":c189",BODY_ST_KEEP,()=>{
     const K=h3dKit(),C=K.C,MR=makerRow(by),gnd=makerGround(by),r=rng(hashi(seed,0x57A7,3));
     /* основа тёмная: в темноте читаются освещённые грани и окна, а не ровная заливка */
     const base=mixc([42,46,54],gnd,.26),dark=mixc(base,[10,12,16],.5),iron=[48,52,60],steel=[118,122,128];
@@ -120,6 +136,7 @@ function h3dStationMesh(S,ty,by,seed){
     P.push([xb+12,0,.8]);
     const cr=(BODY_ST_CORE[ty]||BODY_ST_CORE.trade)(B);
     bodyStModules(B,cr,xa,xb);
+    bodyStCraft(B,cr,xa,xb,ty);
     /* поле тени: хребет, ядро — своей полушириной */
     const st=[[xb+16,1.3],[xb,4.6]];
     if(cr.w>5){st.push([cr.x1+.1,4.6],[cr.x1,cr.w],[cr.x0,cr.w],[cr.x0-.1,4.6]);}

@@ -367,7 +367,8 @@ function cave3Over(){
          загрузки и выгрузки плиток за кадр (телефон, 24.10) */
       const LP=GPU.on?gpuNext():null;
       const k=Math.sin(G.t*.08)>0?.9:.4;
-      if(LP){const h=lifeHere(x,y-6);gpuShapes(LP,[[1,h.x,h.y,4*h.s,0,0,1.2*h.s,255,225,140,k]],{blend:"over"});}
+      if(LP){const h=lifeHere(x,y-6);
+        gpuShapes(LP,[[1,h.x,h.y,4*h.s,0,0,1.2*h.s,255,225,140,k]],{blend:"over"});}
     }
   }
 }
@@ -390,7 +391,7 @@ function drawCave(){
   BLOOM_K.cave=0;
   CAVE3.live=ok;
   if(!ok){CAVE3.c=null;return;}
-  withScale(G.viewK,cave3Over);
+  withScale(G.viewK,cave3Over);   /* LIFE_XF → lifeHere, без scale на MAIN_CTX */
 };
 /* клавиша карты в пещере: дальний объектив туда и обратно (раньше она здесь молчала) */
 const CAVE3_OLD_NAV=navAction;

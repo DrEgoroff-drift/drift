@@ -549,19 +549,16 @@ function drawRaid(){
       const by=m.p.y-Math.max(12,32*ppu),bh=f.baron?6:4;
       const bc=f.baron?[255,140,90,.98]:(f.boss?[255,90,70,.95]:[242,178,92,.9]),x0=m.p.x-w/2;
       OV.push([0,x0,by,x0+w,by+bh,0,0,0,0,0,.6],[0,x0,by,x0+w*hp,by+bh,0,0,bc[0],bc[1],bc[2],bc[3]]);
-      if(f.baron){ctx.textBaseline="alphabetic";
-        domLabel("raidbaron",m.p.x,by-6,"БАРОН","9px ui-monospace,monospace","rgba(255,180,120,.95)","center");}
+      if(f.baron)domLabel("raidbaron",m.p.x,by-6,"БАРОН","9px ui-monospace,monospace","rgba(255,180,120,.95)","center");
     }else{
       /* и у самого скафандра тень тоже: он ходит по тому же полу */
       const pm=proj(S.x,raidFloorAt(R,S.x,S.z)+1,S.z);
       const ao={phase:S.walkPhase,amp:keys.thrust||keys.brake?1:0,walk:false,air:false};
       /* тень и фигура ложатся после стен отсека (проход gpuNext): двойник в проходе
          до стен ушёл бы под них. Метка стоит на середине роста, а фигура нарисована
-         вокруг своей середины. ctx здесь — только счётчик преобразования для lifeHere:
-         save/translate/scale #c не пачкают */
-      const sh=pm&&pm.y>m.p.y+2?lifeHere(pm.x,pm.y):null;
-      ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
-      AST={o:ao,h:lifeHere(0,0),sh,rx:Math.max(3,9.5*ppu),ry:Math.max(1.2,2.9*ppu)};ctx.restore();
+         вокруг своей середины. Место — прямо в CSS, без матрицы ctx (G15) */
+      const sh=pm&&pm.y>m.p.y+2?{x:pm.x,y:pm.y,s:1}:null;
+      AST={o:ao,h:{x:m.p.x,y:m.p.y,s},sh,rx:Math.max(3,9.5*ppu),ry:Math.max(1.2,2.9*ppu)};
     }
   }
   raidGpuDraw(polys,{cam,fwd,right,up,F,CY,px:S.x,py:S.y,pz:S.z,a:S.a},LP,FS,OC);

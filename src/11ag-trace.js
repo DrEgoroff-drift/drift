@@ -171,12 +171,4 @@ function traceLeave(){
   return true;
 }
 
-/* ── как это выглядит ── знак на камне и вещь рядом: тела движка (21piib); штрихи фигуры — здесь,
-   их же режет стена (11ah) */
-function traceDrawMark(m,sc,col,w){
-  const M=TRACE_MARK[m%TRACE_MARK.length];
-  ctx.save();ctx.scale(sc,sc);
-  ctx.beginPath();M.d(ctx);
-  ctx.strokeStyle=col;ctx.lineWidth=(w||2)/sc;ctx.lineCap="round";ctx.lineJoin="round";
-  ctx.stroke();ctx.restore();
-}
+/* штрихи фигуры TRACE_MARK — в телах PLN (21piib); 2D-кисть traceDrawMark снята (G15) */

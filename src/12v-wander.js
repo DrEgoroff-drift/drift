@@ -348,11 +348,8 @@ function drawWanderer(zx,zy,Z){
     const x=zx(pos.x+Math.cos(a)*u*9000),y=zy(pos.y+Math.sin(a)*u*9000);
     if(x<-20||x>W+20||y<-20||y>H+20)return;
     const rr=Math.max(1.2,(1-u)*4*clamp(Z,.4,1.5));
-    const pass=gpuScene();
-    if(pass){gpuShapes(pass,[[1,x,y,0,0,0,rr*3,255,215,145,+(.9*(1-u*.6)).toFixed(2)]]);return;}
-    const g=ctx.createRadialGradient(x,y,0,x,y,rr*3);
-    g.addColorStop(0,"rgba(255,226,160,"+(.9*(1-u*.6)).toFixed(2)+")");g.addColorStop(1,"rgba(255,180,90,0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rr*3,0,TAU);ctx.fill();
+    const pass=gpuScene();if(!pass)return;
+    gpuShapes(pass,[[1,x,y,0,0,0,rr*3,255,215,145,+(.9*(1-u*.6)).toFixed(2)]]);
     return;
   }
   if(!wanderHere(sys))return;
@@ -360,81 +357,7 @@ function drawWanderer(zx,zy,Z){
   const x=zx(pos.x),y=zy(pos.y),L=pos.L*Z;
   if(x<-L*2.2||x>W+L*2.2||y<-L*2.2||y>H+L*2.2)return;   /* полотнища почти в два киля от ступицы */
   const ang=wanderAngle(pos,w),pass=gpuScene();
-  if(pass){if(wanderGpu(pass,sys,pos,x,y,L,ang,now))return;}
-  else{
-  ctx.save();ctx.translate(x,y);ctx.rotate(ang);
-  if(L<9){
-    /* издали — только паруса: тёплая точка, которая не мерцает */
-    const g=ctx.createRadialGradient(0,0,0,0,0,5);
-    g.addColorStop(0,"rgba(255,226,160,.95)");g.addColorStop(1,"rgba(255,180,90,0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,5,0,TAU);ctx.fill();
-    ctx.restore();return;
-  }
-  const s=L/100;                                     /* киль = 100 единиц */
-  ctx.scale(s,s);
-  const r=rng((sys.seed^0x5A1A)>>>0);
-  /* 0. паруса — ПОЗАДИ киля (автор, третий набросок 2026-09-05: четыре ОТДЕЛЬНЫХ
-     длинных треугольника из одной точки у носа, крестом под 45° к килю, между ними
-     пусто; «а чё золотой не можешь… мультик какой-то»). Значит — металл, не заливка:
-     фольга собрана из полос, поперёк полотнища идёт бронза → золото → почти белый →
-     золото → бронза, по полотну морщины укладки короткими штрихами, от звезды один
-     мягкий зеркальный блик, кромка к звезде светится ниткой. Ни одного плоского тона. */
-  {
-    const HX=26;                                             /* ступица — ближе к носу, где гондола */
-    const la=Math.atan2(-pos.y,-pos.x)-ang;                  /* направление на звезду в координатах борта */
-    const LB=168, HW=46, base=Math.PI/4;              /* полотнище шире: основание около половины длины, как на наброске */
-    const rr=rng((sys.seed^0x5A11)>>>0);
-    const crinkles=[];for(let k=0;k<26;k++)crinkles.push([rr(),rr()*2-1,rr()*.12+.03,(rr()-.5)*.5,rr()]);
-    for(let i=0;i<4;i++){
-      const th=base+i*Math.PI/2, flut=1+Math.sin(now/37000+i*2.1)*.006;
-      const dx=Math.cos(th),dy=Math.sin(th),nx=-dy,ny=dx;
-      const lit=.55+.6*Math.max(0,Math.cos(th-la))+.15*Math.max(0,Math.cos(th-la+Math.PI/2));
-      const pt=(u,v)=>[HX+dx*LB*u*flut+nx*HW*u*v,dy*LB*u*flut+ny*HW*u*v];
-      const P0=pt(.04,0),P1=pt(1,1),P2=pt(1,-1),Pm=pt(.97,1),Pn=pt(.97,-1);
-      const path=()=>{ctx.beginPath();ctx.moveTo(P0[0],P0[1]);ctx.lineTo(Pm[0],Pm[1]);ctx.lineTo(P1[0]-nx*HW*.15,P1[1]-ny*HW*.15);ctx.lineTo(P2[0]+nx*HW*.15,P2[1]+ny*HW*.15);ctx.lineTo(Pn[0],Pn[1]);ctx.closePath();};
-      /* 1. металл поперёк: бронза — золото — свет — золото — бронза */
-      const q1=pt(.6,-1),q2=pt(.6,1);
-      const g=ctx.createLinearGradient(q1[0],q1[1],q2[0],q2[1]);
-      const C=(r,g2,b)=>"rgb("+Math.min(255,Math.round(r*lit))+","+Math.min(255,Math.round(g2*lit))+","+Math.min(255,Math.round(b*lit))+")";
-      g.addColorStop(0,C(112,70,18));g.addColorStop(.22,C(198,146,44));g.addColorStop(.48,C(246,214,128));g.addColorStop(.62,C(214,164,56));g.addColorStop(.85,C(168,116,32));g.addColorStop(1,C(96,58,14));
-      ctx.fillStyle=g;path();ctx.fill();
-      ctx.save();path();ctx.clip();
-      /* 2. полосы фольги вдоль полотнища — чуть разного тона */
-      for(let k=0;k<7;k++){const v0=-1+k*2/7,v1=v0+2/7;const a0=pt(0,v0),a1=pt(1,v0),b1=pt(1,v1),b0=pt(0,v1);
-        ctx.fillStyle=(k%2)?"rgba(255,235,190,.07)":"rgba(40,20,0,.09)";ctx.beginPath();ctx.moveTo(a0[0],a0[1]);ctx.lineTo(a1[0],a1[1]);ctx.lineTo(b1[0],b1[1]);ctx.lineTo(b0[0],b0[1]);ctx.closePath();ctx.fill();}
-      /* 3. морщины укладки: короткие штрихи вдоль, светлый рядом с тёмным */
-      for(const c of crinkles){const u=.15+c[0]*.8,v=c[1]*.85,len=c[2],sl=c[3];
-        const s0=pt(u,v),s1=pt(u+len,v+sl*len*3);const s2=pt(u,v+.06),s3=pt(u+len,v+.06+sl*len*3);
-        ctx.strokeStyle="rgba(255,244,214,"+(.28*lit).toFixed(2)+")";ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(s0[0],s0[1]);ctx.lineTo(s1[0],s1[1]);ctx.stroke();
-        ctx.strokeStyle="rgba(50,26,4,.30)";ctx.beginPath();ctx.moveTo(s2[0],s2[1]);ctx.lineTo(s3[0],s3[1]);ctx.stroke();}
-      /* 4. зеркальный блик от звезды — одно мягкое пятно на полотнищах к звезде */
-      const face=Math.max(0,Math.cos(th-la));
-      if(face>.15){const c0=pt(.5+face*.15,(Math.sin(la-th)>0?1:-1)*.25);
-        const sg=ctx.createRadialGradient(c0[0],c0[1],0,c0[0],c0[1],LB*.32);
-        sg.addColorStop(0,"rgba(255,250,232,"+(.55*face).toFixed(2)+")");sg.addColorStop(.5,"rgba(255,240,200,"+(.16*face).toFixed(2)+")");sg.addColorStop(1,"rgba(255,240,200,0)");
-        ctx.fillStyle=sg;ctx.beginPath();ctx.arc(c0[0],c0[1],LB*.32,0,TAU);ctx.fill();}
-      /* 5. тень киля на полотне */
-      ctx.fillStyle="rgba(0,0,0,.32)";ctx.fillRect(-52,-3.4,104,6.8);
-      ctx.restore();
-      /* 6. кромки: тёмная тонкая по контуру, светлая нить по стороне к звезде; лонжерон по оси */
-      ctx.strokeStyle="rgba(46,26,4,.7)";ctx.lineWidth=.55;path();ctx.stroke();
-      const sideLit=Math.sin(la-th)>0?1:-1;const e0=pt(.04,sideLit),e1=pt(.97,sideLit);
-      ctx.strokeStyle="rgba(255,242,200,"+(.35+.45*face).toFixed(2)+")";ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(e0[0],e0[1]);ctx.lineTo(e1[0],e1[1]);ctx.stroke();
-      const m0=pt(0,0),m1=pt(1,0);
-      ctx.strokeStyle="rgba(20,16,10,.55)";ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(m0[0],m0[1]);ctx.lineTo(m1[0],m1[1]);ctx.stroke();
-      /* грузик на конце с ровным огоньком */
-      ctx.fillStyle="#1c2026";ctx.fillRect(m1[0]-1.8,m1[1]-1.8,3.6,3.6);ctx.fillStyle="rgba(255,226,160,.9)";ctx.beginPath();ctx.arc(m1[0],m1[1],.7,0,TAU);ctx.fill();
-      /* ванты: от конца полотнища к концам киля */
-      ctx.strokeStyle="rgba(200,190,160,.28)";ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(m1[0],m1[1]);ctx.lineTo(dx>0?50:-50,0);ctx.stroke();
-    }
-  }
-  wanderHullPaint(ctx,r);
-  const lg=ctx.createRadialGradient(51,0,0,51,0,9);
-  lg.addColorStop(0,"rgba(255,214,150,.95)");lg.addColorStop(.3,"rgba(255,190,110,.55)");lg.addColorStop(1,"rgba(255,160,80,0)");
-  ctx.fillStyle=lg;ctx.beginPath();ctx.arc(51,0,9,0,TAU);ctx.fill();
-  ctx.fillStyle="#fff1d0";ctx.beginPath();ctx.arc(51.4,-.4,1,0,TAU);ctx.fill();
-  ctx.restore();
-  }
+  if(pass&&wanderGpu(pass,sys,pos,x,y,L,ang,now))return;   /* издали — точка, челнок не рисуется */
   /* челнок станции к «Сороке» — местные тоже торгуют (17f) */
   if(sys.station&&typeof drawShuttleArc==="function"){
     const st=sys.station;

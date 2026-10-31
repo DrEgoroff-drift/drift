@@ -31,6 +31,20 @@ TEST_SUITES.push(()=>suite("тела: станции, флот, баржа, по
     ok(bm.frames===6&&bm.n>100&&bm.R<=140,"сетка большой баржи: рам "+bm.frames+", n="+bm.n);
     const wm=h3dBargeWreck(4242);ok(wm&&wm.n>100&&isFinite(wm.R),"остов баржи собран: n="+wm.n);
     ok(!!bodyShuttleMesh([35,43,54]).n,"челнок собран");
+    /* ── находки в полёте (17c2h): пять силуэтов в пределах h3d ── */
+    for(const k of ["sos","sat","cont","hulk","echo"]){
+      const m=bodyFindMesh(k);
+      ok(m&&m.n>40&&m.n<=60000,"находка «"+k+"» собрана: "+(m&&m.n)+" вершин");
+      ok(isFinite(m.R)&&m.R>0&&m.R<=80,"находка «"+k+"» в пределах: R="+(m.R|0));
+    }
+    {const m=bodyBuoyMesh();ok(m&&m.n>40&&m.n<=20000,"бакен полосы собран: "+(m&&m.n));
+      ok(isFinite(m.R)&&m.R>0&&m.R<=40,"бакен в пределах: R="+(m.R|0));}
+    {const m=bodyChebMesh();ok(m&&m.n>40&&m.n<=20000,"«Чебуречная» собрана: "+(m&&m.n));
+      ok(isFinite(m.R)&&m.R>0&&m.R<=50,"«Чебуречная» в пределах: R="+(m.R|0));}
+    {const m=bodyGestPostMesh("gt");ok(m&&m.n>40&&m.n<=20000,"пост у входа собран: "+(m&&m.n));
+      ok(isFinite(m.R)&&m.R>0&&m.R<=80,"пост в пределах: R="+(m.R|0));}
+    {const m=bodyBbMesh();ok(m&&m.n>30&&m.n<=10000,"стойки щита собраны: "+(m&&m.n));
+      ok(isFinite(m.R)&&m.R>0&&m.R<=50,"стойки щита в пределах: R="+(m.R|0));}
     /* ── великаны: семь разных сеток в прежнем масштабе, без Canvas-мастера ── */
     for(const D of GIANTS_DEF){
       const g={k:D.k,seed:hashi(19,D.k.length,0x61A7)},m=h3dGiantMesh(g);

@@ -19,7 +19,7 @@
    1. Ни одной подписи к показанному (правило луга). Подписей к пятнам нет тоже.
    2. Ничего не хранится: окраина и ядро — функция координат; мат и сцены —
       от зерна планеты; ярус показа — от номера прохода в этом затмении.
-   3. Своего языка не заводим: те же фигуры `peepFigure`, тот же свет PEEP_LIT. */
+   3. Своего языка не заводим: тот же свет PEEP_LIT, фигуры — lifePeepGpu (20fa). */
 
 function glowDepthAt(sx,sy){
   if(typeof regionAt!=="function")return 0;
@@ -85,14 +85,19 @@ function glowTier(P,p){
   /* бегущий: один, без ноши, в ту сторону, где устье; вдвое быстрее */
   return {k:t.k,flash:0,near:150,scene:{n:1,load:"",dir:P.scene.dir,beat:0,lag:0,fast:2}};
 }
-/* прожектор: столб света на старте громкого прохода */
+/* прожектор: столб света на старте громкого прохода — трапецией в проход (без холста) */
 function glowFlash(P,camx,camy,u){
   if(u>.18)return;
+  const pass=gpuNext();if(!pass)return;
   const a=clamp((.18-u)/.18,0,1)*(P.dk||0)*.7;
   const x=P.x-camx,y=groundAt(G.surf.tr,P.x)-camy;
-  const g=ctx.createLinearGradient(x,y,x,y-H*.9);
-  g.addColorStop(0,rgba([255,244,214],a));g.addColorStop(1,rgba([255,244,214],0));
-  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x-6,y);ctx.lineTo(x+6,y);ctx.lineTo(x+40,y-H*.9);ctx.lineTo(x-40,y-H*.9);ctx.closePath();ctx.fill();
+  const o=lifeHere(0,0),K=o.s,hUp=H*.9,SH=[],n=14;
+  for(let i=0;i<n;i++){
+    const u0=i/n,u1=(i+1)/n,hw=6+34*(u0+u1)/2;
+    SH.push([8,o.x+(x-hw)*K,o.y+(y-hUp*u1)*K,o.x+(x+hw)*K,o.y+(y-hUp*u0)*K,
+      a*(1-u0),0,255,244,214,a*(1-u1)+.001]);
+  }
+  gpuShapes(pass,SH,{blend:"add"});
 }
 /* устье пещеры на планете ядра — там, куда бежит тихий: край мата по ходу */
 function glowCaveX(peep,p){

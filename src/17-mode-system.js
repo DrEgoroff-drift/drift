@@ -677,8 +677,8 @@ function drawSystem(){
   }
   if(G.ap&&(G.ap.kind==="belt"||G.ap.kind==="wreck"))reticle(zx(G.ap.ax),zy(G.ap.ay),26);
   drawTrail(zx,zy,Z);
-  /* факел рисуется до корпуса: иначе яркое ядро сопла ложится поверх обшивки */
-  drawExhaust(zx,zy,Z,thrusting?1:0);
+  /* факел — до корпуса, иначе ядро сопла ложится поверх обшивки (16ga) */
+  gpuExhaust(zx,zy,Z,thrusting?1:0);
   drawCombat(zx,zy,Z);
   helmDrawMarks(zx,zy,Z);   /* скобки захвата (M360) */
   if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);
@@ -729,7 +729,7 @@ function drawSystem(){
   if(!SHOT_CLEAN){                       /* на кадре заглавной приборов нет (M233) */
     const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
     /* фишки у кромки — слой #ovl (08bi chipDom), каждый кадр: едут за миром */
-    withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
+    withFrame(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
     /* стики под пальцами — в пикселях касания, не в мерке (M360); слой #ovl, каждый кадр (15b) */
     if(GPU.on)helmDrawSticks();
   }

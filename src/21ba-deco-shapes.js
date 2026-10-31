@@ -63,7 +63,6 @@ function decoSlab(A){
   g.addColorStop(.6,dcol(pal,3,1));
   g.addColorStop(1,dcol(pal,4,1.05));
   ctx.fillStyle=g;ctx.fill(P);
-  decoMat(tr,P,w,hgt,A.ox,A.oy);
   ctx.save();ctx.clip(P);
   /* ОДИН глубокий шов и ребро жёсткости рядом с ним. Четыре равномерных шва
      давали доски: ритм «через равное» — это настил, а ритм «шов, ребро, пусто»
@@ -156,7 +155,6 @@ function decoWall(A){
   const P=poiPath(pts,Math.min(2.4,w*.1));
   ctx.fillStyle=poiBody(hgt,dcol(pal,1,.9),dcol(pal,3,1.05));
   ctx.fill(P);
-  decoMat(tr,P,ww,hgt,A.ox,A.oy);
   ctx.save();ctx.clip(P);
   /* ряды и вертикальные швы вразбежку: ровная сетка читается плиткой */
   const bh=Math.max(4,hgt*.11), bw=bh*2.1;
@@ -194,7 +192,6 @@ function decoColumn(A){
   const P=poiPath([[-ww,8],[-ww*.82,-brk],[ww*.82,-brk],[ww,8]],Math.min(2,ww*.3));
   ctx.fillStyle=poiBody(brk,dcol(pal,1,.85),dcol(pal,4,1));
   ctx.fill(P);
-  decoMat(tr,P,ww,brk,A.ox,A.oy);
   /* каннелюры: три светлые и три тёмные полосы дают цилиндр без всякой
      математики — глаз читает круглое по градиенту вдоль, а не по контуру */
   ctx.save();ctx.clip(P);
@@ -217,7 +214,6 @@ function decoColumn(A){
     const D=poiPath([[-ww*1.1,bh*.5],[-ww*1.1,-bh*.5],[ww*1.1,-bh*.5],[ww*1.1,bh*.5]],1.6);
     ctx.fillStyle=poiBody(bh,dcol(pal,1,.8),dcol(pal,3,1));
     ctx.fill(D);
-    decoMat(tr,D,ww,bh,A.ox,A.oy);
     ctx.strokeStyle="rgba(0,0,0,.4)";ctx.stroke(D);
     ctx.restore();
   }

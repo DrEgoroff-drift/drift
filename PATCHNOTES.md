@@ -6,6 +6,12 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.39 — body craft densify, six hotel faces, planet GPU path
+
+- System bodies (G15): station, barge, buoy, cheburek, gesture, billboard and find meshes densified with readable-scale craft under the live caps (bb n≤10000, barge R≤140, buoy/cheb/gest n≤20000, trade/sci station n≤60000, relay n≤20000). Station craft lives in `17c2g1`; find/buoy/cheb/gest/bb each have their own body module.
+- Hotels (M461): the four remaining faces are painted — «Аэлита» (co), «Орбита»/Дом (or), «Юпитер» (km), «Буран» (hf) — beside Kosmos and Druzhba. Each face keeps its own `HOTEL_T` paint and halo.
+- Planet branch: lamp aim along the drift, land ribbons after other bodies, weather and cave field yields, GPU sprites and DOM thumbnails through WebGPU, rail METRO/KRAI tags — the planet-main stack lands with this build.
+
 ## 0.499.38 — phone performance, round 12: pixels visit only what reaches them
 
 - Planet ground and grass (`21pe`, `21pc`): every ground and grass pixel multiplied in all the blob shadows of the frame, about 50 of them, and the near grass draws each pixel several times over. The blobs are now sorted by x, and their largest radius goes with them. The shader finds the first blob that can reach the pixel by binary search and stops past the right edge. A blob farther than its radius multiplies by exactly 1, so the frame is the same. On a PC the planet scene pass is 23 % cheaper and the mirror 24 %. `PLN_GPU.blobAll=1` restores the old full window for phone A/B.

@@ -1,11 +1,13 @@
-/* ══════════════ масштаб мира и подмена холста ══════════════
+/* ══════════════ масштаб мира ══════════════
    Здесь жил кэш статичного 2D: ломти мира по X (chunkStore/chunkAt/drawChunks — разрез грунта)
    и слои во весь экран (screenLayer — зарево звезды, пелена погоды). С M807b их нет: без
    видеокарты поверхности нет, грунт, свет и погоду кладёт движок (21p*). Имена остались
    заглушками — их зовут только запертые 19-mode-landing-ground, 19c-light (gradePass) и
-   19d-weather (drawWeather) на старом пути drawLanding (?pln=0, без устройства); ждёт разблокировки автора.
-   Живое здесь — withScale (мера мира по окну), uiK/uiFont (кегль), withCtx/mkCanvas (выпечки
-   20ab/21bc/21fa) и CHUNK_W (ширина ломтя, её читает и 19c1-cast). */
+   19d-weather (drawWeather) на старом пути drawLanding (?pln=0, без устройства); ждёт
+   разблокировки автора. Живое здесь — withScale (мера мира по окну), uiK/uiFont (кегль)
+   и CHUNK_W (ширина ломтя, её читает и 19c1-cast). Выпечки 20ab/21bc/21fa — на GPU-холсте
+   (08ca gpuBake); withCtx снят. Приборы на #ovl — withFrame (W/H без кисти #c); withScale
+   пишет LIFE_XF для lifeHere (наклейки plnOver.old) и на GPU не трогает MAIN_CTX. */
 
 const CHUNK_W=512;        // ширина ломтя в мировых пикселях
 
@@ -18,7 +20,7 @@ const CHUNK_W=512;        // ширина ломтя в мировых пикс�
    Поэтому мир рисуется через ctx-масштаб, а W и H на время рисования
    становятся тем, сколько мира видно (W/k, H/k). Ни одна функция внутри об
    этом не знает: отсечения, SURF_HOR, «мерка экрана» дальней гряды — всё
-   считается по видимому миру и остаётся верным. Тот же приём, что у withCtx.
+   считается по видимому миру и остаётся верным.
 
    Растр при этом обязан печься ПЛОТНЕЕ, иначе весь выигрыш съедается мылом:
    SCK — во сколько раз плотнее CSS-пикселя печётся кэш. Он входит в ключ
@@ -28,12 +30,27 @@ const CHUNK_W=512;        // ширина ломтя в мировых пикс�
    видно. */
 let SCK=1;
 const RAST_MAX=3;
+/* масштаб мира для lifeHere (20fa): на GPU — здесь, без scale на MAIN_CTX */
+let LIFE_XF={x:0,y:0,s:1};
 function withScale(k,fn){
   if(!(k>1))return fn();
-  const pW=W,pH=H,pS=SCK;
-  ctx.save();ctx.scale(k,k);
+  const pW=W,pH=H,pS=SCK,px=LIFE_XF.x,py=LIFE_XF.y,ps=LIFE_XF.s;
+  LIFE_XF={x:LIFE_XF.x,y:LIFE_XF.y,s:LIFE_XF.s*k};
+  /* без видеокарты старый путь всё ещё читает матрицу ctx (запертый грунт) */
+  if(!GPU.on){ctx.save();ctx.scale(k,k);}
   W=W/k;H=H/k;SCK=pS*Math.min(k,Math.max(1,RAST_MAX/DPR));
-  try{fn();}finally{ctx.restore();W=pW;H=pH;SCK=pS;}
+  try{fn();}finally{
+    if(!GPU.on)ctx.restore();
+    W=pW;H=pH;SCK=pS;LIFE_XF={x:px,y:py,s:ps};
+  }
+}
+/* та же доля окна, что withScale, без save/scale на MAIN_CTX — приборам на #ovl
+   матрица ctx не нужна, а scale будил бы хук #c без рисунка */
+function withFrame(k,fn){
+  if(!(k>1))return fn();
+  const pW=W,pH=H,pS=SCK;
+  W=W/k;H=H/k;SCK=pS*Math.min(k,Math.max(1,RAST_MAX/DPR));
+  try{fn();}finally{W=pW;H=pH;SCK=pS;}
 }
 /* ── линейка в начертании (M443) ──
    Подпись, привязанная к миру (имя станции под корпусом, планеты под диском),
@@ -43,16 +60,7 @@ function withScale(k,fn){
 function uiK(){return (typeof UIK==="number"&&UIK>1)?UIK:1;}
 function uiFont(px){return (px*uiK()).toFixed(1)+"px ui-monospace,monospace";}
 
-/* подмена холста: fn рисует так, будто экран размером w×h и начало — в
-   мировой точке (ox,oy) */
-function withCtx(cn,w,h,ox,oy,fn){
-  const pc=ctx,pW=W,pH=H;
-  const g=cn.getContext("2d");
-  ctx=g;W=w;H=h;
-  g.setTransform(DPR*SCK,0,0,DPR*SCK,0,0);
-  g.clearRect(0,0,w,h);
-  try{fn(g,ox,oy);}finally{ctx=pc;W=pW;H=pH;}
-}
+/* 1×1-холст для заглушек ломтя/слоя (chunkAt/screenLayer): без выпечек withCtx */
 function mkCanvas(w,h){
   const cn=document.createElement("canvas");
   cn.width=Math.max(1,Math.round(w*DPR*SCK));cn.height=Math.max(1,Math.round(h*DPR*SCK));
@@ -65,5 +73,5 @@ let NO_LAYER=null;
 function noLayer(){return NO_LAYER||(NO_LAYER=mkCanvas(1,1));}
 function chunkStore(store,key,top,ch){return {key,top,ch};}
 function chunkAt(){return noLayer();}
-function drawChunks(){}
+function drawChunks(){}   /* заглушка для ворот 2D / запертого грунта (M807b) */
 function screenLayer(){return noLayer();}

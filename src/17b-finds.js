@@ -247,12 +247,12 @@ function drawFindsSystem(zx,zy,Z){
     const K=FIND_KINDS[f.k],taken=findSeen(f);
     const s=clamp(Z,.5,1.5);
     const spin=(f.seed%628)/100+G.t*.002*((f.seed&1)?1:-1);
-    {const w=FIND_R*2*s;
-      gpuImage(pass,findSprite(f.k),[{x,y,w,h:w,rot:spin}],{sharp:true});
-      if(f.k==="echo"){const gl=((G.t*.01)%1)*52-26,c=Math.cos(spin)*s,q=Math.sin(spin)*s;
-        const P=(u,v)=>[x+u*c-v*q,y+u*q+v*c],[x0,y0]=P(gl-6,-1.2),[x1,y1]=P(gl+6,-1.2);
-        gpuShapes(pass,[[2,x0,y0,x1,y1,.4*s,0,159,183,255,.55]]);}
-    }
+    /* тело под звездой (17c2h); без GPU / bodyGpu false — прежний печёный силуэт */
+    if(!bodyFind(f,x,y,s)){const w=FIND_R*2*s;
+      gpuImage(pass,findSprite(f.k),[{x,y,w,h:w,rot:spin}],{sharp:true});}
+    if(f.k==="echo"){const gl=((G.t*.01)%1)*52-26,c=Math.cos(spin)*s,q=Math.sin(spin)*s;
+      const P=(u,v)=>[x+u*c-v*q,y+u*q+v*c],[x0,y0]=P(gl-6,-1.2),[x1,y1]=P(gl+6,-1.2);
+      gpuShapes(pass,[[2,x0,y0,x1,y1,.4*s,0,159,183,255,.55]]);}
     if(taken)continue;
     /* один свет на находку: маяк своего цвета. Спутник ещё и «говорит» —
        кольцо передачи расходится в пустоту, которую никто не слушает */

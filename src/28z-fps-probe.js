@@ -305,15 +305,15 @@ async function g11RunDeep(){
   try{
     G.mode="system";G.ap=null;
     await sleep(5000);                   /* прогрев: меряем крейсер, не пекарню */
-    out.system=await g11Deep(["drawSysNebula","drawStars","drawSpaceDust","gpuSysUnder",
+    out.system=await g11Deep(["drawSysNebula","drawSpaceDust","gpuSysUnder",
       "gpuPlanet","drawTrail","drawBarges","drawFinds"]);
     {
       const s0=find(x=>x.planets.some(q=>q.type!=="gas"));
       G.sx=s0.sx;G.sy=s0.sy;G.sys=s0;G.ap=null;
       startLanding(s0.planets.find(q=>q.type!=="gas"));
       await sleep(4000);
-      out.landing=await g11Deep(["drawSkyBase","drawSkyLayer","drawGround","drawStrata",
-        "drawRocks","drawClouds","drawWeather","drawLander","drawStars","geoFaultAt"]);
+      out.landing=await g11Deep(["gpuSky","drawSkyLayer","drawGround","drawStrata",
+        "drawRocks","drawClouds","drawWeather","drawLander","geoFaultAt"]);
     }
     const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
     G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;
@@ -322,9 +322,9 @@ async function g11RunDeep(){
     G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
     enterSurface();
     await sleep(5000);
-    out.surface=await g11Deep(["drawSkyBase","drawSkyLayer","drawStars","drawTiles","drawGround",
+    out.surface=await g11Deep(["gpuSky","drawSkyLayer","drawTiles","drawGround",
       "drawPOI","drawDeco","drawBuilt","drawRocks","drawDustMotes",
-      "drawPlant","drawBeast","drawLander","drawForeground","drawWeather"]);
+      "drawLander","drawWeather"]);
   }catch(e){err.push(""+(e&&e.message||e));}
   const box=document.createElement("div");
   box.style.cssText="position:fixed;left:8px;top:8px;z-index:99;color:#7fe6d8;font:11px ui-monospace,monospace;background:rgba(0,0,0,.7);padding:8px;white-space:pre";

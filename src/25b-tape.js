@@ -110,21 +110,15 @@ addEventListener("keydown",e=>{
    двух самописцев в игре быть не может. Контекст передаётся, потому что в
    колодке это свой маленький canvas.
    part — для мастера кабины 24bc: "base" — бумага, края, щель, деления и нули дорожек (под перьями),
-   "roll" — валик (над перьями); перья, перо у края и тень взгляда назад он кладёт сам */
-/* два листа одной ленты: светлая бумага кабины пояса (её видно под лампой) и тёмная — колодки над
-   миром. Светлая полоса в строке приборов была самым ярким и самым мёртвым пятном верха кадра:
-   пустая лента не должна светиться, ярким там бывает только след пера */
+   "roll" — валик (над перьями); кривые перьев, перо и тень взгляда назад — живой кадр 24bc */
+/* бумага кабины пояса: пустая лента не должна светиться, ярким — только след пера (24bc) */
 const TAPE_PAL={
-  light:{paper:"rgba(188,182,164,.62)",edge:"rgba(0,0,0,.10)",grid:"rgba(60,66,60,.18)",zero:"rgba(60,66,60,.20)",
-         ink:"rgba(38,44,40,.80)",rollHi:"rgba(150,176,190,.20)",rollLn:"rgba(150,176,190,.24)",nib:"rgba(24,28,26,.85)"},
-  dark:{paper:"rgba(16,22,28,.78)",edge:"rgba(178,202,216,.10)",grid:"rgba(178,202,216,.06)",zero:"rgba(178,202,216,.09)",
-        ink:"rgba(190,212,224,.74)",rollHi:"rgba(150,176,190,.12)",rollLn:"rgba(150,176,190,.14)",nib:"rgba(200,222,234,.80)"}
+  paper:"rgba(188,182,164,.62)",edge:"rgba(0,0,0,.10)",grid:"rgba(60,66,60,.18)",zero:"rgba(60,66,60,.20)",
+  rollHi:"rgba(150,176,190,.20)",rollLn:"rgba(150,176,190,.24)"
 };
-function tapePaper(c,x0,y0,w,h,part,pal){
-  const T=tapeInit(),P=TAPE_PAL[pal]||TAPE_PAL.light;
-  /* бумага — вещь, она видна и до первых двух отсчётов: прежде полоса пустовала
-     первые три секунды сеанса (первый столбец пишется через 1.6 с), и колодка
-     на свежем кадре выглядела сломанной. Кривые — только когда есть что вести */
+function tapePaper(c,x0,y0,w,h,part){
+  const P=TAPE_PAL;
+  /* бумага — вещь на мастере (part "base"); валик — спрайт поверх (part "roll") */
   if(w<24||h<8)return;
   const x1=x0+w;
   c.save();
@@ -141,15 +135,12 @@ function tapePaper(c,x0,y0,w,h,part,pal){
   lg.addColorStop(1,"rgba(8,11,15,0)");
   c.fillStyle=lg;c.fillRect(x0,y0,lw,h);
   /* поперечные деления: время, без единой цифры */
-  const cols=Math.min(T.n-1,Math.floor(w));
-  const sc=w/Math.max(1,cols);
   c.strokeStyle=P.grid;c.lineWidth=1;
   for(let g=0;g<=6;g++){
     const gx=Math.round(x0+w*g/6)+.5;
     c.beginPath();c.moveTo(gx,y0+1);c.lineTo(gx,y0+h-1);c.stroke();
   }
-  /* пять перьев: каждое на своей дорожке, все одного цвета. Разные цвета
-     сделали бы дорожку легендой, а легенда — это толкование */
+  /* пять перьев: нулевые линии на бумаге */
   c.lineWidth=1;
   const th=h/TAPE_PENS;
   for(let i=0;i<TAPE_PENS;i++){
@@ -160,22 +151,11 @@ function tapePaper(c,x0,y0,w,h,part,pal){
     c.beginPath();
     c.moveTo(x0,Math.round(top+hh*.5)+.5);c.lineTo(x1,Math.round(top+hh*.5)+.5);
     c.stroke();
-    if(cols<1||part)continue;
-    c.strokeStyle=P.ink;
-    c.beginPath();
-    for(let k=0;k<=cols;k++){
-      /* столбцы идут слева направо: слева старое, справа то, что пишется */
-      const idx=(T.head-1-T.back-(cols-k)+TAPE_N*2)%TAPE_N;
-      const v=T.col[idx*TAPE_PENS+i]/255;
-      const x=x0+k*sc, yy=top+hh*(1-v);
-      if(k===0)c.moveTo(x,yy);else c.lineTo(x,yy);
-    }
-    c.stroke();
   }
   }
   if(part==="base"){c.restore();return;}
   /* валик протяжки у правого края: без него бумага читается плитой, а не
-     полосой, которую тянут с рулона */
+     полосой, которую тянут с рулона. part "roll" — только валик поверх мастера */
   const rw=Math.min(7,w*.08);
   const rg=c.createLinearGradient(x1-rw,0,x1,0);
   rg.addColorStop(0,"rgba(20,26,32,0)");
@@ -184,19 +164,6 @@ function tapePaper(c,x0,y0,w,h,part,pal){
   c.fillStyle=rg;c.fillRect(x1-rw,y0,rw,h);
   c.strokeStyle=P.rollLn;c.lineWidth=1;
   c.beginPath();c.moveTo(x1-rw+.5,y0);c.lineTo(x1-rw+.5,y0+h);c.stroke();
-  if(part){c.restore();return;}
-  /* перо: короткая чёрточка у правого края, дрожит на щелчке. Ничего не
-     подсвечивает — просто стоит там, где сейчас пишет */
-  if(!T.back){
-    const jitter=T.tick*1.6;
-    c.strokeStyle=P.nib;c.lineWidth=1.2;
-    c.beginPath();
-    c.moveTo(x1-1.5+jitter,y0+1);c.lineTo(x1-1.5+jitter,y0+h-1);
-    c.stroke();
-  }else{
-    /* смотрим назад: бумага чуть в тени вытяжного окна, и всё */
-    c.fillStyle="rgba(10,14,18,.16)";c.fillRect(x0,y0,w,h);
-  }
   c.restore();
 }
 /* ── бумага в кабине ──
@@ -214,7 +181,7 @@ function tapeStripBox(P){
   if(w<70)return null;                     // на узком блоке ленты нет места
   return {x:x0,y:5,w,h:clamp(brow-12,12,38)};
 }
-function tapeStrip(P,FS,part){
+function tapeStrip(P){
   const B=tapeStripBox(P);
-  if(B)tapePaper(ctx,B.x,B.y,B.w,B.h,part);
+  if(B)tapePaper(ctx,B.x,B.y,B.w,B.h,"base");   /* только мастер; валик — спрайт 24bc */
 }

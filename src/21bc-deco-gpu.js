@@ -1,7 +1,7 @@
 /* ══════════════ формы рельефа на видеокарте (G15) ══════════════
    Тело формы печётся раз на свет — день, сторона звезды, доля тени гребня — с ветром
-   и часами на нуле, обрезается по нарисованному и кладётся в слой стоящего (21e2):
-   оттуда падающая тень и свет мира, как у построек. Ветер гнёт форму от подножия:
+   и часами на нуле (GPU-холст 08ca) и кладётся в слой стоящего (21e2): оттуда
+   падающая тень и свет мира, как у построек. Ветер гнёт форму от подножия:
    выпечка ложится полосами, верхние уходят дальше нижних. Кроны — поворотом всей
    формы (так их качал 2D), деревья и вайи — изгибом, остальное стоит одной полосой. */
 const DECO_BK=new WeakMap();
@@ -20,25 +20,17 @@ function decoPaint(A){
   else if(d.k==="canopy")decoCanopy(A);
   else if(d.k==="frond")decoFrond(A);
 }
-/* холст, обрезанный по нарисованному: выпечка с запасом на любую форму весила бы
-   мегабайты на штуку. Ответ — тесный холст и его середина относительно подножия */
-function bakeTrim(big,hw,top){
-  const dk=DPR*SCK,bw=big.width,bh=big.height,px=big.getContext("2d").getImageData(0,0,bw,bh).data;
-  let x0=bw,y0=bh,x1=-1,y1=-1;
-  for(let y=0;y<bh;y++){const r=y*bw*4;
-    for(let x=0;x<bw;x++)if(px[r+x*4+3]>2){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}}
-  if(x1<0)return null;
-  x0=Math.max(0,x0-1);y0=Math.max(0,y0-1);x1=Math.min(bw-1,x1+1);y1=Math.min(bh-1,y1+1);
-  const cw=x1-x0+1,ch=y1-y0+1,cn=document.createElement("canvas");cn.width=cw;cn.height=ch;
-  cn.getContext("2d").drawImage(big,x0,y0,cw,ch,0,0,cw,ch);
-  return {cn,w:cw/dk,h:ch/dk,cx:(x0+cw/2)/dk-hw,cy:(y0+ch/2)/dk-top};
+/* середина полного холста относительно подножия: без getImageData —
+   обрезка по альфе была 2D-хитчем; запас VRAM терпим, форма как у poiBake */
+function bakeFoot(cn,w,h,top,bot){
+  return cn?{cn,w,h,cx:0,cy:(bot-top)/2}:null;
 }
 function decoBake(d,tr,p,s){
   const key=p.seed+"|"+DPR+"|"+SCK+"|d"+dayKq(p)+"|a"+sunAzQ(p)+"|s"+s+"|"+(tr.mat?1:0);
   const o=DECO_BK.get(d);if(o&&o.key===key)return o.B;
   const hgt=d.h,hw=Math.ceil(hgt*.95+30),top=Math.ceil(hgt*2.7+24),bot=14;
-  const gy=groundAt(tr,d.x),w=d.h*.42*d.sc,big=mkCanvas(hw*2,top+bot),t0=G.t,w0=WIND;
-  withCtx(big,hw*2,top+bot,0,0,g=>{
+  const gy=groundAt(tr,d.x),w=d.h*.42*d.sc,ww=hw*2,hh=top+bot,t0=G.t,w0=WIND;
+  const cn=gpuBake(ww,hh,g=>{
     g.translate(hw,top);
     groundClip(g,tr,d.x,gy,hw,top,10);    /* форма стоит НА земле; запас 10 px — подножию */
     G.t=0;WIND=0;POI_SEED=d.seed;POI_MAT=null;
@@ -46,7 +38,7 @@ function decoBake(d,tr,p,s){
     try{if(d.flip)g.scale(-1,1);decoPaint({d,pal:p.T.pal,p,tr,w,hgt,ox:d.x,oy:gy});}
     finally{G.t=t0;WIND=w0;DECO_LIT=1;}
   });
-  const B=bakeTrim(big,hw,top);
+  const B=bakeFoot(cn,ww,hh,top,bot);
   DECO_BK.set(d,{key,B});return B;
 }
 /* насколько ушёл верх формы от ветра, px в мире: та же формула, что качала крону */

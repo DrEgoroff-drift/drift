@@ -93,7 +93,7 @@ function laneBuoyPaint(c){
   c.strokeStyle="rgba(200,214,228,.7)";c.lineWidth=.5;                      /* клетка огня */
   c.beginPath();c.arc(0,-11.5,2,0,TAU);c.stroke();
 }
-/* ореол огня: радиальный градиент в единичном круге, как glowSprite (16a0), только на GPU-холсте */
+/* ореол огня: радиальный градиент в единичном круге GLOW_SP (16a0), на GPU-холсте */
 const LANE_GLOW_SP=new Map();
 function laneGlowSprite(col){
   return gpuBaked(LANE_GLOW_SP,col.join(","),GLOW_SP,GLOW_SP,c=>{
@@ -113,25 +113,24 @@ function drawSysLane(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
   const P=sysLane(sys);if(!P||!P.buoys.length)return;
   const pass=gpuScene();if(!pass)return;          /* 2D-пути нет: без видеокарты полосы не видно */
-  const s=clamp(Z,.6,1.5)*1.1,R=LANE_BUOY.R*s,sp=laneBuoySprite();
-  const col=laneLampCol(P.by),glow=laneGlowSprite(col);
-  if(!sp||!glow)return;
+  const s=clamp(Z,.6,1.5)*1.1,R=LANE_BUOY.R*s,col=laneLampCol(P.by),glow=laneGlowSprite(col);
+  if(!glow)return;
   /* бегущий огонь: гребень идёт от дальней пары к ближней и уходит в док;
      пауза в полторы пары между проходами — чтобы читалось направление */
   const lead=P.pairs-1-((G.t/60*LANE_CHASE)%(P.pairs+1.5));
   const na=Math.atan2(P.uy,P.ux)+Math.PI/2;       /* бакен стоит поперёк полосы */
-  /* на видеокарте: бакены одной пачкой, ореол огня краской, лампа — точкой */
-  {const B=[],Gl=[],Lp=[],Lh=[],lc=mixc(col,[255,255,255],.5);
+  /* бакен — тело (17c2j); без GPU — печёный силуэт. Ореол и лампа — как были */
+  {const B=[],Gl=[],Lp=[],Lh=[],lc=mixc(col,[255,255,255],.5);let sp=null;
     for(const b of P.buoys){
       const x=zx(b.x),y=zy(b.y);
       if(x<-40||x>W+40||y<-40||y>H+40)continue;
       const k=Math.max(0,1-Math.abs(b.i-lead)*1.4),r=(7+22*k)*s;
       const lx=x+Math.cos(na-Math.PI/2)*11.5*s,ly=y+Math.sin(na-Math.PI/2)*11.5*s;
-      B.push({x,y,w:R*2,h:R*2,rot:na});
+      if(!bodyBuoy(x,y,na,s,b.x,b.y)){if(!sp)sp=laneBuoySprite();if(sp)B.push({x,y,w:R*2,h:R*2,rot:na});}
       Gl.push({x:lx,y:ly,w:r*2,h:r*2,a:(.35+.65*k)*LANE_GLOW});
       Lp.push([1,lx,ly,Math.max(1,1.3*s),0,0,0,lc[0],lc[1],lc[2],.5+.5*k]);
       Lh.push([1,lx,ly,.7*s,0,0,2.6*s,lc[0],lc[1],lc[2],(.5+.5*k)*LANE_HALO]);}
-    gpuImage(pass,sp,B,{sharp:true});   /* бакен — вещь: маска, как у флота; ореолу — нет */
+    if(B.length&&sp)gpuImage(pass,sp,B,{sharp:true});
     gpuImage(pass,glow,Gl);             /* D7: гребень крупнее — огни посадочной полосы, а не искры */
     gpuShapes(pass,Lp);gpuShapes(pass,Lh,{blend:"add"});   /* лампа — явная эмиссия, узкий ореол */
   }

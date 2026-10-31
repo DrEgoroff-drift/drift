@@ -140,7 +140,7 @@ function drawFleet(zx,zy,Z){
     const s=fleetScale(Z),art=fleetArtOf(f,false);if(!art)continue;
     /* место, курс и масштаб известны — матрица сразу в fleetShipAt, без 2D-стека на #c (25.09) */
     const c=Math.cos(p.a)*s,q=Math.sin(p.a)*s;
-    fleetShipAt(f,art,c,q,-q,c,x,y,ctx.globalAlpha);
+    fleetShipAt(f,art,c,q,-q,c,x,y,1);
     if(f.k==="derelict")continue;
     const C=FLEET_CLASSES[f.k];
     const hh=(Math.abs(art.bx*Math.sin(p.a))+Math.abs(art.by*Math.cos(p.a)))*s;

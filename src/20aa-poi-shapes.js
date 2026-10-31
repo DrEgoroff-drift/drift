@@ -121,7 +121,8 @@ function drawCrystalForest(q,r,pal){
   shards.sort((a,b)=>a.h-b.h);
   for(const s of shards){
     ctx.save();ctx.translate(s.x,0);ctx.rotate(s.lean);
-    groundShadow(0,2,s.w*2.4,4);
+    /* тень в выпечке; в кадре пятно даёт poiGpu (poiShadowRect), не MAIN_CTX (G15) */
+    if(POI_PH!=="live")groundShadow(0,2,s.w*2.4,4);
     const g=ctx.createLinearGradient(0,0,0,-s.h);
     g.addColorStop(0,"rgba("+col+",.30)");
     g.addColorStop(.6,"rgba("+col+",.62)");
@@ -131,7 +132,6 @@ function drawCrystalForest(q,r,pal){
     poiPoly([[-s.w,0],[s.w,0],[s.w*.35,-s.h*.82],[0,-s.h],[-s.w*.42,-s.h*.8]],g,"rgba(255,255,255,.28)",.35);
     /* блик: узкая грань, которая «загорается» на своей фазе */
     const tw=.35+.65*Math.pow(Math.max(0,Math.sin(G.t*.02+s.ph)),6);
-    if(POI_PH!=="live")ctx.fillStyle="rgba(255,255,255,"+(.30*tw).toFixed(3)+")";
     poiLPoly([[-s.w*.3,-s.h*.12],[0,-s.h*.1],[0,-s.h*.9],[-s.w*.18,-s.h*.86]],
       "rgba(255,255,255,"+(.30*tw).toFixed(3)+")",null);
     if(tw>.75)poiLGlow(0,-s.h*.7,s.h*.5,col,.10*tw);

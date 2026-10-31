@@ -104,13 +104,12 @@ function instrPanelGeo(P){
   const w=Math.min(P.BW*.52,420),h=clamp((P.brow-12)/2.7,5,14);
   return {w,x0:(W-w)/2,cw:w/5,h,y:5+h};
 }
-/* part "base" — только то, что не движется (корытце, дуги, деления, подписи): мастер кабины 24bc,
-   стрелки и невязку он кладёт сам */
-function instrPanel(P,FS,part){
+/* неподвижное корытце (дуги, деления, подписи) — в мастер кабины 24bc;
+   стрелки и невязку кладёт живой кадр колодки/стойки, не этот путь (живой 2D снят) */
+function instrPanel(P,FS){
   const brow=P.brow;
   if(brow<26)return;                       // на низком потолке панели нет места
-  const base=part==="base", R=base?INSTR:instrRead();
-  const {w,x0,cw,h,y}=instrPanelGeo(P);
+  const R=INSTR,{w,x0,cw,h,y}=instrPanelGeo(P);
   const col="rgba(150,176,190,";
   ctx.save();
   /* корытце панели: она утоплена в блок, а не наклеена на него */
@@ -121,8 +120,7 @@ function instrPanel(P,FS,part){
   ctx.textAlign="center";
   for(let i=0;i<R.length;i++){
     const r=R[i],cx=x0+cw*(i+.5);
-    /* шкала: дуга с делениями и стрелка. Отклонение двигает стрелку, и больше
-       ничего: ни цвета, ни толщины, ни свечения */
+    /* шкала: дуга с делениями. Стрелка — живая, поверх мастера */
     ctx.strokeStyle=col+".30)";ctx.lineWidth=1.2;
     ctx.beginPath();ctx.arc(cx,y+h*.5,h*.86,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
     ctx.strokeStyle=col+".16)";ctx.lineWidth=1;
@@ -133,27 +131,6 @@ function instrPanel(P,FS,part){
       ctx.moveTo(cx+c1*h*.86,y+h*.5+s1*h*.86);
       ctx.lineTo(cx+c1*h*.66,y+h*.5+s1*h*.66);
       ctx.stroke();
-    }
-    if(!base){
-    /* положение стрелки: рабочая величина, сжатая в шкалу логарифмом, плюс
-       отклонение. Шкала у каждого прибора своя, потому и делений всего пять */
-    const t=instrTrack(r);
-    const a=Math.PI*1.12+Math.PI*.76*t;
-    /* тень стрелки на циферблате (аудит M232): стрелка — вещь НАД шкалой,
-       и смещённая тень возвращает прибору глубину, которой у плоской черты
-       не было */
-    ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=1.6;
-    ctx.beginPath();
-    ctx.moveTo(cx+1,y+h*.5+1.6);
-    ctx.lineTo(cx+1+Math.cos(a)*h*.76,y+h*.5+1.6+Math.sin(a)*h*.76);
-    ctx.stroke();
-    ctx.strokeStyle=col+".85)";ctx.lineWidth=1.4;
-    ctx.beginPath();
-    ctx.moveTo(cx,y+h*.5);
-    ctx.lineTo(cx+Math.cos(a)*h*.78,y+h*.5+Math.sin(a)*h*.78);
-    ctx.stroke();
-    ctx.fillStyle=col+".85)";
-    ctx.beginPath();ctx.arc(cx,y+h*.5,1.4,0,TAU);ctx.fill();
     }
     /* ── подпись шкалы читаемая ──
        Стояло `6*FS` при FS от единицы, то есть ШЕСТЬ ПИКСЕЛЕЙ на самом узком
@@ -171,29 +148,6 @@ function instrPanel(P,FS,part){
        беда, с которой всё началось; настоящая приборная панель в таком случае
        ставит код из трёх букв, и он читается с любого расстояния. */
     ctx.fillText(ctx.measureText(r.ru).width<=cw-4?r.ru:(r.ab||r.ru),cx,y+h*1.66);
-  }
-  if(base){ctx.restore();return;}
-  /* невязка — в своём окне (хвост M122): утопленная рамка правее корытца,
-     цифры внутри. Без подписи «внимание» и без цвета — как и было */
-  {
-    const mv=instrMisclose();
-    const mt="НЕВЯЗКА "+mv.toFixed(3);
-    /* семь пикселей на узком окне — ниже пола читаемого (M443): пол восемь × линейка */
-    ctx.font=Math.max(8*uiK(),Math.round(7*FS))+"px ui-monospace,monospace";
-    const mw=Math.ceil(ctx.measureText(mt).width)+14, mx=x0+w+14, my=y-h-2, mh=h+8;
-    ctx.fillStyle="rgba(6,9,13,.55)";ctx.fillRect(mx,my,mw,mh);
-    ctx.strokeStyle=col+".18)";ctx.lineWidth=1;ctx.strokeRect(mx+.5,my+.5,mw-1,mh-1);
-    ctx.textAlign="center";ctx.fillStyle=col+".55)";
-    ctx.fillText(mt,mx+mw/2,my+mh/2);
-    /* шкала под числом — та же, что на стойке (25d). Единицы у невязки нет,
-       она безразмерна, и подписать её нечем; а шкала показывает, что ноль —
-       это край хода, а не отсутствие показания */
-    {
-      const bw=mw-10, bx=mx+5, by=my+mh-4;
-      ctx.fillStyle="rgba(0,0,0,.40)";ctx.fillRect(bx,by,bw,2);
-      ctx.fillStyle=col+".55)";
-      ctx.fillRect(bx,by,Math.max(1,bw*clamp(mv,0,1)),2);
-    }
   }
   ctx.restore();
 }
