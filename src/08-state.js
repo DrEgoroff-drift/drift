@@ -347,7 +347,7 @@ function stat(){
     /* таран (M366) — не орудие: он утраивает лоб корпуса. Это единственное
        семейство, которое живёт в числах корабля, а не в числах выстрела. */
     ram:gunList.some(a=>a.g&&a.g.fx==="ram"),
-    energyMax:(e=>PD.en===1?e:Math.round(e*PD.en))(Math.round(energyCap(m.weapon,coreT,P.enCapAdd||0)*(PF.energy||1))),
+    energyMax:(e=>PD.en===1?e:Math.round(e*PD.en))(Math.round(energyCap(m.weapon,coreT,P.enCapAdd||0)*planModDens("weapon")*(PF.energy||1))),
     energyRegen:energyRegen(m.weapon,coreT,P.enRegenAdd||0),
     /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
        и без ракет в трюме её числа ничего не значат */

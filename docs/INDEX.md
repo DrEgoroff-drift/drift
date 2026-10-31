@@ -1674,10 +1674,10 @@ PLAN_COL                     src/05e-plan.js:142
 PLAN_DENS                    src/27jb-kb.js:47
 PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:414
+PLAN_F                       src/27jb-kb.js:417
 PLAN_ITEM_COL                src/05e-plan.js:143
 PLAN_LETTER                  src/05e-plan.js:147
-PLAN_MOD_DENS                src/27jb-kb.js:409
+PLAN_MOD_DENS                src/27jb-kb.js:412
 PLAN_WANT                    src/05e-plan.js:78
 PLAYHOUR_HOOKS               src/28v-playhour.js:18-29
 PLN                          src/21p-pln.js:15
@@ -6673,12 +6673,12 @@ planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
 planExposure                 src/05e-plan.js:228-241
-planFactors                  src/27jb-kb.js:415-438
+planFactors                  src/27jb-kb.js:418-441
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
-planModDens                  src/27jb-kb.js:410-413
+planModDens                  src/27jb-kb.js:413-416
 planMods                     src/27jb-kb.js:76-81
 planN                        src/05e-plan.js:21
 planNow                      src/05e-plan.js:125-129
@@ -10603,7 +10603,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/27j1-ui-hangar.js · 26 KB
 
-## src/27jb-kb.js · 31 KB
+## src/27jb-kb.js · 32 KB
   · КБ: редактор чертежа, синька (M477, DESIGN-shipyard §3, review §2.2):1
 
 ## src/27jb-ui-got.js · 4 KB

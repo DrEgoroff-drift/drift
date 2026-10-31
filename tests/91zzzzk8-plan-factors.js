@@ -4,6 +4,8 @@ TEST_SUITES.push(()=>suite("чертёж: числа M478",()=>{
   resetWorld();
   G.mods.tank=2;G.mods.hold=1;G.mods.armor=3;
   ok(Math.abs(planModDens("tank")-(1+.3*2))<1e-9&&Math.abs(planModDens("hold")-(1+.32))<1e-9&&Math.abs(planModDens("armor")-(1+.2*3))<1e-9,"ступени hold/tank/armor — плотность на клетку");
+  G.mods.weapon=3;
+  ok(planModDens("weapon")===1,"weapon densify step 0 — ступени в energyCap");
   const fleetId=Object.keys(FLEET)[0];
   ok(!!fleetId,"есть серийный корпус");
   const npcId="npcFix478";

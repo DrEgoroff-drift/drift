@@ -406,7 +406,10 @@ function kbDraw(c,s,d){
    (util) в носовой трети; корпус — броня/обшивка на борту и в носу.
    Плотности дальним грузом — planDens. Ступени hold/tank/armor — плотность
    на клетку (таблица ниже); engine/hyper/drill остаются апгрейдами станции. */
-const PLAN_MOD_DENS={hold:.32,tank:.3,armor:.2};
+/* weapon — плотность энергии «сверх клеток»: energyCap(lvl) уже несёт ступень котла;
+   planModDens("weapon")=1 всегда (ступени в energyCap), ключ есть чтобы формула и
+   таблица совпадали с hold/tank/armor и M478 «weapon→energy densify beyond cell ratio». */
+const PLAN_MOD_DENS={hold:.32,tank:.3,armor:.2,weapon:0};
 function planModDens(k){
   const mods=(typeof planMods==="function")?planMods(G.mods):G.mods;
   return 1+(PLAN_MOD_DENS[k]||0)*((mods[k]|0));

@@ -6,6 +6,11 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.80 — M478 weapon densify key; six giant HTML probes ≥70 KB
+
+- M478: `planModDens("weapon")` (step 0 — tiers stay in `energyCap`, cell ratio in `PF.energy`); `energyMax` multiplies it.
+- G15: all six `site/kimi-giant-*.html` probes ≥70 KB (customs densified; dock/town/garden scaffold from house for Kimi body rewrite).
+
 ## 0.499.79 — M483 packer for NPC/pirate; fused in fixpoint
 
 - M483: `planNpcOf` / `planNpcFit` — same packer for NPC and pirate hulls; pirate gun barrels sit on plan cells (`fromPlan`) when a ship id is known.

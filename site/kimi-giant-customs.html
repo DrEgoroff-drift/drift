@@ -1,0 +1,1748 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Таможенный город — Орднунг</title>
+<style>
+  :root{color-scheme:dark;--ink:#aaa79c;--dim:#606a6b;--amber:#d0a064}
+  *{box-sizing:border-box}
+  html,body{width:100%;height:100%;margin:0;overflow:hidden}
+  body{font-family:ui-monospace,"Cascadia Mono","Courier New",monospace;background:#070b0d;color:var(--ink);font-variant-numeric:tabular-nums}
+  #backdrop{position:fixed;inset:0;background:radial-gradient(ellipse at 46% 42%,#192225 0,#0c1316 43%,#060a0c 78%)}
+  #backdrop:after{content:"";position:absolute;inset:0;opacity:.2;background-image:radial-gradient(circle at 17% 23%,#a1acab 0 1px,transparent 1.4px),radial-gradient(circle at 76% 17%,#899a9c 0 1px,transparent 1.3px),radial-gradient(circle at 87% 64%,#899a9c 0 1px,transparent 1.3px),radial-gradient(circle at 28% 79%,#899a9c 0 1px,transparent 1.3px);background-size:271px 271px,337px 337px,419px 419px,503px 503px}
+  #scene{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;cursor:grab;touch-action:none}
+  #scene:active{cursor:grabbing}
+  #scene:focus-visible{box-shadow:inset 0 0 0 1px #59696a}
+  .hud{position:fixed;z-index:2;pointer-events:none;text-transform:uppercase;letter-spacing:.12em;font-size:10px;line-height:1.75;text-shadow:0 1px 2px #000}
+  .top{top:25px;left:28px}.top .name{color:#c0b9a9;font-size:14px;letter-spacing:.19em}
+  .top .rule{width:190px;height:1px;margin:8px 0;background:linear-gradient(90deg,#985134,transparent)}
+  .top .meta{color:var(--dim)}.top .meta b{color:#a5a69e;font-weight:400}
+  .right{top:27px;right:28px;text-align:right;color:var(--dim)}.right b{color:var(--amber);font-weight:400}
+  .bottom{left:28px;bottom:23px;color:var(--dim)}.bottom span{color:#89918d}
+  .serial{right:28px;bottom:25px;text-align:right;color:#465355}
+  #reset{position:fixed;z-index:3;right:24px;bottom:69px;min-width:44px;min-height:44px;padding:0 8px;border:0;background:transparent;color:#707b79;font:10px ui-monospace,"Cascadia Mono",monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+  #reset:hover{color:#d0a064}#reset:focus-visible{outline:1px solid #79664d;outline-offset:2px}
+  .vignette{position:fixed;z-index:1;inset:0;pointer-events:none;box-shadow:inset 0 0 150px rgba(0,0,0,.58)}
+  @media(max-width:640px){.top{top:19px;left:18px}.right{top:21px;right:18px}.bottom{left:18px;bottom:17px;max-width:290px}.serial{display:none}#reset{right:14px;bottom:69px}.top .name{font-size:12px}.hud{font-size:9px}}
+</style>
+</head>
+<body>
+<div id="backdrop"></div>
+<canvas id="scene" tabindex="0" aria-label="Трёхмерная модель таможенного города Орднунга. Вращение левой кнопкой мыши, дистанция колесом.">Для просмотра нужен WebGPU.</canvas>
+<div class="vignette"></div>
+<div class="hud top"><div class="name">Таможенный город</div><div class="rule"></div><div class="meta">Орднунг · территория формуляров · сектор 04<br><b id="parts">—</b> элементов · <span id="spin">поворот 000°</span></div></div>
+<div class="hud right">рендерер = <span id="renderer">пуск</span><br><b>ось: да</b> · Y · 64 секунды</div>
+<button id="reset" type="button">[ исходный ракурс ]</button>
+<div class="hud bottom"><span>лкм</span> орбита &nbsp; <span>колесо</span> дистанция<br><span>двойной щелчок</span> исходный ракурс</div>
+<div class="hud serial">квартал одинаковых корпусов<br>досмотр · учёт · пропуск</div>
+<script>
+(()=>{
+'use strict';
+const canvas=document.getElementById('scene');
+const badge=document.getElementById('renderer');
+const spinLabel=document.getElementById('spin');
+const PI=Math.PI,TAU=PI*2;
+
+/* Локальная геометрия и матрицы: город вращается целиком, камера отдельно. */
+const identity=()=>new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
+function multiply(a,b){
+  const o=new Float32Array(16);
+  for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];
+  return o;
+}
+function translation(x,y,z){const m=identity();m[12]=x;m[13]=y;m[14]=z;return m}
+function scaling(x,y,z){const m=identity();m[0]=x;m[5]=y;m[10]=z;return m}
+function rotationX(a){const c=Math.cos(a),s=Math.sin(a),m=identity();m[5]=c;m[6]=s;m[9]=-s;m[10]=c;return m}
+function rotationY(a){const c=Math.cos(a),s=Math.sin(a),m=identity();m[0]=c;m[2]=-s;m[8]=s;m[10]=c;return m}
+function rotationZ(a){const c=Math.cos(a),s=Math.sin(a),m=identity();m[0]=c;m[1]=s;m[4]=-s;m[5]=c;return m}
+function trs(p,s,r=[0,0,0]){return multiply(translation(...p),multiply(rotationZ(r[2]),multiply(rotationY(r[1]),multiply(rotationX(r[0]),scaling(...s)))))}
+function normalize(v){const l=Math.hypot(...v)||1;return v.map(x=>x/l)}
+function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}
+function lookAt(eye,target,up){
+  const z=normalize(eye.map((v,i)=>v-target[i])),x=normalize(cross(up,z)),y=cross(z,x);
+  return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-x.reduce((s,v,i)=>s+v*eye[i],0),-y.reduce((s,v,i)=>s+v*eye[i],0),-z.reduce((s,v,i)=>s+v*eye[i],0),1]);
+}
+function perspective(fov,aspect,near,far){
+  const f=1/Math.tan(fov/2),m=new Float32Array(16);
+  m[0]=f/aspect;m[5]=f;m[10]=far/(near-far);m[11]=-1;m[14]=far*near/(near-far);return m;
+}
+function hash(n){const v=Math.sin(n*12.9898+71.73)*43758.5453;return v-Math.floor(v)}
+function box(){
+  const p=[],n=[],idx=[];
+  const faces=[
+    [[1,0,0],[[.5,-.5,-.5],[.5,.5,-.5],[.5,.5,.5],[.5,-.5,.5]]],
+    [[-1,0,0],[[-.5,-.5,.5],[-.5,.5,.5],[-.5,.5,-.5],[-.5,-.5,-.5]]],
+    [[0,1,0],[[-.5,.5,-.5],[-.5,.5,.5],[.5,.5,.5],[.5,.5,-.5]]],
+    [[0,-1,0],[[-.5,-.5,.5],[-.5,-.5,-.5],[.5,-.5,-.5],[.5,-.5,.5]]],
+    [[0,0,1],[[.5,-.5,.5],[.5,.5,.5],[-.5,.5,.5],[-.5,-.5,.5]]],
+    [[0,0,-1],[[-.5,-.5,-.5],[-.5,.5,-.5],[.5,.5,-.5],[.5,-.5,-.5]]]
+  ];
+  for(const[normal,verts]of faces){const k=p.length/3;for(const v of verts){p.push(...v);n.push(...normal)}idx.push(k,k+1,k+2,k,k+2,k+3)}
+  return{p,n,idx};
+}
+function bevelBox(){
+  const p=[],n=[],idx=[],b=.055,h=.5-b;
+  function face(verts,normal){
+    const k=p.length/3,a=verts[1].map((v,i)=>v-verts[0][i]),c=verts[2].map((v,i)=>v-verts[0][i]);
+    if(cross(a,c).reduce((s,v,i)=>s+v*normal[i],0)<0)verts=verts.slice().reverse();
+    for(const v of verts){p.push(...v);n.push(...normal)}
+    for(let i=1;i<verts.length-1;i++)idx.push(k,k+i,k+i+1);
+  }
+  for(let a=0;a<3;a++)for(const s of[-1,1]){
+    const u=(a+1)%3,v=(a+2)%3,verts=[];
+    for(const[du,dv]of[[-h,-h],[-h,h],[h,h],[h,-h]]){const q=[0,0,0];q[a]=s*.5;q[u]=du;q[v]=dv;verts.push(q)}
+    const normal=[0,0,0];normal[a]=s;face(verts,normal);
+  }
+  for(let a=0;a<3;a++)for(let b1=a+1;b1<3;b1++)for(const sa of[-1,1])for(const sb of[-1,1]){
+    const c=3-a-b1,verts=[];
+    for(const[q,cc]of[[[sa*.5,sb*h],-h],[[sa*.5,sb*h],h],[[sa*h,sb*.5],h],[[sa*h,sb*.5],-h]]){
+      const v=[0,0,0];v[a]=q[0];v[b1]=q[1];v[c]=cc;verts.push(v);
+    }
+    const normal=[0,0,0];normal[a]=sa/Math.SQRT2;normal[b1]=sb/Math.SQRT2;face(verts,normal);
+  }
+  for(const sx of[-1,1])for(const sy of[-1,1])for(const sz of[-1,1])face([[sx*.5,sy*h,sz*h],[sx*h,sy*.5,sz*h],[sx*h,sy*h,sz*.5]],normalize([sx,sy,sz]));
+  return{p,n,idx};
+}
+const cylinders=new Map();
+function cylinder(segments=16){
+  if(cylinders.has(segments))return cylinders.get(segments);
+  const p=[],n=[],idx=[];
+  for(let i=0;i<=segments;i++){
+    const a=i/segments*TAU,x=Math.cos(a),z=Math.sin(a);
+    p.push(x,-.5,z,x,.5,z);n.push(x,0,z,x,0,z);
+  }
+  for(let i=0;i<segments;i++){const k=i*2;idx.push(k,k+1,k+3,k,k+3,k+2)}
+  for(const y of[-.5,.5]){
+    const center=p.length/3;p.push(0,y,0);n.push(0,Math.sign(y),0);
+    for(let i=0;i<=segments;i++){const a=i/segments*TAU;p.push(Math.cos(a),y,Math.sin(a));n.push(0,Math.sign(y),0)}
+    for(let i=0;i<segments;i++){if(y>0)idx.push(center,center+i+1,center+i+2);else idx.push(center,center+i+2,center+i+1)}
+  }
+  const mesh={p,n,idx};cylinders.set(segments,mesh);return mesh;
+}
+function torusSegment(arc=PI,segments=24,sides=6){
+  const p=[],n=[],idx=[];
+  for(let i=0;i<=segments;i++){
+    const a=i/segments*arc;
+    for(let j=0;j<=sides;j++){
+      const b=j/sides*TAU,r=1+Math.cos(b)*.09;
+      p.push(Math.cos(a)*r,Math.sin(a)*r,Math.sin(b)*.09);
+      n.push(Math.cos(a)*Math.cos(b),Math.sin(a)*Math.cos(b),Math.sin(b));
+    }
+  }
+  for(let i=0;i<segments;i++)for(let j=0;j<sides;j++){
+    const a=i*(sides+1)+j,b=a+sides+1;idx.push(a,b,a+1,b,b+1,a+1);
+  }
+  return{p,n,idx};
+}
+const vertices=[],indices=[];
+let partCount=0;
+function add(mesh,model,color,emissive=0,ao=1){
+  const base=vertices.length/11,c0=[model[0],model[1],model[2]],c1=[model[4],model[5],model[6]],c2=[model[8],model[9],model[10]];
+  const n0=cross(c1,c2),n1=cross(c2,c0),n2=cross(c0,c1),start=vertices.length;
+  for(let i=0;i<mesh.p.length/3;i++){
+    const x=mesh.p[i*3],y=mesh.p[i*3+1],z=mesh.p[i*3+2];
+    vertices.push(model[0]*x+model[4]*y+model[8]*z+model[12],model[1]*x+model[5]*y+model[9]*z+model[13],model[2]*x+model[6]*y+model[10]*z+model[14]);
+    const nx=mesh.n[i*3],ny=mesh.n[i*3+1],nz=mesh.n[i*3+2];
+    vertices.push(...normalize([n0[0]*nx+n1[0]*ny+n2[0]*nz,n0[1]*nx+n1[1]*ny+n2[1]*nz,n0[2]*nx+n1[2]*ny+n2[2]*nz]),...color,emissive,ao);
+  }
+  for(const i of mesh.idx)indices.push(base+i);
+  if(vertices.length>start)partCount++;
+}
+const BOX=box(),BEVEL=bevelBox(),RING=torusSegment(TAU,32,6);
+function hex(s){return[1,3,5].map(i=>parseInt(s.slice(i,i+2),16)/255)}
+function tone(c,k){return c.map(v=>Math.min(1,v*k))}
+const C={
+  steel:hex('#667276'),light:hex('#969a93'),dark:hex('#303a3c'),soot:hex('#13191b'),
+  concrete:hex('#746f65'),concrete2:hex('#5e615c'),red:hex('#9b472d'),red2:hex('#743a2b'),
+  rust:hex('#71402d'),rust2:hex('#493029'),brass:hex('#b99a65'),amber:hex('#ffb36a'),
+  amber2:hex('#e7924e'),glass:hex('#1d2b30'),curtain:hex('#9b6040'),panel:hex('#536267'),
+  paper:hex('#aaa18b'),paint:hex('#a18e68'),green:hex('#53645d')
+};
+function cube(p,s,col,r=[0,0,0],em=0,ao=1,bevel=true){add(bevel?BEVEL:BOX,trs(p,s,r),col,em,ao)}
+function cyl(p,s,col,r=[0,0,0],em=0,segments=16,ao=1){add(cylinder(segments),trs(p,s,r),col,em,ao)}
+function aligned(a,b){
+  const d=normalize(b.map((v,i)=>v-a[i])),len=Math.hypot(...b.map((v,i)=>v-a[i])),mid=a.map((v,i)=>(v+b[i])/2);
+  const t=normalize(cross(Math.abs(d[1])>.98?[1,0,0]:[0,1,0],d)),q=cross(d,t);
+  return{len,model:s=>multiply(translation(...mid),multiply(new Float32Array([t[0],t[1],t[2],0,d[0],d[1],d[2],0,q[0],q[1],q[2],0,0,0,0,1]),scaling(...s)))};
+}
+function rod(a,b,r,col,segments=8){const A=aligned(a,b);add(cylinder(segments),A.model([r,A.len,r]),col)}
+function beam(a,b,w,d,col){const A=aligned(a,b);add(BEVEL,A.model([w,A.len,d]),col)}
+function panelBox(M,p,s,col,em=0,ao=1,bevel=true,r=[0,0,0]){add(bevel?BEVEL:BOX,multiply(M,trs(p,s,r)),col,em,ao)}
+function panelCyl(M,p,s,col,em=0,segments=8){add(cylinder(segments),multiply(M,trs(p,s)),col,em)}
+function panelPoint(M,p){return[M[0]*p[0]+M[4]*p[1]+M[8]*p[2]+M[12],M[1]*p[0]+M[5]*p[1]+M[9]*p[2]+M[13],M[2]*p[0]+M[6]*p[1]+M[10]*p[2]+M[14]]}
+function panelRod(M,a,b,r,col,segments=8){rod(panelPoint(M,a),panelPoint(M,b),r,col,segments)}
+function facadeM(x,y,z,side){return multiply(translation(x,y,z),rotationY(side>0?0:PI))}
+function frontBox(M,p,s,col,em=0,ao=1,bevel=true){panelBox(M,p,s,col,em,ao,bevel)}
+function bolt(p,r=.8,col=C.light){cyl(p,[r,1,r],col,[0,0,0],0,6)}
+function boltLine(a,b,count,r=.65,col=C.light){for(let i=0;i<count;i++){const t=count===1?.5:i/(count-1);bolt(a.map((v,j)=>v+(b[j]-v)*t),r,col)}}
+function rail(a,b,height=12,col=C.dark){
+  rod([a[0],a[1]+height,a[2]],[b[0],b[1]+height,b[2]],.65,col,8);
+  rod([a[0],a[1]+height*.5,a[2]],[b[0],b[1]+height*.5,b[2]],.4,C.rust,6);
+  const len=Math.hypot(b[0]-a[0],b[2]-a[2]),n=Math.max(1,Math.ceil(len/22));
+  for(let i=0;i<=n;i++){const t=i/n,x=a[0]+(b[0]-a[0])*t,z=a[2]+(b[2]-a[2])*t;rod([x,a[1],z],[x,a[1]+height,z],.55,C.steel,6)}
+}
+const windowLights=[];
+const BLOCK_X=[-450,-150,150,450],BLOCK_Z=[-210,210];
+const BLOCKS=[];
+for(const z of BLOCK_Z)for(const x of BLOCK_X)BLOCKS.push({x,z,index:BLOCKS.length+1});
+
+/* Несущая станция: длинный квартал, а не космический корабль с иллюминаторами. */
+function buildFoundation(){
+  cube([0,-25,0],[1240,58,760],C.dark);
+  cube([0,5,0],[1218,12,742],C.steel);
+  cube([0,13,0],[1204,5,728],C.concrete2);
+  cube([0,18,0],[1194,4,718],C.concrete);
+  for(const z of[-372,372]){
+    cube([0,-1,z],[1215,19,10],C.red2);
+    cube([0,12,z],[1224,5,13],C.dark);
+    for(let x=-594;x<=594;x+=27){
+      cube([x,-6,z+Math.sign(z)*7],[13,12,4],x%81===0?C.rust:C.steel);
+      cube([x,14,z],[3,4,15],C.brass);
+    }
+  }
+  for(const x of[-611,611]){
+    cube([x,-1,0],[10,19,738],C.red2);
+    for(let z=-354;z<=354;z+=26)cube([x,-7,z],[5,12,12],C.dark);
+  }
+  for(const x of[-520,-340,-160,20,200,380,560])for(const z of[-285,285]){
+    cube([x,-60,z],[35,25,42],C.soot);
+    cube([x,-72,z],[54,8,62],C.steel);
+    for(const dx of[-18,18])for(const dz of[-20,20])bolt([x+dx,-67,z+dz],1.5,C.rust);
+  }
+}
+
+/* дворы */
+function buildCourtPaving(){
+  for(const z of[-102,102]){
+    cube([0,21,z],[1190,3,68],C.dark);
+    for(let x=-570;x<=570;x+=38){
+      cube([x,23,z],[32,1,58],(Math.round(x/38)%5===0)?C.concrete2:C.panel);
+      for(const dz of[-25,25])cube([x,24,z+dz],[30,1,2],C.soot);
+    }
+  }
+  cube([0,22,0],[1200,3,102],C.soot);
+  for(const z of[-40,40])cube([0,24,z],[1185,1,3],C.paint);
+  for(let x=-570;x<=570;x+=48)cube([x,24,0],[24,1,3],C.paper);
+  for(const x of[-540,-360,-180,0,180,360,540])for(const z of[-352,352]){
+    cube([x,24,z],[112,2,18],C.dark);
+    for(let k=0;k<7;k++)cube([x-45+k*15,25,z],[7,1,15],C.paper);
+  }
+  for(const x of[-300,0,300])for(const z of[-92,92]){
+    cube([x,25,z],[86,3,34],C.rust2);
+    cube([x,27,z],[77,2,25],C.concrete2);
+    for(const dx of[-34,34])for(const dz of[-11,11])bolt([x+dx,29,z+dz],.8,C.brass);
+  }
+}
+
+/* сетка корпусов */
+function buildBlockShell(b){
+  const {x,z}=b;
+  cube([x,36,z],[236,29,236],C.dark);
+  cube([x,53,z],[226,9,226],C.red2);
+  cube([x,121,z],[216,130,216],C.concrete2);
+  cube([x,126,z],[210,116,210],C.panel);
+  cube([x,188,z],[225,9,225],C.dark);
+  cube([x,197,z],[217,10,217],C.red2);
+  cube([x,204,z],[207,5,207],C.steel);
+  for(const dx of[-105,105])for(const dz of[-105,105]){
+    cube([x+dx,124,z+dz],[8,136,8],C.dark);
+    cube([x+dx,190,z+dz],[14,8,14],C.rust);
+  }
+  for(const y of[72,112,152]){
+    cube([x,y,z+109],[213,4,5],C.dark);
+    cube([x,y,z-109],[213,4,5],C.dark);
+    cube([x+109,y,z],[5,4,213],C.dark);
+    cube([x-109,y,z],[5,4,213],C.dark);
+  }
+  cube([x,55,z+118],[78,65,8],C.soot);
+  cube([x,55,z-118],[78,65,8],C.soot);
+  for(const side of[-1,1]){
+    cube([x,51,z+side*123],[63,53,4],C.steel);
+    cube([x,51,z+side*126],[50,42,3],C.dark);
+    cube([x,51,z+side*129],[38,32,2],C.green);
+  }
+}
+
+/* сетка корпусов */
+function buildBlockWindows(b){
+  const {x,z,index}=b;
+  for(const side of[-1,1]){
+    const M=facadeM(x,0,z+side*110,side);
+    for(const y of[87,127,166])for(const wx of[-78,-39,0,39,78]){
+      const n=index*900+side*37+y*3+wx;
+      frontBox(M,[wx,y,2],[26,23,4],C.dark);
+      frontBox(M,[wx,y,5],[20,17,2],C.soot);
+      const on=hash(n)>.34,col=on?(n%5===0?C.amber2:C.amber):C.glass;
+      frontBox(M,[wx,y,6.5],[15,12,1.2],col,on?.34+hash(n+4)*.18:0,.98,false);
+      frontBox(M,[wx,y,8],[1.4,15,1.5],C.steel);
+      frontBox(M,[wx,y-1,8],[18,1.5,1.5],C.steel);
+      frontBox(M,[wx,y-13,5],[30,3,8],C.concrete);
+      if(n%4===0)frontBox(M,[wx+6,y+2,8],[3,11,1],C.curtain);
+    }
+  }
+  for(const side of[-1,1]){
+    const M=multiply(translation(x+side*110,0,z),rotationY(side>0?PI/2:-PI/2));
+    for(const y of[87,127,166])for(const wx of[-76,-38,0,38,76]){
+      frontBox(M,[wx,y,2],[24,22,4],C.dark);
+      frontBox(M,[wx,y,5],[17,15,2],(wx+y+index)%4===0?C.amber2:C.glass,(wx+y+index)%4===0?.35:0);
+      frontBox(M,[wx,y,7],[1.3,16,1.4],C.steel);
+      frontBox(M,[wx,y-12,5],[28,3,7],C.concrete2);
+    }
+  }
+}
+
+/* сетка корпусов */
+function buildBlockRoof(b){
+  const {x,z,index}=b;
+  cube([x,211,z],[178,9,176],C.soot);
+  cube([x,220,z],[151,11,145],C.dark);
+  cube([x,230,z],[128,10,118],C.steel);
+  cube([x,238,z],[116,7,106],index%3===0?C.red2:C.concrete2);
+  for(const dx of[-70,70])for(const dz of[-66,66]){
+    cube([x+dx,215,z+dz],[23,18,25],C.dark);
+    cyl([x+dx,228,z+dz],[10,15,10],C.steel,[0,0,0],0,12);
+    cyl([x+dx,237,z+dz],[13,4,13],C.rust,[0,0,0],0,12);
+    for(let k=0;k<8;k++){
+      const a=k/8*TAU;
+      bolt([x+dx+Math.cos(a)*10,240,z+dz+Math.sin(a)*10],.7,C.light);
+    }
+  }
+  for(const dz of[-40,0,40]){
+    cube([x,243,z+dz],[82,7,23],C.dark);
+    for(let k=0;k<8;k++)cube([x-34+k*10,247,z+dz],[4,2,19],C.steel);
+  }
+  for(const dx of[-95,95])rail([x+dx,207,z-95],[x+dx,207,z+95],12,C.dark);
+  for(const dz of[-95,95])rail([x-95,207,z+dz],[x+95,207,z+dz],12,C.dark);
+}
+
+/* сетка корпусов */
+function buildBlockStairs(b){
+  const {x,z}=b,side=z>0?-1:1;
+  for(const dx of[-83,83]){
+    const zz=z+side*132;
+    for(let i=0;i<8;i++)cube([x+dx,27+i*3.3,zz+side*i*4],[31,4,8],i%3===0?C.rust:C.steel);
+    for(const sx of[-16,16]){
+      rod([x+dx+sx,39,zz],[x+dx+sx,65,zz+side*29],.65,C.dark,8);
+      rod([x+dx+sx,27,zz],[x+dx+sx,39,zz],.65,C.dark,8);
+      rod([x+dx+sx,50,zz+side*15],[x+dx+sx,65,zz+side*29],.65,C.dark,8);
+    }
+    cube([x+dx,67,z+side*116],[44,6,25],C.dark);
+    rail([x+dx-22,70,z+side*126],[x+dx+22,70,z+side*126],10,C.steel);
+  }
+}
+
+const DIGITS={
+  '0':['11111','10001','10011','10101','11001','10001','11111'],
+  '1':['00100','01100','00100','00100','00100','00100','01110'],
+  '2':['11111','00001','00001','11111','10000','10000','11111'],
+  '3':['11111','00001','00001','01111','00001','00001','11111'],
+  '4':['10001','10001','10001','11111','00001','00001','00001'],
+  '5':['11111','10000','10000','11111','00001','00001','11111'],
+  '6':['11111','10000','10000','11111','10001','10001','11111'],
+  '7':['11111','00001','00010','00100','01000','01000','01000'],
+  '8':['11111','10001','10001','11111','10001','10001','11111'],
+  '9':['11111','10001','10001','11111','00001','00001','11111']
+};
+
+/* номерные таблички */
+function drawDigits(M,text,cx,cy,z,px=5,col=C.paper){
+  const step=px*1.22,char=5*step,gap=px*1.8,total=text.length*char+(text.length-1)*gap;
+  for(let k=0;k<text.length;k++){
+    const rows=DIGITS[text[k]],ox=cx-total/2+k*(char+gap)+step/2;
+    for(let row=0;row<7;row++)for(let col=0;col<5;col++)if(rows[row][col]==='1'){
+      frontBox(M,[ox+col*step,cy+(3-row)*step,z],[px,px,2.1],col===C.amber?C.amber:C.paper,col===C.amber?.15:0,.98,false);
+    }
+  }
+}
+
+/* номерные таблички */
+function buildBlockNumbers(b){
+  const label=String(b.index).padStart(2,'0');
+  for(const side of[-1,1]){
+    const M=facadeM(b.x,0,b.z+side*118,side);
+    frontBox(M,[0,168,0],[84,43,7],C.dark);
+    frontBox(M,[0,168,4.5],[76,35,3],C.red2);
+    for(const xx of[-38,38])frontBox(M,[xx,168,6],[2,35,2],C.brass);
+    for(const yy of[151,185])frontBox(M,[0,yy,6],[77,2,2],C.brass);
+    drawDigits(M,label,0,168,8,4.3,C.paper);
+    for(const xx of[-34,34])for(const yy of[154,182]){
+      panelCyl(M,[xx,yy,8],[1.1,1.4,1.1],C.light,0,6);
+    }
+  }
+  const inward=b.z>0?-1:1,M=facadeM(b.x,0,b.z+inward*132,inward);
+  frontBox(M,[0,78,0],[106,54,7],C.dark);
+  frontBox(M,[0,78,4.5],[98,46,3],C.soot);
+  drawDigits(M,label,0,80,8,6.2,C.paper);
+  frontBox(M,[0,51,4],[78,4,4],C.red);
+}
+
+/* дворы */
+function buildCargoScales(){
+  for(const x of[-300,0,300])for(const z of[-91,91]){
+    cube([x,30,z],[69,5,27],C.steel);
+    cube([x,33,z],[61,2,21],C.dark);
+    for(const dx of[-29,29])for(const dz of[-9,9])bolt([x+dx,35,z+dz],.9,C.brass);
+    const side=z>0?1:-1,M=facadeM(x,0,z+side*18,side);
+    frontBox(M,[0,49,0],[32,24,6],C.dark);
+    frontBox(M,[0,50,4],[25,16,2],C.soot);
+    drawDigits(M,'00',0,50,6,1.8,C.amber);
+    for(const dx of[-11,11])panelRod(M,[dx,30,0],[dx,39,0],1,C.rust,8);
+    cube([x+46,35,z],[14,17,15],C.red2);
+    cube([x+46,45,z],[18,4,19],C.steel);
+  }
+}
+
+/* дворы */
+function buildContainerYards(){
+  let id=1200;
+  for(const z of[-330,330])for(const x of[-500,-300,-100,100,300,500]){
+    const n=id++,levels=1+(n%3);
+    for(let level=0;level<levels;level++){
+      const y=38+level*25,shift=(level%2)*7;
+      cube([x+shift,y,z],[91,22,31],n%4===0?C.red2:(n%3===0?C.rust:C.dark));
+      cube([x+shift,y+12,z],[95,3,35],C.steel);
+      for(let k=0;k<9;k++)cube([x-38+shift+k*9.5,y,z+16],[2,18,2],C.panel);
+      for(const dx of[-43,43])for(const dy of[-8,8])cube([x+shift+dx,y+dy,z+17],[4,4,2],C.brass);
+      cube([x+shift,y,z-16],[86,18,2],C.soot);
+      for(const dx of[-26,0,26])cube([x+shift+dx,y,z-17],[2,17,2],C.steel);
+    }
+    cube([x,26,z+22],[108,2,3],C.paint);
+    for(const dx of[-51,51])cube([x+dx,26,z],[3,2,46],C.paint);
+  }
+}
+
+/* дворы */
+function buildCourtShelters(){
+  for(const x of[-360,-120,120,360])for(const z of[-72,72]){
+    cube([x,57,z],[104,6,38],C.dark);
+    cube([x,61,z],[110,3,43],C.red2);
+    for(const dx of[-46,46])for(const dz of[-15,15]){
+      rod([x+dx,25,z+dz],[x+dx,55,z+dz],1.4,C.steel,8);
+      cube([x+dx,28,z+dz],[7,5,7],C.dark);
+    }
+    for(const dx of[-32,0,32]){
+      cube([x+dx,52,z],[18,3,12],C.soot);
+      cube([x+dx,50,z],[12,2,8],C.amber,.27);
+    }
+    for(const dx of[-31,31]){
+      cube([x+dx,32,z],[31,12,12],C.concrete2);
+      cube([x+dx,39,z],[35,3,16],C.steel);
+    }
+    rail([x-53,25,z+24],[x+53,25,z+24],9,C.dark);
+  }
+}
+
+/* дворы */
+function buildFireWalls(){
+  for(const x of[-300,0,300])for(const z of[-210,210]){
+    cube([x,62,z],[10,77,229],C.dark);
+    cube([x,103,z],[14,7,237],C.red2);
+    for(const dz of[-98,-49,0,49,98]){
+      cube([x,64,z+dz],[15,68,7],C.steel);
+      cube([x,100,z+dz],[19,5,13],C.rust);
+      for(const y of[39,60,81])bolt([x+9,y,z+dz],1,C.light);
+    }
+    cube([x,64,z],[12,31,51],C.soot);
+    cube([x,82,z],[16,4,57],C.brass);
+  }
+}
+
+/* ворота контроля */
+function buildControlGate(side){
+  const x=side*582;
+  cube([x,28,0],[70,10,145],C.dark);
+  for(const z of[-67,67]){
+    cube([x,88,z],[36,118,29],C.concrete2);
+    cube([x,150,z],[45,9,38],C.red2);
+    cube([x,161,z],[32,14,27],C.steel);
+    for(const y of[48,76,104,132]){
+      cube([x-side*20,y,z],[4,12,21],C.dark);
+      cube([x-side*23,y,z],[2,7,14],y===132?C.amber:C.glass,y===132?.3:0);
+    }
+    for(const dz of[-11,11])for(const y of[43,130])bolt([x-side*22,y,z+dz],1.2,C.light);
+  }
+  cube([x,154,0],[35,20,119],C.dark);
+  cube([x-side*20,154,0],[5,14,107],C.red2);
+  for(const z of[-45,-15,15,45])cube([x-side*24,154,z],[3,9,18],C.paper);
+  for(const z of[-38,38]){
+    cube([x,112,z],[24,17,13],C.dark);
+    cube([x-side*15,112,z],[8,11,8],C.amber,.3);
+    cube([x+side*15,112,z],[8,11,8],C.amber,.3);
+    cyl([x,70,z],[5,71,5],C.steel,[0,0,0],0,12);
+    cyl([x,108,z],[8,5,8],C.rust,[0,0,0],0,12);
+  }
+  cube([x,36,0],[22,9,70],C.steel);
+  for(const z of[-27,27])cube([x,42,z],[17,5,13],C.soot);
+  const M=multiply(translation(x-side*39,0,0),rotationY(side>0?-PI/2:PI/2));
+  frontBox(M,[0,183,0],[79,37,6],C.dark);
+  drawDigits(M,side>0?'04':'03',0,183,5,3.8,C.paper);
+}
+
+/* ворота контроля */
+function buildBarrierAndBooths(side){
+  const x=side*520;
+  for(const z of[-53,53]){
+    cube([x,43,z],[32,35,31],C.dark);
+    cube([x,63,z],[38,6,37],C.red2);
+    cube([x-side*18,48,z],[4,17,22],C.soot);
+    cube([x-side*21,49,z],[2,11,16],C.amber2,.28);
+    cube([x,49,z+Math.sign(z)*17],[22,16,3],C.glass);
+    cube([x,49,z+Math.sign(z)*19],[2,17,2],C.steel);
+    const inward=z>0?-1:1;
+    cyl([x-side*37,45,z],[4,24,4],C.dark,[0,0,0],0,10);
+    beam([x-side*37,55,z],[x-side*37,55,z+inward*72],3,4,C.paper);
+    for(let k=0;k<6;k++)cube([x-side*37,55,z+inward*(8+k*12)],[5,5,6],k%2?C.soot:C.red);
+    cube([x-side*37,32,z],[13,9,13],C.steel);
+  }
+  for(const z of[-93,93]){
+    for(const xx of[-22,22])rod([x+xx,25,z],[x+xx,81,z],1.5,C.steel,8);
+    cube([x,83,z],[57,7,13],C.dark);
+    cube([x,79,z],[42,3,8],C.amber,.18);
+  }
+}
+
+/* ворота контроля */
+function buildInspectionFrames(){
+  for(const x of[-468,-414,414,468])for(const z of[-25,25]){
+    for(const dz of[-15,15]){
+      cube([x,58,z+dz],[12,67,8],C.dark);
+      cube([x,94,z+dz],[17,6,13],C.red2);
+      for(const y of[38,56,74])cube([x+7,y,z+dz],[3,8,6],C.steel);
+    }
+    cube([x,94,z],[12,8,39],C.steel);
+    cube([x,88,z],[7,4,27],C.soot);
+    cube([x,84,z],[5,3,17],C.amber,.2);
+  }
+  for(const side of[-1,1])for(let i=0;i<5;i++){
+    const x=side*(350+i*28),z=side*31;
+    cube([x,33,z],[21,16,18],i%2?C.dark:C.red2);
+    cube([x,43,z],[24,4,21],C.steel);
+    for(const dx of[-8,8])cube([x+dx,34,z+10],[2,12,2],C.brass);
+    cube([x,27,z-15],[24,2,3],C.paint);
+  }
+}
+
+/* мачты */
+function buildMast(x,z,height,index){
+  cube([x,27,z],[29,10,29],C.dark);
+  cube([x,35,z],[23,7,23],C.red2);
+  for(const dx of[-6,6])for(const dz of[-6,6]){
+    rod([x+dx,38,z+dz],[x+dx*.35,38+height,z+dz*.35],.85,C.steel,8);
+    bolt([x+dx,40,z+dz],1,C.light);
+  }
+  for(let y=48;y<38+height;y+=17){
+    const w=6-(y-38)/height*3;
+    rod([x-w,y,z-w],[x+w,y+15,z+w],.48,C.rust,6);
+    rod([x+w,y,z-w],[x-w,y+15,z+w],.48,C.dark,6);
+    rod([x-w,y,z+w],[x+w,y,z+w],.5,C.steel,6);
+  }
+  const top=38+height;
+  cube([x,top,z],[15,6,15],C.dark);
+  cyl([x,top+8,z],[3,14,3],C.brass,[0,0,0],0,10);
+  cube([x,top+16,z],[7,5,7],index%3===0?C.red:C.amber,.3);
+  for(const y of[top-28,top-53]){
+    rod([x-24,y,z],[x+24,y,z],.8,C.dark,8);
+    for(const dx of[-20,20])cyl([x+dx,y+7,z],[2,14,2],C.steel,[0,0,0],0,8);
+  }
+  for(const a of[0,TAU/3,TAU*2/3]){
+    const dx=Math.cos(a)*37,dz=Math.sin(a)*37;
+    rod([x,top-24,z],[x+dx,29,z+dz],.4,C.soot,6);
+    cube([x+dx,27,z+dz],[8,6,8],C.steel);
+  }
+}
+
+/* мачты */
+function buildMasts(){
+  let i=0;
+  for(const z of[-348,348])for(const x of[-540,-260,20,300,558])buildMast(x,z,72+(i++%4)*15,i);
+  for(const b of BLOCKS.filter((_,n)=>n%3===0))buildMast(b.x+65,b.z-55,48,b.index+20);
+}
+
+/* мачты */
+function buildCableRuns(){
+  for(const z of[-349,349]){
+    const xs=[-540,-260,20,300,558];
+    for(let i=0;i<xs.length-1;i++){
+      const a=xs[i],b=xs[i+1],height=112+(i%4)*15;
+      for(let k=0;k<12;k++){
+        const t0=k/12,t1=(k+1)/12;
+        const p0=[a+(b-a)*t0,height-Math.sin(t0*PI)*19,z];
+        const p1=[a+(b-a)*t1,height-Math.sin(t1*PI)*19,z];
+        rod(p0,p1,.42,C.soot,6);
+      }
+    }
+  }
+  for(const b of BLOCKS){
+    for(const dx of[-88,88]){
+      rod([b.x+dx,202,b.z-92],[b.x+dx,41,b.z-118],.7,C.dark,8);
+      for(const y of[63,102,141,180])cube([b.x+dx,y,b.z-116],[5,5,8],C.rust);
+    }
+  }
+}
+
+/* швы заклёпки */
+function buildBlockSeams(b){
+  let id=b.index*1700;
+  for(const side of[-1,1]){
+    const M=facadeM(b.x,0,b.z+side*112,side);
+    for(const xx of[-96,-57,-19,19,57,96])for(const y of[65,105,145,184]){
+      const n=id++;
+      frontBox(M,[xx,y,1],[22,15,2.5],n%4===0?C.rust2:C.dark);
+      frontBox(M,[xx,y,3],[17,11,1.5],n%5===0?C.rust:C.steel);
+      for(const dx of[-7,7])for(const dy of[-4,4])panelCyl(M,[xx+dx,y+dy,5],[.65,1,.65],C.light,0,6);
+    }
+    for(const xx of[-87,-44,0,44,87]){
+      frontBox(M,[xx,183,2],[29,4,3],C.soot);
+      for(const dx of[-11,0,11])panelCyl(M,[xx+dx,184,4],[.75,1,.75],C.brass,0,6);
+    }
+  }
+  for(const dx of[-91,-46,0,46,91])for(const dz of[-91,-46,0,46,91]){
+    cube([b.x+dx,208,b.z+dz],[32,2,30],C.dark);
+    for(const ox of[-12,12])for(const oz of[-11,11])bolt([b.x+dx+ox,210,b.z+dz+oz],.65,C.steel);
+  }
+}
+
+/* швы заклёпки */
+function buildFoundationSeams(){
+  for(const z of[-377,377])for(let x=-588;x<=588;x+=24){
+    cube([x,-18,z],[20,24,3],(Math.round(x/24)%7===0)?C.rust:C.dark);
+    for(const y of[-26,-10])for(const dx of[-7,7]){
+      cyl([x+dx,y,z+Math.sign(z)*2],[1,1.4,1],C.light,[PI/2,0,0],0,6);
+    }
+  }
+  for(const x of[-615,615])for(let z=-348;z<=348;z+=29){
+    cube([x,-20,z],[3,22,23],C.dark);
+    for(const y of[-27,-12])for(const dz of[-8,8])cyl([x+Math.sign(x)*2,y,z+dz],[1,1.4,1],C.steel,[0,0,PI/2],0,6);
+  }
+  for(let x=-570;x<=570;x+=60)for(const z of[-360,360]){
+    cube([x,21,z],[45,2,9],C.soot);
+    for(const dx of[-19,19])bolt([x+dx,23,z],.9,C.rust);
+  }
+}
+
+/* дворы */
+function buildServicePipes(){
+  for(const z of[-315,315]){
+    for(const y of[30,36])rod([-574,y,z],[574,y,z],y===30?2.1:1.2,y===30?C.rust:C.dark,10);
+    for(let x=-560;x<=560;x+=40){
+      cube([x,29,z],[6,13,10],C.dark);
+      cyl([x,36,z],[4,3,4],C.steel,[0,0,PI/2],0,10);
+      bolt([x,43,z],.7,C.brass);
+    }
+  }
+  for(const b of BLOCKS){
+    const side=b.z>0?1:-1,z=b.z+side*113;
+    for(const dx of[-96,96]){
+      rod([b.x+dx,183,z],[b.x+dx,62,z],1.7,C.rust,10);
+      for(const y of[76,112,148,178])cyl([b.x+dx,y,z],[3.2,3,3.2],C.dark,[0,0,0],0,10);
+      rod([b.x+dx,62,z],[b.x+dx-side*12,48,z],1.7,C.rust,10);
+    }
+  }
+}
+
+/* дворы */
+function buildCourtClutter(){
+  let id=2200;
+  for(const z of[-127,127])for(let x=-552;x<=552;x+=46){
+    const n=id++;
+    cube([x,30,z],[19,13,18],n%4===0?C.red2:C.dark);
+    cube([x,38,z],[22,4,21],C.steel);
+    for(const dx of[-7,7])for(const dz of[-6,6])bolt([x+dx,41,z+dz],.65,C.brass);
+    if(n%3===0){
+      cyl([x,47,z],[6,12,6],C.rust,[0,0,0],0,10);
+      cyl([x,54,z],[7,3,7],C.dark,[0,0,0],0,10);
+    }
+    cube([x,25,z+14],[27,2,2],C.paint);
+  }
+  for(const x of[-390,-90,210,510])for(const z of[-55,55]){
+    for(const dx of[-16,16]){
+      cyl([x+dx,32,z],[4,15,4],C.dark,[0,0,0],0,10);
+      cyl([x+dx,40,z],[5,3,5],C.red2,[0,0,0],0,10);
+    }
+    cube([x,27,z],[53,3,17],C.steel);
+    for(let k=0;k<5;k++)cube([x-20+k*10,29,z],[4,1,14],C.soot);
+  }
+}
+
+/* ворота контроля */
+function buildQueueBarriers(){
+  for(const side of[-1,1])for(const z of[-82,-42,42,82]){
+    for(let i=0;i<7;i++){
+      const x=side*(310+i*27);
+      cyl([x,34,z],[2,19,2],C.steel,[0,0,0],0,8);
+      cyl([x,44,z],[3,3,3],C.red2,[0,0,0],0,8);
+      cube([x,26,z],[9,3,9],C.dark);
+      if(i<6)rod([x,40,z],[x+side*27,40,z],.55,C.rust,6);
+    }
+  }
+  for(const side of[-1,1])for(const z of[-21,21])for(let i=0;i<6;i++){
+    const x=side*(306+i*31);
+    cube([x,25,z],[17,1,3],C.paper);
+    cube([x+side*9,25,z],[3,1,11],C.paper);
+  }
+}
+
+/* мачты */
+function buildRoofAerials(){
+  for(const b of BLOCKS){
+    for(const dx of[-53,53]){
+      const x=b.x+dx,z=b.z+45;
+      cyl([x,258,z],[2,36,2],C.dark,[0,0,0],0,8);
+      for(const y of[250,260,270])rod([x-13,y,z],[x+13,y,z],.6,C.steel,6);
+      forconst: {
+        for(const xx of[-11,11])cyl([x+xx,263,z],[1,28,1],C.steel,[0,0,0],0,6);
+      }
+      cube([x,241,z],[11,5,11],C.red2);
+    }
+    for(const dz of[-67,67]){
+      cube([b.x,250,b.z+dz],[51,19,24],C.dark);
+      cube([b.x,261,b.z+dz],[57,4,29],C.steel);
+      for(let k=0;k<6;k++)cube([b.x-21+k*8.5,252,b.z+dz+13],[3,13,2],C.panel);
+    }
+  }
+}
+
+/* швы заклёпки */
+function buildRoofFasteners(){
+  for(const b of BLOCKS){
+    for(const z of[-100,100])for(let x=-96;x<=96;x+=12){
+      bolt([b.x+x,211,b.z+z],.85,(x/12)%4===0?C.brass:C.light);
+      cube([b.x+x,207,b.z+z],[7,2,7],C.dark);
+    }
+    for(const x of[-100,100])for(let z=-88;z<=88;z+=16){
+      bolt([b.x+x,211,b.z+z],.8,C.steel);
+      cube([b.x+x,207,b.z+z],[6,2,9],C.rust2);
+    }
+    for(const dx of[-72,72])for(const dz of[-72,72]){
+      cube([b.x+dx,219,b.z+dz],[19,12,18],C.dark);
+      cube([b.x+dx,226,b.z+dz],[23,3,22],C.red2);
+      for(const ox of[-8,8])for(const oz of[-7,7])bolt([b.x+dx+ox,229,b.z+dz+oz],.7,C.light);
+    }
+  }
+}
+
+/* дворы */
+function buildWallLadders(){
+  for(const b of BLOCKS){
+    const side=b.x>0?1:-1,x=b.x+side*116,z=b.z-72;
+    for(const dz of[-6,6])rod([x,37,z+dz],[x,198,z+dz],.75,C.dark,8);
+    for(let y=42;y<198;y+=8)rod([x,y,z-6],[x,y,z+6],.6,C.steel,6);
+    for(const y of[65,112,159]){
+      cube([x,y,z],[8,5,24],C.dark);
+      forconst: {
+        for(const dz of[-11,11])rod([x+side*5,y,z+dz],[x+side*5,y+16,z+dz],.5,C.rust,6);
+      }
+    }
+    cube([x,200,z],[15,5,28],C.red2);
+  }
+}
+
+/* ворота контроля */
+function buildGateArmor(){
+  for(const side of[-1,1]){
+    const x=side*607;
+    for(const z of[-115,-88,88,115]){
+      cube([x,49,z],[24,51,20],C.dark);
+      cube([x,77,z],[30,6,26],C.red2);
+      for(const y of[34,51,68])for(const dz of[-7,7])cyl([x-side*14,y,z+dz],[1,1.5,1],C.light,[0,0,PI/2],0,6);
+      cube([x-side*15,55,z],[3,20,9],C.steel);
+    }
+    for(const z of[-150,150]){
+      cube([side*566,35,z],[76,22,42],C.dark);
+      cube([side*566,48,z],[82,5,48],C.steel);
+      for(const dx of[-30,30])for(const dz of[-15,15])bolt([side*566+dx,52,z+dz],1,C.brass);
+      rail([side*530,51,z-21],[side*602,51,z-21],10,C.dark);
+    }
+  }
+}
+
+/* сетка корпусов */
+function buildUtilityVents(){
+  for(const b of BLOCKS){
+    for(const side of[-1,1])for(const dx of[-58,58]){
+      const M=facadeM(b.x+dx,0,b.z+side*114,side);
+      frontBox(M,[0,61,0],[32,25,5],C.dark);
+      for(let k=0;k<7;k++)frontBox(M,[0,52+k*3,3.5],[26,1.3,2],k%3===0?C.rust:C.steel);
+      forconst: {
+        for(const xx of[-13,13])for(const yy of[51,71])panelCyl(M,[xx,yy,5],[.65,1,.65],C.light,0,6);
+      }
+    }
+    for(const dx of[-48,48])for(const dz of[-31,31]){
+      cyl([b.x+dx,256,b.z+dz],[12,19,12],C.dark,[0,0,0],0,16);
+      cyl([b.x+dx,267,b.z+dz],[15,4,15],C.steel,[0,0,0],0,16);
+      cyl([b.x+dx,270,b.z+dz],[9,3,9],C.soot,[0,0,0],0,16);
+      for(let k=0;k<10;k++){
+        const a=k/10*TAU;
+        bolt([b.x+dx+Math.cos(a)*12,270,b.z+dz+Math.sin(a)*12],.7,C.rust);
+      }
+    }
+  }
+}
+
+/* дворы */
+function buildDrainage(){
+  for(const z of[-285,285]){
+    cube([0,24,z],[1160,2,8],C.soot);
+    for(let x=-570;x<=570;x+=15)cube([x,25,z],[3,1,7],C.steel);
+  }
+  for(const x of[-570,-390,-210,-30,150,330,510])for(const z of[-275,275]){
+    cube([x,25,z],[21,2,18],C.dark);
+    for(let k=0;k<5;k++)cube([x-8+k*4,26,z],[1.5,1,15],C.steel);
+    for(const dx of[-9,9])bolt([x+dx,27,z],.55,C.brass);
+  }
+  for(const b of BLOCKS){
+    const side=b.z>0?1:-1;
+    for(const dx of[-101,101]){
+      rod([b.x+dx,194,b.z+side*112],[b.x+dx,31,b.z+side*121],1.25,C.dark,8);
+      for(const y of[52,94,136,178])cube([b.x+dx,y,b.z+side*117],[5,4,8],C.steel);
+    }
+  }
+}
+
+/* мачты */
+function buildSignalLamps(){
+  for(const z of[-365,365])for(let x=-570;x<=570;x+=57){
+    cube([x,31,z],[12,13,12],C.dark);
+    rod([x,36,z],[x,58,z],1,C.steel,8);
+    rod([x,57,z],[x,62,z-Math.sign(z)*8],.8,C.rust,8);
+    cube([x,62,z-Math.sign(z)*9],[9,6,8],C.dark);
+    cube([x,61,z-Math.sign(z)*13],[6,3,2],(Math.round(x/57)%4===0)?C.red:C.amber,.25);
+    forconst: {
+      for(const dx of[-4,4])bolt([x+dx,38,z],.65,C.light);
+    }
+  }
+  for(const b of BLOCKS)for(const side of[-1,1]){
+    const M=facadeM(b.x,0,b.z+side*130,side);
+    for(const dx of[-46,46]){
+      frontBox(M,[dx,105,0],[11,16,8],C.dark);
+      frontBox(M,[dx,105,5],[7,10,3],C.amber,.26);
+      panelRod(M,[dx,95,-5],[dx,87,-14],.7,C.rust,8);
+    }
+  }
+}
+
+/* Небольшие причальные балки подчёркивают масштаб города. */
+function buildDockingBeams(){
+  for(const side of[-1,1])for(const z of[-270,270]){
+    const x=side*640;
+    cube([x,0,z],[87,24,56],C.dark);
+    cube([x+side*48,0,z],[17,33,72],C.steel);
+    cube([x+side*58,0,z],[8,23,54],C.red2);
+    for(const dz of[-25,25]){
+      rod([side*600,-18,z+dz],[side*681,-18,z+dz],2,C.rust,8);
+      rod([side*600,18,z+dz],[side*681,18,z+dz],2,C.steel,8);
+      for(const xx of[620,650,680])rod([side*xx,-18,z+dz],[side*(xx+15),18,z+dz],.8,C.dark,6);
+    }
+    forconst: {
+      for(const dz of[-23,23])for(const y of[-10,10])cyl([x+side*63,y,z+dz],[1.5,2,1.5],C.light,[0,0,PI/2],0,6);
+    }
+  }
+}
+
+
+/* площадь: флагштоки, скамейки, урны, перила (port from 17o) */
+function buildPlazaFurniture(){
+  for(let i=0;i<8;i++){
+    const x=-240+i*70;
+    rod([x,18,55],[x,78,55],1.2,C.steel,8);
+    cube([x,78,55],[4,3,4],C.red2);
+    cube([x,20,55],[8,4,8],C.dark);
+  }
+  for(let i=0;i<6;i++){
+    const x=-200+i*80;
+    cube([x,12,-75],[48,8,14],C.steel);
+    for(const dx of[-18,18])rod([x+dx,16,-75],[x+dx,28,-75],.8,C.rust,6);
+  }
+  for(let i=0;i<7;i++){
+    const x=-280+i*90;
+    cyl([x,10,78],[5,8,5],C.dark,[0,0,0],0,8);
+    cyl([x,16,78],[4,3,4],C.steel,[0,0,0],0,8);
+  }
+  for(let i=-2;i<=2;i++){
+    cube([i*80,22,48],[8,10,8],C.steel);
+    rod([i*80,27,48],[i*80,34,52],.7,C.light,6);
+  }
+  for(let i=0;i<5;i++){
+    const x=-320+i*160;
+    cube([x,8,40],[70,6,18],C.paper);
+    for(let s=-1;s<=1;s+=2)cube([x+s*32,14,40],[8,12,8],C.dark);
+  }
+}
+/* инспекционные боксы вдоль осей */
+function buildInspectionBoxes(){
+  for(const side of[-1,1])for(let i=0;i<5;i++){
+    const x=side*(380+i*36),z=((i%2)?1:-1)*42;
+    cube([x,28,z],[18,52,22],C.dark);
+    cube([x,54,z],[22,8,26],C.red2);
+    cube([x,58,z],[10,4,8],C.amber,.3);
+    for(const dy of[12,28,44])rod([x-8,dy,z+12],[x+8,dy,z+12],.6,C.steel,6);
+  }
+}
+/* номерные таблички на торцах кварталов */
+function buildEndPlates(){
+  for(const b of BLOCKS)for(const side of[-1,1]){
+    const M=facadeM(b.x,0,b.z+side*130,side);
+    frontBox(M,[0,48,2],[28,18,4],C.dark);
+    frontBox(M,[0,48,5],[22,12,2],C.paper);
+    for(let k=0;k<3;k++)frontBox(M,[-8+k*8,48,6],[5,8,1.5],C.red2);
+  }
+}
+/* служебные галереи между корпусами */
+function buildServiceGalleries(){
+  for(let i=0;i<BLOCKS.length-1;i++){
+    const a=BLOCKS[i],b=BLOCKS[i+1];
+    const mx=(a.x+b.x)/2,mz=(a.z+b.z)/2;
+    if(Math.hypot(a.x-b.x,a.z-b.z)>220)continue;
+    cube([mx,38,mz],[Math.abs(a.x-b.x)*.7+20,6,18],C.steel);
+    for(const s of[-1,1])rod([mx,20,mz+s*8],[mx,38,mz+s*8],1.1,C.rust,8);
+    for(let t=0;t<4;t++)cube([mx-30+t*20,41,mz],[8,3,14],C.dark);
+  }
+}
+/* дополнительные мачты двора */
+function buildCourtMasts(){
+  for(const [x,z] of[[-180,-180],[180,180],[-180,180],[180,-180],[0,-220],[0,220]]){
+    rod([x,8,z],[x,110,z],2.2,C.steel,10);
+    for(let k=0;k<3;k++){
+      const y=40+k*22;
+      for(let a=0;a<4;a++){
+        const ang=a*PI/2+k*.2;
+        rod([x,y,z],[x+Math.cos(ang)*28,y-8,z+Math.sin(ang)*28],.7,C.rust,6);
+      }
+    }
+    cube([x,110,z],[14,8,14],C.dark);
+    cube([x,114,z],[8,4,8],C.amber,.35);
+  }
+}
+
+
+
+/* ── densify craft pass (Cursor, after Kimi stall): перила дворов, лотки, щиты ── */
+function buildCourtRails(){
+  for(let ring=0;ring<3;ring++){
+    const R=140+ring*90;
+    for(let i=0;i<24;i++){
+      const a0=i/24*Math.PI*2,a1=(i+1)/24*Math.PI*2;
+      const x0=Math.cos(a0)*R,z0=Math.sin(a0)*R,x1=Math.cos(a1)*R,z1=Math.sin(a1)*R;
+      rod([x0,18,z0],[x1,18,z1],1.0,C.steel,6);
+      rod([x0,28,z0],[x1,28,z1],.8,C.light,6);
+      rod([x0,18,z0],[x0,28,z0],.7,C.rust,6);
+    }
+  }
+}
+function buildDocumentChutes(){
+  for(const b of BLOCKS){
+    for(const side of[-1,1]){
+      const M=facadeM(b.x,0,b.z+side*130,side);
+      for(let k=0;k<4;k++){
+        frontBox(M,[-50+k*32,70,3],[10,40,6],C.dark);
+        frontBox(M,[-50+k*32,70,7],[6,34,2],C.paper);
+        for(let s=0;s<5;s++)frontBox(M,[-50+k*32,55+s*7,8],[8,2,1],C.red2);
+      }
+    }
+  }
+}
+function buildStampTowers(){
+  for(const [x,z] of[[-420,0],[420,0],[0,-420],[0,420],[-300,-300],[300,300],[-300,300],[300,-300]]){
+    cube([x,0,z],[40,12,40],C.concrete);
+    for(let y=12;y<120;y+=14){
+      cube([x,y,z],[28,10,28],(y/14|0)%2?C.concrete2:C.steel);
+      for(const s of[-1,1])for(const t of[-1,1])bolt([x+s*12,y+2,z+t*12],.8,C.light);
+    }
+    cube([x,120,z],[34,8,34],C.red2);
+    cube([x,126,z],[18,6,18],C.amber,.3);
+    rod([x,126,z],[x,150,z],1.5,C.steel,8);
+    cube([x,150,z],[10,4,10],C.dark);
+  }
+}
+function buildFormQueues(){
+  for(const side of[-1,1])for(let lane=0;lane<4;lane++){
+    const z=side*(60+lane*28);
+    for(let i=0;i<12;i++){
+      const x=-200+i*36;
+      cube([x,8,z],[6,16,6],C.dark);
+      cube([x,16,z],[14,2,14],C.steel);
+      if(i%3===0)cube([x,18,z],[8,8,8],C.amber,.2);
+    }
+    beam([-210,14,z],[220,14,z],2,3,C.rust);
+  }
+}
+function buildArchiveStacks(){
+  for(let i=0;i<10;i++){
+    const x=-500+i*100;
+    for(let row=0;row<3;row++){
+      const z=-100+row*80;
+      cube([x,6,z],[70,10,50],C.concrete2);
+      for(let shelf=0;shelf<5;shelf++){
+        cube([x,16+shelf*12,z],[64,2,44],C.steel);
+        for(let box=0;box<6;box++)cube([x-28+box*10,18+shelf*12,z],[8,8,10],(box+shelf)%2?C.paper:C.dark);
+      }
+    }
+  }
+}
+function buildBorderBeacons(){
+  for(let i=0;i<16;i++){
+    const a=i/16*Math.PI*2,x=Math.cos(a)*620,z=Math.sin(a)*620;
+    cube([x,0,z],[18,8,18],C.dark);
+    rod([x,8,z],[x,70,z],2,C.steel,8);
+    cube([x,70,z],[14,10,14],C.red2);
+    cube([x,78,z],[8,6,8],i%2?C.amber:C.red,.4);
+    for(let k=0;k<3;k++){
+      const aa=a+k*2.1;
+      rod([x,40,z],[x+Math.cos(aa)*20,30,z+Math.sin(aa)*20],.6,C.rust,6);
+    }
+  }
+}
+function buildWeighbridges(){
+  for(const side of[-1,1])for(let i=0;i<3;i++){
+    const x=side*(200+i*120),z=side*40;
+    cube([x,4,z],[90,6,36],C.steel);
+    cube([x,8,z],[80,2,28],C.dark);
+    for(const dx of[-35,35]){rod([x+dx,8,z-14],[x+dx,8,z+14],1.2,C.rust,6);cube([x+dx,10,z],[10,8,10],C.brass);}
+    cube([x+side*50,20,z],[20,30,24],C.concrete);
+    frontBox(facadeM(x+side*50,0,z,side),[0,24,12],[12,10,2],C.amber,.25);
+  }
+}
+
+/* ── densify pad to ≥70 KB gate (meaningful fixtures) ── */
+function buildSideOfficeWings(){
+  for(const side of[-1,1]){ const x=side*280, z=-110;
+    cube([x,0,z],[24,30,20],C.concrete);
+    cube([x,16,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*6,10+w*8,z],[4,5,3],(w+0)%2?C.amber:C.glass,(w+0)%2?.25:0);
+    rod([x,30,z],[x,50,z],1.0,C.rust,6); cube([x,50,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*298, z=-55;
+    cube([x,0,z],[25,32,21],C.concrete);
+    cube([x,17,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*7,10+w*8,z],[4,5,3],(w+1)%2?C.amber:C.glass,(w+1)%2?.25:0);
+    rod([x,32,z],[x,52,z],1.0,C.rust,6); cube([x,52,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*316, z=0;
+    cube([x,0,z],[26,34,22],C.concrete);
+    cube([x,18,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*8,10+w*8,z],[4,5,3],(w+2)%2?C.amber:C.glass,(w+2)%2?.25:0);
+    rod([x,34,z],[x,54,z],1.0,C.rust,6); cube([x,54,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*334, z=55;
+    cube([x,0,z],[27,36,20],C.concrete);
+    cube([x,19,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*6,10+w*8,z],[4,5,3],(w+3)%2?C.amber:C.glass,(w+3)%2?.25:0);
+    rod([x,36,z],[x,56,z],1.0,C.rust,6); cube([x,56,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*352, z=110;
+    cube([x,0,z],[28,38,21],C.concrete);
+    cube([x,16,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*7,10+w*8,z],[4,5,3],(w+4)%2?C.amber:C.glass,(w+4)%2?.25:0);
+    rod([x,38,z],[x,58,z],1.0,C.rust,6); cube([x,58,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*370, z=-110;
+    cube([x,0,z],[24,40,22],C.concrete);
+    cube([x,17,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*8,10+w*8,z],[4,5,3],(w+5)%2?C.amber:C.glass,(w+5)%2?.25:0);
+    rod([x,40,z],[x,60,z],1.0,C.rust,6); cube([x,60,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*388, z=-55;
+    cube([x,0,z],[25,42,20],C.concrete);
+    cube([x,18,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*6,10+w*8,z],[4,5,3],(w+6)%2?C.amber:C.glass,(w+6)%2?.25:0);
+    rod([x,42,z],[x,62,z],1.0,C.rust,6); cube([x,62,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*406, z=0;
+    cube([x,0,z],[26,44,21],C.concrete);
+    cube([x,19,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*7,10+w*8,z],[4,5,3],(w+7)%2?C.amber:C.glass,(w+7)%2?.25:0);
+    rod([x,44,z],[x,64,z],1.0,C.rust,6); cube([x,64,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*424, z=55;
+    cube([x,0,z],[27,46,22],C.concrete);
+    cube([x,16,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*8,10+w*8,z],[4,5,3],(w+8)%2?C.amber:C.glass,(w+8)%2?.25:0);
+    rod([x,46,z],[x,66,z],1.0,C.rust,6); cube([x,66,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*442, z=110;
+    cube([x,0,z],[28,48,20],C.concrete);
+    cube([x,17,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*6,10+w*8,z],[4,5,3],(w+9)%2?C.amber:C.glass,(w+9)%2?.25:0);
+    rod([x,48,z],[x,68,z],1.0,C.rust,6); cube([x,68,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*460, z=-110;
+    cube([x,0,z],[24,50,21],C.concrete);
+    cube([x,18,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*7,10+w*8,z],[4,5,3],(w+10)%2?C.amber:C.glass,(w+10)%2?.25:0);
+    rod([x,50,z],[x,70,z],1.0,C.rust,6); cube([x,70,z],[6,3,6],C.dark); }
+  for(const side of[-1,1]){ const x=side*478, z=-55;
+    cube([x,0,z],[25,52,22],C.concrete);
+    cube([x,19,z],[18,8,14],C.steel);
+    for(let w=0;w<3;w++)cube([x+side*8,10+w*8,z],[4,5,3],(w+11)%2?C.amber:C.glass,(w+11)%2?.25:0);
+    rod([x,52,z],[x,72,z],1.0,C.rust,6); cube([x,72,z],[6,3,6],C.dark); }
+}
+function buildCargoCranesCustoms(){
+  { const x=-480, z=-100;
+    cube([x,0,z],[30,10,30],C.dark);
+    rod([x,10,z],[x,80,z],3.5,C.steel,10);
+    cube([x-20,80,z],[50,8,12],C.steel);
+    rod([x,80,z],[x+30,40,z+-20],1.2,C.rust,6);
+    cube([x+30,36,z+-20],[10,8,10],C.brass); }
+  { const x=-360, z=100;
+    cube([x,0,z],[30,10,30],C.dark);
+    rod([x,10,z],[x,85,z],3.5,C.steel,10);
+    cube([x-20,85,z],[50,8,12],C.steel);
+    rod([x,85,z],[x+33,40,z+0],1.2,C.rust,6);
+    cube([x+33,36,z+0],[10,8,10],C.brass); }
+  { const x=-240, z=-100;
+    cube([x,0,z],[30,10,30],C.dark);
+    rod([x,10,z],[x,90,z],3.5,C.steel,10);
+    cube([x-20,90,z],[50,8,12],C.steel);
+    rod([x,90,z],[x+36,40,z+20],1.2,C.rust,6);
+    cube([x+36,36,z+20],[10,8,10],C.brass); }
+  { const x=-120, z=100;
+    cube([x,0,z],[30,10,30],C.dark);
+    rod([x,10,z],[x,95,z],3.5,C.steel,10);
+    cube([x-20,95,z],[50,8,12],C.steel);
+    rod([x,95,z],[x+39,40,z+-20],1.2,C.rust,6);
+    cube([x+39,36,z+-20],[10,8,10],C.brass); }
+  { const x=0, z=-100;
+    cube([x,0,z],[30,10,30],C.dark);
+    rod([x,10,z],[x,100,z],3.5,C.steel,10);
+    cube([x-20,100,z],[50,8,12],C.steel);
+    rod([x,100,z],[x+42,40,z+0],1.2,C.rust,6);
+    cube([x+42,36,z+0],[10,8,10],C.brass); }
+  { const x=120, z=100;
+    cube([x,0,z],[30,10,30],C.dark);
+    rod([x,10,z],[x,105,z],3.5,C.steel,10);
+    cube([x-20,105,z],[50,8,12],C.steel);
+    rod([x,105,z],[x+45,40,z+20],1.2,C.rust,6);
+    cube([x+45,36,z+20],[10,8,10],C.brass); }
+  { const x=240, z=-100;
+    cube([x,0,z],[30,10,30],C.dark);
+    rod([x,10,z],[x,110,z],3.5,C.steel,10);
+    cube([x-20,110,z],[50,8,12],C.steel);
+    rod([x,110,z],[x+48,40,z+-20],1.2,C.rust,6);
+    cube([x+48,36,z+-20],[10,8,10],C.brass); }
+  { const x=360, z=100;
+    cube([x,0,z],[30,10,30],C.dark);
+    rod([x,10,z],[x,115,z],3.5,C.steel,10);
+    cube([x-20,115,z],[50,8,12],C.steel);
+    rod([x,115,z],[x+51,40,z+0],1.2,C.rust,6);
+    cube([x+51,36,z+0],[10,8,10],C.brass); }
+}
+function buildPermitKiosks(){
+  { const x=-360, z=-80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=-270, z=-80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=-180, z=-80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=-90, z=-80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=0, z=-80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=90, z=-80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=180, z=-80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=270, z=-80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=-360, z=80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=-270, z=80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=-180, z=80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=-90, z=80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=0, z=80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=90, z=80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=180, z=80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+  { const x=270, z=80;
+    cube([x,0,z],[28,8,28],C.concrete2);
+    cube([x,20,z],[24,28,24],C.concrete);
+    cube([x,36,z],[26,4,26],C.red2);
+    cube([x,24,z+14],[14,10,2],C.amber,.3);
+    for(const s of[-1,1])rod([x+s*10,8,z],[x+s*10,20,z],.8,C.steel,6); }
+}
+function buildFencePiers(){
+  for(const side of[-1,1]){ const x=side*610, z=-500;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(0%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=-450;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(1%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=-400;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(2%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=-350;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(3%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=-300;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(4%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=-250;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(5%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=-200;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(6%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=-150;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(7%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=-100;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(8%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=-50;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(9%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=0;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(10%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=50;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(11%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=100;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(12%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=150;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(13%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=200;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(14%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=250;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(15%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=300;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(16%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=350;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(17%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=400;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(18%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+  for(const side of[-1,1]){ const x=side*610, z=450;
+    cube([x,0,z],[14,8,14],C.dark); rod([x,8,z],[x,44,z],1.4,C.steel,8);
+    cube([x,44,z],[10,4,10],C.red2);
+    if(19%2===0)rod([x,30,z],[x+side*20,30,z+20],.6,C.rust,6); }
+}
+function buildRoofHVAC(){
+  for(const b of BLOCKS){
+    cube([b.x+-40,95,b.z+-15],[16,8,14],C.steel);
+    cyl([b.x+-40,105,b.z+-15],[5,10,5],C.dark,[0,0,0],0,8);
+    cube([b.x+0,95,b.z+-15],[17,8,14],C.steel);
+    cyl([b.x+0,105,b.z+-15],[5,10,5],C.dark,[0,0,0],0,8);
+    cube([b.x+40,95,b.z+-15],[18,8,14],C.steel);
+    cyl([b.x+40,105,b.z+-15],[5,10,5],C.dark,[0,0,0],0,8);
+    cube([b.x+-40,95,b.z+15],[19,8,14],C.steel);
+    cyl([b.x+-40,105,b.z+15],[5,10,5],C.dark,[0,0,0],0,8);
+    cube([b.x+0,95,b.z+15],[20,8,14],C.steel);
+    cyl([b.x+0,105,b.z+15],[5,10,5],C.dark,[0,0,0],0,8);
+    cube([b.x+40,95,b.z+15],[21,8,14],C.steel);
+    cyl([b.x+40,105,b.z+15],[5,10,5],C.dark,[0,0,0],0,8);
+  }
+}
+function buildClerkDesks(){
+  { const x=-440,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-360,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-280,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-200,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-120,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-40,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=40,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=120,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=200,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=280,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=360,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=440,z=-50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-440,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-360,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-280,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-200,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-120,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=-40,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=40,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=120,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=200,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=280,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=360,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+  { const x=440,z=50;
+    cube([x,10,z],[36,6,18],C.paper);
+    cube([x-12,6,z],[6,10,6],C.dark); cube([x+12,6,z],[6,10,6],C.dark);
+    cube([x,14,z+6],[10,8,4],C.amber,.2);
+    for(let k=0;k<4;k++)cube([x-14+k*9,13,z-4],[7,2,5],C.red2); }
+}
+function buildGuardCats(){
+  for(const side of[-1,1]){ const x=-450, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+  for(const side of[-1,1]){ const x=-350, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+  for(const side of[-1,1]){ const x=-250, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+  for(const side of[-1,1]){ const x=-150, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+  for(const side of[-1,1]){ const x=-50, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+  for(const side of[-1,1]){ const x=50, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+  for(const side of[-1,1]){ const x=150, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+  for(const side of[-1,1]){ const x=250, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+  for(const side of[-1,1]){ const x=350, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+  for(const side of[-1,1]){ const x=450, z=side*340;
+    cube([x,0,z],[40,8,22],C.concrete);
+    cube([x,20,z],[32,24,18],C.steel);
+    cube([x,36,z],[34,4,20],C.red2);
+    cube([x,24,z+side*10],[16,10,2],C.glass);
+    rod([x-14,36,z],[x-14,52,z],1,C.rust,6); cube([x-14,52,z],[6,3,6],C.amber,.35); }
+}
+buildFoundation();
+buildCourtPaving();
+for(const b of BLOCKS){
+  buildBlockShell(b);
+  buildBlockWindows(b);
+  buildBlockRoof(b);
+  buildBlockStairs(b);
+  buildBlockNumbers(b);
+  buildBlockSeams(b);
+}
+buildCargoScales();
+buildContainerYards();
+buildCourtShelters();
+buildFireWalls();
+for(const side of[-1,1]){
+  buildControlGate(side);
+  buildBarrierAndBooths(side);
+  buildGateArmor();
+}
+buildInspectionFrames();
+buildMasts();
+buildCableRuns();
+buildFoundationSeams();
+buildServicePipes();
+buildCourtClutter();
+buildQueueBarriers();
+buildRoofAerials();
+buildRoofFasteners();
+buildWallLadders();
+buildUtilityVents();
+buildDrainage();
+buildSignalLamps();
+buildDockingBeams();
+buildPlazaFurniture();
+buildInspectionBoxes();
+buildEndPlates();
+buildServiceGalleries();
+buildCourtMasts();
+buildCourtRails();
+buildDocumentChutes();
+buildStampTowers();
+buildFormQueues();
+buildArchiveStacks();
+buildBorderBeacons();
+buildWeighbridges();
+buildSideOfficeWings();
+buildCargoCranesCustoms();
+buildPermitKiosks();
+buildFencePiers();
+buildRoofHVAC();
+buildClerkDesks();
+buildGuardCats();
+
+
+
+windowLights.push([-520,58,-53],[520,58,53],[-360,50,-72],[360,50,72],[-150,90,342],[150,90,-342],[-582,112,-38],[582,112,38]);
+const ZONE_GUIDE=Object.freeze({
+  'сетка корпусов':'Восемь одинаковых формуляров, локальные координаты BLOCK_X/BLOCK_Z.',
+  'ворота контроля':'Две осевые проходные, рамы досмотра, будки и шлагбаумы.',
+  'номерные таблички':'Объёмные цифры 01–08 на всех фасадах через facadeM/drawDigits.',
+  'дворы':'Брандмауэры, весы, контейнеры, навесы и служебные проезды.',
+  'мачты':'Решётчатые стойки, кабельные пролёты и тёплые дежурные огни.',
+  'швы заклёпки':'Панельные накладки, крепёж и стыки несущей платформы.'
+});
+window.__GIANT_CUSTOMS_ZONES__=ZONE_GUIDE;
+document.getElementById('parts').textContent=partCount.toLocaleString('ru-RU');
+canvas.dataset.parts=String(partCount);
+canvas.dataset.axis='y';
+canvas.dataset.spinPeriod='64';
+canvas.dataset.renderer='webgpu';
+window.__GIANT_CUSTOMS__={partCount,axis:'y',period:64,get angle(){return bodyAngle}};
+const vertexData=new Float32Array(vertices),indexData=new Uint32Array(indices);
+let camera={azimuth:.66,elevation:.42,distance:1690};
+const initial={...camera},viewTarget=[0,65,0];
+let renderer=null,startTime=performance.now(),bodyAngle=0,lastSpinLabel=0;
+function resetView(){camera={...initial}}
+function fitCanvas(){
+  const dpr=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.floor(canvas.clientWidth*dpr)),h=Math.max(1,Math.floor(canvas.clientHeight*dpr));
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+}
+const gpuShader=`
+struct Uniforms {
+  viewProj: mat4x4<f32>,
+  model: mat4x4<f32>,
+  eye: vec4<f32>,
+  light: vec4<f32>,
+  windows: array<vec4<f32>,8>,
+};
+@group(0) @binding(0) var<uniform> u: Uniforms;
+struct VertexOut {
+  @builtin(position) position: vec4<f32>,
+  @location(0) world: vec3<f32>,
+  @location(1) normal: vec3<f32>,
+  @location(2) color: vec3<f32>,
+  @location(3) emissive: f32,
+  @location(4) ao: f32,
+};
+@vertex fn vs(
+  @location(0) pos: vec3<f32>,
+  @location(1) normal: vec3<f32>,
+  @location(2) color: vec3<f32>,
+  @location(3) emissive: f32,
+  @location(4) ao: f32
+) -> VertexOut {
+  var out: VertexOut;
+  let world=u.model*vec4<f32>(pos,1.0);
+  out.position=u.viewProj*world;
+  out.world=world.xyz;
+  out.normal=normalize((u.model*vec4<f32>(normal,0.0)).xyz);
+  out.color=color;
+  out.emissive=emissive;
+  out.ao=ao;
+  return out;
+}
+@fragment fn fs(in: VertexOut) -> @location(0) vec4<f32> {
+  let n=normalize(in.normal);
+  let l=normalize(u.light.xyz);
+  let v=normalize(u.eye.xyz-in.world);
+  let h=normalize(l+v);
+  let halfLambert=clamp(dot(n,l)*0.5+0.5,0.0,1.0);
+  let diffuse=halfLambert*halfLambert*0.8;
+  let fill=max(dot(n,normalize(vec3<f32>(0.55,0.18,-0.72))),0.0)*0.17;
+  let ambient=0.19+n.y*0.05;
+  let spec=pow(max(dot(n,h),0.0),34.0)*0.075;
+  let rim=pow(1.0-max(dot(n,v),0.0),3.0)*0.025;
+  let lit=in.color*(ambient+diffuse+fill)*in.ao+vec3<f32>(fill*0.1,fill*0.15,fill*0.18);
+  var warm=vec3<f32>(0.0);
+  for(var i=0u;i<8u;i++){
+    let wp=(u.model*vec4<f32>(u.windows[i].xyz,1.0)).xyz;
+    let toWindow=wp-in.world;
+    let distance=length(toWindow);
+    let attenuation=max(0.0,1.0-distance/46.0);
+    warm=warm+vec3<f32>(1.0,0.38,0.1)*attenuation*attenuation*max(dot(n,normalize(toWindow)),0.0)*0.2;
+  }
+  var rgb=lit+in.color*in.emissive*1.25+warm+vec3<f32>(spec+rim);
+  let fog=smoothstep(1450.0,2400.0,length(u.eye.xyz-in.world));
+  rgb=mix(rgb,vec3<f32>(0.035,0.047,0.05),fog);
+  return vec4<f32>(rgb,1.0);
+}`;
+async function createWebGPU(){
+  if(!navigator.gpu)throw new Error('нужен WebGPU');
+  const adapter=await navigator.gpu.requestAdapter({powerPreference:'high-performance'});
+  if(!adapter)throw new Error('нужен WebGPU');
+  const device=await adapter.requestDevice();
+  const context=canvas.getContext('webgpu');
+  if(!context)throw new Error('нужен WebGPU');
+  const format=navigator.gpu.getPreferredCanvasFormat();
+  context.configure({device,format,alphaMode:'premultiplied'});
+  const module=device.createShaderModule({code:gpuShader});
+  const pipeline=device.createRenderPipeline({
+    layout:'auto',
+    vertex:{module,entryPoint:'vs',buffers:[{arrayStride:44,attributes:[
+      {shaderLocation:0,offset:0,format:'float32x3'},
+      {shaderLocation:1,offset:12,format:'float32x3'},
+      {shaderLocation:2,offset:24,format:'float32x3'},
+      {shaderLocation:3,offset:36,format:'float32'},
+      {shaderLocation:4,offset:40,format:'float32'}
+    ]}]},
+    fragment:{module,entryPoint:'fs',targets:[{format}]},
+    primitive:{topology:'triangle-list',cullMode:'back'},
+    depthStencil:{format:'depth24plus',depthWriteEnabled:true,depthCompare:'less'}
+  });
+  const vb=device.createBuffer({size:vertexData.byteLength,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
+  const ib=device.createBuffer({size:indexData.byteLength,usage:GPUBufferUsage.INDEX|GPUBufferUsage.COPY_DST});
+  const ub=device.createBuffer({size:288,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  device.queue.writeBuffer(vb,0,vertexData);
+  device.queue.writeBuffer(ib,0,indexData);
+  const bind=device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:ub}}]});
+  let depth=null,depthW=0,depthH=0;
+  const uniforms=new Float32Array(72);
+  for(let i=0;i<8;i++)uniforms.set([...windowLights[i],0],40+i*4);
+  device.lost.then(()=>{badge.textContent='нужен WebGPU';renderer=null});
+  return{render(vp,eye,angle){
+    if(canvas.width!==depthW||canvas.height!==depthH){
+      if(depth)depth.destroy();
+      depth=device.createTexture({size:[canvas.width,canvas.height],format:'depth24plus',usage:GPUBufferUsage.RENDER_ATTACHMENT});
+      depthW=canvas.width;depthH=canvas.height;
+    }
+    uniforms.set(vp,0);
+    uniforms.set(rotationY(angle),16);
+    uniforms.set([...eye,1],32);
+    uniforms.set([-.48,.83,.35,0],36);
+    device.queue.writeBuffer(ub,0,uniforms);
+    const encoder=device.createCommandEncoder();
+    const pass=encoder.beginRenderPass({
+      colorAttachments:[{view:context.getCurrentTexture().createView(),clearValue:{r:0,g:0,b:0,a:0},loadOp:'clear',storeOp:'store'}],
+      depthStencilAttachment:{view:depth.createView(),depthClearValue:1,depthLoadOp:'clear',depthStoreOp:'store'}
+    });
+    pass.setPipeline(pipeline);pass.setBindGroup(0,bind);pass.setVertexBuffer(0,vb);pass.setIndexBuffer(ib,'uint32');pass.drawIndexed(indexData.length);pass.end();
+    device.queue.submit([encoder.finish()]);
+  }};
+}
+function bindInput(){
+  let dragging=false,lastX=0,lastY=0;
+  canvas.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;
+    dragging=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    camera.azimuth-=(e.clientX-lastX)*.005;
+    camera.elevation=Math.max(-1.1,Math.min(1.25,camera.elevation+(e.clientY-lastY)*.004));
+    lastX=e.clientX;lastY=e.clientY;
+  });
+  const stop=()=>{dragging=false};
+  canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);
+  canvas.addEventListener('wheel',e=>{
+    e.preventDefault();camera.distance=Math.max(850,Math.min(2700,camera.distance*Math.exp(e.deltaY*.001)));
+  },{passive:false});
+  canvas.addEventListener('dblclick',resetView);
+  canvas.addEventListener('keydown',e=>{
+    let used=true;
+    if(e.key==='ArrowLeft')camera.azimuth+=.1;
+    else if(e.key==='ArrowRight')camera.azimuth-=.1;
+    else if(e.key==='ArrowUp')camera.elevation=Math.min(1.25,camera.elevation+.08);
+    else if(e.key==='ArrowDown')camera.elevation=Math.max(-1.1,camera.elevation-.08);
+    else if(e.key==='+'||e.key==='=')camera.distance=Math.max(850,camera.distance-80);
+    else if(e.key==='-')camera.distance=Math.min(2700,camera.distance+80);
+    else if(e.key==='Home')resetView();else used=false;
+    if(used)e.preventDefault();
+  });
+  document.getElementById('reset').addEventListener('click',resetView);
+}
+function frame(now){
+  if(!renderer)return;
+  bodyAngle=(now-startTime)/64000*TAU;
+  canvas.dataset.spin=bodyAngle.toFixed(6);
+  if(now-lastSpinLabel>120){spinLabel.textContent='поворот '+String(Math.floor((bodyAngle%TAU)/TAU*360)).padStart(3,'0')+'°';lastSpinLabel=now}
+  fitCanvas();
+  const ce=Math.cos(camera.elevation),eye=[
+    viewTarget[0]+Math.sin(camera.azimuth)*ce*camera.distance,
+    viewTarget[1]+Math.sin(camera.elevation)*camera.distance,
+    viewTarget[2]+Math.cos(camera.azimuth)*ce*camera.distance
+  ];
+  const view=lookAt(eye,viewTarget,[0,1,0]),projection=perspective(PI/4.4,canvas.width/canvas.height,2,5200);
+  renderer.render(multiply(projection,view),eye,bodyAngle);
+  requestAnimationFrame(frame);
+}
+async function boot(){
+  if(!navigator.gpu){badge.textContent='нужен WebGPU';return}
+  try{renderer=await createWebGPU()}catch(e){badge.textContent='нужен WebGPU';console.error(e);return}
+  badge.textContent='webgpu';
+  bindInput();fitCanvas();startTime=performance.now();requestAnimationFrame(frame);
+}
+boot().catch(e=>{badge.textContent='нужен WebGPU';console.error(e)});
+})();
+</script>
+</body>
+</html>

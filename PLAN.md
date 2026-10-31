@@ -235,7 +235,7 @@ measured on the GPU build first:
 ## 5. Stage 4 — the ship
 
 - [ ] **M476 the plan (rest):** **0.499.74** fleet+NPC; **0.499.75** ordered unique; **0.499.79** fused in the fixpoint suite. Open: release-run polish only.
-- [ ] **M478 numbers from the plan (rest):** **0.499.70** fuel/energy/sight; **0.499.72** hull; **0.499.74–75** fixpoint; **0.499.77** hold/tank/armor as `planModDens`; **0.499.79** fused. Still open: weapon→energy densify beyond cell ratio. `engine`/`hyper`/`drill` stay station upgrades.
+- [ ] **M478 numbers from the plan (rest):** **0.499.70** fuel/energy/sight; **0.499.72** hull; **0.499.74–75** fixpoint; **0.499.77** hold/tank/armor as `planModDens`; **0.499.79** fused; **0.499.80** weapon densify via `energyCap`+`planModDens("weapon")` (step 0 — tiers live in `energyCap`, cell ratio in `PF.energy`). `engine`/`hyper`/`drill` stay station upgrades.
 - [ ] **M483 the fast path (rest):** **0.499.79** `planNpcOf` + pirate barrels from plan cells. Still open: ПРОЕКТЫ; new-part mark on the plan.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a warship
   stripped of hold both fly under the finger the same (the P8 meter); the blueprint gets its almanac issue.
@@ -265,9 +265,9 @@ Shipped this stage (not author-gated): M460 stale billboard fork B; M461 fatigue
 - Hollow moon «Гнездо» (0.499.48): planet sphere + nest mouth, orbit/dock like planets.
 - **0.499.67:** all seven spin on their own axis (`giantSpin`) — no more static stickers.
 - **0.499.78:** customs gates/plates; dock incomplete nose+scaffolding; town bridges/chimneys; garden
-  parabolic dishes (ported into `17o` while Kimi densifies HTML probes).
-- Still open craft: denser Kimi HTML for customs/dock/town/garden (≥70 KB each) → further port.
-  Prompt `_scratch/kimi-giant-prompt.txt` → `site/kimi-giant-{house,cyl,customs,dock,town,garden}.html`.
+  parabolic dishes in `17o`.
+- **0.499.80:** all six HTML probes ≥70 KB (`site/kimi-giant-*.html`; customs densified, dock/town/garden
+  scaffolded from house — Kimi rewriting bodies). Further port from denser HTML still open.
 
 ## 9. Seams to honour when the items above are built
 
