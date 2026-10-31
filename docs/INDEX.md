@@ -706,8 +706,8 @@ FWD_PAY_EVERY                src/21b6-base-forward.js:23
 FW_HOOKS                     src/28o-firstwatch.js:81-87
 FW_URG_MIN                   src/28o-firstwatch.js:17
 G                            src/08-state.js:207-293
-G11_CPU                      src/28z-fps-probe.js:201
-G11_GPU_KILL                 src/28z-fps-probe.js:226-257
+G11_CPU                      src/28z-fps-probe.js:203
+G11_GPU_KILL                 src/28z-fps-probe.js:228-259
 GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:20
 GAL_BULGE_CAP                src/17z1-galaxy.js:22
@@ -759,7 +759,7 @@ GC_MAT_K                     src/08cd-gpu-mat.js:18
 GC_MAT_WGSL                  src/08cd-gpu-mat.js:19
 GC_MIP_WGSL                  src/08ca-gpu-canvas.js:351
 GC_MISS                      src/08ca-gpu-canvas.js:30
-GC_ONCE                      src/08ca-gpu-canvas.js:560
+GC_ONCE                      src/08ca-gpu-canvas.js:561
 GC_OOM                       src/08ca-gpu-canvas.js:461
 GC_OPS                       src/08ca-gpu-canvas.js:13-61
 GC_OPX                       src/08ca-gpu-canvas.js:29
@@ -767,7 +767,7 @@ GC_P2D                       src/08caa-gpu-path.js:11
 GC_PCMD                      src/08caa-gpu-path.js:13
 GC_POOL_CAP                  src/08ca-gpu-canvas.js:417
 GC_POOL_WARM                 src/08ca-gpu-canvas.js:418
-GC_PX                        src/08ca-gpu-canvas.js:556
+GC_PX                        src/08ca-gpu-canvas.js:557
 GC_RAMPS                     src/08ca-gpu-canvas.js:68
 GC_REP                       src/08cab-gpu-pattern.js:10
 GC_SHADOW_INK                src/08cb-gpu-text.js:11
@@ -775,7 +775,7 @@ GC_ST                        src/08ca-gpu-canvas.js:360-384
 GC_TM                        src/08cb-gpu-text.js:13
 GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
-GC_VA                        src/08ca-gpu-canvas.js:557
+GC_VA                        src/08ca-gpu-canvas.js:558
 GC_WGSL                      src/08ca-gpu-canvas.js:300
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:63
@@ -2628,8 +2628,8 @@ arrWarmStep                  src/17h1-arr-warm.js:49-60
 arrWarmSteps                 src/17h1-arr-warm.js:24-47
 arrive                       src/16-flight.js:110-152
 arriveSystem                 src/18-mode-map.js:734-785
-artGet                       src/08ca-gpu-canvas.js:550
-artPut                       src/08ca-gpu-canvas.js:551-696
+artGet                       src/08ca-gpu-canvas.js:551
+artPut                       src/08ca-gpu-canvas.js:552-698
 asMap                        src/14-save.js:209-215
 askText                      src/11u-names.js:59-77
 assignToBase                 src/12a-crew.js:181-190
@@ -4480,9 +4480,9 @@ fwdLine                      src/21b6-base-forward.js:76-82
 fwdLineOf                    src/21b6-base-forward.js:118-124
 fwdMissing                   src/21b6-base-forward.js:42-52
 fwdStep                      src/21b6-base-forward.js:99-116
-g11CpuHook                   src/28z-fps-probe.js:202-207
+g11CpuHook                   src/28z-fps-probe.js:204-209
 g11Fps                       src/28z-fps-probe.js:7-14
-g11Iv                        src/28z-fps-probe.js:208-219
+g11Iv                        src/28z-fps-probe.js:210-221
 galArmD                      src/17z1-galaxy.js:25-29
 galArmPt                     src/17z2-galaxy-names.js:14
 galArmTh                     src/17z2-galaxy-names.js:13
@@ -4757,11 +4757,11 @@ gpsPipe                      src/17gb-gpu-planet-strip.js:100-104
 gpuAfterWarm                 src/08b0-gpu-pipe.js:80-84
 gpuArena                     src/08c-gpu-kit.js:125-135
 gpuBake                      src/08ca-gpu-canvas.js:529-534
-gpuBakeDrop                  src/08ca-gpu-canvas.js:544
-gpuBakeLive                  src/08ca-gpu-canvas.js:547
-gpuBakeRedo                  src/08ca-gpu-canvas.js:561
-gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
-gpuBaked                     src/08ca-gpu-canvas.js:538-543
+gpuBakeDrop                  src/08ca-gpu-canvas.js:545
+gpuBakeLive                  src/08ca-gpu-canvas.js:548
+gpuBakeRedo                  src/08ca-gpu-canvas.js:562
+gpuBakeRedo0                 src/08ca-gpu-canvas.js:564-698
+gpuBaked                     src/08ca-gpu-canvas.js:538-544
 gpuBargeBody                 src/12l-barge.js:550-557
 gpuBind                      src/08c-gpu-kit.js:42-48
 gpuBloom                     src/08b-gpu.js:698-704
@@ -4825,7 +4825,7 @@ gpuResize                    src/08b-gpu.js:408-453
 gpuScene                     src/08b-gpu.js:581-594
 gpuScene3D                   src/08b-gpu.js:598-606
 gpuScr                       src/08c-gpu-kit.js:144
-gpuSeg                       src/28z-fps-probe.js:153-156
+gpuSeg                       src/28z-fps-probe.js:155-158
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:318-329
 gpuShock                     src/08b-gpu.js:479
@@ -4839,9 +4839,9 @@ gpuSubmitFrame               src/08b-gpu.js:663-668
 gpuSysUnder                  src/17g-gpu-system.js:519-525
 gpuTakeSnap                  src/08b-gpu.js:30-37
 gpuTrail                     src/16ga-gpu-trail.js:61-108
-gpuTs                        src/28z-fps-probe.js:142-149
-gpuTsAround                  src/28z-fps-probe.js:159-163
-gpuTsResolve                 src/28z-fps-probe.js:165-183
+gpuTs                        src/28z-fps-probe.js:144-151
+gpuTsAround                  src/28z-fps-probe.js:161-165
+gpuTsResolve                 src/28z-fps-probe.js:167-185
 gpuUni                       src/08b-gpu.js:546-560
 gpuWake                      src/16ga-gpu-trail.js:117-150
 gpuWeatherFar                src/19cc-gpu-air.js:265-293
@@ -10703,7 +10703,7 @@ zoomTo                       src/15-input.js:358
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
 
-## src/28z-fps-probe.js · 23 KB
+## src/28z-fps-probe.js · 24 KB
   · пробник G11: ?g11:1
 
 ## src/29c-home-in.js · 16 KB
