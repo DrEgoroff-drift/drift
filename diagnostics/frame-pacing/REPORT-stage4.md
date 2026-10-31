@@ -72,6 +72,11 @@ to the heavy frame **before** it. `landing`'s worst gap is `i=245`, `gap=854.2`,
 The `dig` block: `i=722` has `js=40.2`, `dw=36.4`, while `dg.frame` (the dig's own draw) is only
 **5.5**. So ~30.9 ms of `drawWorld` in `dig` is not `dig3Frame`.
 
+`drawWorldIn` is now split into `wSun` / `wScene` / `wGpu` (`near-run-06`): on landing
+`wScene=17.6` of `dw=17.8` (`wSun=0`, `wGpu=0.2`), on surface `wScene=9.8` of `dw=10`, on
+system `wScene=0.8`. The scene draw holds essentially all of `drawWorld`; `sunDirSet` is free
+and `gpuWorld`'s JS is 0.1–0.2.
+
 ---
 
 ## 5. Causes, with status
@@ -124,9 +129,10 @@ still owed. Recorded here as an open item, not as a result.
   13–15 came from `dw`'s umbrella. "`rackDraw` ≈ 9 ms" — not reproduced (rack closed, `rack`=0).
   "`gpuWorld`/bloom free" — **not proven either way**: `gw.*=0` is JS only.
 - **Explained since**: the `landing` 854.2 gap behind an 8.3 ms frame — the probe's `sleep(3000)`;
-  it fell to 33.4 after the probe's pause was cut to 50 ms;
-  the ~30.9 ms inside `drawWorldIn` on dig outside `drawDig`; the `surface` 128.8 first-draw cost
-  is identified by *location* but its internal split (terrain vs. plants vs. lights) is not yet
-  measured.
+  it fell to **33.4** after the probe's pause was cut to 50 ms.
+- **Narrowed, not split**: the ~30.9 ms inside `drawWorldIn` on dig is the **scene draw**
+  (`wScene`), not `sunDirSet` (0) and not `gpuWorld`'s JS (0.1–0.2); which painter inside
+  `drawDig`/`drawSurface` is still unsplit. The `surface` 128.8 first-draw cost is likewise
+  located (the scene draw) but not split between terrain, plants and lights.
 
 **This stage changed the meter, not the game. No performance claim here rests on a fixed number.**
