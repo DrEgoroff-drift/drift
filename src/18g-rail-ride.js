@@ -29,6 +29,8 @@ function railRideStart(t){
   cueReset();   /* оклик кольца остался в системе — в вагоне его нет */
   sfx("jump");
   say("Поезд отправляется\n"+l.ru+" · до «"+railStopName(l.stops[seq[seq.length-1]])+"»",120);
+  /* объявитель (DESIGN-review metro): «двери закрываются» — у корабля дверей нет, и всё равно */
+  voiceSay(["Осторожно, двери закрываются.","Поезд отправляется."],"disp");
 }
 function railSegDur(l,seq,seg){
   const a=l.stops[seq[seg]],b=l.stops[seq[seg+1]];
@@ -80,7 +82,12 @@ function updateRail(dt){
       if(last)say("Конечная. «"+railStopName(s)+"»\nпоезд дальше не идёт, просьба освободить вагоны",150);
       else say("Станция «"+railStopName(s)+"»\nследующая — «"+railStopName(R.l.stops[R.seq[R.seg+1]])+"»",110);
       /* объявитель (M473 хвост): голос диспетчера, если голос включён в ЗВУКЕ */
-      voiceSay(last?["Конечная, "+railStopName(s)+".","Поезд дальше не идёт."]:["Станция "+railStopName(s)+".","Следующая — "+railStopName(R.l.stops[R.seq[R.seg+1]])+"."],"disp");
+      /* первая остановка после отправления — «уступайте места… крупногабариту» (DESIGN-review metro) */
+      const yieldSp=R.seg===1&&!last&&!R.yieldSaid;
+      if(yieldSp)R.yieldSaid=1;
+      voiceSay(last?["Конечная, "+railStopName(s)+".","Поезд дальше не идёт."]
+        :yieldSp?["Станция "+railStopName(s)+".","Уступайте места пассажирам с детьми и крупногабаритным грузом.","Следующая — "+railStopName(R.l.stops[R.seq[R.seg+1]])+"."]
+        :["Станция "+railStopName(s)+".","Следующая — "+railStopName(R.l.stops[R.seq[R.seg+1]])+"."],"disp");
       R.flash=G.t;   /* прибытие на остановку — вспышка выхода из гипера */
     }
     return;

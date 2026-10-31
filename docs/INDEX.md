@@ -4094,7 +4094,7 @@ drawPlanetWorks              src/17e-station-body.js:71-116
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:170-612
 drawRaid                     src/24aa-raid-draw.js:14-609
-drawRail                     src/18g-rail-ride.js:113-147
+drawRail                     src/18g-rail-ride.js:120-154
 drawRailArrive               src/18g-rail-ride.js:18-21
 drawRailMap                  src/18e-rail-net.js:223-271
 drawRingTape                 src/11x-ring.js:107-118
@@ -7466,7 +7466,7 @@ railDeclare                  src/18h-rail-powers.js:33-43
 railDestinations             src/18f-rail-station.js:129-146
 railDestinationsVia          src/18k-rail-scheme.js:17-41
 railDocked                   src/18f-rail-station.js:103-110
-railExit                     src/18g-rail-ride.js:100-112
+railExit                     src/18g-rail-ride.js:107-119
 railExpressDraw              src/18h-rail-powers.js:72-81
 railFare                     src/18f-rail-station.js:147-158
 railFlap                     src/18f-rail-station.js:115-120
@@ -7505,7 +7505,7 @@ railPaxOffer                 src/18i-rail-life.js:53-57
 railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRect                     src/08-state.js:150-156
-railRideStart                src/18g-rail-ride.js:22-32
+railRideStart                src/18g-rail-ride.js:22-34
 railRingBody                 src/18fa-rail-ring.js:68-77
 railRingLights               src/18fa-rail-ring.js:80-90
 railRingMesh                 src/18fa-rail-ring.js:16-66
@@ -7518,7 +7518,7 @@ railSchemeScope              src/18k-rail-scheme.js:76-82
 railSchemeZoom               src/18k-rail-scheme.js:83-86
 railSealDock                 src/18i-rail-life.js:114-118
 railSealPirates              src/18i-rail-life.js:122-127
-railSegDur                   src/18g-rail-ride.js:33-36
+railSegDur                   src/18g-rail-ride.js:35-38
 railSpurApply                src/18e-rail-net.js:170-185
 railSpurLine                 src/18e-rail-net.js:160-169
 railSpurSig                  src/18e-rail-net.js:153-159
@@ -7528,7 +7528,7 @@ railStopName                 src/18f-rail-station.js:126
 railStopShapes               src/18gb-rail-car.js:79-90
 railStopsOf                  src/18e-rail-net.js:122-146
 railTick                     src/18f-rail-station.js:240-245
-railTrainPos                 src/18g-rail-ride.js:38-50
+railTrainPos                 src/18g-rail-ride.js:40-52
 railUAt                      src/18e-rail-net.js:105-110
 railVisited                  src/18k-rail-scheme.js:110-114
 railWaitNow                  src/18f-rail-station.js:124
@@ -8581,7 +8581,7 @@ updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:73-145
 updateMap                    src/18-mode-map.js:706-720
 updateRaid                   src/24a-mode-raid.js:276-408
-updateRail                   src/18g-rail-ride.js:51-98
+updateRail                   src/18g-rail-ride.js:53-105
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
@@ -9850,7 +9850,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/18fa-rail-ring.js · 7 KB
 
-## src/18g-rail-ride.js · 11 KB
+## src/18g-rail-ride.js · 12 KB
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/18ga-rail-gpu.js · 6 KB

@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.52 — metro announcer: doors and baggage
+
+- Rail (DESIGN-review metro): departure voice «Осторожно, двери закрываются» (a ship has none); first stop yields seats to «детям и крупногабариту»; oversized bag button says «плюс десять».
+
 ## 0.499.51 — yard «сынок» and hotel sign craft
 
 - M480 kindness: at a yard, if the hull carries tape, the old master welds one seam for free once per dock — «Сынок, ну кто ж так» (DESIGN-review shipyard column).
