@@ -10940,8 +10940,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzk7-yard-probe.js · 7 KB
   · проба · шесть верфей: калибровка M480/M481:1
 
-## tests/91zzzzk8-plan-factors.js · 1 KB
-  · M478: числа от чертежа — неподвижная точка:1
+## tests/91zzzzk8-plan-factors.js · 2 KB
+  · M478/M476: числа от чертежа — неподвижная точка:1
 
 ## tests/91zzzzy-play.js · 18 KB
   · глубокие сценарии (M331):1

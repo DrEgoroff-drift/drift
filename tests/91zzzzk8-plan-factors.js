@@ -1,18 +1,22 @@
-/* ══════════════ M478: числа от чертежа — неподвижная точка ══════════════
-   Обзор с носа, бак/энергия/корпус читаются в planFactors; сдвиги в КБ —
-   руками (изолированный прогон ломается от чужого SLOT_CACHE). */
+/* ══════════════ M478/M476: числа от чертежа — неподвижная точка ══════════════
+   Стриж, серийный флот и NPC: без чертежа и с явным типовым — все ×1. */
 TEST_SUITES.push(()=>suite("чертёж: числа M478",()=>{
   resetWorld();
-  const id=G.shipId;
-  G.mods.tank=1;G.mods.weapon=1;G.mods.armor=1;
-  G.draft=undefined;PLAN_F.key="";
-  const F0=planFactors(),s0=stat();
-  ok(F0.cargo===1&&F0.mass===1&&F0.fuel===1&&F0.energy===1&&F0.see===1&&F0.hull===1,"без чертежа все множители ×1");
-  ok("fuel" in F0&&"energy" in F0&&"see" in F0&&"hull" in F0,"есть fuel/energy/see/hull");
-
-  draftSave(id,draftOf(id));PLAN_F.key="";
-  const F1=planFactors(),s1=stat();
-  ok(Math.abs(F1.cargo-1)<1e-9&&Math.abs(F1.mass-1)<1e-9,"типовой чертёж: трюм и масса ×1");
-  ok(Math.abs(F1.fuel-1)<1e-9&&Math.abs(F1.energy-1)<1e-9&&Math.abs(F1.see-1)<1e-9&&Math.abs(F1.hull-1)<1e-9,"типовой: бак/энергия/обзор/корпус ×1");
-  ok(s1.fuelMax===s0.fuelMax&&s1.energyMax===s0.energyMax&&s1.see===s0.see&&s1.cargoMax===s0.cargoMax&&s1.hullMax===s0.hullMax,"типовой сейв не двигает числа корабля");
+  const fleetId=Object.keys(FLEET)[0];
+  ok(!!fleetId,"есть серийный корпус");
+  const npcId="npcFix478";
+  NPC_SHIPS[npcId]={name:npcId,seed:0x47801,hcls:"courier",col:"#8899aa",thr:1,turn:1,fuel:100,cargo:40,hull:100};
+  const ids=["strizh",fleetId,npcId];
+  const same=(a,b)=>a===b||(Number.isNaN(a)&&Number.isNaN(b));
+  for(const id of ids){
+    G.shipId=id;G.owned[id]=true;G.fit[id]=G.fit[id]||{};
+    G.mods.tank=1;G.mods.weapon=1;G.mods.armor=1;
+    G.draft=undefined;PLAN_F.key="";
+    const F0=planFactors(),s0=stat();
+    ok(F0.cargo===1&&F0.mass===1&&F0.fuel===1&&F0.energy===1&&F0.see===1&&F0.hull===1,id+": без чертежа ×1");
+    draftSave(id,draftOf(id));PLAN_F.key="";
+    const F1=planFactors(),s1=stat();
+    ok(Math.abs(F1.cargo-1)<1e-9&&Math.abs(F1.mass-1)<1e-9&&Math.abs(F1.fuel-1)<1e-9&&Math.abs(F1.energy-1)<1e-9&&Math.abs(F1.see-1)<1e-9&&Math.abs(F1.hull-1)<1e-9,id+": типовой ×1");
+    ok(same(s1.fuelMax,s0.fuelMax)&&same(s1.energyMax,s0.energyMax)&&same(s1.see,s0.see)&&same(s1.cargoMax,s0.cargoMax)&&same(s1.hullMax,s0.hullMax),id+": типовой сейв не двигает числа");
+  }
 }));
