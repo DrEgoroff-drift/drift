@@ -3682,7 +3682,7 @@ cvs                          src/08-state.js:2
 cvsRect                      src/08-state.js:107-110
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:799-869
+dbg                          src/28-loop.js:800-870
 dcLensEq                     tests/91qc-descent.js:15-18
 dcWorld                      tests/91qc-descent.js:6-14
 dcol                         src/21b-surface-deco.js:155-160
@@ -4446,7 +4446,7 @@ forkSt                       src/28q-fork.js:19-22
 forkTick                     src/28q-fork.js:56-81
 forkWage                     src/28q-fork.js:48-55
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:686-741
+frame                        src/28-loop.js:686-742
 frameBody                    src/28-loop.js:476-482
 frameBodyIn                  src/28-loop.js:483-618
 frameCapNow                  src/28-loop.js:263-267
@@ -7329,7 +7329,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:761-788
+prof                         src/28-loop.js:762-789
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
@@ -10669,8 +10669,8 @@ zoomTo                       src/15-input.js:358
   · РОВНЫЙ ТАКТ (0.1b):357
   · развилка режимов — одна на всех (M238):413
   · кадр, который не убивает игру (M234):619
-  · prof() — на что уходит кадр:749
-  · dbg() — что держит корабль:790
+  · prof() — на что уходит кадр:750
+  · dbg() — что держит корабль:791
 
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
