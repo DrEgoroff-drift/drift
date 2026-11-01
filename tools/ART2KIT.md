@@ -54,6 +54,21 @@ builders that would use it. `build.ps1` concatenates in byte order, so the prefi
 Together these should land near 90 bytes/tri, i.e. ~270 KB for a 3 000-tri prop. That is the budget
 to design against until the numbers are re-measured.
 
+## Where generated assets live
+
+**Not in `src/` until they have a consumer.** `build.ps1` warns at 40 KB per module and refuses
+nothing, but a 532 KB generated blob in `src/` rides into `drift.html` for every player whether the
+mesh is drawn or not. The pilot (3 944 tris) produced exactly that: 688 KB before the compact
+format, **532 KB after**, against a 10 201 KB `drift.html` — a 5 % payload for a mesh nothing draws.
+
+So the convention is:
+
+- generated modules go to **`art/<name>.js`** (not built);
+- when a builder actually uses one, it moves into `src/17c2n-art-<name>.js` in the same commit that
+  adds the consumer, and `$BULK_OLD` in `build.ps1` gets an entry so the size guard stays honest;
+- a mesh that is only sometimes on screen should be able to load lazily — that is not built yet and
+  is the next thing the converter needs if more than one asset ships.
+
 ## Rules the tool keeps
 
 - **Reads, never writes, the source model.** The `.glb` is opened read-only.

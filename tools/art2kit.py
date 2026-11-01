@@ -99,16 +99,25 @@ for ob in meshes:
 print("tris", total_tris, "verts", len(verts_out), "R", round(R, 3))
 
 def f(x):
-    s = ("%.3f" % x).rstrip("0").rstrip(".")
+    s = ("%.2f" % x).rstrip("0").rstrip(".")
     return s if s not in ("-0", "") else "0"
 
-body = ",".join(f(v) for t in verts_out for v in t)
+
+# В массиве держим только изменчивое: позиция, нормаль, цвет — 9 чисел на вершину.
+# w/sp/em постоянны для всего меша и подставляются в сборщике: это срезает четверть
+# объёма модуля, не меняя ни контракт h3dPack, ни вид.
+body = ",".join(f(v) for t in verts_out for v in t[:9])
 js = []
 js.append("/* art: %s — сгенерировано tools/art2kit.py из %s, руками не править." % (NAME, os.path.basename(SRC)))
-js.append("   %d треугольников, %d вершин, радиус %.2f. Вершина h3dKit: xyz, nxyz, rgb, w, sp, em. */" % (total_tris, len(verts_out), R))
+js.append("   %d треугольников, %d вершин, радиус %.2f. В массиве 9 чисел: xyz, nxyz, rgb." % (total_tris, len(verts_out), R))
+js.append("   w/sp/em постоянны для меша и подставляются в сборщике. */")
 js.append("const ART_%s_V=[%s];" % (NAME.upper(), body))
 js.append("function art%sMesh(){" % NAME)
-js.append("  return bodyMesh(\"art:%s\",2,()=>{const m=h3dPack(ART_%s_V,%s,{st:[[0,%s],[0,%s]],ne:1.6,kh:.5,gl:.4});" % (NAME, NAME.upper(), f(R), f(R * .4), f(-R * .4)))
+js.append("  return bodyMesh(\"art:%s\",2,()=>{" % NAME)
+js.append("    const S=ART_%s_V,n=S.length/9,V=new Array(n*12);" % NAME.upper())
+js.append("    for(let i=0,j=0;i<S.length;i+=9,j+=12){for(let k=0;k<9;k++)V[j+k]=S[i+k];")
+js.append("      V[j+9]=3;V[j+10]=.6;V[j+11]=0;}")
+js.append("    const m=h3dPack(V,%s,{st:[[0,%s],[0,%s]],ne:1.6,kh:.5,gl:.4});" % (f(R), f(R * .4), f(-R * .4)))
 js.append("    m.len=%s;return m;});" % f(R * 2.0))
 js.append("}")
 with open(DST, "w", encoding="utf-8") as fh:
