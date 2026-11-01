@@ -222,3 +222,11 @@ against the shape's biggest on-screen size). Bake discs, glows and bodies; leave
   `docs/pageshot.ps1 <name>` — the wrong one returns a screenshot of the game and looks like it
   worked. The POST path must match the `-Name` exactly, or `shot.ps1` waits forty seconds and
   reports «стенд не ответил», which reads like a dead server and is usually a name mismatch.
+  **The deeper reason the sheet is black: `plnGpuReady()` is `false` in headless.** Measured
+  01.11 on a desert world: `PLN.on=true`, `PLN.bad=0`, `PLN.err` empty, `PLN_FRAME.live=false`,
+  `gpuReady()` false on every tick. `drawSurface()` bails before `plnSurface` (`21pz-pln-frame.js:450`),
+  so `G.viewX/viewY` are never set. The eighteen `pln.*` pipelines build across frames and headless
+  Chrome stops `requestAnimationFrame` at about frame 41 — the same wall that makes `?g11=near`
+  useless for `surface`/`dig`. **Consequence: no surface close-up can be captured headless at
+  all** — people, grass, terrain. Before/after for the surface has to be a live page (`dev.ps1`)
+  or a machine with a screen. Do not spend another session on the stand.
