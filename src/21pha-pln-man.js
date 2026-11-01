@@ -120,8 +120,8 @@ function plnManBuild(P,low,D){
   else{
   part(2,m=>{
     const shell=lit(P.helmet.main),band=P.helmet.acc,vis=u=>u[0]>.14&&u[1]<.46&&u[1]>-.50,rim=u=>u[0]>.05&&u[1]<.54&&u[1]>-.58;
-    plnBlob(m,{c:[0,.19,0],r:[.212,.212,.212],sub:3,col:u=>vis(u)?glass:(rim(u)?band:shell),mat:M,x:u=>vis(u)?1:(rim(u)?.4:.35)});
-    for(const z of [-.225,.225])plnBlob(m,{c:[-.03,.16,z],r:[.06,.06,.032],sub:1,col:P.helmet.dark,mat:M,x:.35});
+    plnBlob(m,{c:[0,.19,0],r:[.172,.172,.172],sub:3,col:u=>vis(u)?glass:(rim(u)?band:shell),mat:M,x:u=>vis(u)?1:(rim(u)?.4:.35)});
+    for(const z of [-.168,.168])plnBlob(m,{c:[-.03,.16,z],r:[.052,.052,.028],sub:1,col:P.helmet.dark,mat:M,x:.35});
     plnTube(m,{path:[[-.02,.37,0],[.21,.40,0]],rad:.056,sides:10,col:P.lamp.dark,mat:M,x:.45,cap:true});
     plnTube(m,{path:[[.04,.445,0],[.16,.455,0]],rad:.016,sides:5,col:P.lamp.acc,mat:M,x:.3});
     /* блик забрала: одна жёсткая дуга по верхней кромке стекла (M232) */
