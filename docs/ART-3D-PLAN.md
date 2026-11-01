@@ -54,7 +54,33 @@ Before stage 4 has any point, one of these must exist:
 **A is the recommendation.** It respects the brief's "do not break the renderer for one model",
 gives one pipeline for every future model, and its output is diffable in git.
 
-## What is deliberately not proposed
+## Pilot (stage 4) — cosmonaut, built in code
+
+`tools/make_man.py` builds a suited figure from lofted profiles (rings of varying radius, not
+stacked cylinders), exports GLB, and `tools/art2kit.py` turns it into `h3dKit` vertices.
+
+Current state: **3 944 tris**, six materials (suit, dark suit, metal, glass, boot, skin), helmet with
+visor, ribs, backpack with tanks, gloves with four fingers and a thumb.
+
+![фас](_scratch/kimi3d/pose/man4_front.png)
+
+Tracked defects, in order of how much they hurt:
+
+| # | Defect | Cause |
+|---|---|---|
+| 1 | Reads as a wooden mannequin in a suit, not a person | no sculpting: primitives assembled, then smoothed |
+| 2 | Torso is a barrel with two belts | ribs are separate lofts larger than the body |
+| 3 | Arms are straight tubes, no elbow bend | profile is a straight line in Z |
+| 4 | Helmet has no rim, chin, or collar | plain sphere with a second sphere for the visor |
+| 5 | Hands still read as mittens at game distance | palm is a box, fingers are 6-sided cones |
+
+**Honest grade for the pilot as it stands: 5/10 — category B.** It is a large step over the 3/10
+surface mannequin (`docs/shots/peep.png`) because it has a silhouette, cloth breaks, boots and
+fingers; it is nowhere near a finished character, and primitive assembly cannot get there. A
+competitive figure needs sculpting and retopology with a hand on the mouse — that is a session of
+its own, not a loop artefact.
+
+
 
 - PBR textures for bodies: the renderer has no texture path for them. Adding one is a renderer
   change, and the brief forbids that for a single model.
