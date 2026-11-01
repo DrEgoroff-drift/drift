@@ -1,9 +1,14 @@
-# Drift — the plan
+# Drift — the plan (archive)
 
-Only what we want next. What is done is not kept here: the story of each version is in
-`PATCHNOTES.md`, the old plan bodies are in `docs/done/` (files of at most 40 KB — grep them by
-M-number), and the rules and decisions that stand are in `docs/DECISIONS.md`. A finished item is
-deleted from this file in the commit that finishes it; its story goes to the patchnote.
+> **Archived on 31 October 2026. There is no active development plan.**
+>
+> The game is in **alpha**: its core functionality is built and playable. Work has moved on to
+> bug fixing and to tuning and balancing the economy, driven by reports and measurements rather
+> than by a milestone queue. The stages below are the plan as it stood up to that point — kept as
+> history and design context, not as promises or a backlog. What shipped is in `PATCHNOTES.md`;
+> the story of the larger systems is in `docs/done/` (files of at most 40 KB — grep them by
+> M-number); the rules and decisions that stand are in `docs/DECISIONS.md`. The current public
+> status, screenshots and how to play are in [`README.md`](README.md).
 
 **STATUS 31.10 — the plan is closed, without the phone.** The engine is verified done (census `91zzzzzzy7`:
 0 2D on `#c` in all 16 scenes; 11 scenes by eye; `g11` 223–240 fps at DPR 2; 0 WebGPU errors). The launchers

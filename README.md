@@ -2,731 +2,377 @@
 
 # Дрейф · Drift
 
-**A procedural space game in a single HTML file.**
+**A procedural space game in a single HTML file — in alpha.**
 
-No build step to play, no dependencies, no frameworks, no asset files. Every image and every
-sound is generated at runtime from seeds.
+One pilot, one small survey ship, and a galaxy computed from seeds. No install, no dependencies,
+no server, no asset files: every ship, planet, station and face is generated at runtime, and every
+sound is synthesised. The world — planets, ships, stations and interiors — is drawn in 3D on the
+GPU. The interface is in Russian.
 
-<img src="docs/shots/belt.png" alt="Mining ship cockpit in an asteroid belt" width="100%">
+<img src="docs/shots/system.png" alt="Flying through a generated system, a striped gas giant on the right" width="100%">
+
+[**Play in your browser →**](https://drift-game.ru) · [Download `drift.html`](drift.html) ·
+[Report a bug](https://github.com/DrEgoroff-drift/drift/issues)
 
 </div>
 
-Play it at [drift-game.ru](https://drift-game.ru) — or download [`drift.html`](drift.html) and
-open it. That is the whole game: one file, offline, no server. The interface is in Russian. The
-world is drawn with WebGPU, so it needs a browser that has it: a recent Chrome, Edge, Yandex
-Browser or Opera, or Safari 26 and newer.
+You start with half a tank of fuel and no particular destiny. Fly to other stars, land on the
+planets you find, walk their surfaces in a suit, dig, skim gas giants, trade, build a base, hire
+people who keep working while you are away, and push back against pirates taking systems one by
+one. Or ignore all of that and just look at the sky.
 
-You fly a survey ship through a generated galaxy — prospect planets, dig mines, mine asteroid
-belts, skim gas giants, trade, build bases, hire crew that keeps working while you are away,
-board pirate stations on foot.
+[Play](#play-now) · [Alpha status](#alpha-status) · [Screenshots](#screenshots) ·
+[What you can do](#what-you-can-do-in-the-alpha) · [Build it](#build-and-run-it-locally) ·
+[Report a bug](#feedback-and-bugs)
 
----
+## Play now
+
+- **In the browser:** [drift-game.ru](https://drift-game.ru). Free, nothing to install, no
+  registration. An account is optional and only carries saves between devices.
+- **Offline:** download [`drift.html`](drift.html) and open it. That one file is the whole game —
+  no server, no build step, saves in local storage. It can also be installed as an app (PWA) from
+  the site.
+- **How to play:** [drift-game.ru/mechanics.html](https://drift-game.ru/mechanics.html) explains
+  flying, fuel, landing, money, crew and saves in plain Russian.
+- **What it needs:** a browser with WebGPU — current Chrome, Edge, Yandex Browser or Opera on
+  desktop and Android, or Safari 26 / iOS 26 and newer. There is no 2D fallback: without WebGPU
+  the game says which browsers it needs instead of drawing a world.
+- **Controls:** keyboard and mouse on desktop; touch controls appear on phones and tablets. Keys
+  can be rebound in the options, and the first launch introduces the basics.
+
+## Alpha status
+
+**Drift is in alpha.** The core game is built and playable end to end. The work now is **fixing
+bugs and tuning the economy**, not adding a planned feature queue — the old development plan is
+closed and kept only as history in [`PLAN.md`](PLAN.md).
+
+- This is **not a stable, bug-free release**. Expect rough edges, unfinished corners and bugs.
+  Please report them.
+- **Economy numbers are being balanced.** Prices, payouts, wages, yields and payback times can
+  change between builds while the numbers are tuned.
+- **Phones run the game** with touch controls, but the final phone performance and usability pass
+  is still ahead. Desktop is the more tested experience today.
+- **Saves keep loading.** The save format writes `v5` and still reads `v4`; features added since an
+  old save was written get safe defaults, so an old game does not break.
+
+The build number is shown on the title screen. Every change and fix is listed in
+[`PATCHNOTES.md`](PATCHNOTES.md).
 
 ## Screenshots
 
-Nothing below is hand-drawn. Hulls, cockpits, terrain, interiors and star fields are all built
-from the seed of the system you are in. Shots are taken by `docs/mkshots.ps1` straight from the
-build, one scene per run.
+Nothing below is a mockup or a concept. These are real 3D frames from the current build, captured
+headlessly from the game itself with [`docs/mkshots.ps1`](docs/mkshots.ps1): the same WebGPU
+renderer, the same generated world and the same interface a player sees. The frames are 1280×720
+and show the desktop interface; on a phone the layout and touch controls are different.
 
 <table>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/shots/map.png" alt="Galaxy map" width="100%">
-<b>Galaxy map.</b> Stars are light sources — halo, colour and diffraction spikes follow the
-spectral class. Distance is rendered as darkness, the jump radius as a lit area; lanes are the
-branching structure the galaxy was generated with.
+<img src="docs/shots/surface.png" alt="Walking on a jungle planet, with the ship at the edge of the clearing" width="100%">
+<b>On foot.</b> Planets are places, not windows: terrain, weather, day and night, flora and fauna
+all come from the seed. Walk, prospect, mine deposits, scan life, or just follow the horizon.
 </td>
 <td width="50%" valign="top">
-<img src="docs/shots/system.png" alt="Flying through a system" width="100%">
-<b>System flight.</b> Orbits, a generated nebula and the five-needle instrument strip along the
-top: every region of the galaxy bends exactly one of those needles, and the misclosure grows
-toward the region's core.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/belt2.png" alt="Survey ship cockpit in an asteroid belt" width="100%">
-<b>Cockpits are generated per hull class.</b> A survey ship gets a thin frame and clean
-plastics; the miner at the top of this page gets heavy pillars, rivets and hazard stripes. The
-canopy opening has thickness — outer and inner contour with a lit bevel between.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/scoop.png" alt="Skimming a gas giant" width="100%">
-<b>Skimming a gas giant.</b> Bands are a noise field in perspective, fronts are sharp where
-the contrast stretch crosses a palette stop. Hull heat climbs the deeper you dip.
+<img src="docs/shots/map.png" alt="The galaxy map with its address field, rulers and sector card" width="100%">
+<b>The galaxy map.</b> Every star has an address and every rumour can be laid in as a course.
+Rulers, the address field, the reach circle and the sector card are part of the chart, not a menu
+on top of it.
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/shots/landing.png" alt="Lander descending through rain" width="100%">
-<b>Landing.</b> The lander silhouette is derived from the hull; the camera keeps the ground you
-are descending onto in frame the whole way down, and weather is capped per world type so a
-crystal planet is never washed flat white by fog.
+<img src="docs/shots/belt2.png" alt="Survey ship cockpit while mining an asteroid belt" width="100%">
+<b>Asteroid belts.</b> A 3D flight mode flown from a generated cockpit: pitch, yaw and roll with
+inertia, a horizon that banks into turns, and rocks that break into drifting debris as you mine
+or shoot them. The cockpit follows the hull class you fly.
 </td>
 <td width="50%" valign="top">
-<img src="docs/shots/surface.png" alt="Jungle world on foot" width="100%">
-<b>On foot.</b> Flora and fauna come from the planet's genome; the ground is one baked
-material tile holding three scales at once, and the thicket has a front and a back — distance
-moves a plant's colour into the air, the way air actually separates planes. The astronaut is
-the unit of scale, held at the same share of the frame on any monitor.
+<img src="docs/shots/scoop.png" alt="Skimming the upper atmosphere of a gas giant" width="100%">
+<b>Skimming a gas giant.</b> Volatiles come from a narrow altitude corridor: above it the scoop
+takes nothing, below it hull heat climbs. Bands, fronts and turbulence belong to the planet.
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/shots/surface2.png" alt="Ice world" width="100%">
-<b>Ice world.</b> Strata, relief amplitude and flora follow the world type; the sky keeps a
-calendar — eclipses, parades and comets are computed from time, never rolled, so a meeting can be
-set by them.
+<img src="docs/shots/cave.png" alt="A cave under a planet surface lit by the suit lamp" width="100%">
+<b>Caves and mines.</b> Some worlds hide a walkable cave mouth; a mine can be sunk into bare
+ground and tunnelled through three depth tiers. Your suit lamp is the only light unless the flora
+glows, and deeper rock is richer rock.
 </td>
 <td width="50%" valign="top">
-<img src="docs/shots/lights.png" alt="Three lights in conjunction over the core planet" width="100%">
-<b>Three lights.</b> A region with no night. Once in a few weeks its three suns converge, and
-the third light shows a road, foundations and an entrance that ordinary light does not. The
-shutters in every yard close the day before; nobody explains them.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/cave.png" alt="Cave under a planet surface" width="100%">
-<b>Caves.</b> Two galleries, the lower one reached by shafts and left by jetpack; the suit lamp
-is the only light unless the flora glows.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/base.png" alt="Base cross-section cut into a hillside" width="100%">
-<b>Base cross-section.</b> Rooms are generated from a grid; each kind has its own interior with
-its own work going on — the stoker drives his poker, the tallyman marks his slate, the lift cage
-travels the shaft, the shift walks between rooms, and the smelter's smoke is taken by the wind
-at the surface cap. Power runs in cable trays under the deck plating, a panel box per room.
+<img src="docs/shots/base.png" alt="A base cross-section cut into a hillside, with rooms and people" width="100%">
+<b>A base you dig into a world.</b> The cross-section is the game: cut rock, place modules, keep
+power above demand, mind what sits next to what, post crew, and rebuild after a raid. Each kind
+of room has its own interior and its own work going on.
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/shots/raid.png" alt="Boarding a pirate base" width="100%">
-<b>Boarding a pirate base.</b> Corridors are projected from the belt's own polygons; the base
-you fight through is the one you saw from outside. It speaks the same language as your own
-base — an amber power line along the cable trough, panel boxes, work lamps over the bays.
+<img src="docs/shots/cantina.png" alt="The 3D station hall, with its bar, notice board and generated people" width="100%">
+<b>The station hall.</b> A real 3D room you walk through: the bar, the notice board, the window on
+the dock and generated people with their own faces. Managers are hired here; deals, rumours and
+passengers start at the tables.
 </td>
 <td width="50%" valign="top">
-<img src="docs/shots/cantina.png" alt="Station cantina" width="100%">
-<b>Station cantina.</b> The hall, its bottles and its patrons are procedural; who sits there
-depends on the station's kind. On this particular evening the travelling cinema has the wall —
-a newsreel plays and the hall watches. Managers are hired here, one per domain.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/hq.png" alt="The HQ bridge" width="100%">
-<b>The HQ bridge.</b> Each manager stands at his own board; portraits grow with level and
-darken with loyalty. An empty seat is drawn as an empty seat.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/rooms.png" alt="Inside the home: the study under its lamp, Vega by the desk" width="100%">
-<b>The home from inside.</b> Eight tiers of turnover are eight rooms you walk through, each with
-its own floor and its own things. The people who live there live there: Vega keeps to the study,
-the lodger keeps house, off-duty crew rest in the hall.
+<img src="docs/shots/lights.png" alt="Dusk on a world where the sun sits on the horizon" width="100%">
+<b>A region with its own law.</b> The galaxy's edges each bend the sky their own way; here the sun
+sits on the horizon and the air is full of drifting light. Eclipses, parades and three-sun
+convergences come from the calendar, not from a dice roll.
 </td>
 </tr>
 </table>
 
 ---
 
-## Gameplay
+## What you can do in the alpha
 
-### Worlds
+### Fly
 
-Twelve world types — terran, ocean, desert, rocky, ice, volcanic, toxic, crystal, jungle, metal,
-ruin, gas giant — and most planets are a blend of two. The blend covers palette, roughness,
-gravity, sky, relief weights, strata, weather, clouds, musical mode and ore profile, and the
-name comes out as "icy, with volcanoes". Air never blends: it is breathable or it is not.
-Kinship is asymmetric — a volcanic ocean exists, an oceanic desert does not.
-
-- **The ground is a material.** Each planet bakes one seamless tile holding three scales at
-  once (geological patches, sedimentary runs and veins, grain and crystal specks), laid twice at
-  different zooms so the repeat does not read.
-- **Late worlds have a law of form** on top of the noise: faceted cells with one lit edge for
-  crystal, plates with dark seams and rust for metal, a dappled canopy for jungle, axis-aligned
-  rubble for ruin.
-- **Weather cannot overrule the world.** Each type caps its own weather strength, so a crystal
-  planet is never washed flat white by fog.
-- **Three scales of object.** Boulders underfoot, a middle scale, and two to four landmarks per
-  nine thousand units of terrain — a wreck, a temple, a space elevator, an accelerator ring, an
-  anomaly. The empty space between them is deliberate.
-- **Every land biome has its own big thing** (0.350.0). The middle scale used to belong to four
-  worlds only; now each of the eleven carries a family of two or three large forms, five to twelve
-  astronaut heights, two to four per screen, a silhouette against the haze with a shadow on the
-  ground and no outline: table buttes and wind-bent trees in the desert, stacked boulders with a
-  crack on rock, hummocks and spires with a translucent edge on ice, cinder cones with a warm
-  crack and «lava trees» on volcanic worlds, pod trees over a glowing pool on toxic ones, shore
-  trees on stilt roots and branching coral by the ocean, tally-marked stelae, antennas and stairs
-  to nowhere in the ruins, round crowns on terran worlds, twin-lobed canopies in the jungle. One
-  grammar everywhere; the biome only changes the family.
-
-<img src="site/shots/deco-desert.webp" alt="A table butte on a desert world, the astronaut at its foot for scale" width="100%">
-
-### Flying
-
-- **Autopilot** — tap an object to approach, close in and dock. It aims at an intercept point,
-  so it converges instead of chasing an orbiting body. Near a planet or moon it captures a
-  stable co-rotating circular orbit and holds it until you throttle, brake or turn.
+- **Autopilot** — tap an object to approach, close in and dock. It aims at an intercept point, so
+  it converges instead of chasing an orbiting body; near a planet it captures a stable co-rotating
+  orbit and holds it until you throttle, brake or turn.
 - **Manual control** — thrust, a brake that kills velocity outright, and turning with angular
-  inertia, so the ship carves an arc and banks into it. Every key is rebindable (separate
-  layouts for flight and belt); on-screen buttons auto-hide when a keyboard is in use.
-- **Branching star map** — systems with connecting lanes and generated flavour text. Planets
-  follow elliptical Keplerian orbits; orbital speed is capped by tangential velocity, so every
-  body is catchable in the starter ship while distant worlds still move more slowly.
-- **Gravitic anchor** — drift too far from the star and a gentle pull plus an on-screen compass
-  bring you back. A one-tap "TO STAR" autopilot works from anywhere.
-- **Stranded restart** — out of fuel with no way to refuel, you can pay for evacuation. Without
-  the credits you wake up at home, take a ship from the garage and lose the cargo and half your
-  credits. Before there is a home, you get a fresh starter ship at the origin system. There is
-  no dead save.
+  inertia, so the ship carves an arc and banks into it.
+- **A branching star map** — systems with lanes and generated flavour text; planets move on
+  elliptical Keplerian orbits, and every body stays catchable in the starter ship.
+- **Gravitic anchor** — drift too far from the star and a gentle pull and an on-screen compass
+  bring you back. A one-tap "to star" autopilot works from anywhere.
+- **No dead save** — out of fuel with no way to refuel, you can pay for evacuation; without the
+  credits you wake up at home with a ship from the garage, minus cargo and half your credits.
 
-### Getting materials
+### Land, walk, dig
 
-- **Surface prospecting** — land on generated terrain (ridges, mesas, dunes, cratered plains,
-  canyons, mixed per world type), mine visible deposits, scan flora and fauna for research data.
-  Click-to-walk works alongside the keyboard; launch is a hold-to-confirm button.
-- **Wildlife** — each planet has a genome biasing plant and animal forms, sizes and hues.
-  Underground the same stock bites through your suit; an EMP pulse stuns them, and a stunned one
-  can be sampled for carbon and rare xenobiome no rock yields.
-- **Deep shafts** — sink a mine on bare ground and tunnel through three depth tiers. Ore sits in
-  scattered veins, highlighted through rock when close or at range with the geo-scanner. Deeper
-  rock is roughly 2× and 4× richer, gated behind drilling tech and pressured by suit wear and
-  cave-ins. Damage underground costs the suit, never the ship.
-- **A shaft stays dug.** Return to a mine and you drop into your own tunnel: only excavated
-  cells are saved, everything else is re-derived from the seed.
-- **Cave systems** — some planets hide a walkable cave mouth: a winding passage lit by your suit
-  lamp and glowing flora, with hostile fauna and a one-off data find at the end.
-- **Asteroid belts** — a 3D flight mode flown from a generated cockpit. Pitch, yaw and roll with
-  inertia, the horizon banking into turns. Rocks break into drifting debris as you mine or shoot
-  them.
-- **Gas skimming** — enter a gas giant's upper atmosphere to collect volatiles. The scene is a
-  narrow altitude corridor: above it the scoop takes nothing, below it hull heat climbs until
-  the ship burns, and turbulence keeps pushing you out.
+- **Twelve world types** — terran, ocean, desert, rocky, ice, volcanic, toxic, crystal, jungle,
+  metal, ruin and gas giant — and most planets are a blend of two. The blend drives palette,
+  relief, gravity, sky, weather, ore and the name; air never blends, it is breathable or it is not.
+- **The ground is a material.** Each planet bakes one seamless tile with three scales at once,
+  and each land biome has its own family of large forms, so a world reads by its silhouette.
+- **Weather and light know the hour.** A day-night key feeds sky, ambient fill, shadows and the
+  final grade; airless worlds keep a black sky at any hour. Storms are capped per world type, so a
+  crystal planet is never washed flat white by fog.
+- **Landing is flown, not clicked.** You fly the lander against real gravity and pay for a rough
+  touchdown; the flight view and the lander's side-on silhouette are two different pictures.
+- **Prospecting, mines and caves.** Walk generated terrain, mine visible deposits, scan flora and
+  fauna, sink a mine through three depth tiers (2× and 4× richer, gated by drilling tech, suit wear
+  and cave-ins), or find a cave mouth and follow it with your suit lamp.
+- **Return beacon** — researched tech that teleports you back to your lander from anywhere on the
+  planet, on a cooldown.
 
-### Rare materials
+### Mine, skim, salvage
 
-Ordinary ore is cargo looking for a buyer. The four rare materials are the opposite — the market
-refuses them entirely, so they stay goals rather than expensive cargo and cannot inflate prices.
-Each has its own source:
+- **Asteroid belts** — a 3D cockpit mode with pitch, yaw and roll; rocks break into drifting debris.
+- **Gas skimming** — a narrow altitude corridor above a gas giant; hull heat and turbulence push
+  you out while the scoop fills.
+- **Rare materials** — four materials the market refuses, each with one source:
 
-| Material | Source |
-|---|---|
-| Volatiles | atmospheric skimming on gas giants |
-| Ice crystals | belts on distant, cold orbits only |
-| Alloys | never mined — smelted from ore at industrial stations or a base refinery |
-| Tech components | boarding a pirate base, and nowhere else |
+  | Material | Source |
+  |---|---|
+  | Volatiles | atmospheric skimming on gas giants |
+  | Ice crystals | belts on distant, cold orbits only |
+  | Alloys | smelted from ore at industrial stations or a base refinery |
+  | Tech components | boarding a pirate base, and nowhere else |
 
-They are spent on the laboratory, base construction and hull fusion. Drones only work materials
-they can sell, and pirate wrecks never drop rare stock.
+  They are spent on the laboratory, base construction and hull fusion, so they stay goals rather
+  than expensive cargo.
 
-### The second currency: matches and «Сорока»
+### Trade, work, economy
 
-Under the cowl of every salvaged part sits a handful of **matches** (0.337.0) — one for a tier-3
-part, three for a tier-4, five or a box of eight for a tier-5. Credits never buy them and the
-market never takes them; there is exactly one place to spend them. **«Сорока»** (0.341.0) is a
-sail-ship wandering a twenty-four-stop loop derived from the clock, parked at the lit limb of a
-planet: you find her by a rumour at the counter, by the sky-watch line, or by the sail glyph on a
-chart you were sold. Aboard (0.342.0) is a room with a keeper and a catalogue — fourteen tools
-with real hooks in the game, two papers, one wild-card barter lot per stop, and a raw counter that
-turns forty units into one match, two hundred a stop at most. **Cosmetics** (0.343.0) are the
-things that are seen and never counted: eight exhausts with their own flames, jump trails, suit
-finishes, visor tints, hull marks, light patterns, docking chimes and a name plate — twenty-seven
-in seven slots, worn from the ОПИСЬ table. Beside them lie **twenty empty matchboxes** (0.345.0)
-of factories that are gone, found the way the forty books are.
-
-### Stations
-
-Seven station types, chosen by system seed and sector danger. The type decides which tabs exist:
-
-| Type | What it is for |
-|---|---|
-| Trade hub | best prices, broad market, weak yard — thins out toward the frontier |
-| Industrial | smelts ore into alloys, repairs at half price |
-| Shipyard | the only place that builds a one-off unique hull |
-| Science | tech tree and the fusion laboratory |
-| Frontier outpost | combat crews, weapons, poor prices — common in dangerous space |
-| Fuel depot | no tabs at all: fuel and repair only, but found far out |
-| Bazaar | the flea market: used goods with a provenance, quoted in house scrip |
-
-Each type draws itself procedurally like hulls do — a shared skeleton of core, dock and lights,
-silhouette from the type, details from the system seed: warehouse pods and cargo booms, blast
-furnaces with a flare stack, an open slipway with a crawling crane, dish antennas and radiator
-grids, gun turrets, or a bare tank.
-
-- **The counter is for cooperatives** (0.349.0). Goods are not for sale to a private pilot; you
-  buy for yourself only once you have registered a cooperative — an exam by turnover, a fee, a
-  name and a patron house. Three ranks (кооператив → артель → товарищество) set how many units a
+- **A living market.** Every station's prices sag when you dump cargo there and recover over time,
+  so where you sell matters; station type shifts prices on top of that. Seven station types —
+  trade hub, industrial, shipyard, science, frontier outpost, fuel depot and bazaar — decide which
+  tabs exist and what the place is good for.
+- **The cooperative counter.** Goods are not for sale to a private pilot until you register a
+  cooperative: an exam by turnover, a fee, a name and a patron house. Three ranks set how much a
   visit may take, how many hands you may hire and how tight the spread is; the price runs in
-  slices of ten, each dearer than the last. The cooperative has a page in ДЕЛА with its people,
-  a per-shift ledger of the same money the game paid you, asks from its own composition (a canteen
-  for three hands, a hangar for five drones, a day off on a holiday) and a spirit of 0–5 that
-  nudges drone output and hired gross by a percent a point.
-- **The locker** (0.344.0). The houses' transport office keeps what you cannot carry — cargo,
-  parts and matches — at one percent a day, handed over at any station of that house.
+  slices of ten. A bazaar's flea market sells used goods with a provenance, quoted in house scrip.
+- **Orders and needs.** Stations post work at the counter: short deliveries, standing needs,
+  passengers and business of their own. The journal keeps what you took, from whom, the deadline
+  and what was promised; every line with an address lays a course on the map.
+- **Drones and the drone-miner.** Buy a drone, drop it on a deposit or asteroid, fly away: it
+  works on the lazy clock, hauls to the nearest station and sells at live prices. The drone-miner
+  works a deposit round the clock and is priced by payback.
+- **Matches and «Сорока».** Under the cowl of every salvaged part sits a handful of matches.
+  Credits never buy them and the market never takes them; the wandering sail-ship «Сорока» is the
+  one place to spend them, on tools, cosmetics and a barter lot per stop.
+- **A ship's log** records kills, drone deliveries, sales, research, discoveries, crew reports,
+  base raids and wrecks, and persists with the save.
 
-<img src="site/shots/coop-market.webp" alt="The station counter open to a cooperative: slices of ten, a cap per visit" width="100%">
-
-### The holding
-
-A station can offer you a build of your own on its ground — not a shop purchase but a **route
-bought as an order**: you commit a barge to hauling it, and the station's own appetite for what
-it needs sets the pace, not a price you negotiate.
-
-- **The site grows by building** — eighty-two buildings across nine families, forty-eight
-  materials feeding them, each one unlocking against the station's real need for it rather than
-  a tech-tree gate.
-- **A ladder of rank** opens further reach as turnover accrues — further routes, the fleet on
-  the trunk lines starting to hail you first, eventually a node station of its own.
-- **Your own barge** works the route the way a drone works a deposit: on the same lazy clock,
-  visible in the log, never simulated in real time while you are elsewhere.
-- **The station's body changes.** What you feed it shows — a dump, a dome, a strip on the day
-  side — so the place looks different for having you in it.
-- **News travels.** What the holding does becomes rumour told in someone else's words at other
-  stations, and rival barges compete for the same road once it is worth having.
-- **What is built is never for sale.** Knowledge of a road can change hands; your mark on the
-  world cannot.
-
-### Crew and fleet
-
-Old hulls in your hangar stop being dead weight: **a hire needs one of your ships**, which is
-the constraint the whole system turns on.
-
-- **Mercenaries are generated people** — name, specialty (combat, mining, hauling), two or three
-  traits that act as multipliers and thresholds. A veteran costs more and comes back. The
-  careful one breaks off early and brings less. The greedy one skims the hold. The stubborn one
-  ignores your first order.
-- **Orders** — hunt pirates, mine, run a route, work a base, or idle. Each carries a sector and
-  resolves the way drones do: from elapsed time, capped at eight hours offline. Nothing flies
-  around in the background.
-- **Wages and consequences** — pay is drawn on the same lazy clock that pays out. Run dry and
-  debt accrues, morale slips, the log warns you, they work at half strength, then abandon the
-  order, then leave and take the ship against what they are owed. Every step is visible before
-  the last one lands.
-- **Damage and repair** — dangerous orders cost hull. Repair is free and slow while idle,
-  instant for credits. A hull reaching zero loses the ship and only sometimes returns the person.
-- **Experience** raises both output and demands, so a cheap hire becomes an expensive veteran.
-  Fleet size is a researched licence.
-- **Meeting them in space** — fly into a sector where your crew is working and they spawn as a
-  real ship alongside you, built on the pirate NPC frame, shooting at pirates.
-- Everything they do lands in the ship's log.
-
-### Managers and domains
-
-Mercenaries fly your ships; managers take a whole domain — the crew wing, drones and bases, a
-trade route, or the laboratory. There are exactly four seats, one per domain, and the AI core
-takes one of the four rather than adding a fifth. The system is about which chore you hand over,
-not about headcount.
-
-- **A cut of the domain.** Each manager draws a salary and a percentage of their own domain,
-  taken before the money reaches you and always shown as a line. Audit tech and one artifact are
-  the only things that reduce the cut.
-- **Loyalty is the tension.** Miss payroll and it slides; below fifty a manager starts quietly
-  losing a slice of the domain in their own favour, traceable only as a discrepancy line in the
-  domain summary. At twenty-five they issue an ultimatum you can pay or refuse.
-- **A manager who leaves flies against you.** At zero loyalty they defect and become a renegade
-  in their own sector, flying your flagship with your perks. Beating them does not kill them:
-  they reappear in a cantina as an exile, cheaper to re-hire and remembering everything.
-- **Every perk is wired to something.** The whole tree is visible from the start, and a test
-  fails if any perk id in the tree is not read by the game.
-- **Procedural portraits** gain detail with level and darken as loyalty drops.
-- **Artifacts** — seven from the laboratory, one worn per manager, each with a second effect
-  line that unlocks deeper in.
-
-### Home
-
-There is exactly one home and it is not for sale. Rooms bought with credits would make it
-another shop; instead the home grows out of accumulated turnover — everything the universe has
-paid you, from sales and drones to domain income, mercenary runs, bounties and base takings.
-Nothing is ever deducted: money already spent still counts toward it.
-
-- **It appears on its own** after your first honest sale, in whatever sector you were in, and
-  never moves. Eight tiers follow: rented corner, hall, garage, showcase, workshop, study,
-  living quarters, berth with a beacon.
-- **Death is not a wipe.** Losing your ship with no evacuation money puts you at home with a
-  ship from the garage, minus the cargo and half your credits.
-- **The tiers do things.** The study gives every manager one more standing-order slot; living
-  quarters double morale recovery; the showcase turns displayed rare material into reputation
-  worth up to a tenth extra from your domains; the workshop rerolls a part's affixes one tier
-  down — not an upgrade but a second throw, so junk becomes usable and good parts are not worth
-  touching.
-- **It cannot be farmed.** No free fuel, repairs or weapons; the beacon home is paid for and
-  costs more the further out you are; anything on the showcase can never be sold.
-
-### The desk: ОПИСЬ and «Смена»
-
-- **ОПИСЬ** (0.340.0) replaced the ship screen and the invoice paper: one cloth with four zones —
-  what you wear, what is fitted, what you carry, the hatch — plus the matchbox shelf and the
-  casket of cosmetics. Drag or tap; the ПРИБОРЫ panels show what a fitting *would* do before you
-  do it; prices live under the piles and on the map card. People are never dumped.
-- **«Смена»** (0.339.0) is the author's novel — seventy-two chapters in eight parts — bound on the
-  desk. A chapter opens in ink only once you have lived it: the trigger is the very mechanic the
-  chapter is about. Unopened chapters show their title and where that is heard, never where to fly.
-
-### Bases
-
-The planet stays 2D; the volume comes from a cut through the ground — sky and surface on top,
-buried compartments below, a lift shaft down the middle.
-
-- **The grid is the game.** An empty cell is rock you dig out to place one module: reactor,
-  solar array, drill, storage, habitat, refinery, landing pad.
-- **Power is the constraint.** Run short and the lights dim across the whole cut and the drill
-  stops.
-- **Adjacency matters.** A drill wired to a neighbouring reactor loses less; a habitat pressed
-  against one is a worse place to live.
-- **Staff** — crew can be posted to a base in four roles: driller, engineer, guard, logist. Any
-  role is open to anyone, but working outside your speciality halves your contribution.
-- **Raids** — pirates come for the store, more often the deeper into dangerous space the base
-  sits. An unguarded raid carries off part of the store and sometimes wrecks a compartment,
-  which stays dark and crossed out until an engineer rebuilds it.
-- **The network** — a station panel shows every base, what it digs, how full it is and what is
-  wrong. A landing pad lets you jump straight there; a posted logist lets you collect the store
-  without flying out.
-
-### Boarding pirate bases
-
-Dangerous sectors hold pirate stations you can board on foot. The map is a 2D grid — rooms
-carved out, corridors drawn between them so connectivity holds by construction — drawn as
-polygons through the same projection and painter sort the asteroid belt uses.
-
-- **The gun fitted to your ship is the gun you carry**, so the build you fly decides how the
-  boarding goes. The suit is your health, the same one the mine models.
-- **Four enemy types** share one AI and differ in numbers: rushers close to arm's length,
-  heavies hold back and hit hard, and the bridge keeps a boss. The compartment decides who is
-  waiting.
-- **Supplies are finite** — ammunition runs out, so the store room matters; medkits and armour
-  plating lie where they make sense and are picked up by walking through them.
-- **Rooms have mezzanines** with ramps up: floors at two heights, real edges on the drop, camera
-  following you up. Corridors get door jambs, reactor bays pulse with emergency lighting, and a
-  helmet lamp lights whatever you face.
-- **Loot is the stake** — reach the hangar to leave with it, or get your suit punctured and lose
-  half on the way out. Progress itself is never rolled back.
-
-### Getting stronger
+### Ships, parts, research
 
 - **A hundred hulls in six tiers** — eight hand-built ships plus a deterministic catalogue of
-  ninety-two, from workhorses to legends counted in single units and yachts that never pay for
-  themselves. A dock stocks a slice keyed to its seed and a time bucket, not the whole list.
-  Rarity shows in the finish, and a cheap hull is always available so you cannot be stranded.
-- **A thousand nodes and ten crowns** — named artifact nodes in ten families of a hundred, five
-  rarity grades. A node does nothing alone; completing a family forges a crown, an effect
-  unobtainable any other way, read by `stat()` alongside modules and parts. Nodes are never sold
-  or crafted: they only drop, rarely, from pirates, deep shafts and boarding actions.
-- **Modules** — seven upgrade tracks (engine, tanks, hold, armour, drill, hyperdrive, gun), four
-  levels each. Buying a level is permanent; fitting it is not.
-- **Parts and rigging capacity** — every hull has a rigging budget that modules and parts both
-  draw from, so you cannot run everything at once. Parts come in six categories with one to
-  three affixes, and the strong ones carry a real drawback — a drill that outpaces your turn
-  rate, a shield that costs thrust. They drop from pirates as containers you fly through, and
-  stations sell a rotating handful.
-- **Ship screen** — slots are drawn on the hull itself: a gun point on the wingtip, an engine
-  block at the nacelle, a reactor in the belly. Every candidate part states what it would do to
-  your numbers before you commit.
-- **Laboratory** — at science stations, two ships from your hangar plus rare material fuse into
-  a third. Stats blend weighted toward the stronger parent instead of summing, surplus rare
-  stock adds a percentage, and both originals are consumed. Each generation costs 1.8× more and
-  adds a fraction as much, so the ladder has a top. The same bench crafts parts from rare
-  material at three tiers.
-- **Tech tree** — research paid for with survey data, including repeatable tracks that keep
+  ninety-two, from workhorses to legends counted in single units. A dock stocks a slice keyed to
+  its seed and a time bucket, not the whole list; a cheap hull is always available so you cannot
+  be stranded, and a shipyard can build a one-off unique hull.
+- **Modules, parts and rigging.** Seven upgrade tracks with four levels each; parts in six
+  categories with affixes, and the strong ones carry a real drawback. Every hull has a rigging
+  budget that modules and parts both draw from, so you cannot run everything at once.
+- **A thousand artifact nodes and ten crowns** — completing a family forges a crown, an effect
+  obtainable no other way. Nodes only drop from pirates, deep shafts and boarding actions.
+- **The laboratory** — fuse two ships plus rare material into a third, or craft parts at three
+  tiers. Stats blend toward the stronger parent, and both originals are consumed.
+- **The ОПИСЬ table.** One cloth with four zones — what you wear, what is fitted, what you carry,
+  the hatch — plus the matchbox shelf. Fitting happens on the hull silhouette, and the ПРИБОРЫ
+  panels show what a part would do before you commit.
+- **Research** — a tech tree paid for with survey data, including repeatable tracks that keep
   scaling.
-- **Return beacon** — researched tech that teleports you back to your lander from anywhere on
-  the planet, on a cooldown.
 
-### Economy and logistics
+### Crew and managers
 
-- **Living market** — every station's prices sag when you dump cargo there and recover over
-  time, so where you sell matters and routes are worth planning. Station type shifts prices on
-  top of that.
-- **Mining drones** — buy one, drop it on a deposit or asteroid, fly away. It works in real
-  time, hauls to the nearest station and sells at live prices. The **drone-miner** (0.338.0) is
-  the other machine: it works a deposit round the clock, never returns on its own, and is priced
-  by payback — 9 000 cr, four and a half hours on crystals, a day on iron — sold one per two days
-  at a yard or an industrial station.
-- **Barter shop** — a tab where unique gear costs specific raw resources instead of credits.
-- **Ship's log** — a collapsible panel recording kills, drone deliveries, sales, research,
-  discoveries, crew reports, base raids and wrecks. It persists with the save.
+- **Mercenaries are generated people** — name, specialty, traits that act as multipliers and
+  thresholds; a veteran costs more and comes back, the careful one brings less, the greedy one
+  skims the hold, the stubborn one ignores your first order.
+- **Orders** — hunt pirates, mine, run a route, work a base or idle. They resolve from elapsed
+  time, capped at eight hours offline; nothing flies around in the background. Wages are drawn on
+  the same clock, and debt, morale, desertion and a lost ship are all possible and all visible
+  before the last step lands.
+- **Meet them in space** — fly into a sector where your crew works and they appear as real ships
+  alongside you, built on the pirate NPC frame and shooting at pirates.
+- **Managers take a whole domain** — the crew wing, drones and bases, a trade route, or the
+  laboratory. There are exactly four seats. Each takes a visible cut before the money reaches you;
+  loyalty slides with missed payroll, and at zero a manager defects and flies against you with
+  your own flagship and perks. Beating them does not kill them: they come back as exiles.
+- **Every perk is wired to something.** The whole manager tree is visible from the start, and a
+  test fails if any perk id in it is not read by the game. Seven artifacts from the laboratory,
+  one worn per manager.
 
-### Landing
+### A place of your own
 
-Setting down is its own short flight. You fly the lander against the world's real gravity, and
-touching down too fast, too sideways, tilted or on a slope costs hull.
+- **The home is not for sale.** It appears after your first honest sale and grows through eight
+  tiers out of accumulated turnover. The tiers do things — an extra standing-order slot, faster
+  morale recovery, a showcase that turns displayed rare material into reputation. Death is not a
+  wipe: you come back home with a ship from the garage.
+- **The home is a house you walk into**, not a panel: eight rooms, each with its own floor,
+  lamplight, things to stand next to, and people who actually live there.
+- **The base** is a grid cut into a planet: reactor, solar array, drill, storage, habitat,
+  refinery, landing pad. Power is the constraint, adjacency matters, crew can be posted to four
+  roles, and pirates come for the store more often the deeper into dangerous space you build.
+- **The holding** lets you land a build of your own on someone else's station — a route bought as
+  an order rather than priced. Eighty-two buildings across nine families grow against the
+  station's real appetite; a rank ladder opens reach, your own barge works the route, and what you
+  build is never for sale.
 
-- **The lander has a side-on silhouette of its own** — 90 to 130 px against a 24 px astronaut,
-  because the flight view is top-down and rotating one into the other does not work. Hull
-  colour, livery and class markings still come from the ship you fly.
-- **Landing gear behaves.** Legs unfold on approach, each pad settles onto its own patch of
-  terrain, struts compress on impact and spring back, and the nose dips with them.
-- **Thrust is vertical**, so three retro nozzles fire from the belly, never the main engines,
-  and the jet raises a low cloud of ground-coloured dust that lingers after touchdown. On an
-  airless world the dust is lower and sharper.
+### The galaxy moves
 
-### The front: pirates take systems
+- **A war you are not the centre of.** Pirates occupy systems from a source and spread outward;
+  occupation takes services away, and you take a system back by playing in it — kills count per
+  system, hitting the quota drops the level and turns the station back on.
+- **Boarding pirate bases.** Dangerous sectors hold stations you can board on foot: corridors
+  projected from the belt's own polygons, finite ammunition, four enemy types, mezzanines and a
+  hangar to reach with the loot.
+- **The fleet you can't buy.** **ГЛАВТРАССА** runs thirteen classes of state ships on its own
+  schedule along the long lines. Hail one and it answers in its class's own voice; you can be
+  towed, refuelled, convoyed, or called to a barge in distress.
+- **Danger is optional.** Pirates are absent near home and increasingly common the further out
+  you push. Fighting has its own gun module and bounty tech, but outrunning or jumping away is
+  always valid; bases, boarding and mercenary hunts are opt-in layers on top.
+- **A hundred short stories** live in cantinas and along the routes: debts bought at a third of
+  face value, pilots vouched for, crates taken with no explanation, bets backed, maps bought off a
+  geologist. Answers with a tail become journal entries with an address and a deadline.
+- **A century of rarities** at fixed addresses, the map's addresses and holdings layers, and
+  «Смена» — the author's novel bound on the desk, which opens a chapter only once you have lived
+  the mechanic it is about.
+- **The road companion** on a phone turns a real trip into flight: GPS speed becomes cosmic, the
+  accelerometer banks the hull through real turns, and the microphone colours the nebulae. Other
+  pilots riding the same cell appear as distant companion lights.
 
-- **Occupation spreads from a source** — a nest, then its neighbours, never a random flare on
-  the far side of the galaxy, so the map shows a front rather than a rash.
-- **Occupation takes services away.** Level one puts patrols out and lets the single remaining
-  buyer underpay you. A blockade shuts the dock and the laboratory and stops drones selling.
-  Under full occupation only refuelling is left.
-- **Ranks** — jackal, veteran, captain, and, only under full occupation, a baron: three times a
-  mini-boss's toughness, sitting on the bridge of the baron's lair, which is the same boarding
-  action made harder.
-- **You take a system back by playing in it.** Kills count per system; hit the quota and the
-  level drops. Clearing it pays a prize and turns the station back on. Breaking the pirate base
-  suppresses the nest and stalls the advance around it for a day.
-- **Three goals are stated on the holdings screen** — the home that grows from turnover, a yacht
-  of your own, and a galaxy without occupied systems. All three are counted from real state,
-  with no quest flags.
+## Economy and balance
 
-### The fleet you can't buy
+The economy is live, not a shop with fixed prices. Selling pushes a station's price down and it
+recovers over time; station type and the spread between neighbours decide whether a route is worth
+flying. Drones and the drone-miner pay back over real hours, a hired hand is a bet rather than a
+steady income, and a manager's cut is always shown as a line. Rare materials are deliberately
+outside the market so they cannot inflate prices.
 
-The long lines between systems carry traffic that has nothing to do with you: **ГЛАВТРАССА**, a
-transport service running its own schedule under one grey-and-red livery, thirteen ship classes
-each drawn from a distinct working silhouette — mail sphere, tanker, tug, rescue ship, hospital
-ship, school ship, floating base and more.
+This is the part being tuned in alpha: measurements are current, not promises, and the numbers can
+move between builds. If a route or a payout looks wrong, that is useful feedback — please open an
+issue with what you did and what you expected.
 
-- **Nothing is simulated.** A ship's position is a function of its line, its seed and the clock,
-  the same trick as trade barges — nothing tracked while you are elsewhere, nothing recomputed
-  that would move it.
-- **Hail one** and it answers in its class's own voice; fuel comes free "по норме" once a shift,
-  with no ledger of debt.
-- **A tow** takes a hull that will not make it home to a yard instead of leaving it stranded.
-- **Convoy with one** and pirates stop seeing you, at the fleet's own, slower pace.
-- **A rescuer calls you to a barge in distress** it has already found, gives you the course, and
-  leaves the choice of whether to follow entirely yours.
-- **The ladder of rank changes what you meet** — a node station of the trunk lines past a
-  threshold, a black, nameless derelict in the far dangerous sectors, the fleet hailing you
-  first once you are known on the line.
-- **Трассы on the map** are a thin double line with milestone ticks between fleet stations, the
-  name written once along the longest leg like a river, a faint band for the sectors «под трассой»
-  where pirates never hold for long; beyond the jump edge they dim to a third by the darkness law.
-- **«Маяк ГЛАВТРАССЫ»** (0.348.0) speaks once a shift in the ether — a bulletin composed from
-  causes only (tonnage a station took, a pilot who over-fulfilled, a sector freed, the scrip rate)
-  and never a line without one. On a device with Russian voices the receiver reads it aloud,
-  quietly, only in flight and on the road; a setting in ЗВУК.
+## Under the hood
 
-### The map speaks in addresses
+- **A world from seeds.** Systems, orbits, belts, stations, pirate bases, base geology, planet
+  relief, plants and creatures are regenerated from a seed when needed; only what you changed is
+  saved.
+- **Everything is drawn on the GPU.** Since 0.457.0 the renderer is WebGPU: the nebula and its
+  drifting dust, HDR light with a soft bloom, hulls lit from the star's side, particles, and the
+  instruments on a sharp layer of their own. The 2D-style drawing is a GPU canvas too — there is no
+  Skia raster of the world and no 2D fallback.
+- **Every sound is synthesised.** There is no audio file in the project: oscillators, filtered
+  noise and envelopes make the engine, guns, hits, the drill, footsteps and warnings, and the
+  music is generative — six layers drifting in and out, with each place picking its own mode and
+  tempo from its seed.
+- **Saves are portable.** Local autosave, base64 save codes for moving between devices, and
+  optional cloud sync. The format writes `v5` and reads `v4`; seeds are never stored, only your
+  decisions and what you carried home.
 
-The galaxy map (0.346.0–0.347.0) got a grid with rulers and a sector header, an address field
-that takes `4:-7` and a mark button, rumour areas as rings with their source, a compass rose, and
-matches as marks you leave for yourself. Above it a **holdings layer**: house patches in the
-house colour with two-colour hatching where scrips overlap, the трасса band, a rusty hatch over
-pirate-held sectors, your own frames visible even in the dark, and a fading tag where a sector
-changed hands since your last visit.
+## Build and run it locally
 
-<img src="site/shots/map-trassa.webp" alt="The galaxy map with addresses, rings and трассы" width="100%">
+You do not need any of this to play — the browser version and `drift.html` are enough. To work on
+the game, edit files under [`src/`](src) and rebuild:
 
-### Work that pays
+```bash
+# Windows
+powershell -ExecutionPolicy Bypass -File build.ps1
 
-The cantina seats people with their own business, and none of it is "bring me ten ore". You
-answer: buy a captain's debt at a third of face value, vouch for a pilot nobody will hire, take
-a crate with no explanation, back a bet on someone else's race, buy a survey map off a geologist
-thrown out of his expedition, carry a passenger with no return ticket. Every answer costs
-something, and answers with a tail become journal entries with an address and a deadline. The
-outcome roll is made in advance from the deal's key, so a deal cannot end differently depending
-on when you open the journal.
+# Linux / macOS (PowerShell 7)
+pwsh ./build.ps1
+```
 
-The journal holds accepted business: what you took, from whom, how long is left, what was
-promised. Every line with an address is clickable and lays the course on the map.
+`-Watch` rebuilds on save. The build produces `drift.html`, `tests.html` and the generated
+[`docs/INDEX.md`](docs/INDEX.md) address book; `drift.html` is a build artifact and editing it by
+hand is overwritten by the next build.
 
-### Pirates
+The whole game shares one scope, and modules are concatenated in filename order — constants and
+tables must be declared before anything reads them. A new module gets a new numeric prefix in the
+right place; fractional steps (`19a-`) avoid renaming neighbours.
 
-A pirate welds his ship out of three other people's, and that is his language of form.
+**Tests:** `test.ps1` runs the fast tier (build, Node suites, a Chrome smoke test and the vision)
+in about fifteen seconds on a desktop, and `-Full` runs every suite including the heavy nets:
 
-- Sixty to a hundred and twenty polygons: a dark body mass, a spine of overlapping plates, a
-  nose or a ram, side modules, cargo cages, engines. Asymmetry is a rule — a pylon on one flank,
-  a fuel tank on the other, a foreign section welded on, scrap collecting on the busy side.
-- Hung over that: patches lapped over seams, spikes, tow hooks, turrets on guy wires, whip
-  antennas, rust from every weld, kill marks by seed.
-- **Damage is visible and cumulative** — scorches, then a breach with flame, then a smoke trail.
-  Below half hull the ship is rebaked with its hung gear torn off and bites out of the plating,
-  so a wreck reads by silhouette instead of a health bar.
-- Exhaust is dirty and out of sync, and one engine on every pirate smokes harder than the rest.
+```bash
+powershell -ExecutionPolicy Bypass -File test.ps1
+powershell -ExecutionPolicy Bypass -File test.ps1 -Full
+```
 
-### Danger is optional
-
-Pirates are absent near home and increasingly common the further out you push. Fighting has its
-own gun module and bounty tech, but outrunning or jumping away is always cheap and always valid.
-Bases, boarding and mercenary hunts are opt-in layers on top.
-
-### Home
-
-The home is not a screen of cards: it is a house standing on its own planet. Land there and the
-navigator shows **ДОМ**; walk up and the porch lamp is on, the chimney smokes, the window is lit,
-and every tier you have earned is out in the yard — garage, display case, workbench, the mast with
-its beacon. Go in and you walk its rooms: eight tiers, eight rooms, each with its own floor and
-its own things to stand next to and look at, openings that show the next room's lamplight, and
-blank masonry where the house has not grown yet. The people who live there live there — Vega sits
-in the study, gets up, walks, works and answers when hailed; the lodger keeps house, the trainee
-fiddles in the workshop, off-duty crew rest in the hall.
-
-### The road companion
-
-On a phone, «В ДОРОГУ» turns a real trip into flight: GPS speed ×1 000 000 becomes cosmic
-(a highway reads as hundreds of km/s, a plane as a fraction of lightspeed), the accelerometer
-banks and sways the hull through real turns, acceleration pulls it up the screen and braking
-down, and the microphone drives the scene — nebulae change colour with the music's mood, a
-beat births falling stars, the bottom of the screen glows with the track. Real land is mapped
-onto the universe: every ~2.8 km cell is a named star system, and other pilots riding the same
-sector fly alongside as distant companion lights — a spark with an exhaust each, the same set for
-everyone in the cell (an anonymous tag and a cell number are all that leave the phone).
-Kilometres earn capped in-game credits, with a combo for riding without stopping.
-
-## Graphics and sound
-
-- **The world is drawn on the video card** (WebGPU, since 0.457.0). The nebula and its dust live
-  and drift, light is HDR with a soft bloom, hulls, stations and planets are lit from the star's
-  side, exhaust and bursts are particles, and the star itself is alive. Canvas 2D stays as the
-  brush for text and complex vector shapes — in flight they are baked once into textures — and the
-  instruments sit on a sharp layer of their own. In flight and in the asteroid belt the whole
-  world is on the GPU; the other modes move over one at a time. There is no 2D fallback: without
-  WebGPU the game names the browsers it needs instead of drawing a world.
-- **The light knows the hour.** One day key feeds the sky gradient, the ambient fill, the
-  strength of direct light, the air on the far ridges and the final grade: at noon the zenith is
-  a luminous colour of the world's own palette and shadows are sharp and coloured, toward night
-  it all returns. Airless worlds keep a black sky at any hour — there is nothing to scatter —
-  and the stars stand in it, over the surface and over a mine shaft alike.
-- Every hull is generated from its seed: multi-station fuselage profile, swept wings, nacelles,
-  canopy, panel lines, greebles, livery, blinking navigation lights. Banking is a real roll —
-  the silhouette squashes and a shaded belly shows.
-- The belt cockpit is generated per hull class: canopy shape, frame weight, metal, wear, hazard
-  striping, holography and indicator colour follow what you fly, and a lab-fused hull gets an
-  asymmetric frame nothing else has. Everything laid on the glass is transparent, and the six
-  instruments on the dash are the ones nothing else already tells you.
-- Plants, creatures and boulders are generated per world: branching stems with ferns, pods or
-  crowns; critters with their own colours, crests, tails and leg counts; layered strata showing
-  through rock.
-- Layered engine flames and an exhaust ribbon that hangs where you burned. Attitude jets fire
-  against the turn the way a real pair does, and braking uses the bow jets instead of spinning
-  the ship. Faceted rotating asteroids lit by the system's star, ringed gas giants, a generated
-  nebula, coloured twinkling starfields.
-- A graphics page trades looks for performance: draw distance, model detail, particle density
-  and surface life density, with presets.
-- **Every sound is synthesised at runtime** — there is no audio file in the project. Oscillators,
-  filtered noise and envelopes make the engine hum that rises with throttle, weapon fire, hull
-  hits, the drill, footsteps that follow the walk cycle, low-fuel warnings. Guns take their
-  timbre from the fitted part's seed; each creature's call comes from its own seed. Music,
-  effects and engine have separate volume sliders.
-- **Generative music** — no tracks, six layers (drone, bass, motif, beacons, percussion,
-  atmosphere) drifting in and out, so there is no loop to notice. Notes swell over a second or
-  more into synthesised reverb and feedback delay. The beacon voice is brown noise through a
-  narrow band-pass filter. The melody walks the scale and is sometimes answered a beat later by
-  a third or a fifth. Sixteen modes are in play; each location has its own mode and tempo, and
-  planets pick theirs from the genome that decides their plants, so a world sounds the same each
-  time you return. A single tension value (pirates closing, a battered hull, mine depth) tightens
-  the rhythmic grid and thickens percussion instead of switching to a combat track.
-
-## Persistence
-
-Local autosave, portable base64 save codes for moving between devices, and optional cloud sync
-against your own server. The save format writes `v5` and still reads `v4`: every new feature is
-added with a safe default, so a save written before crews, bases, alloys or fusion existed still
-loads — it simply has none of them. Anything derivable from a seed (systems, orbits, belts, station
-types, pirate bases, base geology) is regenerated on load; only your decisions and what you
-carried home persist.
+On Linux or macOS use `pwsh ./test.ps1`. The suites drive the real game state through
+`resetWorld()` and mock nothing. `node test-node.js` runs only the Node tier; `-Only` narrows a
+run to a suite name, `-NoBuild` skips the build and `-Browser` adds the Chrome-only suites.
 
 ## Project structure
 
 | File | Purpose |
 |---|---|
-| [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; do not edit by hand.** |
-| [`src/`](src) | Sources: `index.html` shell, `style.css`, and ~400 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, the WebGPU renderer, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
-| [`tests/`](tests) | Some nine hundred suites by topic (`90-harness`, then `91a-flight` onward), plus the cross-cutting nets (`91zzzz*`): a fuzzer, game QA, physics at every frame step, names against the source, the frame meter. They drive the real game state through `resetWorld()` and mock nothing. |
-| [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node is not assumed. `-Watch` rebuilds on save. |
-| [`site/`](site) | The [drift-game.ru](https://drift-game.ru) pages: front page, how to play, the war map (`war.php`), the test lab, accounts and cloud saves (`api.php`), and the flat and 3D birds. Published automatically on a push to `main`. |
-| [`bird/`](bird) | Sources of the 3D bird (WebGL2, `bird.ps1` builds them into one self-contained file). Not part of the game. |
+| [`drift.html`](drift.html) | The entire game in one self-contained file — open it to play. **Built from `src/`; do not edit by hand.** |
+| [`src/`](src) | Sources: the HTML shell, `style.css` and about 570 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, the WebGPU renderer, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, because it all shares one scope. |
+| [`tests/`](tests) | Hundreds of suites by topic, plus the cross-cutting nets: a fuzzer, game QA, physics at every frame step, isolation, the frame meter. They drive the real game through `resetWorld()` and mock nothing. |
+| [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. PowerShell, no dependencies; `-Watch` rebuilds on save. |
+| [`test.ps1`](test.ps1) | Runs the suites, the smoke test and the vision headlessly, in tiers (`-Full`, `-Browser`, `-Mobile`, `-Only`, `-NoBuild`). |
+| [`site/`](site) | The [drift-game.ru](https://drift-game.ru) pages: front page, how to play, the war map, the test lab, accounts and cloud saves (`api.php`), and the flat and 3D birds. Published on a push to `main`. |
+| [`bird/`](bird) | Sources of the 3D bird (WebGL2, `bird.ps1` builds them into one file). Not part of the game. |
+| [`docs/shots/`](docs/shots) | The real game frames used in this README, and the comparison sheets behind the design log. |
+| [`docs/INDEX.md`](docs/INDEX.md) | Generated address book of the sources: every top-level symbol as `file:line`. Grep it, do not read it whole. |
 | [`CLAUDE.md`](CLAUDE.md) | House rules for working on the code: what lives where, what must not change, how to verify. |
-| [`PLAN.md`](PLAN.md) | The plan: only the work still ahead, by milestone. |
+| [`PLAN.md`](PLAN.md) | The old development plan, **archived 31.10.2026**. There is no active roadmap; kept as history. |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | The rules and the author's decisions that stand across all the work. |
-| [`docs/done/`](docs/done/README.md) | Design log — every finished milestone, what it solved and why it was built that way; files of at most 40 KB. |
-| [`docs/INDEX.md`](docs/INDEX.md) | Generated address book of the sources: every top-level symbol as `file:line`. Grep it, do not read it. |
-| [`PATCHNOTES.md`](PATCHNOTES.md) | One entry per version: what changed and what it fixed. |
+| [`docs/done/`](docs/done/README.md) | Design log — every finished milestone, what it solved and why it was built that way. |
+| [`PATCHNOTES.md`](PATCHNOTES.md) | One entry per build: what changed and what it fixed. |
 
-## Running it
+## Feedback and bugs
 
-**To play:** open `drift.html` in a browser with WebGPU — a recent Chrome, Edge, Yandex Browser
-or Opera, or Safari 26 and newer. No server, no build, no dependencies. Without WebGPU the game
-shows a notice naming these browsers instead of the world.
+The alpha is deliberately public, and bug reports are the most useful thing you can send.
 
-**To work on it:** edit files under `src/`, then rebuild:
+1. Check the [open issues](https://github.com/DrEgoroff-drift/drift/issues) — the bug may already
+   be known, and a note that it still happens helps.
+2. Open a [new issue](https://github.com/DrEgoroff-drift/drift/issues/new). Include the build
+   number from the title screen, browser and OS, what you did, what happened, and what you
+   expected. A screenshot or a save code makes a hard bug much easier to reproduce.
+3. Write in Russian or English, whichever is easier.
 
-```bash
-powershell -ExecutionPolicy Bypass -File build.ps1
-```
+GitHub Issues is the place for bug reports, ideas, questions and "this confused me".
 
-The same build produces `tests.html` — open it in a browser and it runs the suites against the
-real game state (currently some nine hundred suites, nothing mocked) and prints the
-report on the page; `test.ps1` runs the same thing headless.
+## History
 
-Module order matters: the whole game shares one scope, so constants and tables must be declared
-before anything reads them at top level. A new module gets a new numeric prefix in the right
-place; fractional steps (`19a-`) avoid renaming neighbours.
-
-**To self-host with cloud saves:** put [`site/api.php`](site/api.php) on any PHP host and point
-the cloud config inside the game at it — accounts and cross-device saves need nothing more than
-that one file and a writable folder. Without it the game still saves locally and exports
-portable save codes.
-
-## Status
-
-Version 0.473.0. Everything described above is built and playable, online at
-[drift-game.ru](https://drift-game.ru) with accounts and cloud saves, or offline from this file.
-
-Four development passes are behind it. The first finished the planned queue: celestial
-mechanics, station types, rare materials, mercenaries, bases, the laboratory, boarding, twelve
-blended worlds, the side-on lander, welded pirate hulls, the home that grows on its own. The
-second gave those abstractions a body — barges flying the factor's real routes, a barge in
-distress you can rescue or finish off, a hundred rarities at fixed addresses instead of on a
-drop chance. The third scattered one story across a hundred fragments found by the piece: survey
-marks, a sky calendar, a settlement that decides for itself what to build, a repeater bird that
-improves while it sits in your hold, a meadow that replays, during an eclipse and only
-then, the people who once crossed it, a plant on a dead world still working its shift for an
-owner who never came back, and a four-armed digger paid in food who repeats at the tables
-everything he has seen. The fourth gave the galaxy its regions — thirteen edges, each with its
-own law, its rumours and its returners — and the game its release face: a bottom console with a
-tunable receiver on every screen, one table that holds everything you read, and the road
-companion that flies your ship along your real commute.
-
-The fourteenth pass is finished too — the kit and the suit doll, the lodger who moves in, the
-record book, the institute and its expedition, the trainee, and the phone edition. After it the
-game was looked at again screen by screen (the settlement, the mine, the cantina, deposits, the
-ground cross-section, the gas giant), and the home stopped being a panel and became a house you
-walk into.
-
-Since then the game grew its through-line — an arc about access instead of credits, offers with
-faces and windows that close quietly, and an ending that is never explained — and went through
-a full cosmetic audit under eight laws (every light has a source, everything standing casts a
-shadow, work is visible, motion never blinks). Noon finally looks like noon: the sky, the
-shadows and the light all know the hour. The frame held 60 fps in all nine modes.
-
-A fifth push (M289–M316) gave the galaxy its own economy and its own traffic: **the holding**
-(landing a build of your own on someone else's station, bought as a route rather than priced,
-growing against what the station actually needs) and **the fleet you can't buy** (thirteen
-classes of state ships working the long lines on their own schedule, hailed rather than hired).
-Alongside it, another pass over the picture itself — the cave, the station's own body, the home
-as a generator instead of a fixed plan, a day sky that knows the hour, the system's true
-proportions, and a surface where rocks and rock faces stopped repeating.
-
-A sixth push (M317–M352, 0.314.0–0.350.2) went two ways at once. Under the game it laid **eight
-cross-cutting test nets** that test properties rather than mechanics — the world's life over
-three thousand frames, isolation between suites, places and physics at every frame step, four
-game-QA questions (can you get stuck, does it print money, is any screen a dead end, what happens
-after death), someone else's clock, names checked against the source, the frame meter pinned per
-scene — and they found the raster leak behind a freeze, a softlock in space and a money printer
-at the counter. On top of it came the things the author asked for by eye: smoke along the field's
-streamlines, water, heat haze, the live flare, the scoop as a winding road; and then a second
-economy — **matches** under every cowl and the wandering **«Сорока»** to spend them on, the
-**ОПИСЬ** table instead of a ship screen, the houses' **locker**, a map that speaks in
-**addresses** and shows **holdings**, the **beacon** that reads the shift's bulletin aloud, the
-**cooperative** as the only way to buy for yourself, the author's novel **«Смена»** on the desk,
-and a **big thing on every biome** so a world reads by its silhouette from three steps back.
-
-The hundred-odd versions after that are in [`PATCHNOTES.md`](PATCHNOTES.md); the latest turn is
-the picture itself. Since 0.457.0 the world is drawn on the video card: WebGPU took the sky first
-— a living nebula and its dust, HDR light with a soft bloom, hulls catching the star, particle
-exhaust and bursts, a live star — then everything in flight: ships, stations, planets close up,
-fights, with the instruments on a sharp layer of their own. Nothing under the picture changed:
-seeds, generation, physics and the save format are the same.
-
-What comes next is in [`PLAN.md`](PLAN.md): the other modes move to the GPU one at a time, flight
-has to run smooth on a phone, and the stages after that open on the author's word. Balance is
-tuned against measurements, so the numbers move between versions.
+The game has grown over hundreds of versions, and the story of each one is in
+[`PATCHNOTES.md`](PATCHNOTES.md); the design log in [`docs/done/`](docs/done/README.md) explains
+why the larger systems are the way they are. The development plan that led to the alpha is closed
+and archived in [`PLAN.md`](PLAN.md) — it is a record, not a queue. From here the work is bug
+fixes, economy balance and the polish the alpha turns up.
