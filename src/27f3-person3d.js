@@ -40,6 +40,7 @@ function cpGene(m){
   g.lv=m.xp!=null?mgrLevel(m):1;
   if(m.style!=null)g.style=m.style;   /* одежда места: капюшон зимовки (M850c) — лицо то же */
   if(m.npc&&typeof npcApply==="function")npcApply(g,m.npc);   /* житель библиотеки: лицо закреплено за id */
+  if(m.npc&&NPC_ART_DATA[m.npc])g.skin=npcArtSkin(m.npc);
   return g;
 }
 /* одежда: куртка роли приглушённая, у остальных — из ткацкой палитры зала */
@@ -128,7 +129,6 @@ const CP_KIT={cmd:{jac:[50,56,64],mix:.1,coll:1},keep:{jac:[62,78,70],mix:.16,co
   sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[142,140,132],mix:.04,coll:1,vest:[40,44,52]}};
 function cpBody(m,lod,poseK){return cpRun(cpBodyGen(m,lod,poseK));}
 function* cpBodyGen(m,lod,poseK){
-  if(m.npc&&NPC_ART_DATA[m.npc])return yield* npcArtBody(m,lod,poseK);
   const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=Object.assign({},cpPose(poseK));
   /* усталость (M461): плечи опускаются — lean и ниже локти; корзина fat в ключе сетки */
   const fb=typeof mgrFatBucket==="function"?mgrFatBucket(m):0;
@@ -292,14 +292,14 @@ function* cpBodyGen(m,lod,poseK){
   K.tube([[neck[0],neck[1]-.02,neck[2]-.005],[neck[0],neck[1]+.05,neck[2]+.004],[hc[0],hc[1]-.06,hc[2]-.012]],[.058,.054,.05],ai?Msk:K.mt(mixc(g.skin,[40,24,20],.2),.3,5,P.skin),TN);   /* шея темнее лица: под челюстью тень */
   K.push(hc,0,-ln*.6,0,hs);
   yield;
-  const rig=yield* cpHeadGen(K,g,lod,cl,m.seed);
+  const rig=m.npc&&NPC_ART_DATA[m.npc]?yield* npcArtHeadGen(K,m,hc,hs,-ln*.6):yield* cpHeadGen(K,g,lod,cl,m.seed);
   K.pop();
   K.part=0;
   yield;   /* упаковка — свой шаг (M816c: тело одним шагом стоило до 70 мс) */
   const M=yield* K.packG(2);
   const H=cpHeadFn(g.ai?{w:.27,h:.345,jaw:.8,chin:.8,brow:.9}:g);
   M.at={neck,head:hc,top:[hc[0],hc[1]+H.b*hs+.03,hc[2]],sh,arms,pel,hand:arms.map(a=>[a.W[0]+a.f[0]*.07,a.W[1]+a.f[1]*.07,a.W[2]+a.f[2]*.07]),hold:J.hold||0,seat:!!J.seat};
-  M.at.hp=[hc,-ln*.6,hs];M.rig=rig;
+  M.at.hp=[hc,-ln*.6,hs];M.rig=rig;if(rig&&rig.artFace)M.artFace=rig.artFace;
   M.g=g;
   return M;
 }

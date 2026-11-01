@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 710 · top-level symbols: 9061
+Files: 710 · top-level symbols: 9062
 
 ## SYMBOLS
 
@@ -390,18 +390,18 @@ CPP_IO                       src/27f5-portrait3d.js:19
 CPP_LIVE                     src/27f5-portrait3d.js:18
 CPR                          src/27f3a-face3d.js:57
 CPR_P                        src/27f3a-face3d.js:429
-CP_CLOTH                     src/27f3-person3d.js:46
+CP_CLOTH                     src/27f3-person3d.js:47
 CP_EMO                       src/27f6-face-live.js:15-22
 CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
 CP_JOBS                      src/27f3-person3d.js:336
-CP_KIT                       src/27f3-person3d.js:127
+CP_KIT                       src/27f3-person3d.js:128
 CP_MESH                      src/27f3-person3d.js:308
 CP_SO                        src/27f3a-face3d.js:85
 CP_TEMPER                    src/27f6-face-live.js:25
-CP_TORSO                     src/27f3-person3d.js:98
+CP_TORSO                     src/27f3-person3d.js:99
 CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
@@ -1884,7 +1884,7 @@ R3U                          src/27f2-room3d.js:31
 R3_DBG                       src/27f2-room3d.js:28
 R3_DOWN_WGSL                 src/27f2-room3d.js:728
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:936
+R3_POST_WGSL                 src/27f2-room3d.js:939
 R3_SCR                       src/27f2-room3d.js:50
 R3_UN                        src/27f2-room3d.js:35
 R3_VPOOL                     src/27f2-room3d.js:81
@@ -3581,12 +3581,12 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
-cpBand                       src/27f3-person3d.js:112-120
-cpBasis                      src/27f3-person3d.js:90-94
+cpBand                       src/27f3-person3d.js:113-121
+cpBasis                      src/27f3-person3d.js:91-95
 cpBeardG                     src/27f3a-face3d.js:398-413
-cpBody                       src/27f3-person3d.js:129
-cpBodyGen                    src/27f3-person3d.js:130-305
-cpCloth                      src/27f3-person3d.js:47-52
+cpBody                       src/27f3-person3d.js:130
+cpBodyGen                    src/27f3-person3d.js:131-305
+cpCloth                      src/27f3-person3d.js:48-53
 cpClump                      src/27f3a-face3d.js:389-396
 cpEmoMix                     src/27f6-face-live.js:56-58
 cpEmote                      src/27f6-face-live.js:43-46
@@ -3595,7 +3595,7 @@ cpFaceAt                     src/27f3a-face3d.js:54
 cpFaceRig                    src/27f3a-face3d.js:71-78
 cpFaceState                  src/27f6-face-live.js:47-54
 cpG                          src/27f3a-face3d.js:86
-cpGene                       src/27f3-person3d.js:20-44
+cpGene                       src/27f3-person3d.js:20-45
 cpHairG                      src/27f3a-face3d.js:311-386
 cpHairline                   src/27f3a-face3d.js:302-308
 cpHead                       src/27f3a-face3d.js:190
@@ -3608,14 +3608,14 @@ cpMeshPump                   src/27f3-person3d.js:337-352
 cpMeshPut                    src/27f3-person3d.js:313-317
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:23-29
-cpPose                       src/27f3-person3d.js:54-88
+cpPose                       src/27f3-person3d.js:55-89
 cpRig                        src/27f3a-face3d.js:430-453
 cpRun                        src/27f3a-face3d.js:189
 cpSculpt                     src/27f3a-face3d.js:88-163
 cpSkin                       src/27f3a-face3d.js:166-169
 cpSkinZ                      src/27f3a-face3d.js:171
 cpTeeth                      src/27f3a-face3d.js:174-186
-cpTorsoAt                    src/27f3-person3d.js:101-110
+cpTorsoAt                    src/27f3-person3d.js:102-111
 cpTwinPump                   src/27f3-person3d.js:329-334
 cpUn                         src/27f3a-face3d.js:87
 cpWarp                       src/27f3a-face3d.js:61-67
@@ -6393,9 +6393,10 @@ noteAskable                  src/12ap-notebook.js:205-208
 noteBlock                    src/12ap-notebook.js:168-203
 now                          src/01-core.js:88
 npcApply                     src/27f3b-npc-lib.js:109-114
-npcArtBody                   src/27f3c-npc-art.js:10-50
+npcArtHeadGen                src/27f3c-npc-art.js:18-37
 npcArtRead                   src/27f3c-npc-art.js:4-9
-npcArtRig                    src/27f3c-npc-art.js:53-59
+npcArtRig                    src/27f3c-npc-art.js:38-44
+npcArtSkin                   src/27f3c-npc-art.js:11-17
 npcCrewOff                   src/13d-npc.js:202-212
 npcEnvoy                     src/13d-npc.js:108-123
 npcFoeFor                    src/13-pirates.js:110-120
@@ -7481,7 +7482,7 @@ r3Desc                       src/27f2-room3d.js:750-756
 r3Dev                        src/27f2-room3d.js:778-802
 r3DownDesc                   src/27f2-room3d.js:770-774
 r3Drop                       src/27f2-room3d.js:809
-r3Frame                      src/27f2-room3d.js:856-933
+r3Frame                      src/27f2-room3d.js:856-936
 r3Free                       src/27f2-room3d.js:811
 r3Kit                        src/27f2-room3d.js:89-238
 r3Lin                        src/27f2-room3d.js:40
@@ -10687,7 +10688,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 88 KB
+## src/27f2-room3d.js · 89 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 32 KB
@@ -10699,27 +10700,27 @@ zoomTo                       src/15-input.js:358
 ## src/27f3b-npc-lib.js · 24 KB
   · сто жителей станций:1
 
-## src/27f3c-npc-art.js · 4 KB
+## src/27f3c-npc-art.js · 2 KB
 
-## src/27f3d0-npc-art.js · 408 KB
+## src/27f3d0-npc-art.js · 373 KB
 
-## src/27f3d1-npc-art.js · 389 KB
+## src/27f3d1-npc-art.js · 370 KB
 
-## src/27f3d2-npc-art.js · 395 KB
+## src/27f3d2-npc-art.js · 341 KB
 
-## src/27f3d3-npc-art.js · 401 KB
+## src/27f3d3-npc-art.js · 354 KB
 
-## src/27f3d4-npc-art.js · 406 KB
+## src/27f3d4-npc-art.js · 353 KB
 
-## src/27f3d5-npc-art.js · 408 KB
+## src/27f3d5-npc-art.js · 368 KB
 
-## src/27f3d6-npc-art.js · 401 KB
+## src/27f3d6-npc-art.js · 358 KB
 
-## src/27f3d7-npc-art.js · 417 KB
+## src/27f3d7-npc-art.js · 340 KB
 
-## src/27f3d8-npc-art.js · 396 KB
+## src/27f3d8-npc-art.js · 357 KB
 
-## src/27f3d9-npc-art.js · 409 KB
+## src/27f3d9-npc-art.js · 367 KB
 
 ## src/27f4-cant3d.js · 20 KB
   · кантина в объёме (M725):1

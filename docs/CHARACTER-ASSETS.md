@@ -74,3 +74,7 @@ than a model payload. No binary asset is added to git.
 
 The phone performance gate is still a separate final release check. PC regression
 and layout checks do not establish S23 cadence or thermal behaviour.
+
+## Runtime revision 0.499.106
+
+The imported full bodies had fused sleeves and waist/coat surfaces. Their original nearest-surface weight transfer pulled the connected coat into the arm during bar and seated poses. Runtime now uses the established articulated game bodies with the residents' stable IDs, role clothing and imported individual heads. Heads are extracted from LOD1 triangles whose vertices are predominantly bound to the head; the original source files are unchanged. Rebuild the resident payloads with `python tools/character_assets.py --heads SOURCE src`. Imported head, hair and glasses retain their local geometry; eyes and lips receive only restrained facial motion. Skin colour is shared by face, neck and hands. Full-body files from older conversions must not replace the head-only payloads.

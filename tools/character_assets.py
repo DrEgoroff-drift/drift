@@ -105,7 +105,7 @@ def quantize(P,N,C,J,W,I,bind,codes=None):
     return {'n':len(lookup),'t':len(indices)//3,'s':stride,'z':1,'p':1,'d':len(ib),'b':np.round(bind,5).tolist(),
             'v':base64.b64encode(lz4(planar)).decode(),'i':base64.b64encode(lz4(ib)).decode()}
 
-def npc(path):
+def npc(path,head_only=False):
     g=GLB(path);d=g.d;pos=[];norm=[];col=[];joint=[];weight=[];inds=[];codes=[];offset=0
     sk=d['skins'][0];nodes={d['nodes'][i]['name']:i for i in sk['joints']}
     bind=[]
@@ -130,9 +130,21 @@ def npc(path):
             for k in range(4):
                 for j in range(k+1,4):
                     same=J[:,k]==J[:,j];W[same,k]+=W[same,j];W[same,j]=0
+            if head_only:
+                head=np.sum(np.where(J==2,W,0),axis=1)>.5
+                triangles=g.arr(q['indices']).reshape(-1,3)
+                triangles=triangles[np.all(head[triangles],axis=1)]
+                if not len(triangles):
+                    del codes[-len(P):]
+                    continue
+                used=np.unique(triangles); remap=np.full(len(P),-1,dtype=int);remap[used]=np.arange(len(used))
+                del codes[-len(P):];codes.extend([code]*len(used))
+                P,N,C,J,W=P[used],N[used],C[used],J[used],W[used]
+                indices=remap[triangles].reshape(-1)
+            else: indices=g.arr(q['indices']).reshape(-1)
             pos.extend(P@M[:3,:3].T+M[:3,3]);norm.extend(N@NM.T);col.extend(C);joint.extend(J);weight.extend(W)
-            inds.extend(g.arr(q['indices']).reshape(-1)+offset);offset+=len(P)
-    assert np.ptp(np.array(pos)[:,1])>1, 'Incomplete body: '+str(path)
+            inds.extend(indices+offset);offset+=len(P)
+    assert np.ptp(np.array(pos)[:,1])>(.15 if head_only else 1), 'Incomplete mesh: '+str(path)
     return quantize(pos,norm,col,joint,weight,inds,bind,codes)
 
 def main():
@@ -153,6 +165,8 @@ def main():
     print(name,data['n'],'vertices',data['t'],'triangles',dst.stat().st_size,'bytes')
 
 def main_npc():
+    heads='--heads' in sys.argv
+    if heads:sys.argv.remove('--heads')
     root=Path(sys.argv[1]);out=Path(sys.argv[2]);out.mkdir(parents=True,exist_ok=True)
     total=0;tri=0
     for batch in range(10):
@@ -160,8 +174,8 @@ def main_npc():
         for id in range(batch*10+1,batch*10+11):
             # LOD3 исходного комплекта потерял тело, оставив глаза и уши.
             # LOD2 проверяется по росту: комплектный PASS эту поломку не ловил.
-            name=f'NPC-{id:03}';lod=2
-            q=npc(root/'Drift_NPC_100/models'/name/f'{name}_LOD{lod}.glb');records[id]=q;tri+=q['t']
+            name=f'NPC-{id:03}';lod=1 if heads else 2
+            q=npc(root/'Drift_NPC_100/models'/name/f'{name}_LOD{lod}.glb',heads);records[id]=q;tri+=q['t']
         text='/* Жители из GLB: индексированная сетка, веса суставов, линейный цвет. Генератор: tools/character_assets.py. */\nObject.assign(NPC_ART_DATA,'+json.dumps(records,separators=(',',':'))+');\n'
         dst=out/f'27f3d{batch}-npc-art.js';dst.write_text(text,encoding='utf-8');total+=dst.stat().st_size
     print('NPC:',tri,'triangles;',total,'bytes inline; sources unchanged')

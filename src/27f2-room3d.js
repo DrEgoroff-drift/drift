@@ -877,7 +877,6 @@ function r3Frame(cn,S,post,dst){
     cs.sort((a,b)=>ot[a]-ot[b]);
     cs.forEach((o,i)=>{const b=R3U.cs+4+i*4;F[b]=ot[o];F[b+1]=ot[o+1];F[b+2]=ot[o+2];});
     F[R3U.cs]=cs.length;F[R3U.cs+1]=R3_DBG.csall?1e9:rm*3;}
-  d.queue.writeBuffer(R3.ub,0,F);
   const tsg=S.tsg&&S.tsg.view||R3.blank,tfl=S.tfl&&S.tfl.view||R3.blank;
   const key=rpgTexId(tsg)+"|"+rpgTexId(tfl);
   let g0=R3.bgs.get(key);
@@ -902,6 +901,10 @@ function r3Frame(cn,S,post,dst){
     return dx*dx+dy*dy+dz*dz<=rr*rr;};
   const hot=S.shHot!=null?S.draws.find(q=>q[1]===S.shHot):null,SVo=R3.shVP||(R3.shVP=[]);
   const redo=SV.map((m,k)=>!keep||!R3_DBG.nopass&&(!SVo[k]||m.some((v,i)=>Math.abs(v-SVo[k][i])>.02)||!!hot&&reach(SL[k],hot[0],hot[1])));
+  /* Сохранённая глубина и её проекция — одна пара. Малое движение лампы
+     не требует перерисовки, но нельзя читать прежний слой новой матрицей. */
+  for(let k=0;k<SV.length;k++)if(!redo[k])F.set(SVo[k],R3U.sv+k*16);
+  d.queue.writeBuffer(R3.ub,0,F);
   /* люди отбрасывают тень простым двойником (27f3 cpTwinPump): за кадр строится не больше одного, по шагам */
   if(redo.includes(true)&&!R3_DBG.notwin){for(const [m] of S.draws)if(m&&m.src&&!m.sh){if(typeof cpTwinPump==="function")cpTwinPump(m,1.5);break;}}
   for(let k=0;k<SV.length;k++){
