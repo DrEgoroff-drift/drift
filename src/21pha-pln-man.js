@@ -124,6 +124,10 @@ function plnManBuild(P,low,D){
     plnTube(m,{path:[[.04,.445,0],[.16,.455,0]],rad:.016,sides:5,col:P.lamp.acc,mat:M,x:.3});
     /* блик забрала: одна жёсткая дуга по верхней кромке стекла (M232) */
     plnBlob(m,{c:[.165,.32,-.075],r:[.03,.016,.012],sub:1,lean:-.5,col:[1,1,1],mat:PLN_MAT.glow,glow:1.1});
+    /* дуга блика по всему стеклу: без неё забрало в фас читалось чёрной дырой,
+       а не стеклом. Тонкая трубка по верхней кромке — свечение даёт «мокрый» отблеск */
+    plnTube(m,{path:[[.150,.300,-.150],[.196,.318,-.075],[.208,.312,.010],[.180,.286,.095]],
+      rad:.011,sides:5,col:[.86,.94,1],mat:PLN_MAT.glow,x:.7,cap:true});
   });
   part(2,m=>plnBlob(m,{c:[.222,.40,0],r:[.016,.046,.046],sub:1,col:[1,.86,.62],mat:PLN_MAT.glow,glow:1}),
     st=>({mat:st.lamp>.02?PLN_MAT.glow:PLN_MAT.man,glow:6*st.lamp,x:1}));}
@@ -150,6 +154,8 @@ function plnManBuild(P,low,D){
     part(up,m=>{
       plnBlob(m,{c:[0,.01,0],r:[.115,.10,.10],box:.8,sub:1,col:suit,mat:M,x:.2});
       plnTube(m,{path:[[0,0,0],[0,-.28,0]],rad:t=>lerp(.095,.078,t),sides:9,col:suit,mat:M,x:.12,cap:true});
+      /* наплечник: плечо висело отдельным шаром, между ним и торсом был ступенчатый стык */
+      plnBlob(m,{c:[-.030,.050,0],r:[.105,.062,.105],box:.55,sub:1,col:suitD,mat:M,x:.28});
     });
     part(fo,m=>{
       ring(m,.04,-.04,.088,joint,.3);
