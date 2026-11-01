@@ -11,7 +11,7 @@ suite("персонажи: импорт, позы и оснащение",()=>{
     let normals=true;for(let k=0;k<q.no.length;k+=3)if(Math.hypot(q.no[k],q.no[k+1],q.no[k+2])<.8)normals=false;
     ok(normals,"житель "+id+": нормали не нулевые");
     let lo=1e9,hi=-1e9;for(let k=1;k<q.p.length;k+=3){lo=Math.min(lo,q.p[k]);hi=Math.max(hi,q.p[k]);}
-    ok(hi-lo>1,"житель "+id+": целое тело, не только лицо");
+    ok(hi-lo>.15&&hi-lo<.8,"житель "+id+": голова целая, тело строится игровым ригом");
     let good=true;for(let i=0;i<q.n;i++){let sum=0;for(let k=0;k<4;k++)sum+=q.w[i*4+k];if(Math.abs(sum-1)>.005)good=false;}
     ok(good,"житель "+id+": веса нормализованы");
   }

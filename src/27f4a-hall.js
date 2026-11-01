@@ -608,7 +608,7 @@ function hallFrame(){
   /* тени зала: в покое — кэш слоёв (лампа та же); на ходу — каждый кадр целиком.
      Частичный shHot оставлял дальние слои застывшими, а ближние обновлялись — пол мигал на границе ламп.
      Через кадр (frames&1) мигал ещё сильнее. Камера тени не меняет (29.10) */
-  S.own="hall";S.shKeep=!hallWalkMoving();S.shHot=null;
+  S.own="hall|"+L.rkey;S.shKeep=!hallWalkMoving();S.shHot=null;
   HALL.frames++;HALL.S=S;HALL.vp=cam.vp;   /* пределы — hallLimits(HALL.S) по запросу теста, не в кадре (M816c) */
   const k0=L.people[0],pw=hallWalkPilot(),pa=pw?[pw[0],pw[1]]:null,f=sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};
