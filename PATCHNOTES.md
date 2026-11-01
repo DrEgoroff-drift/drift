@@ -7,6 +7,10 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 
+## 0.499.101 — A hundred locked station residents
+
+- `27f3b-npc-lib`: NPC-001…100, one face each (build, head, hair, kit, jacket). The hall takes its keeper and crowd from that station type's pool, stable for the system's seed. Vega is id 1 — purple dress, red scarf on the mesh — and is not placed in the crowd.
+
 ## 0.499.100 — The day is an hour, not a minute
 
 - The surface sun's day is now `CEL_DAY × (54–72)` (was `6–9`) — ~an hour per full day instead of ~6–10 minutes, the author's «солнце очень быстро» (15.10). The same period feeds the stone's marks act (`21pifa`), the probe (`25m-probe`) and the light test (`91ql-light`), so they stay in step. `CEL_DAY` itself — the calendar day, the war chronicle, the need windows — is untouched.

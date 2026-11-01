@@ -39,6 +39,7 @@ function cpGene(m){
   g.loy=clamp((m.loy==null?55:m.loy)/100,0,1);
   g.lv=m.xp!=null?mgrLevel(m):1;
   if(m.style!=null)g.style=m.style;   /* одежда места: капюшон зимовки (M850c) — лицо то же */
+  if(m.npc&&typeof npcApply==="function")npcApply(g,m.npc);   /* житель библиотеки: лицо закреплено за id */
   return g;
 }
 /* одежда: куртка роли приглушённая, у остальных — из ткацкой палитры зала */
@@ -177,6 +178,10 @@ function* cpBodyGen(m,lod,poseK){
       K.surf(lod>1?28:14,3,(u,v)=>[cp(gap+u*(TAU-2*gap),v)],Mc);
       if(lod){for(let i=0;i<=20;i++)eg.push(cp(gap+i/20*(TAU-2*gap),1));K.tube(eg,.0042,Mc,4);}
     }
+    if(m.npc===1){   /* Вега: красная косынка на фиолетовом платье */
+      const Ms=K.mt([176,42,52],.18,4,P.cloth),nk=yf(.97),nz=zf(.97);
+      K.tube([[-.11,nk,nz],[0,nk+.045,nz+.015],[.11,nk,nz],[.07,nk-.07,nz+.02],[-.07,nk-.07,nz+.02],[-.11,nk,nz]],.012,Ms,5);
+    }
     if(lod&&rk!=="fact"&&rk!=="clerk"){const zp=[];for(let i=0;i<=8;i++){const v=.2+i/8*.6;zp.push([0,yf(v),zf(v)+.003]);}K.tube(zp,.0028,Mm,4);
       if(rk!=="cmd"&&rk!=="clerk")for(const s of [-1,1])K.box([s*.075*wB,.33*TL,zf(.66)+.004],[.032,.026,.006],K.mt(mixc(jac,[0,0,0],.18),.2,5,P.cloth),.004);}
     yield;   /* снаряжение роли — свой шаг */
@@ -302,7 +307,7 @@ function* cpBodyGen(m,lod,poseK){
 const CP_MESH=new Map();
 function cpMeshKey(m,pose,lod){
   const fb=typeof mgrFatBucket==="function"?mgrFatBucket(m):0;
-  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"")+(m.style!=null?"|s"+m.style:"")+(fb?"|f"+fb:"");
+  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"")+(m.style!=null?"|s"+m.style:"")+(m.npc?"|n"+m.npc:"")+(fb?"|f"+fb:"");
 }
 function cpMeshPut(key,M){
   if(CP_MESH.size>=128){   /* зал + кантина + портреты: 48 вытесняли друг друга по кругу; +32 — двойники теней (24.10) */
