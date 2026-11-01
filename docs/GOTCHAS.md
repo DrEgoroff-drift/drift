@@ -210,3 +210,15 @@ against the shape's biggest on-screen size). Bake discs, glows and bodies; leave
   `test.ps1` and `test.ps1 -Full` and red on the runner at `node test-node.js`: the `typeof`-sentry net
   («сеть: в наборах нет ok(true и typeof-сторожей») reports there and not through the gate. Before a push
   run `node test-node.js` bare and read its first line.
+
+- **`docs/mkpeep.ps1` is stale: `enterSurface()` no longer sets the surface camera.** The stand
+  jumps straight into the surface and then crops the live canvas by `G.viewX/G.viewY`. Since the
+  camera is set inside `plnSurface` (`21pz-pln-frame.js:355`), which the direct jump never reaches,
+  those stay `undefined`, the crop maths turns into `NaN` and every cell comes out **black** — the
+  sheet is still produced, so it fails silently. Measured 01.11: after `enterSurface()` and three
+  `drawSurface()` ticks `viewX/viewY/K` are `undefined` and `S.peep.y` is `undefined`, on a desert
+  world as well as on a ruin one. Also check the tool: these stands do not put the sheet on the
+  page, they **POST** it to `docs/stand.ps1`, so the capture is `docs/shot.ps1 <name>`, never
+  `docs/pageshot.ps1 <name>` — the wrong one returns a screenshot of the game and looks like it
+  worked. The POST path must match the `-Name` exactly, or `shot.ps1` waits forty seconds and
+  reports «стенд не ответил», which reads like a dead server and is usually a name mismatch.
