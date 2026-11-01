@@ -180,6 +180,12 @@ async function g11RunNear(){
       put(r[0]+" · кадров "+NEAR.n);}
   }catch(e){err.push(""+(e&&e.message||e));}
   const J=nearJSON();J.err=err;J.ua=navigator.userAgent.slice(0,80);
+  /* GPU-метки — только через gpuTs (timestamp-query), никаких принудительных
+     синхронизаций в игровом цикле; нет поддержки — честно пишем null/tsOk=false */
+  try{
+    if(typeof g11GpuMs==="function"){ const gm=await g11GpuMs(2,true); J.gpuMs=gm||null; J.gpuTsOk=!!(typeof GPU!=="undefined"&&GPU.tsOk); }
+    else { J.gpuMs=null; J.gpuTsOk=false; }
+  }catch(e){ J.gpuMs=null; J.gpuTsOk=!!(typeof GPU!=="undefined"&&GPU.tsOk); J.gpuErr=String((e&&e.message)||e).slice(0,200); }
   put("готово: "+J.blocks.length+" блоков, кадров "+J.blocks.reduce((s,b)=>s+b.frames,0));
   try{await fetch("/shot?n=g11near",{method:"POST",
     body:btoa(unescape(encodeURIComponent(JSON.stringify(J))))});}catch(e){}
