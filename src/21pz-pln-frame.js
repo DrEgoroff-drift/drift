@@ -370,7 +370,9 @@ function plnSurface(S,o){
      диапазон −1e9…1e9 на первом кадре после посадки проходил всю землю и не давал кадру
      завершиться (near-run-10..18: у surface ноль кадров). Так же делает plnLandMove */
   if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,C.ex-250,C.ex+250);
-  {const _s=NEAR.on?wallMs():0;plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));if(NEAR.on)NEAR.wPlant=Math.round((wallMs()-_s)*10)/10;}
+  {const _s=NEAR.on?wallMs():0;/* флора после касания: крупными пачками, а не по крохам —
+     при B.low/2 она растягивалась на секунды и выглядела как «ещё грузится» */
+    plnPlantStep(L,p,C.ex,V,Math.max(B.low*4,lim-(wallMs()-tb)));if(NEAR.on)NEAR.wPlant=Math.round((wallMs()-_s)*10)/10;}
   fbSpend(wallMs()-tb);
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт

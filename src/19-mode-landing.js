@@ -29,7 +29,7 @@ function startLanding(p){
   const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.7,a:0,gear:0,sq:0,sqv:0,hot:0,
-    g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
+    g:(.019+p.T.grav*.016+p.radius*.00012)*3,over:0,ok:false,auto:G.opts.easyLand};
   /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
   {const _t=NEAR.on?wallMs():0;G.land.pre=surfGen(tr,p);if(NEAR.on)NEAR.sl.pre=Math.round((wallMs()-_t)*10)/10;}
   G.mode="landing";
