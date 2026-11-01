@@ -286,19 +286,22 @@ workAdd("flora",3,()=>G.mode==="system",ms=>plnKitTick(ms));
       Здесь те же ступени идут фоном, по бюджету кадра, и к нажатию L.warmDone уже
       стоит; спуск начинается сразу.
 
-   Память ограничена: лента (самое дорогое — сетки видеокарты) держится только для
-   одной, ближайшей планеты; при смене ближайшей прежняя освобождается (plnLandFree),
-   при смене системы — все кэши планет прежней. Обход идёт от ближней планеты к
-   дальней: вероятная цель получает своё первой. */
-const PLNBODY={sys:null,target:null,landP:null,S:null,C:null,V:null,failT:0};
+   Память ограничена: лента (самое дорогое — сетки видеокарты) держится для всех
+   твёрдых планет системы — их не больше шести; при смене системы все ленты и кэши
+   планет прежней освобождаются (plnLandKill). Обход идёт от цели автопилота и
+   ближней планеты к дальней: вероятная цель получает своё первой. */
+const PLNBODY={sys:null,target:null,failT:0};
+/* сколько лент держим в памяти: в системе до шести планет, газовые не садятся —
+   значит, для обычной системы это все твёрдые. Больше шести не бывает (06-galaxy) */
+const PLN_PREP_MAX=6;
 /* освободить ленту планеты: её сетки держит видеокарта */
 function plnBodyLandDrop(p){
   if(!p)return;
-  if(p.__land){
-    if(PLN_LAND.cur===p.__land)PLN_LAND.cur=null;
-    plnLandFree(p.__land);p.__land=null;
-  }
-  if(PLNBODY.landP===p){PLNBODY.landP=null;PLNBODY.S=null;PLNBODY.C=null;PLNBODY.V=null;}
+  const L=p.__land;
+  if(!L)return;
+  if(PLN_LAND.cur===L)PLN_LAND.cur=null;
+  plnLandKill(L);
+  p.__land=null;
 }
 /* весь подготовленный запас планеты — лента, рельеф, вещи земли */
 function plnBodyDrop(p){
@@ -306,14 +309,20 @@ function plnBodyDrop(p){
   plnBodyLandDrop(p);
   p.__tr=null;p.__gs=null;p.__lon=null;
 }
+/* загрузка сохранения: прежний мир (и его ленты) больше не этот мир */
+function plnBodyReset(){
+  if(PLNBODY.sys)plnBodyClear(PLNBODY.sys);
+  PLNBODY.sys=null;PLNBODY.target=null;PLNBODY.failT=0;
+}
 /* система сменилась: её подготовка больше не нужна */
 function plnBodyClear(S){
   /* в заходе и на поверхности лента в работе — её не трогаем */
   if(G.mode==="landing"||G.mode==="surface")return;
   S=S||PLNBODY.sys;
   if(S&&S.planets)for(const p of S.planets)plnBodyDrop(p);
-  PLNBODY.landP=null;PLNBODY.S=null;PLNBODY.C=null;PLNBODY.V=null;PLNBODY.failT=0;
-  if(PLN_LAND.cur){plnLandFree(PLN_LAND.cur);PLN_LAND.cur=null;}
+  PLNBODY.failT=0;
+  /* лента прошлой системы держит видеопамять; её владельца уже отпустили выше */
+  if(PLN_LAND.cur){plnLandKill(PLN_LAND.cur);PLN_LAND.cur=null;}
 }
 /* ── предсказание: цель выбрана на карте ──
    Клик по системе на карте — это намерение лететь. Карта прощает полсекунды,
@@ -332,11 +341,18 @@ function preloadSystem(sx,sy){
   return true;
 }
 function preloadClear(){PLNBODY.target=null;}
-/* планеты системы от ближней к дальней: вероятная цель — первой */
-function plnBodyOrder(S){
-  const sh=G.ship||{},arr=[];
-  if(S&&S.planets)for(const p of S.planets)if(p&&typeof p.x==="number")arr.push(p);
-  arr.sort((a,b)=>Math.hypot(sh.x-a.x,sh.y-a.y)-Math.hypot(sh.x-b.x,sh.y-b.y));
+function plnBodyDist(p){return G.ship&&p&&typeof p.x==="number"?Math.hypot(G.ship.x-p.x,G.ship.y-p.y):1e18;}
+/* порядок подготовки: цель автопилота первой, дальше от ближней планеты к дальней.
+   Планета, к которой игрок уже летит, важнее соседней: именно на ней он и сядет */
+function plnBodyPrepOrder(S){
+  const arr=[];
+  if(S&&S.planets)for(const p of S.planets)if(p&&p.type!=="gas"&&typeof p.x==="number")arr.push(p);
+  arr.sort((a,b)=>plnBodyDist(a)-plnBodyDist(b));
+  const T=G.ap&&G.ap.kind==="planet"?G.ap.p:null;
+  if(T&&T.type!=="gas"&&typeof T.x==="number"){
+    const i=arr.indexOf(T);
+    if(i>0){arr.splice(i,1);arr.unshift(T);}
+  }
   return arr;
 }
 /* подпись вещей земли: по ней видно, что мир изменился (выработали залежь, сорвали
@@ -348,9 +364,8 @@ function plnBodyGsKey(g){
   return s;
 }
 /* данные мира планеты: ровно то, что делал startLanding, но заранее и один раз.
-   Рельеф и вещи земли кэшируются отдельно: рельеф переживает посадку, вещи земли
-   забираются нажатием и после возвращения в систему считаются заново — иначе
-   выработанная залежь снова лежала бы целой */
+   Рельеф переживает посадку, вещи земли забираются нажатием и после возвращения
+   в систему считаются заново — иначе выработанная залежь снова лежала бы целой */
 function plnBodyData(p){
   if(!p.__tr){
     const lon=plnLonOf(p);
@@ -368,66 +383,55 @@ function plnBodyData(p){
     if(p.__land&&p.__land.gsKey!==p.__gsKey)plnBodyLandDrop(p);
   }
 }
-/* ближайшая твёрдая планета: на газовую не садятся */
-function plnBodyNear(S){
-  let b=null,bd=1e18;
-  if(!S||!S.planets||!G.ship)return null;
-  for(const q of S.planets){
-    if(!q||q.type==="gas"||typeof q.x!=="number")continue;
-    const d=Math.hypot(G.ship.x-q.x,G.ship.y-q.y);
-    if(d<bd){bd=d;b=q;}
-  }
-  return b;
+/* контекст ступеней для одной ленты: S — вещи земли этой планеты, C/V — окно спуска */
+function plnBodyLandCtx(L,p){
+  const tr=L.tr,gs=L.gs;
+  const S={tr,p,cam:{x:0,y:0},face:1,swim:0,shake:0,shipX:tr.padX,x:tr.padX,y:groundAt(tr,tr.padX)};
+  if(gs){S.deposits=gs.deposits;S.plants=gs.plants;S.fauna=gs.fauna;S.cave=gs.cave;S.peep=gs.peep;}
+  /* окно спуска тем же plnLens, но без plnDescLens: тот запоминает PLN.hand,
+     а передача объектива принадлежит настоящему заходу, не фону */
+  const y0=PLN.y0;PLN.y0=tr.padY;
+  let C=null;
+  try{
+    const gyw=groundAt(tr,tr.padX);
+    C=plnLens(S,surfScale(),(ws,hs,f)=>({vx:tr.padX/PLN_M-ws/2,vy:Math.max(-400,Math.min(gyw-hs*(1-f),tr.padY/PLN_M-hs*.24))}));
+  }finally{PLN.y0=y0;}
+  return {S,C,V:{hw:C.hw,D:C.D}};
 }
-/* лента ближайшей планеты: создать один раз, дальше вести ступени plnWarmStep */
-function plnBodyDist(p){return G.ship&&p&&typeof p.x==="number"?Math.hypot(G.ship.x-p.x,G.ship.y-p.y):1e18;}
+/* ленты всех твёрдых планет системы: создать по одной за проход, дальше вести
+   ступени plnWarmStep. Одна лента на проход — бюджет кадра не делится */
 function plnBodyLandPrep(budget){
   /* лента — сетки видеокарты: без устройства её не собрать, данные мира всё равно готовы */
   if(G.mode!=="system"||typeof GPU==="undefined"||!GPU.ok||!GPU.dev)return;
   /* сборка сорвалась — не долбим её каждый кадр, ждём несколько секунд */
   if(PLNBODY.failT&&wallMs()<PLNBODY.failT)return;
-  let near=plnBodyNear(G.sys);
-  if(!near){if(PLNBODY.landP)plnBodyLandDrop(PLNBODY.landP);return;}
-  /* ── гистерезис: ленту не пересобирают на каждом шаге ──
-     Две планеты на почти равном расстоянии (или планета, обгоняющая корабль)
-     заставляли «ближайшую» мигать каждый кадр: старая лента освобождалась, новая
-     начинала строиться с нуля — кадр за кадром. Новую цель берём, только если она
-     заметно ближе: иначе живёт прежняя лента, и в памяти по-прежнему одна */
-  if(PLNBODY.landP&&PLNBODY.landP!==near&&PLNBODY.landP.__land&&plnBodyDist(PLNBODY.landP)<=plnBodyDist(near)*1.12)near=PLNBODY.landP;
-  /* ближайшая действительно сменилась — ленту прежней отпускаем */
-  if(PLNBODY.landP&&PLNBODY.landP!==near)plnBodyLandDrop(PLNBODY.landP);
-  const lon=plnLonOf(near);
-  /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
-  if(near.__tr&&near.__lon!=null&&lon!=null&&Math.abs(near.__lon-lon)>0.1){
-    plnBodyDrop(near);return;
+  const order=plnBodyPrepOrder(G.sys);
+  if(!order.length)return;
+  let made=0;
+  for(const p of order){
+    const L=p.__land;
+    if(!L)continue;
+    if(L.tr===p.__tr&&L.gen===PLN_GPU.gen&&L.gsKey===p.__gsKey)made++;
+    else plnBodyLandDrop(p);
   }
-  if(!near.__tr||!near.__gs)return;           /* данные посчитает следующий проход */
-  if(near.__land&&(near.__land.tr!==near.__tr||near.__land.gsKey!==near.__gsKey||near.__land.gen!==PLN_GPU.gen))plnBodyLandDrop(near);
-  if(!near.__land){
-    const tr=near.__tr;
+  for(const p of order){
+    if(!p.__tr||!p.__gs)continue;             /* данные посчитает следующий проход */
+    let L=p.__land;
+    if(L&&L.warmDone)continue;                /* эта лента готова — следующая */
+    if(L){
+      if(!L.ctx)L.ctx=plnBodyLandCtx(L,p);
+      plnWarmStep(L,L.ctx.S,p,L.ctx.C,L.ctx.V,Math.max(1,budget),true);
+      return;
+    }
+    if(made>=PLN_PREP_MAX)continue;
+    const tr=p.__tr;
     /* точка композиции и перестановка корабля: спуск и поверхность складывают сцену
        вокруг площадки (21pza); без неё plnLandMove не сможет принять чужой sx */
     if(tr.plnCx==null)tr.plnCx=tr.padX/PLN_M+12.8;
-    const L=plnLandMake(tr,near,tr.padX);
-    L.gsKey=near.__gsKey;
-    near.__land=L;
-    PLNBODY.landP=near;
-    const gs=near.__gs;
-    const S2={tr,p:near,cam:{x:0,y:0},face:1,swim:0,shake:0,shipX:tr.padX,x:tr.padX,y:groundAt(tr,tr.padX)};
-    if(gs){S2.deposits=gs.deposits;S2.plants=gs.plants;S2.fauna=gs.fauna;S2.cave=gs.cave;S2.peep=gs.peep;}
-    PLNBODY.S=S2;
-    /* окно спуска считается тем же plnLens, но без plnDescLens: тот запоминает PLN.hand,
-       а передача объектива принадлежит настоящему заходу, не фону */
-    const y0=PLN.y0;PLN.y0=tr.padY;
-    const gyw=groundAt(tr,tr.padX);
-    const C=plnLens(S2,surfScale(),(ws,hs,f)=>({vx:tr.padX/PLN_M-ws/2,vy:Math.max(-400,Math.min(gyw-hs*(1-f),tr.padY/PLN_M-hs*.24))}));
-    PLN.y0=y0;
-    PLNBODY.C=C;PLNBODY.V={hw:C.hw,D:C.D};
+    L=plnLandMake(tr,p,tr.padX);
+    L.owner=p;L.gs=p.__gs;L.gsKey=p.__gsKey;L.lon=tr.lon;L.ctx=null;
+    p.__land=L;made++;
     return;
-  }
-  const L=near.__land;
-  if(!L.warmDone&&PLNBODY.S&&PLNBODY.C&&PLNBODY.V){
-    plnWarmStep(L,PLNBODY.S,PLNBODY.S.p,PLNBODY.C,PLNBODY.V,Math.max(1,budget),true);
   }
 }
 function plnBodyTick(ms){
@@ -446,20 +450,21 @@ function plnBodyTick(ms){
   }
   if(!S)S=G.sys;
   if(!S||!S.planets||!S.planets.length)return false;
-  const order=plnBodyOrder(S);
-  /* 1. данные всех планет, от ближней к дальней; шаг не делится, поэтому за проход
-        считается одна планета (рельеф + вещи земли — единый мир) */
+  const order=plnBodyPrepOrder(S);
+  /* 1. данные всех планет, цель и ближние первыми; шаг не делится, поэтому за
+        проход считается одна планета (рельеф + вещи земли — единый мир) */
   for(const p of order){
     if(p.__tr&&p.__gs)continue;
     plnBodyData(p);
     if(wallMs()-t0>=budget)break;
   }
-  /* 2. лента земли ближайшей планеты ТЕКУЩЕЙ системы — шагами, в бюджет кадра.
-        Сбой сборки не должен ронять кадр и повторяться каждый проход: бросаем эту ленту */
+  /* 2. ленты всех твёрдых планет ТЕКУЩЕЙ системы — шагами, в бюджет кадра.
+        Сбой сборки не должен ронять кадр и повторяться каждый проход */
   try{plnBodyLandPrep(Math.max(0,budget-(wallMs()-t0)));}
   catch(e){
     PLNBODY.failT=wallMs()+5000;
-    if(PLNBODY.landP)plnBodyLandDrop(PLNBODY.landP);
+    const near=plnBodyPrepOrder(G.sys)[0];
+    if(near)plnBodyLandDrop(near);
   }
   return true;
 }
