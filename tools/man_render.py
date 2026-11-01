@@ -79,12 +79,27 @@ def render(ang_deg, path):
         a0, b0, c0 = I[t]
         col = (C[a0] + C[b0] + C[c0]) / 3.0
         k = (lam[a0] + lam[b0] + lam[c0]) / 3.0
-        rgb = np.clip(col * 255 * k, 0, 255).astype(int)
+        rgb = np.clip((col * k) ** (1 / 1.55) * 255, 0, 255).astype(int)
         dr.polygon([(sx[a0], sy[a0]), (sx[b0], sy[b0]), (sx[c0], sy[c0])],
                    fill=(int(rgb[0]), int(rgb[1]), int(rgb[2])))
     img.save(path)
     print("wrote " + path)
 
 
-render(0, out + "_front.png")
-render(38, out + "_q.png")
+for ang in (0, 38, 90, 145):
+    render(ang, out + "_a%d.png" % ang)
+
+# Крупный план кистей: кости 10 и 12 — предплечья, на них висят перчатки.
+# Общий план этого не показывает: кисть занимает десяток пикселей.
+hand = np.isin(bone_of, [12]) & (P[:, 1] < 0.70)
+if hand.any():
+    hlo, hhi = P[hand].min(0), P[hand].max(0)
+    hspan = float(max((hhi - hlo).max(), 1e-6))
+    ctr_save, span_save = ctr.copy(), span
+    ctr = (hlo + hhi) * 0.5
+    span = hspan * 1.7
+    print("hand bbox %s .. %s (span %.3f)" % (np.round(hlo, 3), np.round(hhi, 3), hspan))
+    render(0, out + "_hand_front.png")
+    render(55, out + "_hand_q.png")
+    ctr, span = ctr_save, span_save
+

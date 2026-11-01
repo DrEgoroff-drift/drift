@@ -88280,7 +88280,7 @@ function plnManBuild(P,low,D){
   const bare=!!(D&&D.dress==="bare");
   if(D&&D.dress&&D.dress!=="suit"&&!bare)return plnManCloth(P,low,D);
   const M=PLN_MAT.man,parts=[],white=plnHex("#efe9dc");
-  const suit=plnHex("#ee7326"),suitD=plnHex("#c4581c"),joint=plnHex("#8a8f96"),glass=plnHex("#0e1a22"),dark=plnHex("#3a3d42");
+  const suit=plnHex("#ee7326"),suitD=plnHex("#c4581c"),joint=plnHex("#8a8f96"),glass=plnHex("#22394e"),dark=plnHex("#3a3d42");
   const lit=c=>plnMix3(c,white,.45);
   const part=(bone,fn,dyn)=>{const m=plnMesh(1024);fn(m);parts.push({bone,m:plnMeshDone(m),dyn:dyn||null});};
   const ring=(m,y0,y1,r,col,x,c)=>plnTube(m,{path:[[c?c[0]:0,y0,c?c[1]:0],[c?c[0]:0,y1,c?c[1]:0]],rad:r,sides:10,col,mat:M,x:x||.2,cap:true});
@@ -88342,7 +88342,8 @@ function plnManBuild(P,low,D){
       plnBlob(m,{c:[.075,-.092,0],r:[.18,.025,.095],box:.35,sub:1,col:P.boots.dark,mat:M,x:.15});
       /* носок, пятка и ремень: без них ботинок был одной каплей и на близком плане
          читался валенком. Три дешёвых блоба — форма появляется, счётчик почти не растёт */
-      plnBlob(m,{c:[.207,-.062,0],r:[.045,.055,.075],sub:1,col:P.boots.dark,mat:M,x:.2});
+      /* носок — та же форма, что ботинок: прежняя тёмная накладка читалась ремнём поверх */
+      plnBlob(m,{c:[.196,-.052,0],r:[.058,.062,.086],sub:1,col:P.boots.main,mat:M,x:.26});
       plnBlob(m,{c:[-.052,-.070,0],r:[.045,.050,.080],sub:1,col:P.boots.main,mat:M,x:.2});
       plnBlob(m,{c:[.052,-.028,0],r:[.055,.020,.088],sub:1,col:P.boots.acc,mat:M,x:.25});
     });
@@ -88350,10 +88351,11 @@ function plnManBuild(P,low,D){
   /* руки: плечо, локоть-гофра, предплечье, манжета и перчатка (перчатки) */
   for(const [up,fo] of [[9,10],[11,12]]){
     part(up,m=>{
-      plnBlob(m,{c:[0,.01,0],r:[.115,.10,.10],box:.8,sub:1,col:suit,mat:M,x:.2});
-      plnTube(m,{path:[[0,0,0],[0,-.28,0]],rad:t=>lerp(.095,.078,t),sides:9,col:suit,mat:M,x:.12,cap:true});
-      /* наплечник: плечо висело отдельным шаром, между ним и торсом был ступенчатый стык */
-      plnBlob(m,{c:[-.030,.050,0],r:[.105,.062,.105],box:.55,sub:1,col:suitD,mat:M,x:.28});
+      /* сплошная лента с широким верхом дала «лопату»: плечо снова блоб, но шире трубки
+         по x и посажено так, чтобы стык не читался ступенькой */
+      plnBlob(m,{c:[0,.012,0],r:[.112,.090,.102],box:.75,sub:1,col:suit,mat:M,x:.2});
+      plnTube(m,{path:[[0,-.005,0],[0,-.140,0],[0,-.280,0]],
+        rad:t=>lerp(.098,.078,t),sides:10,col:suit,mat:M,x:.12,cap:true});
     });
     part(fo,m=>{
       ring(m,.04,-.04,.088,joint,.3);

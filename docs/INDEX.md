@@ -1741,7 +1741,7 @@ PLN_MAN                      src/21pha-pln-man.js:23
 PLN_MAN_BONES                src/21pha-pln-man.js:32-61
 PLN_MAN_DRESS                src/21pha1-pln-man-dress.js:17-28
 PLN_MAN_FLAME                src/21pha-pln-man.js:50
-PLN_MAN_ID                   src/21pha-pln-man.js:286
+PLN_MAN_ID                   src/21pha-pln-man.js:288
 PLN_MAN_POSE                 src/21pha-pln-man.js:39-61
 PLN_MAN_SIT                  src/21pha-pln-man.js:49
 PLN_MARK                     src/21pie-pln-marks.js:20
@@ -6967,19 +6967,19 @@ plnM4mirrorY                 src/21p-pln.js:104
 plnM4move                    src/21p-pln.js:138-140
 plnM4mul                     src/21p-pln.js:86-91
 plnM4ortho                   src/21p-pln.js:92-97
-plnMan                       src/21pha-pln-man.js:246-259
-plnManBones                  src/21pha-pln-man.js:265-285
-plnManBuild                  src/21pha-pln-man.js:81-183
+plnMan                       src/21pha-pln-man.js:248-261
+plnManBones                  src/21pha-pln-man.js:267-287
+plnManBuild                  src/21pha-pln-man.js:81-185
 plnManCloth                  src/21pha1-pln-man-dress.js:47-121
 plnManCss                    src/21pha-pln-man.js:54-61
-plnManFlame                  src/21pha-pln-man.js:229-243
-plnManFrame                  src/21pha-pln-man.js:293-334
+plnManFlame                  src/21pha-pln-man.js:231-245
+plnManFrame                  src/21pha-pln-man.js:295-336
 plnManHead                   src/21pha1-pln-man-dress.js:32-45
 plnManLin                    src/21pha1-pln-man-dress.js:22
-plnManPack                   src/21pha-pln-man.js:185-192
+plnManPack                   src/21pha-pln-man.js:187-194
 plnManPalette                src/21pha-pln-man.js:63-75
-plnManPose                   src/21pha-pln-man.js:195-226
-plnManState                  src/21pha-pln-man.js:287-290
+plnManPose                   src/21pha-pln-man.js:197-228
+plnManState                  src/21pha-pln-man.js:289-292
 plnMarkH                     src/21pie-pln-marks.js:40
 plnMarkMesh                  src/21pie-pln-marks.js:58-103
 plnMarkMove                  src/21piec-pln-marks-move.js:10-289
@@ -10189,7 +10189,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ph-pln-cast.js · 3 KB
   · планета: состав в кадре — круг (M610), человек (M620), корабль (M621):1
 
-## src/21pha-pln-man.js · 23 KB
+## src/21pha-pln-man.js · 24 KB
   · планета: человек — риг (M620):1
 
 ## src/21pha1-pln-man-dress.js · 9 KB
