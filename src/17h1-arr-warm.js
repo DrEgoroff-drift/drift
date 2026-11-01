@@ -28,6 +28,10 @@ function arrWarmSteps(sx,sy){
   if(by){
     const g={seed:hashi(sx,sy,0x6E57)>>>0},k=by==="gt"?"patrol":by==="ra"?"tug":null;
     Q.push(()=>{gestPostSprite(by,by==="gt"?GEST_POST.gt+gestPostNo(g):GEST_POST[by]);return true;});
+    /* тело поста (17c2l, bodyMesh "gp:"+by) — его рисует drawGestPost первым, когда GPU жив;
+       спрайт выше — только запасной путь без GPU. Без этого первый кадр строил тело на глазах.
+       Греем ровно ту функцию, что строит сетку: bodyGestPost — рисовалка, она нужна кадру */
+    Q.push(()=>{if(typeof bodyGestPostMesh==="function")bodyGestPostMesh(by);return true;});
     if(k){const f={k,seed:g.seed,by},id=bodyFleetHull(f);Q.push(()=>!!fleetArtOf(f,true));if(id)arrWarmHull(Q,id);}
   }
   if(S){
@@ -42,6 +46,16 @@ function arrWarmSteps(sx,sy){
     /* корпуса классов полосы — как bodyFleet → hullGpuDraw: выпечка тела и сетка со своей оснасткой (h3dStockGear) */
     if(P){const ids=new Set();for(const f of [...P.queue,P.dock,P.out]){const id=f&&bodyFleetHull(f);if(id)ids.add(id);}
       for(const id of ids)arrWarmHull(Q,id);}
+  }
+  /* ── пираты ──
+     spawnPirates зовётся в arriveSystem уже ПОСЛЕ прыжка, и его корпуса не попадали ни в
+     одну ветку выше: первый кадр системы строил им сетку на глазах (сьюта 91qd4 «кадры
+     прилёта не строят сеток корпусов», +1). Отбор пирата — чистая функция системы:
+     seed = hashi(sx,sy,i*977), корпус = pirateShipId(seed). Грешим весь потолок
+     вооружённых, лишние шаги дешевле одного рывка в кадре прилёта. */
+  for(let i=0;i<ARMED_CAP;i++){
+    const id=pirateShipId(hashi(sx,sy,i*977));
+    if(id)arrWarmHull(Q,id);
   }
   return Q;
 }

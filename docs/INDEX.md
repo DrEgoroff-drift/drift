@@ -1339,7 +1339,7 @@ LG_BAKE                      src/19g-landing-gpu.js:362
 LG_DUST                      src/19g-landing-gpu.js:193
 LG_E                         src/19g-landing-gpu.js:363
 LG_FIRE                      src/19g-landing-gpu.js:192
-LG_GLOW                      src/19-mode-landing.js:192
+LG_GLOW                      src/19-mode-landing.js:190
 LG_H                         src/19g-landing-gpu.js:24
 LG_ID                        src/20fa-life-gpu.js:90
 LG_LANDER_WGSL               src/19g-landing-gpu.js:249
@@ -2623,11 +2623,11 @@ applySaveRest                src/14a1-save-rest.js:15-393
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
-arrWarm                      src/17h1-arr-warm.js:62
+arrWarm                      src/17h1-arr-warm.js:76
 arrWarmAt                    src/17h1-arr-warm.js:13-17
 arrWarmHull                  src/17h1-arr-warm.js:19
-arrWarmStep                  src/17h1-arr-warm.js:49-60
-arrWarmSteps                 src/17h1-arr-warm.js:24-47
+arrWarmStep                  src/17h1-arr-warm.js:63-74
+arrWarmSteps                 src/17h1-arr-warm.js:24-61
 arrive                       src/16-flight.js:110-152
 arriveSystem                 src/18-mode-map.js:734-785
 artGet                       src/08ca-gpu-canvas.js:551
@@ -2638,7 +2638,7 @@ assignToBase                 src/12a-crew.js:181-190
 audioHush                    src/09-audio.js:12-18
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
-autoLandInputs               src/19-mode-landing.js:53-76
+autoLandInputs               src/19-mode-landing.js:51-74
 autosave                     src/14a-cloud.js:68-71
 avrHands                     src/21a6-base-avral.js:59-73
 avrLose                      src/21a6-base-avral.js:112-131
@@ -4052,7 +4052,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:161-173
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
-drawDustMotes                src/19-mode-landing.js:185-188
+drawDustMotes                src/19-mode-landing.js:183-186
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:90-112
 drawFactRoute                src/13b-occupy.js:303-346
@@ -4082,7 +4082,7 @@ drawHullMarks                src/03b-hull-paint.js:124-431
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-50
 drawLander                   src/19f-lander.js:54-285
-drawLanding                  src/19-mode-landing.js:200-321
+drawLanding                  src/19-mode-landing.js:198-319
 drawLawRing                  src/12al2-laws.js:139-147
 drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
@@ -4118,12 +4118,12 @@ drawScoop                    src/19a-mode-scoop.js:185-232
 drawSeal                     src/03d-hull-marks.js:174-185
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:72-104
-drawSkyLayer                 src/19-mode-landing.js:180-183
+drawSkyLayer                 src/19-mode-landing.js:178-181
 drawSpa                      src/29rd-spa-r3.js:234-237
 drawStation                  src/17c-system-draw.js:192-209
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:100
-drawSurface                  src/21pz-pln-frame.js:448-467
+drawSurface                  src/21pz-pln-frame.js:445-464
 drawSurfaceHud               src/21e-surface-draw.js:40-143
 drawSurvey                   src/12w-survey.js:63-81
 drawSysHud                   src/17-mode-system.js:756-1105
@@ -4886,7 +4886,7 @@ groundChunkPaint             src/19-mode-landing-ground.js:251-269
 groundChunkStore             src/19-mode-landing-ground.js:238-249
 groundClip                   src/20ab-poi-gpu.js:85-90
 groundGrassGpu               src/21e3-surface-stand-gpu.js:12-36
-groundShadow                 src/19-mode-landing.js:157-177
+groundShadow                 src/19-mode-landing.js:155-175
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30-36
 groveDepthHere               src/11j-grove.js:37
@@ -5747,7 +5747,7 @@ labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 labelW                       src/12ai-fleet.js:134
 landOnTestPlanet             tests/90-harness.js:424-430
-landStartY                   src/19-mode-landing.js:45-52
+landStartY                   src/19-mode-landing.js:45-50
 landerGearTick               src/19f-lander.js:15-23
 landerLen                    src/19f-lander.js:11
 laneBuoyPaint                src/17g-sys-lane.js:77-95
@@ -5810,8 +5810,8 @@ letterState                  src/12k-letters.js:42
 letterTake                   src/12k-letters.js:70-76
 lettersAll                   src/12k-letters.js:41
 lettersBlock                 src/12k-letters.js:99-115
-lgGlowTex                    src/19-mode-landing.js:193-199
-lgGpu                        src/19-mode-landing.js:190
+lgGlowTex                    src/19-mode-landing.js:191-197
+lgGpu                        src/19-mode-landing.js:188
 lgHTex                       src/19g-landing-gpu.js:25-37
 lgLander                     src/19g-landing-gpu.js:390-448
 lgLanderBake                 src/19g-landing-gpu.js:367-387
@@ -7136,7 +7136,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:92
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:340-444
+plnSurface                   src/21pz-pln-frame.js:337-441
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -7191,7 +7191,7 @@ plnTreeWorldW                src/21pgd-pln-wild.js:81
 plnTri                       src/21pa-pln-mesh.js:23-26
 plnTube                      src/21pa-pln-mesh.js:120-151
 plnVert                      src/21pa-pln-mesh.js:16-22
-plnWarmStep                  src/21pz-pln-frame.js:301-339
+plnWarmStep                  src/21pz-pln-frame.js:301-336
 plnWaterEye                  src/21pw-pln-water.js:250
 plnWaterGrid                 src/21pw-pln-water.js:257-265
 plnWaterMirror               src/21pw-pln-water.js:238-248
@@ -8622,7 +8622,7 @@ updateCaveDeco               src/22a-cave-deco.js:225-248
 updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
-updateLanding                src/19-mode-landing.js:77-149
+updateLanding                src/19-mode-landing.js:75-147
 updateMap                    src/18-mode-map.js:706-720
 updateRaid                   src/24a-mode-raid.js:276-408
 updateRail                   src/18g-rail-ride.js:53-105
@@ -9798,7 +9798,7 @@ zoomTo                       src/15-input.js:358
 ## src/17h-sys-gesture.js · 18 KB
   · чья земля — за пять секунд: жест первого корабля и пост (M452, DESIGN-review §2.1):1
 
-## src/17h1-arr-warm.js · 6 KB
+## src/17h1-arr-warm.js · 7 KB
   · прилёт заранее (24.10, телефон):1
 
 ## src/17i-stamp.js · 9 KB

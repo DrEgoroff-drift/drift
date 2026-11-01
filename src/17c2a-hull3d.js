@@ -282,7 +282,7 @@ function* h3dMeshGen(h,gear,sig){
   let C4=H3D.MG.get(h);if(!C4)H3D.MG.set(h,C4=new Map());
   const J=H3D_JOBS.get(h);if(J)J.delete(sig);
   if(C4.size>=4){const k0=C4.keys().next().value,o=C4.get(k0);if(o.buf)o.buf.destroy();C4.delete(k0);}
-  C4.set(sig,m);H3D.mk++;return m;
+  C4.set(sig,m);H3D.mk++;H3D.lastH=h;H3D.lastSig=sig;return m;
 }
 /* треугольники простого многоугольника ушами (крыло бывает вогнутым); P — точки [x,y,…] */
 function h3dEar(P){

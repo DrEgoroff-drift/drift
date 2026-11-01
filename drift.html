@@ -55963,7 +55963,7 @@ function* h3dMeshGen(h,gear,sig){
   let C4=H3D.MG.get(h);if(!C4)H3D.MG.set(h,C4=new Map());
   const J=H3D_JOBS.get(h);if(J)J.delete(sig);
   if(C4.size>=4){const k0=C4.keys().next().value,o=C4.get(k0);if(o.buf)o.buf.destroy();C4.delete(k0);}
-  C4.set(sig,m);H3D.mk++;return m;
+  C4.set(sig,m);H3D.mk++;H3D.lastH=h;H3D.lastSig=sig;return m;
 }
 /* треугольники простого многоугольника ушами (крыло бывает вогнутым); P — точки [x,y,…] */
 function h3dEar(P){
@@ -57212,7 +57212,7 @@ function bodyDot(x,y,col,wx,wy,al){
 /* кэш сеток по ключу: последние cap, старая отдаёт буфер вершин */
 function bodyMesh(key,cap,make){
   let m=BODY.M.get(key);if(m){BODY.M.delete(key);BODY.M.set(key,m);return m;}
-  m=make();H3D.mk++;BODY.M.set(key,m);
+  m=make();H3D.mk++;H3D.lastK=key;BODY.M.set(key,m);
   const pre=key.split(":")[0];let n=0;for(const k of BODY.M.keys())if(k.split(":")[0]===pre)n++;
   for(const k of BODY.M.keys()){if(n<=cap)break;if(k.split(":")[0]!==pre)continue;
     const o=BODY.M.get(k);if(o&&o.buf&&o.dev===GPU.dev)GPU.trash.push(o.buf);BODY.M.delete(k);n--;}
@@ -63307,6 +63307,10 @@ function arrWarmSteps(sx,sy){
   if(by){
     const g={seed:hashi(sx,sy,0x6E57)>>>0},k=by==="gt"?"patrol":by==="ra"?"tug":null;
     Q.push(()=>{gestPostSprite(by,by==="gt"?GEST_POST.gt+gestPostNo(g):GEST_POST[by]);return true;});
+    /* тело поста (17c2l, bodyMesh "gp:"+by) — его рисует drawGestPost первым, когда GPU жив;
+       спрайт выше — только запасной путь без GPU. Без этого первый кадр строил тело на глазах.
+       Греем ровно ту функцию, что строит сетку: bodyGestPost — рисовалка, она нужна кадру */
+    Q.push(()=>{if(typeof bodyGestPostMesh==="function")bodyGestPostMesh(by);return true;});
     if(k){const f={k,seed:g.seed,by},id=bodyFleetHull(f);Q.push(()=>!!fleetArtOf(f,true));if(id)arrWarmHull(Q,id);}
   }
   if(S){
@@ -63321,6 +63325,16 @@ function arrWarmSteps(sx,sy){
     /* корпуса классов полосы — как bodyFleet → hullGpuDraw: выпечка тела и сетка со своей оснасткой (h3dStockGear) */
     if(P){const ids=new Set();for(const f of [...P.queue,P.dock,P.out]){const id=f&&bodyFleetHull(f);if(id)ids.add(id);}
       for(const id of ids)arrWarmHull(Q,id);}
+  }
+  /* ── пираты ──
+     spawnPirates зовётся в arriveSystem уже ПОСЛЕ прыжка, и его корпуса не попадали ни в
+     одну ветку выше: первый кадр системы строил им сетку на глазах (сьюта 91qd4 «кадры
+     прилёта не строят сеток корпусов», +1). Отбор пирата — чистая функция системы:
+     seed = hashi(sx,sy,i*977), корпус = pirateShipId(seed). Грешим весь потолок
+     вооружённых, лишние шаги дешевле одного рывка в кадре прилёта. */
+  for(let i=0;i<ARMED_CAP;i++){
+    const id=pirateShipId(hashi(sx,sy,i*977));
+    if(id)arrWarmHull(Q,id);
   }
   return Q;
 }
@@ -70382,8 +70396,8 @@ function startLanding(p){
   {const _t=NEAR.on?wallMs():0;skyReroll(p);if(NEAR.on)NEAR.sl.sky=Math.round((wallMs()-_t)*10)/10;}           /* состав неба — свой на каждую посадку (19ca) */
   const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
-    vx:(r()-.5)*1.3,vy:.7,a:0,gear:0,sq:0,sqv:0,hot:0,
-    g:(.019+p.T.grav*.016+p.radius*.00012)*3,over:0,ok:false,auto:G.opts.easyLand};
+    vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
+    g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
   /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
   {const _t=NEAR.on?wallMs():0;G.land.pre=surfGen(tr,p);if(NEAR.on)NEAR.sl.pre=Math.round((wallMs()-_t)*10)/10;}
   G.mode="landing";
@@ -70400,9 +70414,7 @@ function landStartY(tr,x){
   let ridge=groundAt(tr,x);
   const step=Math.sign(tr.padX-x)*16||16;
   for(let xx=x;Math.abs(tr.padX-xx)>8&&Math.abs(xx-x)<1400;xx+=step)ridge=Math.min(ridge,groundAt(tr,xx));
-  /* 150 м над гребнем — это десятки секунд спуска на гравитации .03 (v0 .35). 70 м хватает,
-     чтобы кадр поверхности успел собраться, а ожидание короче в разы */
-  return Math.min(70,ridge-70);
+  return Math.min(110,ridge-150);
 }
 function autoLandInputs(L,st){
   /* примитивный, но надёжный автопилот посадки */
@@ -95971,10 +95983,7 @@ function plnWarmStep(L,S,p,C,V){
   /* конвейеры пещеры и шахты — фоном с первого кадра спуска (22d): до устья их соберёт компилятор */
   if(w.n===0&&typeof cave3PipesAhead==="function")cave3PipesAhead();
   if(++w.n>240){L.warmDone=true;return false;}
-  /* на спуске игрок видит систему, а не поверхность (drawLanding), поэтому прогрев можно
-     вести крупнее: 7 мс/кадр растягивали сборку на сотни кадров и держали посадку «стоящей».
-     18 мс здесь никому не видны, зато земля готова к касанию в несколько раз раньше */
-  const B=PLN.rush?7:18;
+  const B=7;
   /* набор флоры строится из системы по шагу (plnKitTick); не успел — достраивается здесь, в бюджет кадра */
   if(!(PLN_FLORA.kit&&PLN_FLORA.gen===PLN_GPU.gen)){
     const t0=wallMs();
