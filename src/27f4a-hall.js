@@ -153,14 +153,21 @@ function hallLayout(st,lazy){
   const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st),cut:true,
     kino:!!(bar&&typeof kinoHere==="function"&&kinoHere())};   /* кинодень (M816d): экран перед окном бара, зал смотрит   /* M816: срез ближней стены на ходу */
   /* хозяин стойки: клерк (M814) — рубашка, жилет, галстук и бирка в цвет зала; стоит за стойкой лицом в зал */
-  const keep={seed:hashi(seed,0xC0E,1)>>>0,role:"clerk",acc,loy:64,xp:0,traits:[]};
-  /* волосы, а не бритая голова, и тёмные на коже не светлее средней: светлые на светлом рядом с пилотом читались манекеном */
-  const keepOk=g=>[0,4,5].indexOf(g.style)<0&&hallLum(g.hair)<110&&hallLum(g.skin)<205;
-  for(let i=2;i<40&&!keepOk(cpGene(keep));i++)keep.seed=hashi(seed,0xC0E,i)>>>0;
+  const used={};
+  let keep=typeof npcTake==="function"?npcTake(st,seed,1,used,"clerk"):null;
+  if(keep){keep.role="clerk";keep.acc=acc;keep.loy=64;keep.xp=0;keep.traits=[];}
+  else{
+    keep={seed:hashi(seed,0xC0E,1)>>>0,role:"clerk",acc,loy:64,xp:0,traits:[]};
+    /* волосы, а не бритая голова, и тёмные на коже не светлее средней: светлые на светлом рядом с пилотом читались манекеном */
+    const keepOk=g=>[0,4,5].indexOf(g.style)<0&&hallLum(g.hair)<110&&hallLum(g.skin)<205;
+    for(let i=2;i<40&&!keepOk(cpGene(keep));i++)keep.seed=hashi(seed,0xC0E,i)>>>0;
+  }
   L.people.push({id:"hallkeep",m:keep,pose:"bar",x:-5.86,z:.62,yaw:Math.PI/2-.12,lod:1,kind:"keep"});
+  const hallNpc=(slot)=>{const m=typeof npcTake==="function"?npcTake(st,seed,slot,used):null;
+    return m||{seed:hashi(seed,slot,0xB0A)>>>0,loy:50,traits:[]};};
   /* зал не пуст: посетитель читает доску, грузчик у бочек под окном (стоят в работе, не в строю) */
-  L.people.push({id:null,m:{seed:hashi(seed,0xB0A,2)>>>0,loy:50,traits:[]},pose:"mug",x:-4.7,z:-2.0,yaw:Math.PI-.5,lod:1,kind:"crowd"});
-  if(!T.stalls)L.people.push({id:null,m:{seed:hashi(seed,0x10AD,3)>>>0,loy:50,traits:[],jac:[204,98,38]},pose:"hips",x:-.05,z:-1.55,yaw:-2.3,lod:1,kind:"crowd"});
+  L.people.push({id:null,m:hallNpc(2),pose:"mug",x:-4.7,z:-2.0,yaw:Math.PI-.5,lod:1,kind:"crowd"});
+  if(!T.stalls)L.people.push({id:null,m:hallNpc(3),pose:"hips",x:-.05,z:-1.55,yaw:-2.3,lod:1,kind:"crowd"});
   /* бар: люди кантины на своих местах, сдвинутые в конец зала; кино и столики дел — забота M814 */
   if(bar&&typeof c3Layout==="function"){
     const cl=(G.cantina&&G.cantina.key===G.sys.key)?G.cantina.list:stationMgrs(G.sys);
@@ -182,7 +189,7 @@ function hallLayout(st,lazy){
       L.people.push(Q);}
     /* за столиками всегда по двое: недостающих — из завсегдатаев */
     for(;ti<HALL_BAR_SEATS.length;ti++){const s=HALL_BAR_SEATS[ti].s,T2=HALL_BAR_SEATS[ti].T2;
-      L.people.push({id:null,m:{seed:hashi(seed,ti,0x7AB1)>>>0,loy:50,traits:[]},pose:hallTablePose(seed,ti),x:HALL_XB+s[0],z:s[1],yaw:Math.atan2(T2.x-s[0],T2.z-s[1]),lod:0,kind:"crowd"});}
+      L.people.push({id:null,m:hallNpc(10+ti),pose:hallTablePose(seed,ti),x:HALL_XB+s[0],z:s[1],yaw:Math.atan2(T2.x-s[0],T2.z-s[1]),lod:0,kind:"crowd"});}
     /* кинодень: бар смотрит на экран. Стоящие и на табуретах разворачиваются телом, за столиками — головой (P.watch) */
     /* СР · Визуал 22.10: кинозал — это силуэты против полотна. Сидевшие за столиками встают рядом перед экраном
        (кружка в руке, шаг вразнобой), табуреты разворачиваются телом; все смотрят на полотно */
@@ -198,7 +205,7 @@ function hallLayout(st,lazy){
   /* блошинец: у прилавков покупатели, дальняя толпа (LOD 0) */
   if(T.stalls){const n=3+((seed>>>3)%3);
     for(let i=0;i<n;i++){const s=HALL_STALLS[i%HALL_STALLS.length],side=i<HALL_STALLS.length?1:-1;
-      L.people.push({id:null,m:{seed:hashi(seed,i,0xBA2)>>>0,loy:45+i*7,traits:[]},pose:i%2?"mug":"stand",
+      L.people.push({id:null,m:hallNpc(40+i),pose:i%2?"mug":"stand",
         x:s[0]+(R()-.5)*.5,z:s[1]+side*.95,yaw:side>0?Math.PI+(R()-.5)*.6:(R()-.5)*.6,lod:0,kind:"crowd"});}}
   L.people=gaugeHallCrowd(L.people).slice(0,R3_MAXI-2);   /* последний экземпляр — пилот; толпа — по людям станции (M906) */
   if(!lazy)for(const P of L.people)if(!P.mesh)P.mesh=cpMesh(P.m,P.pose,P.lod);   /* lazy — заготовка (hallPrepStep) мешает по одному */
