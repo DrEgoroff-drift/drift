@@ -36,19 +36,24 @@ def render(name, item, ang_deg, size=S):
     x = P[:, 0] * ca - P[:, 2] * sa
     z = P[:, 0] * sa + P[:, 2] * ca
     # кадрирование по габаритам ПРОЕКЦИИ, а не по сырому центру
-    x0, x1 = x.min(), x.max()
-    y0, y1 = P[:, 1].min(), P[:, 1].max()
+    x0, x1 = np.percentile(x, [1, 99])
+    y0, y1 = np.percentile(P[:, 1], [1, 99])
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-    span = max(x1 - x0, y1 - y0, 1e-6) * 1.12
-    sx = ((x - cx) / span * size + size / 2).astype(int)
-    sy = ((cy - P[:, 1]) / span * size + size / 2).astype(int)
+    bw, bh = max(x1 - x0, 1e-6), max(y1 - y0, 1e-6)
+    # кадр по пропорции объекта: корабль длинный и тонкий, в квадрате он тонул
+    cw = size
+    ch = int(max(140, min(size, round(size * bh / bw))))
+    scale = min(cw * 0.94 / bw, ch * 0.94 / bh)
+    sx = ((x - cx) * scale + cw / 2).astype(int)
+    sy = ((cy - P[:, 1]) * scale + ch / 2).astype(int)
+    size = (cw, ch)
     nx = N[:, 0] * ca - N[:, 2] * sa
     nz = N[:, 0] * sa + N[:, 2] * ca
     ny = N[:, 1]
     kk = np.abs(nx * KEY[0] + ny * KEY[1] + nz * KEY[2])
     kf = np.abs(nx * FILL[0] + ny * FILL[1] + nz * FILL[2])
     lam = np.clip(0.20 + 0.62 * kk + 0.26 * kf, 0, 1)
-    img = Image.new("RGB", (size, size), (14, 18, 24))
+    img = Image.new("RGB", (cw, ch), (14, 18, 24))
     dr = ImageDraw.Draw(img)
     # индексный буфер, если он есть; иначе вершины идут тройками
     if item.get("i"):
@@ -67,12 +72,12 @@ def render(name, item, ang_deg, size=S):
                    fill=(int(rgb[0]), int(rgb[1]), int(rgb[2])))
     path = "%s_%s.png" % (out, name)
     img.save(path)
-    print("wrote %s  (%d verts, %d tris, span %.1f)" % (path, len(P), n, span))
+    print("wrote %s  (%d verts, %d tris, %dx%d)" % (path, len(P), n, cw, ch))
 
 
 for name, item in d.items():
-    if "err" in item:
-        print("%s: skipped (%s)" % (name, item["err"]))
+    if not isinstance(item, dict) or "err" in item or "v" not in item:
+        print("%s: skipped" % name)
         continue
     # три ракурса: у пропсов разная ось, и один вид не доказывает форму
     for ang in (0, 34, 62, 180):

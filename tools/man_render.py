@@ -116,7 +116,9 @@ def profile():
         m = (P[:, 1] >= a) & (P[:, 1] < b)
         if not m.any():
             continue
-        print("  %.1f-%.1f  width %.3f" % (k / 10.0, (k + 1) / 10.0, P[m, 0].max() - P[m, 0].min()))
+        # перцентили, а не крайние значения: одна антенна или бур задавала всю ширину
+        lo2, hi2 = np.percentile(P[m, 0], [2, 98])
+        print("  %.1f-%.1f  width %.3f  (of height %.3f)" % (k / 10.0, (k + 1) / 10.0, hi2 - lo2, (hi2 - lo2) / h))
 
 
 profile()
