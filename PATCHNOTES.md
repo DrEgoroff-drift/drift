@@ -7,6 +7,11 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 
+## 0.499.104 — Landing waits for nothing: the system's planets are prepared in flight
+
+- `21pg` / `19-mode-landing` / `21pf` / `21pz`: while the player flies in a system, `plnbody` prepares every planet's relief, POIs, deco and surface things, and builds the nearest planet's land strip in the same budgeted steps the descent used. «ПОСАДКА» takes the cached relief and `surfGen` and adopts the prepared strip (`plnLand`), so the descent starts at once instead of holding the system view for up to 240 frames (~4 s at 60 fps — the author's ~5 s wait). A repeat landing reuses the strip; changing the nearest planet or the system frees it (`plnLandFree`) — one land strip stays in memory.
+- New browser suite `91qo-prefetch`: the first visit, another planet, a repeat landing, a system change, and a landing before the background has finished.
+
 ## 0.499.101 — A hundred locked station residents
 
 - `27f3b-npc-lib`: NPC-001…100, one face each (build, head, hair, kit, jacket). The hall takes its keeper and crowd from that station type's pool, stable for the system's seed. Vega is id 1 — purple dress, red scarf on the mesh — and is not placed in the crowd.
