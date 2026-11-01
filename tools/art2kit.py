@@ -9,6 +9,7 @@
 #
 # Оригинал не трогаем: только читаем GLB и пишем новый модуль src/.
 import bpy, sys, os, math
+import numpy as np
 from mathutils import Vector
 
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
@@ -26,16 +27,30 @@ if not meshes:
     print("no meshes"); sys.exit(1)
 
 
+_PIX = {}
+
+
+def pixels(img):
+    """Пиксели текстуры один раз на изображение. Брать img.pixels внутри выборки
+    нельзя: это копия всех 4 МП на КАЖДУЮ вершину — конвертер вставал намертво."""
+    key = img.name
+    if key not in _PIX:
+        w, h = img.size
+        buf = np.empty(w * h * 4, dtype=np.float32)
+        img.pixels.foreach_get(buf)
+        _PIX[key] = (w, h, buf.reshape(h, w, 4))
+    return _PIX[key]
+
+
 def sample_image(img, uv):
     """Ближайший пиксель текстуры по UV (0..1), возвращает (r,g,b) 0..1."""
-    w, h = img.size
+    w, h, arr = pixels(img)
     if not w or not h:
         return None
     x = int((uv[0] % 1.0) * (w - 1))
     y = int((uv[1] % 1.0) * (h - 1))
-    px = img.pixels
-    i = (y * w + x) * 4
-    return (px[i], px[i + 1], px[i + 2])
+    p = arr[y, x]
+    return (float(p[0]), float(p[1]), float(p[2]))
 
 
 def base_color(mat):
