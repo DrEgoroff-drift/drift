@@ -103,3 +103,20 @@ if hand.any():
     render(55, out + "_hand_q.png")
     ctr, span = ctr_save, span_save
 
+
+# Профиль силуэта: ширина по X на каждой десятой высоты. Это и есть то, что игрок
+# видит на дистанции, — по нему и судим о пропорциях, а не по крупному плану.
+def profile():
+    y0, y1 = P[:, 1].min(), P[:, 1].max()
+    h = y1 - y0
+    print("silhouette profile (height fraction -> width, m):")
+    for k in range(10):
+        a = y0 + h * k / 10.0
+        b = y0 + h * (k + 1) / 10.0
+        m = (P[:, 1] >= a) & (P[:, 1] < b)
+        if not m.any():
+            continue
+        print("  %.1f-%.1f  width %.3f" % (k / 10.0, (k + 1) / 10.0, P[m, 0].max() - P[m, 0].min()))
+
+
+profile()

@@ -88295,7 +88295,7 @@ function plnManBuild(P,low,D){
   /* корпус: жёсткая бочка, воротник, нагрудник (корпус), ранец с баллонами и вентилем (ранец),
      лямки, антенна */
   part(1,m=>{
-    plnBlob(m,{c:[0,.30,0],r:[.24,.29,.21],box:.5,sub:2,col:u=>u[1]<-.6?suitD:suit,mat:M,x:.3});
+    plnBlob(m,{c:[0,.30,0],r:[.256,.29,.215],box:.5,sub:2,col:u=>u[1]<-.6?suitD:suit,mat:M,x:.3});
     belt(m,.55,.16,.035,joint,.35);
     /* панель на подложке: без рамки серая коробка читалась наклейкой на комбинезоне */
     plnBlob(m,{c:[.203,.32,0],r:[.060,.104,.094],box:.45,sub:1,col:P.torso.dark,mat:M,x:.30});
@@ -88318,7 +88318,7 @@ function plnManBuild(P,low,D){
   else{
   part(2,m=>{
     const shell=lit(P.helmet.main),band=P.helmet.acc,vis=u=>u[0]>.14&&u[1]<.46&&u[1]>-.50,rim=u=>u[0]>.05&&u[1]<.54&&u[1]>-.58;
-    plnBlob(m,{c:[0,.19,0],r:[.235,.235,.235],sub:3,col:u=>vis(u)?glass:(rim(u)?band:shell),mat:M,x:u=>vis(u)?1:(rim(u)?.4:.35)});
+    plnBlob(m,{c:[0,.19,0],r:[.212,.212,.212],sub:3,col:u=>vis(u)?glass:(rim(u)?band:shell),mat:M,x:u=>vis(u)?1:(rim(u)?.4:.35)});
     for(const z of [-.225,.225])plnBlob(m,{c:[-.03,.16,z],r:[.06,.06,.032],sub:1,col:P.helmet.dark,mat:M,x:.35});
     plnTube(m,{path:[[-.02,.37,0],[.21,.40,0]],rad:.056,sides:10,col:P.lamp.dark,mat:M,x:.45,cap:true});
     plnTube(m,{path:[[.04,.445,0],[.16,.455,0]],rad:.016,sides:5,col:P.lamp.acc,mat:M,x:.3});
