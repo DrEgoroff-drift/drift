@@ -70395,12 +70395,12 @@ function startLanding(p){
   {const _t=NEAR.on?wallMs():0;genDeco(tr,p);if(NEAR.on)NEAR.sl.deco=Math.round((wallMs()-_t)*10)/10;}
   G.ap=null;
   {const _t=NEAR.on?wallMs():0;skyReroll(p);if(NEAR.on)NEAR.sl.sky=Math.round((wallMs()-_t)*10)/10;}           /* состав неба — свой на каждую посадку (19ca) */
-  /* кнопка «ПОСАДКА» ставит на площадку сразу (автор 01.11: «я в космосе нажимаю кнопку
-     и жду, я не должен ждать»): спуск как ожидание убран. Всё для кадра поверхности посчитано
-     заранее (plnbody), касание и стойки остаются — это и есть посадка, а не ожидание */
-  const auto=true;
-  const x0=tr.padX;
-  G.land={p,tr,x:x0,y:groundAt(tr,x0)-11,
+  /* автопосадка — сразу на площадку (автор 01.11: «я жму кнопку и жду, хочу сразу»):
+     спуск остаётся ручной посадке, где он и есть игра. Всё, что нужно для кадра
+     поверхности, уже посчитано заранее (plnbody), поэтому кадр ставится сразу */
+  const auto=G.opts.easyLand;
+  const x0=auto?tr.padX:tr.padX+(r()-.5)*640;
+  G.land={p,tr,x:x0,y:auto?groundAt(tr,x0)-11:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto};
   /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
@@ -70500,7 +70500,7 @@ function updateLanding(dt){
     const tol=(G.tech.has("cera")?1.4:1)*(L.auto?3:1);
     const ok=L.vy<2.15*tol&&Math.abs(L.vx)<1.05*tol&&Math.abs(L.a)<.26*tol&&slope<9*tol;
     L.touch={vy:+L.vy.toFixed(2),vx:+L.vx.toFixed(2),a:+L.a.toFixed(2),slope:+slope.toFixed(1),tol};  /* что было в момент касания (тест 91zzzb) */
-    L.ok=ok;L.over=24;L.vx=0;L.vy=0;
+    L.ok=ok;L.over=70;L.vx=0;L.vy=0;
     /* удар: стойки проседают тем глубже, чем жёстче пришли, и отдают пружиной */
     L.gear=1;L.sq=Math.min(1,.3+sp*.3);L.sqv=0;L.hot=1;
     if(ok)say("Посадка выполнена");
