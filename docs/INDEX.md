@@ -6810,7 +6810,7 @@ plnBez                       src/21pa-pln-mesh.js:195-199
 plnBlob                      src/21pa-pln-mesh.js:71-115
 plnBlobSort                  src/21pe-pln-gpu.js:370-381
 plnBodies                    src/21pz-pln-frame.js:84-110
-plnBodyTick                  src/21pg-pln-flora.js:292-339
+plnBodyTick                  src/21pg-pln-flora.js:292-333
 plnBox                       src/21pf-pln-land.js:67-74
 plnBoxF                      src/21pf-pln-land.js:82-87
 plnCard                      src/21pa-pln-mesh.js:188-193

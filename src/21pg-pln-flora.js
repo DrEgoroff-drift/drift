@@ -320,16 +320,10 @@ function plnBodyTick(ms){
       p.__gr=p.__tr;
       PLNBODY.phase=1;
     }else{
-      /* ленту земли держим только для ближайшей планеты: PLN_LAND.cur — одна */
-      if(p.__tr&&p===PLNBODY.near&&PLN_LAND.cur!==p.__tr){
-        try{
-          if(PLN_LAND.cur)plnLandFree(PLN_LAND.cur);
-          plnLandMake(p.__tr,p,p.__tr.padX);
-          /* флора печётся в ленту сразу: на посадке plnPlantStep уже не нужен —
-             трава и деревья лежат в ломтях земли готовыми */
-          if(PLN_LAND.cur&&PLN_LAND.cur===p.__tr)try{plnPlantStep(PLN_LAND.cur,p,PLN_LAND.cur.padX,0,3);}catch(_){}
-        }catch(_){}
-      }
+      /* ленту земли здесь НЕ строим: plnLandMake создаёт задания разом (10 мс) и не
+         делится — это давало кадр 12–15 мс в полёте. Её и флору по шагам собирает
+         спуск (plnWarmStep → plnLandStep/plnPlantStep с бюджетом кадра), а нажатие
+         кнопки берёт готовый рельеф из p.__tr и потому ничего не ждёт */
       p.__gr=null;p.__gs=null;
       PLNBODY.i++;PLNBODY.phase=0;
       if(wallMs()-t0>=budget)break;
@@ -337,4 +331,4 @@ function plnBodyTick(ms){
   }
   return true;
 }
-workAdd("plnbody",2,()=>G.mode==="system"||!!PLNBODY.target,ms=>plnBodyTick(ms));
+workAdd("plnbody",6,()=>G.mode==="system"||!!PLNBODY.target,ms=>plnBodyTick(ms));
