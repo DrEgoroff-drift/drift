@@ -7,6 +7,19 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 
+## 0.499.103 — Mechanic silhouette and face restored
+
+- Replaced the mechanic's voxel-remeshed clothing with the welded source surface. Pockets, collar, folds and the original face survive simplification. Correct sRGB decoding restores eyes, eyebrows and skin contrast instead of a pale mask.
+- Retargeted wrists without stretching the hands; palms rest inward and fingers relax. Added fitted dark suspenders, belt and ankle seals; trimmed the torn trouser hems. A rear helmet shell frames the face. The slight turn toward the player also rotates the lamp, jet and drill attachment coordinates.
+- The source mesh has 18,146 triangles and occupies 269 KiB inline, with no texture download. Four-weight seams and the existing equipment callbacks remain in use.
+
+## 0.499.102 — Compact character models, continuous mechanic joints
+
+- Imported the author's 100 station residents from the desktop model library. Shared vertices, quantization, delta indices and inline LZ4 keep the complete library near 4.1 MB; models decode on demand, without textures, downloads or dependencies. The supplied LOD3 files lost their bodies, so the importer uses validated LOD2. Existing resident IDs, station selection and story conditions remain in charge; Vega uses NPC-001 at home. Head motion, blinks and lip movement use the existing room matrices.
+- The surface mechanic retains four skin weights at moving seams instead of rigidly tearing the clothes apart. Remeshed clothing has a closed shell; offset duplicate patches are gone. The 8,520-triangle model is about 104 KB inline. The kit still supplies equipment colours; drill, lamp and jet remain connected to their original dynamic parts.
+- The parrot window uses the existing site's procedural 3D bird (`bird/` → `site/treplo3d.html`), including its body, beak, eyes, crest and individual feathers. Its geometry runs on the game's WebGPU renderer and existing behaviour state; no external Govorun GLB, separate renderer or animation loop is included. Memory, dialogue and console icon keep their existing logic.
+- Added character regression checks for complete bodies, normalized weights, valid indices, seated/walking poses, equipment and finite animated geometry. Source models and textures stay outside the repository.
+
 ## 0.499.101 — A hundred locked station residents
 
 - `27f3b-npc-lib`: NPC-001…100, one face each (build, head, hair, kit, jacket). The hall takes its keeper and crowd from that station type's pool, stable for the system's seed. Vega is id 1 — purple dress, red scarf on the mesh — and is not placed in the crowd.

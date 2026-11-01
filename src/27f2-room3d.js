@@ -34,7 +34,7 @@ R3U.iv=R3U.ot+R3_MAXI*R3_PART*4;   /* обратная матрица камер
 R3U.cs=R3U.iv+16;   /* пятна контактной тени: число и окно по x, затем [x, z, радиус] по x */
 const R3_UN=R3U.cs+4+R3_MAXI*4;
 /* узоры: номер — то, что знает шейдер */
-const R3P={none:0,wall:1,floor:2,wood:3,brushed:4,window:5,sign:6,cloth:7,skin:8,hair:9,glass:10,film:11,eye:12,leather:13,hazard:14,screen:15,neon:16,ceil:17,plant:18};
+const R3P={none:0,wall:1,floor:2,wood:3,brushed:4,window:5,sign:6,cloth:7,skin:8,hair:9,glass:10,film:11,eye:12,leather:13,hazard:14,screen:15,neon:16,ceil:17,plant:18,feather:19,birdEye:20,birdBeak:21};
 
 /* цвет 0..255 (sRGB) → линейный; смесь, масштаб и плавная ступень для краски вершин */
 function r3Lin(c){return [Math.pow(c[0]/255,2.2),Math.pow(c[1]/255,2.2),Math.pow(c[2]/255,2.2)];}
@@ -604,6 +604,34 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
   else if(pat==17u){   /* потолок: плиты и решётки вытяжки */
     let q=W.xz;let fq=fract(q/vec2f(1.2,1.2));let e=min(min(fq.x,1.-fq.x),min(fq.y,1.-fq.y));a*=.8+.2*smoothstep(.01,.03,e);}
   else if(pat==18u){a*=.8+.3*vn3(i.l*vec3f(40.,40.,40.));wrap=.35;}   /* листья */
+  else if(pat==19u){   /* перо: тонкие бородки под углом к стержню */
+    let q=pl2(i.l,n);let barbs=.5+.5*sin(q.y*520.+abs(q.x)*230.);
+    a*=.86+.14*barbs;sp=.17;gl=4.;wrap=.30;
+  }
+  else if(pat==20u){   /* глаз птицы: тот же зрачок и сливовая радужка, что на сайте */
+    let ec=vec3f(sign(i.l.x)*.252,1.758,.108);let ax=normalize(vec3f(sign(i.l.x)*.94,.10,.33));
+    let dl=i.l-ec;let rd=dl-ax*dot(dl,ax);let rr=length(rd);
+    a*=.7;sp=1.3;gl=15.;fres=.06;
+    if(length(dl)<.075&&rr<.058){
+      let e1=normalize(cross(ax,vec3f(0.,1.,0.)));let th=atan2(dot(rd,cross(ax,e1)),dot(rd,e1));
+      let k=clamp(rr/.0567,0.,1.);let fib=mix(sin(th*186.+sin(th*23.)*1.6)*.5+.5,sin(th*61.+1.1)*.5+.5,.35);
+      let fk=smoothstep(.30,.52,k)*(1.-smoothstep(.80,1.,k));
+      let deep=i.c*.09+vec3f(.007,.004,.011);let ring=i.c*.90+vec3f(.05,.012,.045);
+      var iris=mix(deep,i.c*.34,smoothstep(.44,.74,k));iris=mix(iris,ring,smoothstep(.70,.89,k));
+      iris*=.72+.56*fib*fk;iris=mix(iris,i.c*.07,smoothstep(.90,1.,k));
+      a=mix(iris,vec3f(.006,.004,.008),1.-smoothstep(.44,.50,k));
+    }
+    let cd=clamp(dot(n,normalize(vec3f(-.45,.75,.49))),0.,1.);
+    ex3+=vec3f(2.6)*pow(cd,120.)+vec3f(.55,.60,.72)*pow(cd,26.)*.30;
+  }
+  else if(pat==21u){   /* клюв: рог, ноздря и следы роста — из bird/30-shade */
+    let p=i.l;let ridge=(1.-smoothstep(0.,.042,abs(p.x)))*clamp(n.y,0.,1.);
+    let tip=(1.-smoothstep(1.52,1.68,p.y))*smoothstep(.26,.38,p.z);
+    a*=mix(1.,.46,tip)*(.92+.16*ridge);
+    let nz=1.-smoothstep(.012,.030,length(vec3f(abs(p.x)-.056,(p.y-1.772)*.8,(p.z-.262)*.7)));
+    a=mix(a,vec3f(.018,.014,.018),nz*.95);sp=.24;gl=6.;wrap=.20;
+    a*=.95+.05*sin(p.y*54.+p.z*16.);
+  }
   /* ── свет ── */
   let hemi=mix(u.gnd.rgb,u.sky.rgb,n.y*.5+.5)*u.sky.w;
   var c=a*hemi*ao;

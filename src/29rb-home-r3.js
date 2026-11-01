@@ -37,7 +37,7 @@ function home3PilotM(){const H=G.home||{};let s=hashi((H.sx|0)+7,(H.sy|0)+3,0x91
 const HOME3_JAC=[112,98,78];
 function home3Str(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619);return h>>>0;}
 function home3FolkM(f){const base={vega:0x7E6A11,mate:0x3A7E21,trainee:0x51A9C3}[f.who];
-  return {seed:base!=null?base:home3Str("crew|"+(f.name||"")),loy:f.who==="vega"?84:66,traits:[]};}
+  return {seed:base!=null?base:home3Str("crew|"+(f.name||"")),npc:f.who==="vega"?1:0,loy:f.who==="vega"?84:66,traits:[]};}
 
 /* ── сетка дома ── */
 function home3Mesh(up){

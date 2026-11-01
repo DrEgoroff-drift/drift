@@ -259,7 +259,7 @@ function plnMan(st){
   const Q=PLN_MAN,P=plnManPalette(),low=!!st.low;
   const key=JSON.stringify(P)+(low?"L":"");
   if(key!==Q.key||!Q.parts){
-    const b=plnManBuild(P,low);
+    const b=mechManBuild(P,low);
     Q.parts=b.parts;Q.V=b.V;Q.nv=b.nv;Q.ni=b.ni;Q.ib=b.I;Q.key=key;
     if(Q.gen===PLN_GPU.gen)plnManBones(Q,true);
   }
@@ -311,7 +311,8 @@ function plnManFrame(F,pos,face,swim,o){
     if(!q.dyn)continue;
     const B=q.B,V=B.V,n=q.m.nv,o2=q.boff*PLN_VS;
     let wk;
-    if(q.dyn==="flame"){wk=Q.k.jet>.003?-1:0;if(wk===0&&q.wk===0)continue;plnManFlame(st,V,q.boff,ID);}
+    if(q.dyn==="mechskin"){wk=-1;mechManSkin(V,q.boff,q,W);}
+    else if(q.dyn==="flame"){wk=Q.k.jet>.003?-1:0;if(wk===0&&q.wk===0)continue;plnManFlame(st,V,q.boff,ID);}
     else if(q.dyn==="tool"){wk=Math.round(Q.k.drill*256)*2+PLN_DRILL.on;if(wk===q.wk)continue;plnDrillWrite(st,V,q.boff,ID,q.m);}
     else{
       const d=q.dyn(st),mat=d.mat!=null?d.mat:-1,gl=d.glow!=null?Math.round(d.glow*64)/64:-1,x=d.x!=null?d.x:-1;
@@ -322,11 +323,13 @@ function plnManFrame(F,pos,face,swim,o){
     q2.writeBuffer(B.geo.vb,o2*4,V,o2,n*PLN_VS);
   }
   /* в поле факела и фонарь, и сопло — в мире, с учётом стороны взгляда */
-  const fx=face<0?-1:1,at=(w,lx,ly,lz)=>[pos[0]+fx*(w.c*lx-w.s*ly+w.x),pos[1]+(w.s*lx+w.c*ly+w.y),pos[2]+fx*(lz+w.z)];
+  const fx=face<0?-1:1,yaw=o&&Number.isFinite(o.yaw)?o.yaw:(fx<0?Math.PI-MECH_YAW:MECH_YAW),cy=Math.cos(yaw),sy=Math.sin(yaw);
+  const at=(w,lx,ly,lz)=>{const x=w.c*lx-w.s*ly+w.x,z=lz+w.z;
+    return [pos[0]+x*cy+z*sy,pos[1]+w.s*lx+w.c*ly+w.y,pos[2]-x*sy+z*cy];};
   Q.lamp=at(W[2],.222,.40,0);Q.jet=at(W[1],-.31,.0,0);
   PLN_DRILL.tip=at(W[10],0,-.30-PLN_DRILL.len*Q.k.drill,0);   /* остриё коронки — для луча (21pic) */
   /* кость — запись: место кости, повёрнутое взглядом (как в placeAt), и крен */
-  const yaw=fx<0?Math.PI:0,cy=Math.cos(yaw),sy=Math.sin(yaw),P0=Q.p0||(Q.p0=[0,0,0]);
+  const P0=Q.p0||(Q.p0=[0,0,0]);
   Q.bones.forEach((B,k)=>{
     const w=W[B.bone];
     P0[0]=pos[0]+w.x*cy+w.z*sy;P0[1]=pos[1]+w.y;P0[2]=pos[2]+w.z*cy-w.x*sy;

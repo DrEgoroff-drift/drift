@@ -3,6 +3,10 @@
 Each of these cost a session at least once. `CLAUDE.md` keeps the one-line map;
 this file keeps the evidence and the fix.
 
+- **Blender may exit successfully after a Python exception.** The mechanic exporter
+  failed on a missing import while returning exit code zero, leaving stale output.
+  Run conversion with `--python-exit-code 1` and require the final `SKIN_OK` marker.
+
 - **A `.ps1` with Russian text MUST be saved UTF-8 *with* BOM.** Windows
   PowerShell 5.1 reads a BOM-less file as the system ANSI codepage and turns
   every Cyrillic literal into mojibake — silently, no error, and the file still

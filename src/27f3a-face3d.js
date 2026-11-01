@@ -429,6 +429,7 @@ function cpHeadAI(K,g,lod){
 const CPR_P=new Float64Array(16),CPR_PI=new Float64Array(16);   /* P и Pi живут весь риг — своя пара, не кольцо */
 function cpRig(F,base,Mh,M,X){
   for(let k=4;k<=12;k++)F.set(Mh,(base+k)*16);   /* 12 — верхние зубы: стоят с головой */
+  if(M.artFace){npcArtRig(F,base,Mh,M,X);return;}
   const R=M.rig;if(!R||!X)return;
   const hc=M.at.hp[0],rx=M.at.hp[1],hs=M.at.hp[2];
   const P=r3Mul(Mh,r3Xf(hc,0,rx,0,hs,r3Scr()),CPR_P),Pi=r3Mul(r3Xf(R3_O3,0,-rx,0,1/hs,r3Scr()),r3Xf([-hc[0],-hc[1],-hc[2]],0,0,0,1,r3Scr()),CPR_PI);

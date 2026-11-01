@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 687 · top-level symbols: 8952
+Files: 709 · top-level symbols: 9043
 
 ## SYMBOLS
 
@@ -86,6 +86,7 @@ ARC_JUMP                     src/13a-guns.js:39
 ARMED_CAP                    src/13-combat.js:12
 ARRW                         src/17h1-arr-warm.js:12
 ARTIFACTS                    src/12h-relic.js:48-63
+ART_MECH_SKIN                src/21phb1-mech-art.js:2
 ASTRO_BOX                    src/20fa-life-gpu.js:182
 ASTRO_PAL                    src/20fa-life-gpu.js:183
 AST_N                        src/24-mode-belt.js:68
@@ -133,6 +134,7 @@ BB_TINT_R                    src/17k-billboard.js:205
 BB_TITLE                     src/17k-billboard.js:11
 BDUST_WGSL                   src/24be-belt-rock-gpu.js:109
 BEACON_COOL                  src/23-mode-dig.js:89
+BEAK_BALLS                   src/12y2e-site-bird.js:113-116
 BEAM_LIFE                    src/13a-guns.js:28
 BEAST_ALIEN                  src/20f-fauna.js:38
 BEAST_ALIEN_WORD             src/20e-species.js:194
@@ -162,6 +164,8 @@ BILL_OLD_REPAIR              src/27ib-bill.js:175
 BILL_OLD_SNAP                src/27ib-bill.js:290
 BILL_OLD_TABBODY             src/27ib-bill.js:282
 BILL_SHIFT_MS                src/27ib-bill.js:20
+BIRD_C                       src/12y2c-site-bird.js:13-33
+BIRD_SPINE                   src/12y2c-site-bird.js:39-51
 BK_AT                        src/20ab-poi-gpu.js:141
 BLD                          src/12ac-bld.js:29
 BLD_FAM                      src/12ac-bld.js:16-26
@@ -361,6 +365,7 @@ CLOUD_ST                     src/14a-cloud.js:107
 CLOUD_TIER                   src/19e-clouds.js:49-62
 CLR_HOURS                    src/05e-clearance.js:29
 CLR_KILLS                    src/05e-clearance.js:28
+COAT_STAT                    src/12y2e-site-bird.js:117
 COOP_ASKS                    src/12aj-coop.js:126-134
 COOP_ASK_BY                  src/12aj-coop.js:135
 COOP_FEE                     src/12aj-coop.js:27
@@ -391,15 +396,17 @@ CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_JOBS                      src/27f3-person3d.js:335
+CP_JOBS                      src/27f3-person3d.js:336
 CP_KIT                       src/27f3-person3d.js:127
-CP_MESH                      src/27f3-person3d.js:307
+CP_MESH                      src/27f3-person3d.js:308
 CP_SO                        src/27f3a-face3d.js:85
 CP_TEMPER                    src/27f6-face-live.js:25
 CP_TORSO                     src/27f3-person3d.js:98
 CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
+CREST_LEN                    src/12y2d-site-bird.js:258
+CREST_N                      src/12y2d-site-bird.js:257
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
 CREW_EVENTS                  src/12b-crew-events.js:98-225
 CREW_EV_BASE                 src/12b-crew-events.js:69
@@ -641,6 +648,7 @@ FAR_Z                        src/06d-far.js:21
 FAUCET_FLOOR                 src/12ab-hold.js:154
 FAUNA_RES                    src/02-world.js:137
 FB                           src/17a0-prebake.js:63
+FEA_STRIDE                   src/12y2e-site-bird.js:77
 FG_MAN                       src/21b-surface-deco.js:220
 FIGHT_HOOKS                  src/28r-fight.js:129-157
 FIGHT_LENS                   src/17p-cam-frame.js:32
@@ -858,6 +866,7 @@ GOR_MOONPAL                  src/17gab1-gpu-orb-draw.js:98
 GOR_WGSL                     src/17gab-gpu-orb.js:19
 GOS_SHIFTS                   src/17k1-gosplan.js:7
 GOT                          src/27jb-ui-got.js:12
+GOVORUN                      src/12y3-govorun.js:3
 GPI                          src/17z3-map-gpu.js:26
 GPL                          src/17ga-gpu-planets.js:24
 GPL_CITY_D                   src/17ga-gpu-planets.js:366
@@ -1425,6 +1434,8 @@ MAYAK_KEEP                   src/12pa-beacon.js:37
 MAYAK_NUM                    src/12pa-beacon.js:65
 MA_FIVE                      tests/91qa-marks-act.js:165
 MA_Q                         tests/91qa-marks-act.js:6
+MECH_SKIN                    src/21phb-mech-man.js:4
+MECH_YAW                     src/21phb-mech-man.js:5
 MGR_CAP                      src/12c-mgr-core.js:8
 MGR_JOBS                     src/12e-mgr-jobs.js:90-224
 MGR_PERKS                    src/12c-mgr-core.js:60-129
@@ -1517,6 +1528,7 @@ NODE_PER_FAM                 src/05a-nodes.js:69
 NODE_WHERE                   src/05a-nodes.js:67
 NOTE_MAX                     src/12ap-notebook.js:32
 NO_LAYER                     src/18c-chunks.js:72
+NPC_ART_DATA                 src/27f3c-npc-art.js:3
 NPC_BATTLE                   src/13d-npc.js:14
 NPC_BY                       src/27f3b-npc-lib.js:107
 NPC_LIB                      src/27f3b-npc-lib.js:5-106
@@ -1643,6 +1655,7 @@ PENN_DAYS                    src/21h-pennant.js:22
 PEOPLE_GAP_MS                src/12a-crew.js:384
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
+PERCH_Y                      src/12y2d-site-bird.js:246
 PGX                          src/12i-pirate-hull.js:451
 PHONE_DPR                    src/08-state.js:12
 PI                           src/21pb-pln-wgsl-air.js:54
@@ -1800,6 +1813,7 @@ PLN_WORLDS                   src/21pfa-pln-worlds.js:20-66
 PLN_WRECK_END                src/21pif-pln-marks-act.js:287-308
 PLN_WX                       src/21pk-pln-weather.js:26
 PLN_WX_COL                   src/21pz-pln-frame.js:119
+PLUME_STAT                   src/12y2e-site-bird.js:118
 PL_MAX                       src/11va-places-lit.js:18
 PL_SINK                      src/11va-places-lit.js:26
 POI_BK                       src/20ab-poi-gpu.js:82
@@ -1863,13 +1877,13 @@ QUANT_MAX                    src/28-loop.js:166
 QUANT_MS                     src/28-loop.js:164
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:721
+R3                           src/27f2-room3d.js:749
 R3P                          src/27f2-room3d.js:37
 R3U                          src/27f2-room3d.js:31
 R3_DBG                       src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:700
+R3_DOWN_WGSL                 src/27f2-room3d.js:728
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:908
+R3_POST_WGSL                 src/27f2-room3d.js:936
 R3_SCR                       src/27f2-room3d.js:50
 R3_UN                        src/27f2-room3d.js:35
 R3_VPOOL                     src/27f2-room3d.js:81
@@ -2204,6 +2218,7 @@ SHUT_LINES                   src/11ah-offer.js:302-307
 SHUT_N                       src/17f-sys-traffic.js:71
 SH_DX                        src/03b-hull-paint.js:115
 SIGN_HOLD                    src/21-mode-surface.js:216
+SITE_BIRD                    src/12y2a-site-bird.js:2-21
 SKIPPED_NODE                 tests/90-harness.js:88
 SKIPPED_PROBE                tests/90-harness.js:60
 SKIPPED_SKIP                 tests/90-harness.js:66
@@ -2256,6 +2271,7 @@ SPHERE2                      src/24-mode-belt.js:33
 SPIRIT_BYE                   src/21a1b-base-food.js:49
 SPIRIT_HOLD                  src/21a1b-base-food.js:15
 SPIRIT_LOW                   src/21a1b-base-food.js:14
+SP_PTS                       src/12y2c-site-bird.js:52
 SRC_DISCOUNT                 src/12ad-site.js:22
 STAMP_INK                    src/17i-stamp.js:14
 STAMP_ORDER                  src/17i-stamp.js:11
@@ -2340,6 +2356,7 @@ TAPE_PAL                     src/25b-tape.js:115-118
 TAPE_PENS                    src/25b-tape.js:23
 TAPE_PRICE                   src/12s1-tape.js:8
 TAU                          src/01-core.js:14
+TAU                          src/12y2a-site-bird.js:9
 TAU                          src/19a1-scoop-gpu.js:160
 TAU                          src/19a1-scoop-gpu.js:271
 TAU                          src/22dbw-cave-pln-wgsl.js:39
@@ -2500,6 +2517,8 @@ WEAR_RU                      src/12s-wear.js:39
 WEATHER                      src/19d-weather.js:15-26
 WEATHER_BY_TYPE              src/19d-weather.js:28-47
 WEATHER_CAP                  src/19d-weather.js:52
+WHISK_MIX                    src/12y2d-site-bird.js:284
+WHISK_N                      src/12y2d-site-bird.js:283
 WIN3                         src/29rc-winter-r3.js:19
 WIN3_CAMS                    src/29rc-winter-r3.js:210
 WIN3_FX                      src/29rc-winter-r3.js:25
@@ -2634,8 +2653,13 @@ arrWarmStep                  src/17h1-arr-warm.js:63-74
 arrWarmSteps                 src/17h1-arr-warm.js:24-61
 arrive                       src/16-flight.js:110-152
 arriveSystem                 src/18-mode-map.js:734-785
+artBytes                     src/21phb-art-skin.js:3
 artGet                       src/08ca-gpu-canvas.js:551
+artLz4                       src/21phb-art-skin.js:4-16
 artPut                       src/08ca-gpu-canvas.js:552-699
+artSkinPose                  src/21phb-art-skin.js:47-58
+artSkinRead                  src/21phb-art-skin.js:17-29
+artSkinSegment               src/21phb-art-skin.js:32-45
 asMap                        src/14-save.js:209-215
 askText                      src/11u-names.js:59-77
 assignToBase                 src/12a-crew.js:181-190
@@ -2829,6 +2853,7 @@ baseWho                      src/21a1-base-life.js:45-49
 baseWhy                      src/21a9-base-laws.js:135-155
 baseWordLine                 src/21a2-base-link.js:65-74
 baseWorth                    src/21a5-base-dir.js:77-84
+basisFrom                    src/12y2a-site-bird.js:102-108
 battAt                       src/21d-battery.js:17-31
 battTarget                   src/21d-battery.js:33-35
 battTick                     src/21d-battery.js:36-65
@@ -2973,6 +2998,7 @@ bmgrSilent                   src/21b2-base-mgr.js:184-187
 bmgrStep                     src/21b2-base-mgr.js:140-178
 bmgrWorkMul                  src/21b2-base-mgr.js:129-132
 boardLanes                   src/26-ui-station.js:444-470
+bodyAt                       src/12y2c-site-bird.js:65-69
 bodyBar                      src/17c2e-body-kit.js:17-23
 bodyBarge                    src/17c2f-body-barge.js:441-447
 bodyBargeFrames              src/17c2f-body-barge.js:9
@@ -2984,6 +3010,7 @@ bodyBuoy                     src/17c2j-body-buoy.js:63-68
 bodyBuoyMesh                 src/17c2j-body-buoy.js:6-61
 bodyChebMesh                 src/17c2k-body-cheb.js:5-57
 bodyCheburek                 src/17c2k-body-cheb.js:59-65
+bodyColor                    src/12y2c-site-bird.js:74-129
 bodyDot                      src/17c2e-body-kit.js:52-56
 bodyFind                     src/17c2i-body-find.js:416-424
 bodyFindMesh                 src/17c2i-body-find.js:8-414
@@ -2997,6 +3024,7 @@ bodyInSystem                 src/16-flight.js:39-49
 bodyLights                   src/17c2e-body-kit.js:42-50
 bodyMarkBox                  src/17c2h-body-pirate.js:367-375
 bodyMesh                     src/17c2e-body-kit.js:58-65
+bodyNormal                   src/12y2c-site-bird.js:135-147
 bodyPirDress                 src/17c2h-body-pirate.js:12-344
 bodyPirFlame                 src/17c2h-body-pirate.js:364
 bodyPirate                   src/17c2h-body-pirate.js:346-351
@@ -3054,6 +3082,11 @@ brockTex                     src/24be-belt-rock-gpu.js:164-174
 brownBuf                     src/10-music.js:125
 brownNoise                   src/10-music.js:126-141
 buildAi                      src/12f-mgr-ai.js:29-48
+buildBeads                   src/12y2d-site-bird.js:293-306
+buildBody                    src/12y2c-site-bird.js:153-214
+buildDust                    src/12y2e-site-bird.js:461-468
+buildFeather                 src/12y2e-site-bird.js:21-72
+buildParts                   src/12y2d-site-bird.js:12-233
 builtGpu                     src/21c-built.js:79-109
 builtHere                    src/21c-built.js:18-39
 builtMast                    src/21c-built.js:111
@@ -3116,6 +3149,7 @@ castMap                      src/19c1-cast.js:81-100
 castMapFor                   src/19c1-cast.js:103-108
 castOccH                     src/19c1-cast.js:53-62
 castShadeAt                  src/19c1-cast.js:64-76
+catmull                      src/12y2a-site-bird.js:121-130
 cave3AmberFrame              src/22de-cave-pln-far.js:168-190
 cave3AmberGeo                src/22de-cave-pln-far.js:145-167
 cave3Band                    src/22dc-cave-pln-dress.js:61-86
@@ -3440,6 +3474,7 @@ clNow                        tests/91zzzzzr-cloud.js:25-28
 clSave                       tests/91zzzzzr-cloud.js:14-18
 clWith                       tests/91zzzzzr-cloud.js:30-43
 clamp                        src/01-core.js:15
+clamp                        src/12y2a-site-bird.js:10
 clampi                       src/12am-chron.js:152
 clearanceEarned              src/05e-clearance.js:42-54
 clearanceNow                 src/05e-clearance.js:55-59
@@ -3549,7 +3584,7 @@ cpBand                       src/27f3-person3d.js:112-120
 cpBasis                      src/27f3-person3d.js:90-94
 cpBeardG                     src/27f3a-face3d.js:398-413
 cpBody                       src/27f3-person3d.js:129
-cpBodyGen                    src/27f3-person3d.js:130-304
+cpBodyGen                    src/27f3-person3d.js:130-305
 cpCloth                      src/27f3-person3d.js:47-52
 cpClump                      src/27f3a-face3d.js:389-396
 cpEmoMix                     src/27f6-face-live.js:56-58
@@ -3566,21 +3601,21 @@ cpHead                       src/27f3a-face3d.js:190
 cpHeadAI                     src/27f3a-face3d.js:415-425
 cpHeadFn                     src/27f3a-face3d.js:18-52
 cpHeadGen                    src/27f3a-face3d.js:191-300
-cpMesh                       src/27f3-person3d.js:317-323
-cpMeshKey                    src/27f3-person3d.js:308-311
-cpMeshPump                   src/27f3-person3d.js:336-351
-cpMeshPut                    src/27f3-person3d.js:312-316
+cpMesh                       src/27f3-person3d.js:318-324
+cpMeshKey                    src/27f3-person3d.js:309-312
+cpMeshPump                   src/27f3-person3d.js:337-352
+cpMeshPut                    src/27f3-person3d.js:313-317
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:23-29
 cpPose                       src/27f3-person3d.js:54-88
-cpRig                        src/27f3a-face3d.js:430-452
+cpRig                        src/27f3a-face3d.js:430-453
 cpRun                        src/27f3a-face3d.js:189
 cpSculpt                     src/27f3a-face3d.js:88-163
 cpSkin                       src/27f3a-face3d.js:166-169
 cpSkinZ                      src/27f3a-face3d.js:171
 cpTeeth                      src/27f3a-face3d.js:174-186
 cpTorsoAt                    src/27f3-person3d.js:101-110
-cpTwinPump                   src/27f3-person3d.js:328-333
+cpTwinPump                   src/27f3-person3d.js:329-334
 cpUn                         src/27f3a-face3d.js:87
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
@@ -3600,6 +3635,8 @@ crashN                       src/28-loop.js:629
 crashSay                     src/28-loop.js:655-686
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
+crestQuill                   src/12y2d-site-bird.js:259-273
+crestWhisk                   src/12y2d-site-bird.js:285-292
 crewAssignShip               src/12a-crew.js:252-260
 crewBaseHas                  src/21a9-base-laws.js:105-108
 crewBaseTraits               src/21a9-base-laws.js:98-104
@@ -3919,6 +3956,7 @@ dirAt                        src/01-core.js:166-171
 dirGoodShare                 src/21a5-base-dir.js:67-72
 dirPool                      src/21a5-base-dir.js:44-48
 dirWeights                   src/21a5-base-dir.js:55-66
+disc                         src/12y2b-site-bird.js:104-116
 dispAdvance                  src/28m-dispatch.js:259-267
 dispAlarm                    src/28m-dispatch.js:336-343
 dispAlarmOff                 src/28m-dispatch.js:345-350
@@ -4350,8 +4388,10 @@ fbSpend                      src/17a0-prebake.js:66
 fbm1                         src/01-core.js:117
 fbm2                         src/01-core.js:124
 fbm3                         src/24ba-belt-gpu.js:32-36
+feaPush                      src/12y2e-site-bird.js:78-96
 fightLens                    src/17p-cam-frame.js:42-60
 fightTarget                  src/17p-cam-frame.js:35-41
+filament                     src/12y2b-site-bird.js:126-160
 fillMaterial                 src/18a-material.js:62
 findBucket                   src/17b-finds.js:18
 findInteract                 src/17b-finds.js:141-177
@@ -4418,6 +4458,7 @@ fleetShipAt                  src/12ai1-fleet-art.js:414-447
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:79-112
 floraOf                      src/20e-species.js:91-105
+flowAt                       src/12y2e-site-bird.js:98-102
 foeArmFire                   src/13d-loadout.js:51-131
 foeFlak                      src/13a-guns.js:405-429
 foeGun                       src/13d-loadout.js:40-48
@@ -4751,6 +4792,13 @@ gotNext                      src/27jb-ui-got.js:28
 gotRender                    src/27jb-ui-got.js:29-56
 gotTick                      src/27jb-ui-got.js:57-61
 gotoSector                   src/11a-quests.js:68-88
+govorunDraw                  src/12y3-govorun.js:118-129
+govorunMesh                  src/12y3-govorun.js:4-8
+govorunMeshGen               src/12y3-govorun.js:9-66
+govorunPoke                  src/12y3-govorun.js:130-136
+govorunPump                  src/12y3-govorun.js:69-74
+govorunScene                 src/12y3-govorun.js:75-99
+govorunView                  src/12y3-govorun.js:102-117
 gplBody                      src/17ga-gpu-planets.js:309-332
 gplCities                    src/17ga-gpu-planets.js:397-439
 gplLandAt                    src/17ga-gpu-planets.js:381-396
@@ -5208,6 +5256,7 @@ hangTri                      src/08bj-ovl-hang.js:255-258
 hangWrap                     src/08bj-ovl-hang.js:174-195
 hasEpisode                   src/03-ships.js:139-142
 hasSave                      src/14a-cloud.js:76
+hashf                        src/12y2a-site-bird.js:17-21
 hashi                        src/01-core.js:23-27
 hashi3                       src/24ba-belt-gpu.js:18-22
 haulAim                      src/16c-rescue.js:261-266
@@ -5785,6 +5834,8 @@ lawRingGpu                   src/12al2-laws.js:119-138
 lawRingTick                  src/12al2-laws.js:95-111
 lawSpares                    src/12al2-laws.js:58-61
 layerLevel                   src/10-music.js:362-377
+layoutCoat                   src/12y2e-site-bird.js:122-292
+layoutPlumes                 src/12y2e-site-bird.js:303-458
 ledgerAll                    src/11ai-ledger.js:36-39
 ledgerNeed                   src/11ai-ledger.js:44-49
 leftCall                     src/12as-left.js:21-24
@@ -5905,6 +5956,19 @@ loyWord                      src/27c-ui-hq.js:13-16
 luckLine                     src/27b-ui-crew.js:15-25
 lum3                         src/18a1-glaze.js:10
 luxPal                       src/03c-hull-luxe.js:16-26
+mIdent                       src/12y2a-site-bird.js:36
+mInv                         src/12y2a-site-bird.js:75-95
+mLook                        src/12y2a-site-bird.js:60-68
+mMul                         src/12y2a-site-bird.js:37-47
+mOrtho                       src/12y2a-site-bird.js:54-59
+mPersp                       src/12y2a-site-bird.js:48-53
+mPlace                       src/12y2a-site-bird.js:110-117
+mRotX                        src/12y2a-site-bird.js:71
+mRotY                        src/12y2a-site-bird.js:72
+mRotZ                        src/12y2a-site-bird.js:73
+mScale                       src/12y2a-site-bird.js:70
+mTrans                       src/12y2a-site-bird.js:69
+mTranspose                   src/12y2a-site-bird.js:96-99
 maExplore                    tests/91qa-marks-act.js:173-191
 maLive                       tests/91qa-marks-act.js:7-10
 maPrep                       tests/91qa-marks-act.js:166-170
@@ -6053,8 +6117,14 @@ mayakRec                     src/12pa-beacon.js:38-42
 mayakSector                  src/12pa-beacon.js:60-63
 mayakSold                    src/12pa-beacon.js:49-52
 mayakTick                    src/12pa-beacon.js:125-140
+mechManBuild                 src/21phb-mech-man.js:29-112
+mechManColour                src/21phb-mech-man.js:7-28
+mechManData                  src/21phb-mech-man.js:6
+mechManSkin                  src/21phb-mech-man.js:114-124
 mercFee                      src/12a-crew.js:218
 mergeKeyMap                  src/15-input.js:126-135
+meshBox                      src/12y2b-site-bird.js:12-21
+meshJoin                     src/12y2b-site-bird.js:23-32
 mgrBearLine                  src/21b3-base-hunt.js:89-94
 mgrBearing                   src/21b3-base-hunt.js:75-86
 mgrBestLeg                   src/12c-mgr-core.js:602-623
@@ -6157,6 +6227,7 @@ misMarkStrip                 src/11z-misclosure.js:35-39
 misStationOffset             src/11z-misclosure.js:19-24
 misTableReply                src/11z-misclosure.js:50-53
 misclose                     src/06b-region.js:80-84
+mix                          src/12y2a-site-bird.js:11
 mixHex                       src/12x-suit.js:187-190
 mixNum                       src/02a-worldmix.js:43-45
 mixPal                       src/02a-worldmix.js:34-42
@@ -6312,6 +6383,7 @@ noise1                       src/01-core.js:116
 noise2                       src/01-core.js:119-123
 noise3                       src/24ba-belt-gpu.js:23-31
 noiseBuf                     src/09-audio.js:78
+normalAt                     src/12y2e-site-bird.js:104
 normsOf                      src/12ab-hold.js:122-130
 note                         tests/90-harness.js:103
 noteAll                      src/12ap-notebook.js:35
@@ -6320,6 +6392,9 @@ noteAskable                  src/12ap-notebook.js:205-208
 noteBlock                    src/12ap-notebook.js:168-203
 now                          src/01-core.js:88
 npcApply                     src/27f3b-npc-lib.js:109-114
+npcArtBody                   src/27f3c-npc-art.js:10-50
+npcArtRead                   src/27f3c-npc-art.js:4-9
+npcArtRig                    src/27f3c-npc-art.js:53-59
 npcCrewOff                   src/13d-npc.js:202-212
 npcEnvoy                     src/13d-npc.js:108-123
 npcFoeFor                    src/13-pirates.js:110-120
@@ -6570,12 +6645,12 @@ parrotBtnTick                src/12y-parrot-face.js:242-247
 parrotDock                   src/12x-parrot.js:141-147
 parrotDraw                   src/12y1-parrot-gpu.js:194-318
 parrotFind                   src/12x-parrot.js:30-39
-parrotGpuTick                src/12y1-parrot-gpu.js:413-430
+parrotGpuTick                src/12y1-parrot-gpu.js:413-428
 parrotHas                    src/12x-parrot.js:25
 parrotHeardKill              src/13-pirates.js:319-322
 parrotLine                   src/12y-parrot-face.js:206-219
 parrotPoke                   src/12y-parrot-face.js:222-239
-parrotSnap                   src/12y1-parrot-gpu.js:432-438
+parrotSnap                   src/12y1-parrot-gpu.js:430-436
 partBonus                    src/05-parts.js:349-356
 partById                     src/05-parts.js:335-338
 partClearance                src/05e-clearance.js:75-79
@@ -6978,7 +7053,7 @@ plnManBuild                  src/21pha-pln-man.js:81-195
 plnManCloth                  src/21pha1-pln-man-dress.js:55-129
 plnManCss                    src/21pha-pln-man.js:54-61
 plnManFlame                  src/21pha-pln-man.js:241-255
-plnManFrame                  src/21pha-pln-man.js:305-346
+plnManFrame                  src/21pha-pln-man.js:305-349
 plnManHead                   src/21pha1-pln-man-dress.js:32-53
 plnManLin                    src/21pha1-pln-man-dress.js:22
 plnManPack                   src/21pha-pln-man.js:197-204
@@ -7384,16 +7459,16 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:722-728
-r3Dev                        src/27f2-room3d.js:750-774
-r3DownDesc                   src/27f2-room3d.js:742-746
-r3Drop                       src/27f2-room3d.js:781
-r3Frame                      src/27f2-room3d.js:828-905
-r3Free                       src/27f2-room3d.js:783
+r3Desc                       src/27f2-room3d.js:750-756
+r3Dev                        src/27f2-room3d.js:778-802
+r3DownDesc                   src/27f2-room3d.js:770-774
+r3Drop                       src/27f2-room3d.js:809
+r3Frame                      src/27f2-room3d.js:856-933
+r3Free                       src/27f2-room3d.js:811
 r3Kit                        src/27f2-room3d.js:89-238
 r3Lin                        src/27f2-room3d.js:40
 r3Look                       src/27f2-room3d.js:55-238
-r3MeshR                      src/27f2-room3d.js:827
+r3MeshR                      src/27f2-room3d.js:855
 r3Mix                        src/27f2-room3d.js:41
 r3MixI                       src/27f2-room3d.js:44
 r3Mul                        src/27f2-room3d.js:52
@@ -7404,13 +7479,13 @@ r3Pt                         src/27f2-room3d.js:72
 r3Sc                         src/27f2-room3d.js:42
 r3ScI                        src/27f2-room3d.js:45
 r3Scr                        src/27f2-room3d.js:51
-r3ShDesc                     src/27f2-room3d.js:734-739
-r3ShadowVP                   src/27f2-room3d.js:785-790
+r3ShDesc                     src/27f2-room3d.js:762-767
+r3ShadowVP                   src/27f2-room3d.js:813-818
 r3Step                       src/27f2-room3d.js:46
-r3Targets                    src/27f2-room3d.js:797-825
-r3Up                         src/27f2-room3d.js:776-780
-r3VB                         src/27f2-room3d.js:740
-r3VolDesc                    src/27f2-room3d.js:729-733
+r3Targets                    src/27f2-room3d.js:825-853
+r3Up                         src/27f2-room3d.js:804-808
+r3VB                         src/27f2-room3d.js:768
+r3VolDesc                    src/27f2-room3d.js:757-761
 r3Xf                         src/27f2-room3d.js:61-238
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
@@ -7835,6 +7910,7 @@ rivalYield                   src/12p-news.js:47-60
 rivetLine                    src/25-cockpit.js:179-186
 rmActed                      tests/91zzzw9k-rivmarks.js:5-9
 rnd                          src/01-core.js:74
+rnd                          src/12y2a-site-bird.js:22
 rndFx                        src/01-core.js:76
 rndRestore                   src/01-core.js:80
 rndSeed                      src/01-core.js:78
@@ -7980,6 +8056,7 @@ rushAt                       src/18j-rail-rush.js:7
 rushFuelMul                  src/18j-rail-rush.js:12
 rushStart                    src/18j-rail-rush.js:8-11
 rxRecord                     src/11x-ring.js:64-74
+sRGB                         src/12y2a-site-bird.js:133-137
 sameRun                      tests/91zzzzzbb-samehash.js:22-39
 sameRunHands                 tests/91zzzzzbb-samehash.js:77-95
 saveFatSaid                  src/14-save.js:127
@@ -8242,6 +8319,7 @@ smenaRec                     src/12ud-smena.js:104
 smenaSync                    src/12ud-smena.js:107-119
 smenaWhere                   src/12ud-smena.js:121
 smokePath                    src/12tb-settle-draw2.js:13-28
+smooth                       src/12y2a-site-bird.js:12
 snapshot                     src/14-save.js:42-109
 sndWalk                      src/28-loop.js:51
 socAll                       src/12al4-soc.js:41
@@ -8312,6 +8390,8 @@ specimenBeast                src/20e-species.js:266-283
 specimenPlant                src/20e-species.js:134-191
 speechAll                    src/11b-speech.js:117
 speechHere                   src/11b-speech.js:119-154
+sphere                       src/12y2b-site-bird.js:82-102
+spineAt                      src/12y2c-site-bird.js:57-63
 srcPrice                     src/12ad-site.js:294-297
 stDel                        src/14-save.js:26
 stGet                        src/14-save.js:8
@@ -8499,6 +8579,7 @@ tabsSync                     src/15-input.js:230-245
 tactHz                       src/28-loop.js:378
 tactTick                     src/28-loop.js:388-401
 tactWork                     src/28-loop.js:381
+tailWhisk                    src/12y2d-site-bird.js:274-279
 tap                          src/15-input.js:478-608
 tapeBuy                      src/12s1-tape.js:37-42
 tapeCan                      src/12s1-tape.js:22
@@ -8612,6 +8693,7 @@ traineeJump                  src/11ac-trainee.js:51-57
 traineeSeat                  src/11ac-trainee.js:34-37
 traineeTick                  src/11ac-trainee.js:59-70
 traitOf                      src/12a-crew.js:28
+tube                         src/12y2b-site-bird.js:37-81
 tvHop                        tests/91zzzzzw-travel.js:36-48
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17-34
@@ -8643,13 +8725,22 @@ updateSystem                 src/17-mode-system.js:106-519
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29rc-winter-r3.js:295-299
 useBeacon                    src/23-mode-dig.js:91-116
+v3                           src/12y2a-site-bird.js:25
+vAdd                         src/12y2a-site-bird.js:26
 vCloth                       src/18d-verlet.js:41-50
+vCross                       src/12y2a-site-bird.js:30
+vDot                         src/12y2a-site-bird.js:29
 vDrawCloth                   src/18d-verlet.js:99-113
 vDrawRope                    src/18d-verlet.js:90-95
+vLen                         src/12y2a-site-bird.js:31
+vLerp                        src/12y2a-site-bird.js:33
 vLink                        src/18d-verlet.js:78-86
+vMul                         src/12y2a-site-bird.js:28
+vNorm                        src/12y2a-site-bird.js:32
 vRope                        src/18d-verlet.js:27-37
 vRopeAt                      src/18d-verlet.js:117-123
 vStep                        src/18d-verlet.js:53-77
+vSub                         src/12y2a-site-bird.js:27
 vanHasPad                    src/21ac3-base-van.js:28-31
 vanLine                      src/21ac3-base-van.js:39
 vanName                      src/21ac3-base-van.js:37
@@ -9598,11 +9689,28 @@ zoomTo                       src/15-input.js:358
 ## src/12x-suit.js · 21 KB
   · скафандр как комплект:1
 
-## src/12y-parrot-face.js · 17 KB
+## src/12y-parrot-face.js · 18 KB
   · трепло: жёрдочка:1
 
 ## src/12y1-parrot-gpu.js · 32 KB
   · трепло на движке: атлас перьев и экземпляры (G15, DESIGN-gpu «Where I stopped»):1
+
+## src/12y2a-site-bird.js · 7 KB
+  · математика:3
+
+## src/12y2b-site-bird.js · 8 KB
+  · сборка сеток:1
+
+## src/12y2c-site-bird.js · 14 KB
+  · порода: тело:1
+
+## src/12y2d-site-bird.js · 21 KB
+  · части: клюв, глаза, лапы, жёрдочка:1
+
+## src/12y2e-site-bird.js · 32 KB
+  · перо:1
+
+## src/12y3-govorun.js · 8 KB
 
 ## src/12z-parrot-acts.js · 17 KB
   · трепло: репертуар:1
@@ -9727,6 +9835,8 @@ zoomTo                       src/15-input.js:358
 ## src/17a0-prebake.js · 8 KB
   · печь заранее: общий планировщик (GPU-3, 25.09, DESIGN-gpu):1
   · заготовки наперёд: общий бюджет кадра (24.10):44
+
+## src/17a1-site-bird-warm.js · 0 KB
 
 ## src/17b-finds.js · 18 KB
   · находки в полёте:1
@@ -10200,8 +10310,14 @@ zoomTo                       src/15-input.js:358
 ## src/21pha1-pln-man-dress.js · 10 KB
   · планета: человек — голова и одежда рига (M801b):1
 
+## src/21phb-art-skin.js · 4 KB
+
+## src/21phb-mech-man.js · 9 KB
+
 ## src/21phb-pln-ship.js · 22 KB
   · планета: корабль на опорах — по корпусу игры (M621):1
+
+## src/21phb1-mech-art.js · 269 KB
 
 ## src/21phc-pln-rig-card.js · 21 KB
   · планета: человек в карточке — один астронавт везде (M801):1
@@ -10553,7 +10669,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 87 KB
+## src/27f2-room3d.js · 88 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 32 KB
@@ -10564,6 +10680,28 @@ zoomTo                       src/15-input.js:358
 
 ## src/27f3b-npc-lib.js · 24 KB
   · сто жителей станций:1
+
+## src/27f3c-npc-art.js · 4 KB
+
+## src/27f3d0-npc-art.js · 408 KB
+
+## src/27f3d1-npc-art.js · 389 KB
+
+## src/27f3d2-npc-art.js · 395 KB
+
+## src/27f3d3-npc-art.js · 401 KB
+
+## src/27f3d4-npc-art.js · 406 KB
+
+## src/27f3d5-npc-art.js · 408 KB
+
+## src/27f3d6-npc-art.js · 401 KB
+
+## src/27f3d7-npc-art.js · 417 KB
+
+## src/27f3d8-npc-art.js · 396 KB
+
+## src/27f3d9-npc-art.js · 409 KB
 
 ## src/27f4-cant3d.js · 20 KB
   · кантина в объёме (M725):1
@@ -10974,6 +11112,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9l-hallgone.js · 4 KB
 
 ## tests/91zzzw9m-raid-engine.js · 3 KB
+
+## tests/91zzzy-character-assets.js · 4 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

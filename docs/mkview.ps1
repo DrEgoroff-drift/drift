@@ -50,7 +50,7 @@ setTimeout(function(){
     S.x=best.x;S.y=groundAt(S.tr,S.x)-10;
   }
   function hour(p,ph){
-    var period=CEL_DAY*(6+((p.seed>>>7)&3));
+    var period=CEL_DAY*(54+((p.seed>>>7)&3)*6);
     G.t=period*((ph-(p.seed%100)/100+1)%1);
   }
   function run(n,u,d){for(var f=0;f<n;f++){G.t+=.01;u(1);d();}}

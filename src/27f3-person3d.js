@@ -128,6 +128,7 @@ const CP_KIT={cmd:{jac:[50,56,64],mix:.1,coll:1},keep:{jac:[62,78,70],mix:.16,co
   sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[142,140,132],mix:.04,coll:1,vest:[40,44,52]}};
 function cpBody(m,lod,poseK){return cpRun(cpBodyGen(m,lod,poseK));}
 function* cpBodyGen(m,lod,poseK){
+  if(m.npc&&NPC_ART_DATA[m.npc])return yield* npcArtBody(m,lod,poseK);
   const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=Object.assign({},cpPose(poseK));
   /* усталость (M461): плечи опускаются — lean и ниже локти; корзина fat в ключе сетки */
   const fb=typeof mgrFatBucket==="function"?mgrFatBucket(m):0;

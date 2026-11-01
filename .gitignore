@@ -53,3 +53,4 @@ __pycache__/
 # Рабочие копии субагентов Claude Code (Agent с isolation: worktree) — не часть репозитория.
 /.claude/worktrees/
 /.claude/launch.json
+/.claude/deepseek-price-note.md

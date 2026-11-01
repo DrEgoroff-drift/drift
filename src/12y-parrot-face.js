@@ -269,10 +269,15 @@ function toggleParrotWin(open){
         cv=document.getElementById("parrotcv");
   if(b)b.addEventListener("click",()=>toggleParrotWin(true));
   if(x)x.addEventListener("click",()=>toggleParrotWin(false));
-  if(cv)cv.addEventListener("pointerdown",e=>{
-    const R=cv.getBoundingClientRect();
-    /* экранное → в координаты птицы: тот же перенос и масштаб, что в отрисовке */
-    const W=R.width,H=R.height,s=Math.min(W/230,H/304);
-    parrotPoke((e.clientX-R.left-W/2-4)/s,(e.clientY-R.top-(H-16-PAR.hang*150))/s);
-  });
+  if(cv){let down=null;
+    cv.addEventListener("pointerdown",e=>{down={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:0};cv.setPointerCapture(e.pointerId);});
+    cv.addEventListener("pointermove",e=>{if(!down)return;
+      down.moved+=Math.abs(e.clientX-down.lastX)+Math.abs(e.clientY-down.lastY);
+      if(down.moved>6){GOVORUN.az-=(e.clientX-down.lastX)*.008;GOVORUN.el=clamp(GOVORUN.el+(e.clientY-down.lastY)*.005,-.55,.95);}
+      down.lastX=e.clientX;down.lastY=e.clientY;
+    });
+    cv.addEventListener("pointerup",e=>{if(!down)return;
+      if(down.moved<=6&&cv.width&&cv.height)govorunPoke(e.offsetX/(cv.width/PAR_DPR),e.offsetY/(cv.height/PAR_DPR));down=null;});
+    cv.addEventListener("pointercancel",()=>{down=null;});
+  }
 })();

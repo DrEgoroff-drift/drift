@@ -417,9 +417,7 @@ function parrotGpuTick(){
     const t=wallMs(),dt=Math.min(.05,(t-parT0)/1000||.016);parT0=t;
     parStep(dt);
     if(cv&&cv.width&&cv.height){
-      const S=PARG.S=parSink(PARG.S,[PAR_DPR,0,0,PAR_DPR,0,0]);
-      parrotDraw(S,cv.width/PAR_DPR,cv.height/PAR_DPR);
-      parPass(PARG.win||(PARG.win=parTarget()),cv,S,GPU.enc);
+      govorunDraw(cv);
     }
   }
   if(PARG.pd&&PARG.Sp){
