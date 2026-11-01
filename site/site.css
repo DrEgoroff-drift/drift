@@ -110,7 +110,7 @@ p.dim{color:var(--dim)}
 .hero .who a,.hero .who .linkish{color:var(--phos)}
 .hero .down{position:absolute;right:var(--gut);bottom:28px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;
   color:var(--dim);text-transform:uppercase;writing-mode:vertical-rl;opacity:.8}
-@media(max-width:720px){.hero .down{display:none}.hero .in{padding-top:90px;padding-bottom:40px}}
+@media(max-width:720px){.hero .down{display:none}.hero .in{padding-top:90px;padding-bottom:40px}.hero .tag{font-size:11px;letter-spacing:.12em}}
 
 /* ── строка фактов ── */
 .facts{position:relative;z-index:3;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
@@ -162,10 +162,24 @@ section.sec.tight{padding-top:64px;padding-bottom:64px}
 .strip figcaption p{font-size:14px;color:var(--dim);line-height:1.5}
 .strip-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;max-width:var(--max);margin:0 auto;padding:0 var(--gut) 22px}
 .strip-head .hint{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
-/* На телефоне шапка ленты не влезала в строку: подпись «снято в игре…» с
-   nowrap и заголовок вместе давали 439 px при экране 390 — и вся заглавная
-   ехала вбок на 49 px (на 320 — на 119). Пусть шапка переносится, а подпись
-   ломается по словам: это подпись, а не строка таблицы. */
+/* Стрелки ленты. На десктопе в кадре две с половиной карточки, третья
+   обрезана краем — без стрелок не видно, что лента вообще листается. На
+   тач-экранах они не нужны: там свайп, и кнопка только мешает кадру. */
+.strip-nav{position:absolute;top:132px;z-index:2;width:46px;height:46px;padding:0 0 3px;
+  display:none;align-items:center;justify-content:center;cursor:pointer;
+  border:1px solid var(--hair);background:rgba(5,7,12,.72);color:var(--phos);
+  font:400 24px/1 var(--mono);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);
+  transition:background .18s,color .18s}
+.strip-nav:hover{background:rgba(127,230,216,.14);color:var(--bright)}
+.strip-nav.prev{left:10px}.strip-nav.next{right:10px}
+.strip-nav.on{display:flex}
+.strip-nav[disabled]{opacity:.28;cursor:default}
+@media(pointer:coarse){.strip-nav{display:none!important}}
+@media(max-width:600px){.strip-nav{display:none!important}}
+/* «что нового» под дорожной картой: версия и дата из version.json */
+.fresh{margin-top:26px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--dim)}
+.fresh a{color:var(--phos)}
 @media(max-width:760px){
   .strip-head{flex-wrap:wrap;align-items:flex-start;gap:6px}
   .strip-head .hint{white-space:normal;letter-spacing:.12em}

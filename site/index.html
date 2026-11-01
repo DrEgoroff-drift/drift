@@ -123,7 +123,7 @@
 <!-- ── сцены: по одному кадру на то, чем вы заняты ── -->
 <section class="scene right" id="planet">
   <div class="num"><b>01</b>посадка</div>
-  <div class="bg"><img src="/shots/land.webp" srcset="/shots/land.webp 1600w, /shots/land-2x.webp 3200w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Корабль только что сел на зелёной планете у озера; вдали горы, в небе облака и гигантские грибы"></div>
+  <div class="bg"><img src="/shots/land.webp" srcset="/shots/land.webp 1600w, /shots/land-2x.webp 3200w, /shots/land-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Корабль только что сел на зелёной планете у озера; вдали горы, в небе облака и гигантские грибы"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate amber">
@@ -138,7 +138,7 @@
 
 <section class="scene" id="walk">
   <div class="num"><b>02</b>пешком</div>
-  <div class="bg"><img src="/shots/ice.webp" width="1600" height="900" loading="lazy" alt="Ледяная планета на закате: корабль на снежном холме, человек в скафандре идёт по склону, вдали белая гора"></div>
+  <div class="bg"><img src="/shots/ice.webp" srcset="/shots/ice.webp 1600w, /shots/ice-2x.webp 3200w, /shots/ice-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Ледяная планета на закате: человек в скафандре стоит на снежном гребне над пещерой, вокруг склоны и белая гора вдали"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate">
@@ -153,7 +153,7 @@
 
 <section class="scene right" id="cave">
   <div class="num"><b>03</b>под землёй</div>
-  <div class="bg"><img src="/shots/cave.webp" srcset="/shots/cave.webp 1600w, /shots/cave-2x.webp 3200w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Пещера: человек в оранжевом скафандре с фонарём у подземного озера, вокруг сталактиты и кристаллы"></div>
+  <div class="bg"><img src="/shots/cave.webp" srcset="/shots/cave.webp 1600w, /shots/cave-2x.webp 3200w, /shots/cave-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Пещера: человек в оранжевом скафандре с фонарём у подземного озера, вокруг сталактиты и кристаллы"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate">
@@ -168,7 +168,7 @@
 
 <section class="scene" id="fly">
   <div class="num"><b>04</b>полёт</div>
-  <div class="bg"><img src="/shots/sys.webp" srcset="/shots/sys.webp 1600w, /shots/sys-2x.webp 3200w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Корабль у полосатой планеты среди лиловой туманности, рядом луны"></div>
+  <div class="bg"><img src="/shots/sys.webp" srcset="/shots/sys.webp 1600w, /shots/sys-2x.webp 3200w, /shots/sys-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Корабль у полосатой планеты среди лиловой туманности, рядом луны"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate">
@@ -183,7 +183,7 @@
 
 <section class="scene right" id="station">
   <div class="num"><b>05</b>станция</div>
-  <div class="bg"><img src="/shots/station.webp" srcset="/shots/station.webp 1600w, /shots/station-2x.webp 3200w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Торговый зал станции: стойка с продавцом, человек в скафандре у прилавка, справа таблица цен"></div>
+  <div class="bg"><img src="/shots/station.webp" srcset="/shots/station.webp 1600w, /shots/station-2x.webp 3200w, /shots/station-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Торговый зал станции: стойка с продавцом, человек в скафандре у прилавка, справа таблица цен"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate amber">
@@ -224,6 +224,7 @@
     </div>
     <div class="hint">снято в игре · по клику во весь экран</div>
   </div>
+  <div class="strip-wrap">
   <div class="strip gal">
     <figure>
       <img src="/shots/desert.webp" loading="lazy" width="1600" height="900" alt="Пустынная планета: корабль на светлом песке, вдали столовые горы, человек идёт к залежам">
@@ -273,6 +274,9 @@
       <img src="/shots/home.webp" loading="lazy" width="1600" height="900" alt="Комната дома: стол под лампой, жилец, карта на стене">
       <figcaption><h3>Дом</h3><p>Стоит на своей планете. К нему идут пешком, в него заходят, и на стол ложатся письма и чужие дела.</p></figcaption>
     </figure>
+  </div>
+  <button class="strip-nav prev" type="button" aria-label="предыдущие кадры">‹</button>
+  <button class="strip-nav next" type="button" aria-label="следующие кадры">›</button>
   </div>
 </section>
 
@@ -382,10 +386,11 @@
     <div class="now"><i>●</i><span>Шахта в объёме — забой, крепь, свет лампы</span></div>
     <div class="now"><i>●</i><span>Дом, база и комнаты переезжают на тот же движок, что планета</span></div>
   </div>
+  <p class="fresh" id="fresh" hidden><span id="freshver"></span> · <a href="https://github.com/DrEgoroff-drift/drift/blob/main/PATCHNOTES.md" rel="noopener">что нового →</a></p>
 </section>
 
 <section class="end">
-  <div class="bg"><img src="/shots/night.webp" width="1600" height="900" loading="lazy" alt=""></div>
+  <div class="bg"><img src="/shots/night.webp" srcset="/shots/night.webp 1600w, /shots/night-2x.webp 3200w, /shots/night-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt=""></div>
   <div class="shade"></div>
   <h2>Полбака топлива уже залито</h2>
   <p>Загрузка занимает пару секунд. Регистрироваться не обязательно. Нужен браузер с WebGPU:
@@ -465,7 +470,37 @@ fetch("/version.json",{cache:"no-store"}).then(r=>r.json()).then(d=>{
   if(d.ver)b.push("версия "+d.ver);
   if(d.date)b.push("обновлено "+d.date);
   if(b.length)document.getElementById("ver").textContent=b.join(" · ");
+  /* «что нового»: версия на сайте уже есть, а ссылки на патчноуты не было —
+     строка «обновления выходят часто» висела без единого доказательства */
+  const f=document.getElementById("fresh"), fv=document.getElementById("freshver");
+  if(f&&fv&&d.ver){fv.textContent="сейчас в игре "+d.ver+(d.date?", "+d.date:"");f.hidden=false;}
 }).catch(()=>{});
+/* лента кадров: стрелки на десктопе (на тач-экранах их прячет CSS) */
+(function(){
+  const wrap=document.querySelector(".strip-wrap");if(!wrap)return;
+  const strip=wrap.querySelector(".strip"),nav=wrap.querySelectorAll(".strip-nav");
+  if(!strip||nav.length<2)return;
+  const step=()=>{const f=strip.querySelector("figure");
+    return f?Math.round(f.getBoundingClientRect().width)+18:600;};
+  /* «в начале» считаем по первой карточке, а не по scrollLeft: scroll-snap
+     тянет её к кромке скроллпорта, и на старте там уже не ноль (56 px). */
+  const atStart=()=>{
+    const f=strip.querySelector("figure"); if(!f) return strip.scrollLeft<=4;
+    const pad=parseFloat(getComputedStyle(strip).paddingLeft)||0;
+    return f.getBoundingClientRect().left<=strip.getBoundingClientRect().left+pad+2;
+  };
+  const upd=()=>{
+    const can=strip.scrollWidth>strip.clientWidth+8;
+    nav.forEach(b=>b.classList.toggle("on",can));
+    nav[0].disabled=atStart();
+    nav[1].disabled=strip.scrollLeft+strip.clientWidth>=strip.scrollWidth-4;
+  };
+  nav[0].onclick=()=>strip.scrollBy({left:-step(),behavior:"smooth"});
+  nav[1].onclick=()=>strip.scrollBy({left:step(),behavior:"smooth"});
+  strip.addEventListener("scroll",upd,{passive:true});
+  addEventListener("resize",upd);
+  upd();setTimeout(upd,400);
+})();
 </script>
 </body>
 </html>
