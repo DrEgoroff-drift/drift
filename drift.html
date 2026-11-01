@@ -67387,6 +67387,8 @@ function mapRoseDraw(foot){
 function mapGoAddr(sx,sy){
   sx|=0;sy|=0;
   G.sel={x:sx,y:sy};
+  /* адрес введён — игрок летит туда; ставим систему в очередь подгрузки */
+  if(typeof preloadSystem==="function")preloadSystem(sx,sy);
   mapFit(sx,sy);
   G.mapMore=false;G.mapOutline={sx,sy,t:now()};
   sfx("ui");
@@ -67407,7 +67409,11 @@ function mapAddrBox(){
   const inp=e.querySelector("input"),go=e.querySelector("button");
   const run=()=>{const a=mapParseAddr(inp.value);if(!a){say("Адрес пишут так: 4:-7");return;}mapGoAddr(a.sx,a.sy);inp.blur();};
   go.addEventListener("click",run);
-  e.querySelector("#mapMarkGo").addEventListener("click",()=>{if(G.mode==="map")mapMarkToggle(G.sel.x,G.sel.y);});
+  e.querySelector("#mapMarkGo").addEventListener("click",()=>{if(G.mode==="map"){
+    /* предсказание: игрок отметил сектор — значит, скорее всего, полетит туда.
+       Ставим систему в очередь подгрузки сразу, пока он смотрит карту */
+    if(typeof preloadSystem==="function"&&G.sel)preloadSystem(G.sel.x,G.sel.y);
+    mapMarkToggle(G.sel.x,G.sel.y);}});
   e.querySelector("#mapLayerGo").addEventListener("click",()=>{mapLayerNext();sfx("ui");});
   inp.addEventListener("keydown",ev=>{if(ev.key==="Enter"){run();ev.preventDefault();}ev.stopPropagation();});
   inp.addEventListener("keyup",ev=>ev.stopPropagation());
@@ -86776,9 +86782,26 @@ workAdd("flora",3,()=>G.mode==="system",ms=>plnKitTick(ms));
    startLanding и plnSurface — повторно не считается.
    Лента самая дорогая (десятки мс), поэтому проход идёт по шагам: сначала рельеф
    и вещи, следующим проходом — лента. */
-const PLNBODY={i:0,tr:null,phase:0};
+const PLNBODY={i:0,tr:null,phase:0,target:null,done:0};
+/* ── предсказание: цель выбрана на карте ──
+   Клик по системе на карте — это намерение лететь. Карта прощает полсекунды,
+   полёт — нет. Поэтому всё тяжёлое по цели ставится в очередь СРАЗУ, с приоритетом
+   выше текущей системы: игрок ещё смотрит карту, а планеты цели уже считаются. */
+function preloadSystem(sx,sy){
+  if(typeof sx!=="number"||typeof sy!=="number")return false;
+  PLNBODY.target={sx,sy};PLNBODY.i=0;PLNBODY.phase=0;PLNBODY.done=0;
+  try{if(typeof getSystem==="function")getSystem(sx,sy);}catch(_){}
+  return true;
+}
+function preloadClear(){PLNBODY.target=null;PLNBODY.i=0;PLNBODY.phase=0;PLNBODY.done=0;}
 function plnBodyTick(ms){
-  const S=G.sys;
+  /* цель с карты идёт первой; нет цели — текущая система */
+  let S=null;
+  if(PLNBODY.target&&typeof getSystem==="function"){
+    try{S=getSystem(PLNBODY.target.sx,PLNBODY.target.sy);}catch(_){S=null;}
+    if(!S)PLNBODY.target=null;
+  }
+  if(!S)S=G.sys;
   if(!S||!S.planets||!S.planets.length)return false;
   const budget=ms>0?ms:2, t0=wallMs();
   while(wallMs()-t0<budget){
@@ -86800,7 +86823,7 @@ function plnBodyTick(ms){
   }
   return true;
 }
-workAdd("plnbody",2,()=>G.mode==="system",ms=>plnBodyTick(ms));
+workAdd("plnbody",2,()=>G.mode==="system"||!!PLNBODY.target,ms=>plnBodyTick(ms));
 
 /* ══════════════ планета: что где растёт и лежит (M611) ══════════════
    Расстановка набора тел (21pg) по земле (21pf). Лента засажена кусками — теми

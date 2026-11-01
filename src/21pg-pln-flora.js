@@ -277,9 +277,26 @@ workAdd("flora",3,()=>G.mode==="system",ms=>plnKitTick(ms));
    startLanding и plnSurface — повторно не считается.
    Лента самая дорогая (десятки мс), поэтому проход идёт по шагам: сначала рельеф
    и вещи, следующим проходом — лента. */
-const PLNBODY={i:0,tr:null,phase:0};
+const PLNBODY={i:0,tr:null,phase:0,target:null,done:0};
+/* ── предсказание: цель выбрана на карте ──
+   Клик по системе на карте — это намерение лететь. Карта прощает полсекунды,
+   полёт — нет. Поэтому всё тяжёлое по цели ставится в очередь СРАЗУ, с приоритетом
+   выше текущей системы: игрок ещё смотрит карту, а планеты цели уже считаются. */
+function preloadSystem(sx,sy){
+  if(typeof sx!=="number"||typeof sy!=="number")return false;
+  PLNBODY.target={sx,sy};PLNBODY.i=0;PLNBODY.phase=0;PLNBODY.done=0;
+  try{if(typeof getSystem==="function")getSystem(sx,sy);}catch(_){}
+  return true;
+}
+function preloadClear(){PLNBODY.target=null;PLNBODY.i=0;PLNBODY.phase=0;PLNBODY.done=0;}
 function plnBodyTick(ms){
-  const S=G.sys;
+  /* цель с карты идёт первой; нет цели — текущая система */
+  let S=null;
+  if(PLNBODY.target&&typeof getSystem==="function"){
+    try{S=getSystem(PLNBODY.target.sx,PLNBODY.target.sy);}catch(_){S=null;}
+    if(!S)PLNBODY.target=null;
+  }
+  if(!S)S=G.sys;
   if(!S||!S.planets||!S.planets.length)return false;
   const budget=ms>0?ms:2, t0=wallMs();
   while(wallMs()-t0<budget){
@@ -301,4 +318,4 @@ function plnBodyTick(ms){
   }
   return true;
 }
-workAdd("plnbody",2,()=>G.mode==="system",ms=>plnBodyTick(ms));
+workAdd("plnbody",2,()=>G.mode==="system"||!!PLNBODY.target,ms=>plnBodyTick(ms));

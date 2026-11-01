@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 685 · top-level symbols: 8938
+Files: 685 · top-level symbols: 8940
 
 ## SYMBOLS
 
@@ -1410,7 +1410,7 @@ MAP_ORB                      src/18l-map-plate.js:80
 MAP_OVER                     src/18-mode-map.js:157
 MAP_SPIKE_N                  src/17z3-map-gpu.js:201
 MAP_TMS                      src/18-mode-map.js:49
-MAP_TOP                      src/18a-map-addr.js:258
+MAP_TOP                      src/18a-map-addr.js:264
 MAP_W                        src/18l-map-plate.js:8
 MATCH_BOX                    src/12uc-matches.js:21
 MATCH_BY_TIER                src/12uc-matches.js:20
@@ -2566,7 +2566,7 @@ addPart                      src/05-parts.js:365-380
 addPath                      src/25-cockpit.js:154-158
 addRes                       src/11-log.js:161-168
 addrForm                     src/11b-speech.js:96-99
-addrify                      src/18a-map-addr.js:288-311
+addrify                      src/18a-map-addr.js:294-317
 adjTo                        src/05-parts.js:26-29
 affLabel                     src/05-parts.js:95-99
 affVal                       src/05-parts.js:89-94
@@ -5945,7 +5945,7 @@ makerRu                      src/03a-hull-maker.js:90
 makerStand                   src/28y-look.js:391-397
 makerWear                    src/03a-hull-maker.js:446
 makerWidth                   src/03a-hull-maker.js:416-443
-mapAddrBox                   src/18a-map-addr.js:233-249
+mapAddrBox                   src/18a-map-addr.js:235-255
 mapBack                      src/18-mode-map.js:183-194
 mapBorderEdge                src/18b-map-hold.js:84-104
 mapBox                       src/18-mode-map.js:30
@@ -5958,7 +5958,7 @@ mapDryWord                   src/18-mode-map.js:695
 mapFace                      src/18l-map-plate.js:13
 mapFit                       src/18-mode-map.js:165-170
 mapFont                      src/18-mode-map.js:54
-mapGoAddr                    src/18a-map-addr.js:221-228
+mapGoAddr                    src/18a-map-addr.js:221-230
 mapGpuOver                   src/17z3-map-gpu.js:191-194
 mapGpuPass                   src/17z3-map-gpu.js:20-24
 mapGridDraw                  src/18a-map-addr.js:55-66
@@ -5989,7 +5989,7 @@ mapOverOn                    src/18-mode-map.js:159
 mapOverTap                   src/18-mode-map.js:224-228
 mapOverview                  src/18-mode-map.js:202-223
 mapOwnHere                   src/18b-map-hold.js:63-68
-mapParseAddr                 src/18a-map-addr.js:229-232
+mapParseAddr                 src/18a-map-addr.js:231-234
 mapPeek                      src/18-mode-map.js:176-182
 mapPriceDraw                 src/12aa-need.js:336-346
 mapPriceRows                 src/12aa-need.js:311-335
@@ -6011,7 +6011,7 @@ mapStarsGpu                  src/17z3-map-gpu.js:202-230
 mapTM                        src/18-mode-map.js:50
 mapTW                        src/18l-map-plate.js:12
 mapTagAt                     src/18b-map-hold.js:70-76
-mapTopPlace                  src/18a-map-addr.js:259-286
+mapTopPlace                  src/18a-map-addr.js:265-292
 mapTrassaPairs               src/18b-map-hold.js:47-58
 mapU                         src/18-mode-map.js:42
 mapUnderTrassa               src/18b-map-hold.js:59-62
@@ -6805,7 +6805,7 @@ plnBez                       src/21pa-pln-mesh.js:195-199
 plnBlob                      src/21pa-pln-mesh.js:71-115
 plnBlobSort                  src/21pe-pln-gpu.js:370-381
 plnBodies                    src/21pz-pln-frame.js:84-110
-plnBodyTick                  src/21pg-pln-flora.js:281-303
+plnBodyTick                  src/21pg-pln-flora.js:292-320
 plnBox                       src/21pf-pln-land.js:67-74
 plnBoxF                      src/21pf-pln-land.js:82-87
 plnCard                      src/21pa-pln-mesh.js:188-193
@@ -7300,6 +7300,8 @@ prSpoke                      tests/90a-tools.js:728
 prState                      tests/90a-tools.js:727
 prebake                      src/17a0-prebake.js:21-40
 prebakeDrop                  src/17a0-prebake.js:20
+preloadClear                 src/21pg-pln-flora.js:291
+preloadSystem                src/21pg-pln-flora.js:285-290
 prevAct                      src/08-state.js:205
 priceBestOf                  src/12aa-need.js:249-258
 priceParts                   src/12-economy.js:130-136
@@ -9865,7 +9867,7 @@ zoomTo                       src/15-input.js:358
   · где у карты пол и где правый борт:4
   · карта: ночное небо, а не схема молекулы:138
 
-## src/18a-map-addr.js · 20 KB
+## src/18a-map-addr.js · 21 KB
   · карта говорит адресами (M347):1
 
 ## src/18a-material.js · 3 KB
@@ -10159,7 +10161,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/21pfb-pln-land-mesh.js · 6 KB
 
-## src/21pg-pln-flora.js · 20 KB
+## src/21pg-pln-flora.js · 22 KB
   · планета: набор тел — трава, цветок, камень, скала, розетка, куст, дерево (M611):1
 
 ## src/21pga-pln-plant.js · 39 KB

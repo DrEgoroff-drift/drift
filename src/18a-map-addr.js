@@ -221,6 +221,8 @@ function mapRoseDraw(foot){
 function mapGoAddr(sx,sy){
   sx|=0;sy|=0;
   G.sel={x:sx,y:sy};
+  /* адрес введён — игрок летит туда; ставим систему в очередь подгрузки */
+  if(typeof preloadSystem==="function")preloadSystem(sx,sy);
   mapFit(sx,sy);
   G.mapMore=false;G.mapOutline={sx,sy,t:now()};
   sfx("ui");
@@ -241,7 +243,11 @@ function mapAddrBox(){
   const inp=e.querySelector("input"),go=e.querySelector("button");
   const run=()=>{const a=mapParseAddr(inp.value);if(!a){say("Адрес пишут так: 4:-7");return;}mapGoAddr(a.sx,a.sy);inp.blur();};
   go.addEventListener("click",run);
-  e.querySelector("#mapMarkGo").addEventListener("click",()=>{if(G.mode==="map")mapMarkToggle(G.sel.x,G.sel.y);});
+  e.querySelector("#mapMarkGo").addEventListener("click",()=>{if(G.mode==="map"){
+    /* предсказание: игрок отметил сектор — значит, скорее всего, полетит туда.
+       Ставим систему в очередь подгрузки сразу, пока он смотрит карту */
+    if(typeof preloadSystem==="function"&&G.sel)preloadSystem(G.sel.x,G.sel.y);
+    mapMarkToggle(G.sel.x,G.sel.y);}});
   e.querySelector("#mapLayerGo").addEventListener("click",()=>{mapLayerNext();sfx("ui");});
   inp.addEventListener("keydown",ev=>{if(ev.key==="Enter"){run();ev.preventDefault();}ev.stopPropagation();});
   inp.addEventListener("keyup",ev=>ev.stopPropagation());
