@@ -706,8 +706,8 @@ FWD_PAY_EVERY                src/21b6-base-forward.js:23
 FW_HOOKS                     src/28o-firstwatch.js:81-87
 FW_URG_MIN                   src/28o-firstwatch.js:17
 G                            src/08-state.js:207-293
-G11_CPU                      src/28z-fps-probe.js:274
-G11_GPU_KILL                 src/28z-fps-probe.js:299-330
+G11_CPU                      src/28z-fps-probe.js:278
+G11_GPU_KILL                 src/28z-fps-probe.js:303-334
 G11_LT                       src/28z-fps-probe.js:29
 GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:20
@@ -4481,9 +4481,9 @@ fwdLine                      src/21b6-base-forward.js:76-82
 fwdLineOf                    src/21b6-base-forward.js:118-124
 fwdMissing                   src/21b6-base-forward.js:42-52
 fwdStep                      src/21b6-base-forward.js:99-116
-g11CpuHook                   src/28z-fps-probe.js:275-280
+g11CpuHook                   src/28z-fps-probe.js:279-284
 g11Fps                       src/28z-fps-probe.js:19-26
-g11Iv                        src/28z-fps-probe.js:281-292
+g11Iv                        src/28z-fps-probe.js:285-296
 g11LongTasks                 src/28z-fps-probe.js:30-32
 galArmD                      src/17z1-galaxy.js:25-29
 galArmPt                     src/17z2-galaxy-names.js:14
@@ -4823,7 +4823,7 @@ gpuResize                    src/08b-gpu.js:408-453
 gpuScene                     src/08b-gpu.js:581-594
 gpuScene3D                   src/08b-gpu.js:598-606
 gpuScr                       src/08c-gpu-kit.js:144
-gpuSeg                       src/28z-fps-probe.js:226-229
+gpuSeg                       src/28z-fps-probe.js:230-233
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:318-329
 gpuShock                     src/08b-gpu.js:479
@@ -4837,9 +4837,9 @@ gpuSubmitFrame               src/08b-gpu.js:663-668
 gpuSysUnder                  src/17g-gpu-system.js:519-525
 gpuTakeSnap                  src/08b-gpu.js:30-37
 gpuTrail                     src/16ga-gpu-trail.js:61-108
-gpuTs                        src/28z-fps-probe.js:215-222
-gpuTsAround                  src/28z-fps-probe.js:232-236
-gpuTsResolve                 src/28z-fps-probe.js:238-256
+gpuTs                        src/28z-fps-probe.js:219-226
+gpuTsAround                  src/28z-fps-probe.js:236-240
+gpuTsResolve                 src/28z-fps-probe.js:242-260
 gpuUni                       src/08b-gpu.js:546-560
 gpuWake                      src/16ga-gpu-trail.js:117-150
 gpuWeatherFar                src/19cc-gpu-air.js:265-293

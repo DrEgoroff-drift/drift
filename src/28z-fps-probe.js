@@ -173,7 +173,11 @@ async function g11RunNear(){
       ["landing-warm",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
         startLanding(s.planets.find(p=>p.type!=="gas"));}]
     ];
-    for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}await sleep(50);put(r[0]+" · кадров "+NEAR.n);}
+    for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}
+      /* ждём блок, но с потолком по времени: чистые 240 кадров на 240 Гц — это ~1 с,
+         и шесть блоков уже не влезают в окно стенда (near-run-07 дал 1 блок) */
+      for(let w=0;w<200&&NEAR.n<200;w++)await sleep(10);
+      put(r[0]+" · кадров "+NEAR.n);}
   }catch(e){err.push(""+(e&&e.message||e));}
   const J=nearJSON();J.err=err;J.ua=navigator.userAgent.slice(0,80);
   put("готово: "+J.blocks.length+" блоков, кадров "+J.blocks.reduce((s,b)=>s+b.frames,0));
