@@ -551,6 +551,14 @@ function plnLandFree(L){
   plnBeastDrop(L);
   plnMarksDrop(L);
 }
+/* отпустить ленту, сняв её и с планеты-владельца: подготовленных лент теперь много
+   (все твёрдые планеты системы), и ссылка на освобождённую ленту — это двойное
+   освобождение и чужие буферы на следующей посадке */
+function plnLandKill(L){
+  if(!L)return;
+  if(L.owner&&L.owner.__land===L)L.owner.__land=null;
+  plnLandFree(L);
+}
 /* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
 function plnLand(tr,p,sx){
   const C=PLN_LAND;let cur=C.cur;
@@ -561,7 +569,9 @@ function plnLand(tr,p,sx){
      конца, она всё равно принимается — спуск достроит остаток в бюджет кадра. */
   const pre=p&&p.__land;
   if(pre&&pre.tr===tr&&pre.gen===PLN_GPU.gen&&pre.y0===tr.padY){
-    if(cur&&cur!==pre)plnLandFree(cur);
+    /* прежнюю ленту не рвём, если она осталась в запасе своей планеты: смена
+       активной ленты — не повод пересобирать её на следующей посадке */
+    if(cur&&cur!==pre&&!(cur.owner&&cur.owner.__land===cur))plnLandKill(cur);
     C.cur=pre;
     if(pre.sx===sx)return pre;
     if(tr.plnCx==null)tr.plnCx=tr.padX/PLN_M+12.8;
@@ -577,7 +587,7 @@ function plnLand(tr,p,sx){
        перестраиваем, переставляем корабль и пересаживаем полосу у него */
     if(tr.plnCx!=null)return plnLandMove(cur,sx);
   }
-  if(cur)plnLandFree(cur);
+  if(cur)plnLandKill(cur);
   PLN.stat.verts=0;
   return C.cur=plnLandMake(tr,p,sx);
 }

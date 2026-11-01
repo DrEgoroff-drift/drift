@@ -7,6 +7,11 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 
+## 0.499.107 — Landing after a save: all planets keep their strips
+
+- `21pg` / `19-mode-landing` / `21pf`: `plnbody` now builds and keeps the land strip of every solid planet in the system (the autopilot target and the nearest first; at most six, the system's maximum), not only the nearest. A strip is no longer thrown away when the approach longitude drifts: the press adopts the prepared strip and its longitude, so a normal landing — including right after loading an existing save — is warm instead of rebuilding the world. A system change frees all strips; the owner link is cleared, so a strip freed as the active landing cannot be used or freed twice.
+- `91qo-prefetch` now checks all solid strips, a landing from another longitude, the autopilot target, the real `workPump` after `applySave`, a repeat landing and a system change.
+
 ## 0.499.106 — Stable station characters and cached shadows
 
 - Replaced the welded imported body skin with the game's articulated body generator, retaining each resident's identity and imported head, hair and glasses. Higher-detail LOD1 head meshes replace the coarse LOD2 faces; necks and hands use the same skin colour as the face. Body poses no longer pull sleeves through the waist or stretch the coat when a resident raises an arm.

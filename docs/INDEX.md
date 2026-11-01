@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 710 · top-level symbols: 9057
+Files: 710 · top-level symbols: 9062
 
 ## SYMBOLS
 
@@ -1349,7 +1349,7 @@ LG_BAKE                      src/19g-landing-gpu.js:362
 LG_DUST                      src/19g-landing-gpu.js:193
 LG_E                         src/19g-landing-gpu.js:363
 LG_FIRE                      src/19g-landing-gpu.js:192
-LG_GLOW                      src/19-mode-landing.js:218
+LG_GLOW                      src/19-mode-landing.js:228
 LG_H                         src/19g-landing-gpu.js:24
 LG_ID                        src/20fa-life-gpu.js:90
 LG_LANDER_WGSL               src/19g-landing-gpu.js:249
@@ -1783,6 +1783,7 @@ PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:41-65
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
 PLN_PLANT                    src/21pga-pln-plant.js:21
+PLN_PREP_MAX                 src/21pg-pln-flora.js:296
 PLN_QUAL                     src/21pe-pln-gpu.js:49-58
 PLN_SHIP                     src/21phb-pln-ship.js:15
 PLN_SHIP_CAP                 src/21phb-pln-ship.js:17
@@ -2641,7 +2642,7 @@ appetitePrice                src/12ab-hold.js:117
 applyCrewEvent               src/12b-crew-events.js:227-236
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:216-626
+applySave                    src/14-save.js:216-630
 applySaveRest                src/14a1-save-rest.js:15-393
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
@@ -2666,7 +2667,7 @@ assignToBase                 src/12a-crew.js:181-190
 audioHush                    src/09-audio.js:12-18
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
-autoLandInputs               src/19-mode-landing.js:79-102
+autoLandInputs               src/19-mode-landing.js:89-112
 autosave                     src/14a-cloud.js:68-71
 avrHands                     src/21a6-base-avral.js:59-73
 avrLose                      src/21a6-base-avral.js:112-131
@@ -4094,7 +4095,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:161-173
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
-drawDustMotes                src/19-mode-landing.js:211-214
+drawDustMotes                src/19-mode-landing.js:221-224
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:90-112
 drawFactRoute                src/13b-occupy.js:303-346
@@ -4124,7 +4125,7 @@ drawHullMarks                src/03b-hull-paint.js:124-431
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-50
 drawLander                   src/19f-lander.js:54-285
-drawLanding                  src/19-mode-landing.js:226-347
+drawLanding                  src/19-mode-landing.js:236-357
 drawLawRing                  src/12al2-laws.js:139-147
 drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
@@ -4160,7 +4161,7 @@ drawScoop                    src/19a-mode-scoop.js:185-232
 drawSeal                     src/03d-hull-marks.js:174-185
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:72-104
-drawSkyLayer                 src/19-mode-landing.js:206-209
+drawSkyLayer                 src/19-mode-landing.js:216-219
 drawSpa                      src/29rd-spa-r3.js:234-237
 drawStation                  src/17c-system-draw.js:192-209
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -4939,7 +4940,7 @@ groundChunkPaint             src/19-mode-landing-ground.js:251-269
 groundChunkStore             src/19-mode-landing-ground.js:238-249
 groundClip                   src/20ab-poi-gpu.js:85-90
 groundGrassGpu               src/21e3-surface-stand-gpu.js:12-36
-groundShadow                 src/19-mode-landing.js:183-203
+groundShadow                 src/19-mode-landing.js:193-213
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30-36
 groveDepthHere               src/11j-grove.js:37
@@ -5802,7 +5803,7 @@ labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 labelW                       src/12ai-fleet.js:134
 landOnTestPlanet             tests/90-harness.js:424-430
-landStartY                   src/19-mode-landing.js:73-78
+landStartY                   src/19-mode-landing.js:83-88
 landerGearTick               src/19f-lander.js:15-23
 landerLen                    src/19f-lander.js:11
 laneBuoyPaint                src/17g-sys-lane.js:77-95
@@ -5867,8 +5868,8 @@ letterState                  src/12k-letters.js:42
 letterTake                   src/12k-letters.js:70-76
 lettersAll                   src/12k-letters.js:41
 lettersBlock                 src/12k-letters.js:99-115
-lgGlowTex                    src/19-mode-landing.js:219-225
-lgGpu                        src/19-mode-landing.js:216
+lgGlowTex                    src/19-mode-landing.js:229-235
+lgGpu                        src/19-mode-landing.js:226
 lgHTex                       src/19g-landing-gpu.js:25-37
 lgLander                     src/19g-landing-gpu.js:390-448
 lgLanderBake                 src/19g-landing-gpu.js:367-387
@@ -6723,9 +6724,11 @@ pennScore                    src/21h-pennant.js:26-36
 pennTick                     src/21h-pennant.js:59-74
 peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
-pfFresh                      tests/91qo-prefetch.js:15
-pfPlace                      tests/91qo-prefetch.js:12-14
-pfPrep                       tests/91qo-prefetch.js:16-24
+pfFirst                      tests/91qo-prefetch.js:10
+pfFresh                      tests/91qo-prefetch.js:16
+pfPlace                      tests/91qo-prefetch.js:13-15
+pfPrepAll                    tests/91qo-prefetch.js:28-36
+pfPumpAll                    tests/91qo-prefetch.js:18-26
 pfSolid                      tests/91qo-prefetch.js:9
 pgRest                       src/12y1-parrot-gpu.js:106
 pgRot                        src/12y1-parrot-gpu.js:108
@@ -6895,16 +6898,17 @@ plnBez                       src/21pa-pln-mesh.js:195-199
 plnBlob                      src/21pa-pln-mesh.js:71-115
 plnBlobSort                  src/21pe-pln-gpu.js:370-381
 plnBodies                    src/21pz-pln-frame.js:84-110
-plnBodyClear                 src/21pg-pln-flora.js:310-317
-plnBodyData                  src/21pg-pln-flora.js:354-370
-plnBodyDist                  src/21pg-pln-flora.js:383
-plnBodyDrop                  src/21pg-pln-flora.js:304-308
-plnBodyGsKey                 src/21pg-pln-flora.js:344-349
-plnBodyLandDrop              src/21pg-pln-flora.js:295-302
-plnBodyLandPrep              src/21pg-pln-flora.js:384-432
-plnBodyNear                  src/21pg-pln-flora.js:372-381
-plnBodyOrder                 src/21pg-pln-flora.js:336-341
-plnBodyTick                  src/21pg-pln-flora.js:433-465
+plnBodyClear                 src/21pg-pln-flora.js:318-326
+plnBodyData                  src/21pg-pln-flora.js:369-385
+plnBodyDist                  src/21pg-pln-flora.js:344
+plnBodyDrop                  src/21pg-pln-flora.js:307-311
+plnBodyGsKey                 src/21pg-pln-flora.js:360-365
+plnBodyLandCtx               src/21pg-pln-flora.js:387-400
+plnBodyLandDrop              src/21pg-pln-flora.js:298-305
+plnBodyLandPrep              src/21pg-pln-flora.js:403-436
+plnBodyPrepOrder             src/21pg-pln-flora.js:347-357
+plnBodyReset                 src/21pg-pln-flora.js:313-316
+plnBodyTick                  src/21pg-pln-flora.js:437-470
 plnBox                       src/21pf-pln-land.js:67-74
 plnBoxF                      src/21pf-pln-land.js:82-87
 plnCard                      src/21pa-pln-mesh.js:188-193
@@ -6997,7 +7001,7 @@ plnInstFree                  src/21pe-pln-gpu.js:117
 plnInstSet                   src/21pe-pln-gpu.js:107-116
 plnKitTick                   src/21pg-pln-flora.js:267-269
 plnLampPool                  src/21pc-pln-wgsl-scene.js:15-18
-plnLand                      src/21pf-pln-land.js:555-583
+plnLand                      src/21pf-pln-land.js:563-593
 plnLandBare                  src/21pf-pln-land.js:256-259
 plnLandBatches               src/21pf-pln-land.js:543-545
 plnLandBuild                 src/21pf-pln-land.js:501-507
@@ -7011,10 +7015,11 @@ plnLandFarRows               src/21pf-pln-land.js:109-114
 plnLandFree                  src/21pf-pln-land.js:546-553
 plnLandGen                   src/21pf-pln-land.js:496-500
 plnLandJobs                  src/21pf-pln-land.js:451-484
+plnLandKill                  src/21pf-pln-land.js:557-561
 plnLandLast                  src/21pe-pln-gpu.js:387-395
 plnLandLift                  src/21pf-pln-land.js:302
 plnLandMake                  src/21pf-pln-land.js:121-211
-plnLandMove                  src/21pf-pln-land.js:585-591
+plnLandMove                  src/21pf-pln-land.js:595-601
 plnLandNode                  src/21pfb-pln-land-mesh.js:9-15
 plnLandPath                  src/21pf-pln-land.js:397-406
 plnLandPond                  src/21pf-pln-land.js:236-247
@@ -7401,8 +7406,8 @@ prSpoke                      tests/90a-tools.js:735
 prState                      tests/90a-tools.js:734
 prebake                      src/17a0-prebake.js:21-40
 prebakeDrop                  src/17a0-prebake.js:20
-preloadClear                 src/21pg-pln-flora.js:334
-preloadSystem                src/21pg-pln-flora.js:322-333
+preloadClear                 src/21pg-pln-flora.js:343
+preloadSystem                src/21pg-pln-flora.js:331-342
 prevAct                      src/08-state.js:205
 priceBestOf                  src/12aa-need.js:249-258
 priceParts                   src/12-economy.js:130-136
@@ -8464,7 +8469,7 @@ starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:25-34
 starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:637-645
-startLanding                 src/19-mode-landing.js:13-68
+startLanding                 src/19-mode-landing.js:13-78
 startScoop                   src/19a-mode-scoop.js:51-64
 stat                         src/08-state.js:297-369
 statPreview                  src/05-parts.js:417-425
@@ -8728,7 +8733,7 @@ updateCaveDeco               src/22a-cave-deco.js:225-248
 updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
-updateLanding                src/19-mode-landing.js:103-175
+updateLanding                src/19-mode-landing.js:113-185
 updateMap                    src/18-mode-map.js:706-720
 updateRaid                   src/24a-mode-raid.js:276-408
 updateRail                   src/18g-rail-ride.js:53-105
@@ -10063,7 +10068,7 @@ zoomTo                       src/15-input.js:358
 ## src/19-mode-landing-ground.js · 27 KB
   · посадка: разрез грунта:1
 
-## src/19-mode-landing.js · 24 KB
+## src/19-mode-landing.js · 25 KB
   · посадка:1
 
 ## src/19a-mode-scoop.js · 16 KB
@@ -10289,7 +10294,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pe-pln-gpu.js · 33 KB
   · планета: цели, конвейеры и проходы одного кадра (M610):1
 
-## src/21pf-pln-land.js · 36 KB
+## src/21pf-pln-land.js · 37 KB
   · планета: земля (M610):1
 
 ## src/21pfa-pln-worlds.js · 22 KB
@@ -10297,7 +10302,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/21pfb-pln-land-mesh.js · 6 KB
 
-## src/21pg-pln-flora.js · 31 KB
+## src/21pg-pln-flora.js · 30 KB
   · планета: набор тел — трава, цветок, камень, скала, розетка, куст, дерево (M611):1
 
 ## src/21pga-pln-plant.js · 39 KB
@@ -11062,7 +11067,7 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qn-arb.js · 3 KB
 
-## tests/91qo-prefetch.js · 5 KB
+## tests/91qo-prefetch.js · 7 KB
   · предзагрузка планет: посадка не ждёт сборки:2
 
 ## tests/91qo-savefuzz.js · 4 KB

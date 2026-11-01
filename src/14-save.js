@@ -622,5 +622,9 @@ function applySave(s){
   G.exiles=Array.isArray(s.exiles)?s.exiles.filter(E=>E&&MGR_ROLES[E.role]).slice(0,ROGUE_CAP):[];
   /* вторая половина загрузки — в 14a1 (M415): порядок сохранён, шов там,
      где ни одна локальная не переходит границу */
-  return applySaveRest(s);
+  const ok=applySaveRest(s);
+  /* загрузка сохранения в том же окне: подготовка планет от прежнего мира
+     (рельеф, ленты, выработанные залежи) больше не годится — начинаем заново */
+  if(ok)plnBodyReset();
+  return ok;
 }
