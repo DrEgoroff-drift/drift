@@ -120501,7 +120501,7 @@ function hallHasFolk(st,has){
    полосы, и бот не находил кнопку «СТОЙКА» вовсе (сьюта 91zzzzzzzza-walks). */
 function hallPlacesHere(){
   const has=G.st?stTabsHere():[],st=(G.st&&G.st.stype)||"trade";
-  return HALL_PLACES.filter(p=>p.id==="lock"||(p.id==="trade"&&st==="trade")||
+  return HALL_PLACES.filter(p=>p.id==="lock"||
     (p.id==="folk"?hallHasFolk(st,has):p.tabs.some(t=>has.indexOf(t)>=0)));
 }
 /* осадить ход: пилот встаёт в цель (или в ближнее место), скорость 0, объектив — на нём. Для зрения (90b2 geoSettle):
