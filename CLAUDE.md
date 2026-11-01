@@ -1,6 +1,6 @@
 # Drift — project rules
 
-A single-file procedural space game: canvas 2D, vanilla JS, Russian UI.
+A single-file procedural space game: WebGPU, vanilla JS, Russian UI.
 
 **Language rule.** Docs (`CLAUDE.md`, `PLAN.md`, `README.md`, `PATCHNOTES.md`, `docs/*`) are
 written in English — it costs about half the tokens of Russian, and these files are read every
@@ -43,12 +43,12 @@ Documents work the same way — in parts, not whole:
 
 | What you need | Where to go |
 |---|---|
-| what to do next | `PLAN.md` — only the open work, by milestone (≤ 40 KB, guarded by `build.ps1`); safe to read whole |
+| the closed plan (history) | `PLAN.md` — archived 31.10.2026; there is no active plan — the game is in alpha and work is driven by bugs and economy balance; safe to read whole |
 | the rules and decisions that stand | `docs/DECISIONS.md` — cross-cutting rules, the frame's laws, the author's decisions; read the part a question touches |
 | why something was done this way | `docs/done/` — the closed plan in files of ≤ 40 KB, index in `README.md`; **grep by milestone**, then read one file |
 | what changed in a version | `PATCHNOTES.md` — newest first, the first 40 lines usually suffice |
 | where a symbol is declared | `docs/INDEX.md` — grep only |
-| the designs behind the working plan's stages 2–6 | `docs/DESIGN-review-2026-09-14.md` first (it overrides the six), then `DESIGN-borders`, `-life`, `-metro`, `-resources`, `-shipyard`, `-birchpunk`; background reading in `docs/RESEARCH-2026-09-14.md` — never cited in `PLAN.md` |
+| the designs behind the archived plan's stages 2–6 | `docs/DESIGN-review-2026-09-14.md` first (it overrides the six), then `DESIGN-borders`, `-life`, `-metro`, `-resources`, `-shipyard`, `-birchpunk`; background reading in `docs/RESEARCH-2026-09-14.md` — never cited in `PLAN.md` |
 | how the tests are meant to be organised, and why | `docs/DESIGN-tests.md` — the four layers, the five oracles, the lab, the queue M441–M446 |
 | craft laws behind the visual queue | `docs/DESIGN-craft.md` — rules taken from painting traditions, each tied to a module |
 | narrative research + the combined craft plan | `docs/DESIGN-story-craft.md` — deed turns, glyph grammar, pacing clocks; its last section orders all craft work |
@@ -308,9 +308,9 @@ RMS and spectrum, measuring the node's output, never `AudioParam.value`.
 The game version is the `VER` constant in `01-core`, also shown on the title screen. What changed
 and when is in [`PATCHNOTES.md`](PATCHNOTES.md), one entry per version.
 
-The plan is [`PLAN.md`](PLAN.md): only what we want next, by milestone, each stage with its gate
-(the author, 23.09: «план это план, а не то что мы сделали»). What is done is not kept there: a
-finished item is deleted from `PLAN.md` **in the commit that finishes it** and its story goes to
-the patchnote; a long body worth keeping goes to [`docs/done/`](docs/done/README.md) — files of at
-most 40 KB, grepped by milestone, never read through. The rules and decisions that outlive any
-item are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
+[`PLAN.md`](PLAN.md) is the **closed plan, archived 31.10.2026**. The game is in alpha: its core
+is built, and work now is bug fixing and economy balance, driven by reports and measurements
+rather than by a milestone queue. The archived plan stays as history and design context; a long
+body worth keeping goes to [`docs/done/`](docs/done/README.md) — files of at most 40 KB, grepped
+by milestone, never read through. The rules and decisions that outlive any item are in
+[`docs/DECISIONS.md`](docs/DECISIONS.md).
