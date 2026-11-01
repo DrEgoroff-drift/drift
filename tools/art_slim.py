@@ -1,29 +1,62 @@
-# Прореживание многомешевой модели до бюджета: каждый меш получает свою долю.
-#   blender --background --python tools/art_slim.py -- <in.glb> <out.glb> <total-tris>
+# Прореживание многомешевой модели до бюджета и запекание позы в сетку.
+#   blender --background --python tools/art_slim.py -- <in.glb> <out.glb> <total-tris> [action] [frame]
+#
+# Модели из генератора приходят в T-позе — это заглушка, а не персонаж. Если задан клип,
+# его кадр запекается в сетку до прореживания: так в игру уходит естественная поза.
 import bpy, sys
 
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 SRC, DST = argv[0], argv[1]
 TARGET = int(argv[2]) if len(argv) > 2 else 12000
+POSE_ACT = argv[3] if len(argv) > 3 else ""
+POSE_FR = int(argv[4]) if len(argv) > 4 else 0
 
 for o in list(bpy.data.objects):
     bpy.data.objects.remove(o, do_unlink=True)
 bpy.ops.import_scene.gltf(filepath=SRC)
 
-# мусор генератора: сферы-заглушки, кубы и цилиндры-держатели
 JUNK = ("Icosphere", "Sphere", "Cube", "Cylinder", "Plane", "Empty")
 meshes = [o for o in bpy.data.objects if o.type == "MESH" and not o.name.startswith(JUNK)]
-print("мешей:", len(meshes))
+print("meshes:", len(meshes))
+
+if POSE_ACT:
+    arm = None
+    for o in bpy.data.objects:
+        if o.type == "ARMATURE":
+            arm = o
+            break
+    act = bpy.data.actions.get(POSE_ACT)
+    if arm is not None and act is not None:
+        if arm.animation_data is None:
+            arm.animation_data_create()
+        arm.animation_data.action = act
+        try:
+            if len(act.slots):
+                arm.animation_data.action_slot = act.slots[0]
+        except Exception:
+            pass
+        bpy.context.scene.frame_set(POSE_FR)
+        bpy.context.view_layer.update()
+        for o in meshes:
+            bpy.context.view_layer.objects.active = o
+            for m in list(o.modifiers):
+                if m.type == "ARMATURE":
+                    try:
+                        bpy.ops.object.modifier_apply(modifier=m.name)
+                    except Exception as e:
+                        print("pose apply failed:", o.name, e)
+        print("pose baked:", POSE_ACT, POSE_FR)
+    else:
+        print("no rig or action:", POSE_ACT)
 
 total = 0
 for o in meshes:
     total += sum(len(p.vertices) - 2 for p in o.data.polygons)
-print("всего треугольников:", total)
+print("tris in:", total)
 
 keep = TARGET / max(1, total)
 for o in meshes:
     tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
-    # мелкие части (инструменты, линза) не трогаем: они и так дешёвые
     if tris < 400:
         continue
     bpy.ops.object.select_all(action='DESELECT')
@@ -37,9 +70,8 @@ for o in meshes:
 out_total = 0
 for o in meshes:
     out_total += sum(len(p.vertices) - 2 for p in o.data.polygons)
-print("после прореживания:", out_total)
+print("tris out:", out_total)
 
-# снять скиннинг и позу: игровой меш — статичная сетка в своей позе
 for o in meshes:
     for m in list(o.modifiers):
         o.modifiers.remove(m)
