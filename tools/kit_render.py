@@ -17,6 +17,7 @@ from PIL import Image, ImageDraw
 src = sys.argv[1] if len(sys.argv) > 1 else "_scratch/kit_dump.json"
 out = sys.argv[2] if len(sys.argv) > 2 else "_scratch/kit"
 S = int(sys.argv[3]) if len(sys.argv) > 3 else 760
+UP = sys.argv[4] if len(sys.argv) > 4 else "y"
 
 d = json.load(open(src, encoding="utf-8"))
 KEY = np.array([-0.55, 0.62, -0.56]); KEY /= np.linalg.norm(KEY)
@@ -24,8 +25,11 @@ FILL = np.array([0.62, -0.18, -0.76]); FILL /= np.linalg.norm(FILL)
 
 
 def render(name, item, ang_deg, size=S):
-    V = np.array(item["v"], dtype=np.float64).reshape(-1, 12)
+    vs = int(item.get("vs", 12))
+    V = np.array(item["v"], dtype=np.float64).reshape(-1, vs)
     P, N = V[:, 0:3], V[:, 3:6]
+    if UP == "z":  # сетка движка в Z, у рендерера верх — Y
+        P = P[:, [0, 2, 1]]; N = N[:, [0, 2, 1]]
     C = np.clip(V[:, 6:9], 0, 1)
     a = math.radians(ang_deg)
     ca, sa = math.cos(a), math.sin(a)
@@ -71,5 +75,5 @@ for name, item in d.items():
         print("%s: skipped (%s)" % (name, item["err"]))
         continue
     # три ракурса: у пропсов разная ось, и один вид не доказывает форму
-    for ang in (0, 34, 62):
+    for ang in (0, 34, 62, 180):
         render("%s_%d" % (name, ang), item, ang)
