@@ -107,7 +107,7 @@
 <style>
 /* «Как играть» (15.10.2026): та же плита и те же шрифты, что на заглавной; шапка — кадр кабины */
 .phead{position:relative;min-height:46vh;display:flex;align-items:flex-end;overflow:hidden}
-.phead .bg{position:absolute;inset:0;background:url(/shots/cockpit.webp) center 40%/cover no-repeat;transform:scale(1.04)}
+.phead .bg{position:absolute;inset:0;background:url(/shots/cockpit.webp) center 40%/cover no-repeat;background-image:image-set(url(/shots/cockpit.webp) 1x,url(/shots/cockpit-2x.webp) 2x);transform:scale(1.04)}
 .phead .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,12,.55),rgba(5,7,12,.15) 40%,var(--void) 100%)}
 .phead .in{position:relative;z-index:2;max-width:var(--max);margin:0 auto;width:100%;padding:130px var(--gut) 34px}
 .phead h1{font-size:clamp(38px,6.5vw,76px);margin-bottom:14px}
@@ -254,7 +254,7 @@ kbd{display:inline-block;min-width:26px;padding:3px 8px;text-align:center;font-f
         <li><b>Чужие следы</b> — руины, брошенное оборудование, вещи с историей.</li>
       </ul>
       <figure>
-        <img src="/shots/cave.webp" loading="lazy" width="1600" height="900" alt="Пещера под поверхностью: светит только фонарь скафандра, вокруг светящиеся растения">
+        <img src="/shots/cave.webp" srcset="/shots/cave.webp 1600w, /shots/cave-2x.webp 3200w" sizes="(max-width: 760px) 100vw, 736px" decoding="async" loading="lazy" width="1600" height="900" alt="Пещера под поверхностью: светит только фонарь скафандра, вокруг светящиеся растения">
         <figcaption>В пещере светит только ваш фонарь, а воздух в скафандре не бесконечный</figcaption>
       </figure>
       <p>
@@ -308,7 +308,7 @@ kbd{display:inline-block;min-width:26px;padding:3px 8px;text-align:center;font-f
         всё зависит от того, чем вы занимаетесь.
       </p>
       <figure>
-        <img src="/shots/cockpit.webp" loading="lazy" width="1600" height="900" alt="Вид из кабины: приборная панель со стрелками и бумажным самописцем">
+        <img src="/shots/cockpit.webp" srcset="/shots/cockpit.webp 1600w, /shots/cockpit-2x.webp 3200w" sizes="(max-width: 760px) 100vw, 736px" decoding="async" loading="lazy" width="1600" height="900" alt="Вид из кабины: приборная панель со стрелками и бумажным самописцем">
         <figcaption>Приборная панель: стрелки, бумажная лента и величина ошибки в углу</figcaption>
       </figure>
       <p>
@@ -368,7 +368,7 @@ kbd{display:inline-block;min-width:26px;padding:3px 8px;text-align:center;font-f
     <section class="m" id="grow">
       <h2><i>дальше больше</i>Когда станет тесно</h2>
       <figure>
-        <img src="/shots/base.webp" loading="lazy" width="1600" height="900" alt="База в разрезе: отсеки под поверхностью планеты, внутри работают люди">
+        <img src="/shots/base.webp" srcset="/shots/base.webp 1600w, /shots/base-2x.webp 3200w" sizes="(max-width: 760px) 100vw, 736px" decoding="async" loading="lazy" width="1600" height="900" alt="База в разрезе: отсеки под поверхностью планеты, внутри работают люди">
         <figcaption>База растёт по одной комнате, и энергии должно хватать на все</figcaption>
       </figure>
       <p>

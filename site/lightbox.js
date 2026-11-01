@@ -34,11 +34,17 @@
   const show=i=>{
     at=(i+pics.length)%pics.length;
     const el=pics[at];
+    /* Во весь экран — самый крупный вариант, какой есть: страница показывает
+       кадр шириной 560 или 736 px, а тут он раскрывается до 1600 CSS px, и на
+       экране ×2 браузер должен взять 3200-й файл, а не растянуть 1600-й. */
+    const ss=el.getAttribute("srcset");
+    if(ss){im.setAttribute("srcset",ss);im.sizes="min(1600px, 100vw)";}
+    else{im.removeAttribute("srcset");im.removeAttribute("sizes");}
     im.src=el.currentSrc||el.src;im.alt=el.alt||"";
     cap.textContent=capOf(el);
     lb.classList.add("on");document.body.style.overflow="hidden";
   };
-  const hide=()=>{lb.classList.remove("on");document.body.style.overflow="";im.src="";};
+  const hide=()=>{lb.classList.remove("on");document.body.style.overflow="";im.removeAttribute("srcset");im.removeAttribute("sizes");im.removeAttribute("src");};
 
   pics.forEach((el,i)=>{el.classList.add("zoomable");el.addEventListener("click",()=>show(i));});
   lb.querySelector(".x").onclick=hide;

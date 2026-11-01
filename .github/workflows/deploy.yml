@@ -191,7 +191,8 @@ jobs:
                    shots/ice.webp shots/cave.webp shots/sys.webp shots/station.webp shots/night.webp \
                    icons/parrot-512.png icons/fav-32.png parrot.webmanifest \
                    treplo3d.webmanifest treplo3d-sw.js \
-                   drift.webmanifest drift-sw.js; do
+                   drift.webmanifest drift-sw.js shots/world-2x.webp shots/station-2x.webp \
+                   shots/cave-2x.webp shots/land-2x.webp; do
             c=$(hc "https://drift-game.ru/$u")
             [ "$c" = "200" ] || { echo "/$u answers $c"; exit 1; }
           done

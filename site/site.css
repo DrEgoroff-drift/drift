@@ -162,6 +162,14 @@ section.sec.tight{padding-top:64px;padding-bottom:64px}
 .strip figcaption p{font-size:14px;color:var(--dim);line-height:1.5}
 .strip-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;max-width:var(--max);margin:0 auto;padding:0 var(--gut) 22px}
 .strip-head .hint{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+/* На телефоне шапка ленты не влезала в строку: подпись «снято в игре…» с
+   nowrap и заголовок вместе давали 439 px при экране 390 — и вся заглавная
+   ехала вбок на 49 px (на 320 — на 119). Пусть шапка переносится, а подпись
+   ломается по словам: это подпись, а не строка таблицы. */
+@media(max-width:760px){
+  .strip-head{flex-wrap:wrap;align-items:flex-start;gap:6px}
+  .strip-head .hint{white-space:normal;letter-spacing:.12em}
+}
 
 /* ── круг игры ── */
 .loop{display:grid;grid-template-columns:repeat(7,1fr);gap:0;position:relative;margin-top:30px;border-top:1px solid var(--hair)}

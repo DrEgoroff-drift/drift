@@ -480,8 +480,16 @@ function drawPanel(st,n){
   /* искры: ход владений за месяц; засечка — где стоит ползунок */
   let hi=1;for(const s of H)for(const q of s)hi=Math.max(hi,q.h);
   document.querySelectorAll("#panel canvas[data-sp]").forEach(el=>{
-    const i=+el.dataset.sp,s=H[i],c=el.getContext("2d"),W=el.width,Hh=el.height;
-    c.clearRect(0,0,W,Hh);
+    const i=+el.dataset.sp,s=H[i];
+    /* Искра растянута на всю карточку (width:100%, height:34), а буфер был
+       240×68 — на телефоне это 2.7× по ширине и вдвое по высоте, и график
+       выходил мыльным и сплюснутым. Считаем буфер от той коробки, в которой
+       его показывают, и рисуем в CSS-пикселях под DPR. */
+    const dpr=Math.min(3,(typeof devicePixelRatio==="number"&&devicePixelRatio)||1);
+    const W=Math.max(1,Math.round(el.clientWidth||240)),Hh=Math.max(1,Math.round(el.clientHeight||34));
+    if(el.width!==Math.round(W*dpr)||el.height!==Math.round(Hh*dpr)){el.width=Math.round(W*dpr);el.height=Math.round(Hh*dpr);}
+    const c=el.getContext("2d");
+    c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,Hh);
     const n0=s[0].n,n1=s[s.length-1].n,span=Math.max(1,n1-n0);
     const px=q=>4+(W-8)*(q.n-n0)/span,py=q=>Hh-4-(Hh-10)*q.h/hi;
     c.beginPath();c.moveTo(px(s[0]),Hh);
