@@ -271,25 +271,169 @@ workAdd("flora",3,()=>G.mode==="system",ms=>plnKitTick(ms));
 
 /* ── всё про планеты системы — заранее ──
    Игрок летает в системе минутами, а посадка на любую из них должна быть мгновенной.
-   Здесь по одной планете за проход (3 мс бюджета) считаем то, что сейчас считается
-   в момент нажатия «авто-посадка»: рельеф (genTerrain), залежи/флору/фауну (surfGen)
-   и ленту земли (plnLandMake). Результат кладём в тот же кэш, откуда его берут
-   startLanding и plnSurface — повторно не считается.
-   Лента самая дорогая (десятки мс), поэтому проход идёт по шагам: сначала рельеф
-   и вещи, следующим проходом — лента. */
-const PLNBODY={i:0,tr:null,phase:0,target:null,done:0};
+   Фон готовит две вещи:
+
+   1. ДАННЫЕ МИРА каждой планеты — рельеф на ту долготу, с которой его запросит
+      startLanding (plnLonOf), находки (genPOI), крупные формы (genDeco) и вещи
+      земли (surfGen). Всё это раньше считалось в момент нажатия «ПОСАДКА»:
+      именно там копилась задержка «нажал и жду». Результат живёт в p.__tr/p.__gs
+      и забирается нажатием без повторного счёта.
+
+   2. ЛЕНТУ ЗЕМЛИ ближайшей планеты — то, что спуск собирал уже ПОСЛЕ нажатия:
+      plnLandMake (таблицы ленты, ~10–20 мс) и ступени plnWarmStep (куски ленты,
+      посадки, вещи, метки, своё, травы). Пока лента не готова, drawLanding держит
+      прежнюю сцену системы: автор видел это как «нажал посадку и пять секунд жду».
+      Здесь те же ступени идут фоном, по бюджету кадра, и к нажатию L.warmDone уже
+      стоит; спуск начинается сразу.
+
+   Память ограничена: лента (самое дорогое — сетки видеокарты) держится только для
+   одной, ближайшей планеты; при смене ближайшей прежняя освобождается (plnLandFree),
+   при смене системы — все кэши планет прежней. Обход идёт от ближней планеты к
+   дальней: вероятная цель получает своё первой. */
+const PLNBODY={sys:null,target:null,landP:null,S:null,C:null,V:null,failT:0};
+/* освободить ленту планеты: её сетки держит видеокарта */
+function plnBodyLandDrop(p){
+  if(!p)return;
+  if(p.__land){
+    if(PLN_LAND.cur===p.__land)PLN_LAND.cur=null;
+    plnLandFree(p.__land);p.__land=null;
+  }
+  if(PLNBODY.landP===p){PLNBODY.landP=null;PLNBODY.S=null;PLNBODY.C=null;PLNBODY.V=null;}
+}
+/* весь подготовленный запас планеты — лента, рельеф, вещи земли */
+function plnBodyDrop(p){
+  if(!p)return;
+  plnBodyLandDrop(p);
+  p.__tr=null;p.__gs=null;p.__lon=null;
+}
+/* система сменилась: её подготовка больше не нужна */
+function plnBodyClear(S){
+  /* в заходе и на поверхности лента в работе — её не трогаем */
+  if(G.mode==="landing"||G.mode==="surface")return;
+  S=S||PLNBODY.sys;
+  if(S&&S.planets)for(const p of S.planets)plnBodyDrop(p);
+  PLNBODY.landP=null;PLNBODY.S=null;PLNBODY.C=null;PLNBODY.V=null;PLNBODY.failT=0;
+  if(PLN_LAND.cur){plnLandFree(PLN_LAND.cur);PLN_LAND.cur=null;}
+}
 /* ── предсказание: цель выбрана на карте ──
    Клик по системе на карте — это намерение лететь. Карта прощает полсекунды,
    полёт — нет. Поэтому всё тяжёлое по цели ставится в очередь СРАЗУ, с приоритетом
    выше текущей системы: игрок ещё смотрит карту, а планеты цели уже считаются. */
 function preloadSystem(sx,sy){
   if(typeof sx!=="number"||typeof sy!=="number")return false;
-  PLNBODY.target={sx,sy};PLNBODY.i=0;PLNBODY.phase=0;PLNBODY.done=0;
+  /* прежняя цель больше не нужна: её кэши не должны копиться, пока игрок смотрит карту.
+     Текущую систему не трогаем — она готовится своим проходом */
+  const old=PLNBODY.target;
+  if(old&&(old.sx!==sx||old.sy!==sy)){
+    try{const T=getSystem(old.sx,old.sy);if(T&&T!==G.sys&&T.planets)for(const q of T.planets)plnBodyDrop(q);}catch(_){}
+  }
+  PLNBODY.target={sx,sy};
   try{if(typeof getSystem==="function")getSystem(sx,sy);}catch(_){}
   return true;
 }
-function preloadClear(){PLNBODY.target=null;PLNBODY.i=0;PLNBODY.phase=0;PLNBODY.done=0;}
+function preloadClear(){PLNBODY.target=null;}
+/* планеты системы от ближней к дальней: вероятная цель — первой */
+function plnBodyOrder(S){
+  const sh=G.ship||{},arr=[];
+  if(S&&S.planets)for(const p of S.planets)if(p&&typeof p.x==="number")arr.push(p);
+  arr.sort((a,b)=>Math.hypot(sh.x-a.x,sh.y-a.y)-Math.hypot(sh.x-b.x,sh.y-b.y));
+  return arr;
+}
+/* подпись вещей земли: по ней видно, что мир изменился (выработали залежь, сорвали
+   траву) и собранную ленту пора пересобрать */
+function plnBodyGsKey(g){
+  if(!g)return "";
+  let s=(g.deposits?g.deposits.length:0)+"|"+(g.plants?g.plants.length:0)+"|"+(g.fauna?g.fauna.length:0)+"|"+(g.cave?Math.round(g.cave.x):0);
+  if(g.deposits)for(const d of g.deposits)s+=":"+(d.left|0);
+  return s;
+}
+/* данные мира планеты: ровно то, что делал startLanding, но заранее и один раз.
+   Рельеф и вещи земли кэшируются отдельно: рельеф переживает посадку, вещи земли
+   забираются нажатием и после возвращения в систему считаются заново — иначе
+   выработанная залежь снова лежала бы целой */
+function plnBodyData(p){
+  if(!p.__tr){
+    const lon=plnLonOf(p);
+    p.__tr=genTerrain(p,lon);
+    /* находки и крупные формы вписываются в рельеф ДО расстановки: они выравнивают
+       под собой грунт. startLanding зовёт их же — второй вызов ничего не делает */
+    try{genPOI(p.__tr,p);}catch(_){}
+    try{genDeco(p.__tr,p);}catch(_){}
+    p.__lon=lon;
+    if(p.__land)plnBodyLandDrop(p);
+  }
+  if(!p.__gs){
+    try{p.__gs=surfGen(p.__tr,p);}catch(_){p.__gs=null;}
+    p.__gsKey=plnBodyGsKey(p.__gs);
+    if(p.__land&&p.__land.gsKey!==p.__gsKey)plnBodyLandDrop(p);
+  }
+}
+/* ближайшая твёрдая планета: на газовую не садятся */
+function plnBodyNear(S){
+  let b=null,bd=1e18;
+  if(!S||!S.planets||!G.ship)return null;
+  for(const q of S.planets){
+    if(!q||q.type==="gas"||typeof q.x!=="number")continue;
+    const d=Math.hypot(G.ship.x-q.x,G.ship.y-q.y);
+    if(d<bd){bd=d;b=q;}
+  }
+  return b;
+}
+/* лента ближайшей планеты: создать один раз, дальше вести ступени plnWarmStep */
+function plnBodyDist(p){return G.ship&&p&&typeof p.x==="number"?Math.hypot(G.ship.x-p.x,G.ship.y-p.y):1e18;}
+function plnBodyLandPrep(budget){
+  /* лента — сетки видеокарты: без устройства её не собрать, данные мира всё равно готовы */
+  if(G.mode!=="system"||typeof GPU==="undefined"||!GPU.ok||!GPU.dev)return;
+  /* сборка сорвалась — не долбим её каждый кадр, ждём несколько секунд */
+  if(PLNBODY.failT&&wallMs()<PLNBODY.failT)return;
+  let near=plnBodyNear(G.sys);
+  if(!near){if(PLNBODY.landP)plnBodyLandDrop(PLNBODY.landP);return;}
+  /* ── гистерезис: ленту не пересобирают на каждом шаге ──
+     Две планеты на почти равном расстоянии (или планета, обгоняющая корабль)
+     заставляли «ближайшую» мигать каждый кадр: старая лента освобождалась, новая
+     начинала строиться с нуля — кадр за кадром. Новую цель берём, только если она
+     заметно ближе: иначе живёт прежняя лента, и в памяти по-прежнему одна */
+  if(PLNBODY.landP&&PLNBODY.landP!==near&&PLNBODY.landP.__land&&plnBodyDist(PLNBODY.landP)<=plnBodyDist(near)*1.12)near=PLNBODY.landP;
+  /* ближайшая действительно сменилась — ленту прежней отпускаем */
+  if(PLNBODY.landP&&PLNBODY.landP!==near)plnBodyLandDrop(PLNBODY.landP);
+  const lon=plnLonOf(near);
+  /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
+  if(near.__tr&&near.__lon!=null&&lon!=null&&Math.abs(near.__lon-lon)>0.1){
+    plnBodyDrop(near);return;
+  }
+  if(!near.__tr||!near.__gs)return;           /* данные посчитает следующий проход */
+  if(near.__land&&(near.__land.tr!==near.__tr||near.__land.gsKey!==near.__gsKey||near.__land.gen!==PLN_GPU.gen))plnBodyLandDrop(near);
+  if(!near.__land){
+    const tr=near.__tr;
+    /* точка композиции и перестановка корабля: спуск и поверхность складывают сцену
+       вокруг площадки (21pza); без неё plnLandMove не сможет принять чужой sx */
+    if(tr.plnCx==null)tr.plnCx=tr.padX/PLN_M+12.8;
+    const L=plnLandMake(tr,near,tr.padX);
+    L.gsKey=near.__gsKey;
+    near.__land=L;
+    PLNBODY.landP=near;
+    const gs=near.__gs;
+    const S2={tr,p:near,cam:{x:0,y:0},face:1,swim:0,shake:0,shipX:tr.padX,x:tr.padX,y:groundAt(tr,tr.padX)};
+    if(gs){S2.deposits=gs.deposits;S2.plants=gs.plants;S2.fauna=gs.fauna;S2.cave=gs.cave;S2.peep=gs.peep;}
+    PLNBODY.S=S2;
+    /* окно спуска считается тем же plnLens, но без plnDescLens: тот запоминает PLN.hand,
+       а передача объектива принадлежит настоящему заходу, не фону */
+    const y0=PLN.y0;PLN.y0=tr.padY;
+    const gyw=groundAt(tr,tr.padX);
+    const C=plnLens(S2,surfScale(),(ws,hs,f)=>({vx:tr.padX/PLN_M-ws/2,vy:Math.max(-400,Math.min(gyw-hs*(1-f),tr.padY/PLN_M-hs*.24))}));
+    PLN.y0=y0;
+    PLNBODY.C=C;PLNBODY.V={hw:C.hw,D:C.D};
+    return;
+  }
+  const L=near.__land;
+  if(!L.warmDone&&PLNBODY.S&&PLNBODY.C&&PLNBODY.V){
+    plnWarmStep(L,PLNBODY.S,PLNBODY.S.p,PLNBODY.C,PLNBODY.V,Math.max(1,budget),true);
+  }
+}
 function plnBodyTick(ms){
+  const budget=ms>0?ms:2,t0=wallMs();
+  /* смена системы: подготовка прежней больше не нужна (память и видеокарта) */
+  if(PLNBODY.sys!==G.sys){if(PLNBODY.sys)plnBodyClear(PLNBODY.sys);PLNBODY.sys=G.sys;}
   /* цель с карты идёт первой; нет цели — текущая система */
   let S=null;
   if(PLNBODY.target&&typeof getSystem==="function"){
@@ -298,36 +442,20 @@ function plnBodyTick(ms){
   }
   if(!S)S=G.sys;
   if(!S||!S.planets||!S.planets.length)return false;
-  const budget=ms>0?ms:2, t0=wallMs();
-  /* ближайшая планета: её ленту земли и держим готовой (PLN_LAND.cur одна) */
-  {let b=null,bd=1e18;
-   for(const q of S.planets){if(!q||typeof q.x!=="number")continue;
-     const d=Math.hypot(G.ship.x-q.x,G.ship.y-q.y);if(d<bd){bd=d;b=q;}}
-   PLNBODY.near=b;}
-  while(wallMs()-t0<budget){
-    if(PLNBODY.i>=S.planets.length){PLNBODY.i=0;PLNBODY.tr=null;PLNBODY.phase=0;return false;}
-    const p=S.planets[PLNBODY.i];
-    if(!p){PLNBODY.i++;continue;}
-    /* 0 — рельеф и вещи земли; 1 — лента земли.
-       Рельеф строим НА ТУ долготу, с которой его запросит startLanding (plnLonOf):
-       иначе кэш промахивался всегда и кнопка «ПОСАДКА» платила за всё сама —
-       та самая задержка «нажал и жду». Результат живёт в p.__tr до нажатия. */
-    if(PLNBODY.phase===0){
-      if(!p.__tr){
-        p.__tr=genTerrain(p,plnLonOf(p));
-        try{p.__gs=surfGen(p.__tr,p);}catch(_){p.__gs=null;}
-      }
-      p.__gr=p.__tr;
-      PLNBODY.phase=1;
-    }else{
-      /* ленту земли здесь НЕ строим: plnLandMake создаёт задания разом (10 мс) и не
-         делится — это давало кадр 12–15 мс в полёте. Её и флору по шагам собирает
-         спуск (plnWarmStep → plnLandStep/plnPlantStep с бюджетом кадра), а нажатие
-         кнопки берёт готовый рельеф из p.__tr и потому ничего не ждёт */
-      p.__gr=null;p.__gs=null;
-      PLNBODY.i++;PLNBODY.phase=0;
-      if(wallMs()-t0>=budget)break;
-    }
+  const order=plnBodyOrder(S);
+  /* 1. данные всех планет, от ближней к дальней; шаг не делится, поэтому за проход
+        считается одна планета (рельеф + вещи земли — единый мир) */
+  for(const p of order){
+    if(p.__tr&&p.__gs)continue;
+    plnBodyData(p);
+    if(wallMs()-t0>=budget)break;
+  }
+  /* 2. лента земли ближайшей планеты ТЕКУЩЕЙ системы — шагами, в бюджет кадра.
+        Сбой сборки не должен ронять кадр и повторяться каждый проход: бросаем эту ленту */
+  try{plnBodyLandPrep(Math.max(0,budget-(wallMs()-t0)));}
+  catch(e){
+    PLNBODY.failT=wallMs()+5000;
+    if(PLNBODY.landP)plnBodyLandDrop(PLNBODY.landP);
   }
   return true;
 }

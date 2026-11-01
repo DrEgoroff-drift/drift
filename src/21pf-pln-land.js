@@ -554,6 +554,20 @@ function plnLandFree(L){
 /* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
 function plnLand(tr,p,sx){
   const C=PLN_LAND,cur=C.cur;
+  /* ── готовая лента из фона (plnbody) ──
+     Пока игрок летал в системе, ближайшая планета собрала свою ленту заранее тем же
+     plnLandMake и теми же ступенями plnWarmStep, что и спуск. Нажатие забирает её
+     как есть: кадр, где спуск стоял и ждал сборки, исчезает. Если лента собрана не до
+     конца, она всё равно принимается — спуск достроит остаток в бюджет кадра. */
+  const pre=p&&p.__land;
+  if(pre&&pre.tr===tr&&pre.gen===PLN_GPU.gen&&pre.y0===tr.padY){
+    if(cur&&cur!==pre)plnLandFree(cur);
+    C.cur=pre;
+    if(pre.sx===sx)return pre;
+    if(tr.plnCx==null)tr.plnCx=tr.padX/PLN_M+12.8;
+    return plnLandMove(pre,sx);
+  }
+  if(pre)plnBodyLandDrop(p);                 /* лента от другого рельефа больше не нужна */
   if(cur&&cur.tr===tr&&cur.gen===PLN_GPU.gen&&cur.y0===tr.padY){
     if(cur.sx===sx)return cur;
     /* корабль сел не там, где ждали (спуск, M621): композиция липнет к площадке — землю не
