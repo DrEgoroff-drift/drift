@@ -15,6 +15,8 @@ setTimeout(function(){
   var CW=330,CH=330,dpr=2;
   var poses=[
     ["БОКОМ",  {t:10.2,turn:.5,look:-.5}],
+    ["ВЗМАХ",  {t:11.0,flap:1,crest:.45}],
+    ["ПОЛУВЗМАХ",{t:11.0,flap:.5,crest:.3}],
     ["ВИС",    {t:12.4,hang:1,fan:.5,crest:.4}],
     ["СПРЯТАЛА ГОЛОВУ",{t:9.6,tuck:1,footUp:.9,blink:1}],
     ["ПОТЯНУЛАСЬ",{t:7.1,stretch:1,fan:.8,footUp:.7,yawn:.5}],

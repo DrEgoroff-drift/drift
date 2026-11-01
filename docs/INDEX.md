@@ -1598,7 +1598,7 @@ PAL_SVOD                     src/21b5-base-palata.js:24
 PAL_SWITCH                   src/21b5-base-palata.js:40
 PANEL                        src/27i0-panel-gpu.js:8
 PAR                          src/12y-parrot-face.js:50
-PARG                         src/12y1-parrot-gpu.js:372
+PARG                         src/12y1-parrot-gpu.js:379
 PARROT_NAMES                 src/12x-parrot.js:24
 PART_BONUS                   src/05-parts.js:309
 PART_GEN                     src/05-parts.js:9
@@ -1617,7 +1617,7 @@ PAR_DPR                      src/12y-parrot-face.js:248
 PAR_IDLE                     src/12y-parrot-face.js:205
 PAR_K                        src/12y1-parrot-gpu.js:16
 PAR_LAST                     src/12z-parrot-acts.js:202
-PAR_WGSL                     src/12y1-parrot-gpu.js:327
+PAR_WGSL                     src/12y1-parrot-gpu.js:334
 PAR_Z                        src/12y1-parrot-gpu.js:130
 PASS3                        src/21piif-pln-pass.js:13
 PASSPORT_KEYS                src/17i1-passport.js:6
@@ -6527,7 +6527,7 @@ palStep                      src/21b5-base-palata.js:98-154
 panelGpu                     src/27i0-panel-gpu.js:11-24
 panelNd                      src/27i0-panel-gpu.js:10
 parActs                      src/12z-parrot-acts.js:233-264
-parAtlas                     src/12y1-parrot-gpu.js:375-380
+parAtlas                     src/12y1-parrot-gpu.js:382-387
 parBeadG                     src/12y1-parrot-gpu.js:143
 parBell                      src/12z-parrot-acts.js:34
 parBodyPath                  src/12y-parrot-face.js:133-143
@@ -6535,7 +6535,7 @@ parCellDefs                  src/12y1-parrot-gpu.js:30-89
 parCells                     src/12y1-parrot-gpu.js:91-102
 parCoatG                     src/12y1-parrot-gpu.js:168-191
 parCol                       src/12y1-parrot-gpu.js:119-150
-parDesc                      src/12y1-parrot-gpu.js:368-380
+parDesc                      src/12y1-parrot-gpu.js:375-387
 parEll                       src/12y1-parrot-gpu.js:134
 parFootG                     src/12y1-parrot-gpu.js:152-166
 parHold                      src/12z-parrot-acts.js:36-41
@@ -6543,7 +6543,7 @@ parInv                       src/12y1-parrot-gpu.js:111
 parLine                      src/12y1-parrot-gpu.js:136
 parMood                      src/12z-parrot-acts.js:203-207
 parPad                       src/12y1-parrot-gpu.js:132
-parPass                      src/12y1-parrot-gpu.js:382-403
+parPass                      src/12y1-parrot-gpu.js:389-410
 parPickAct                   src/12z-parrot-acts.js:208-229
 parPlume                     src/12y-parrot-face.js:76-105
 parPlumeBox                  src/12y1-parrot-gpu.js:23-89
@@ -6558,19 +6558,19 @@ parSink                      src/12y1-parrot-gpu.js:114-150
 parSpr                       src/12y1-parrot-gpu.js:133
 parSpring                    src/12y-parrot-face.js:147-150
 parStep                      src/12y-parrot-face.js:151-199
-parTarget                    src/12y1-parrot-gpu.js:373
+parTarget                    src/12y1-parrot-gpu.js:380
 parWin                       src/12y-parrot-face.js:48
-parrotBox                    src/12y1-parrot-gpu.js:313-324
+parrotBox                    src/12y1-parrot-gpu.js:320-331
 parrotBtnTick                src/12y-parrot-face.js:242-247
 parrotDock                   src/12x-parrot.js:141-147
-parrotDraw                   src/12y1-parrot-gpu.js:194-311
+parrotDraw                   src/12y1-parrot-gpu.js:194-318
 parrotFind                   src/12x-parrot.js:30-39
-parrotGpuTick                src/12y1-parrot-gpu.js:406-423
+parrotGpuTick                src/12y1-parrot-gpu.js:413-430
 parrotHas                    src/12x-parrot.js:25
 parrotHeardKill              src/13-pirates.js:319-322
 parrotLine                   src/12y-parrot-face.js:206-219
 parrotPoke                   src/12y-parrot-face.js:222-239
-parrotSnap                   src/12y1-parrot-gpu.js:425-431
+parrotSnap                   src/12y1-parrot-gpu.js:432-438
 partBonus                    src/05-parts.js:349-356
 partById                     src/05-parts.js:335-338
 partClearance                src/05e-clearance.js:75-79
@@ -9596,7 +9596,7 @@ zoomTo                       src/15-input.js:358
 ## src/12y-parrot-face.js · 17 KB
   · трепло: жёрдочка:1
 
-## src/12y1-parrot-gpu.js · 31 KB
+## src/12y1-parrot-gpu.js · 32 KB
   · трепло на движке: атлас перьев и экземпляры (G15, DESIGN-gpu «Where I stopped»):1
 
 ## src/12z-parrot-acts.js · 17 KB
