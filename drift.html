@@ -88296,6 +88296,12 @@ function plnManBuild(P,low,D){
      лямки, антенна */
   part(1,m=>{
     plnBlob(m,{c:[0,.30,0],r:[.256,.29,.215],box:.5,sub:2,col:u=>u[1]<-.6?suitD:suit,mat:M,x:.3});
+    /* воротник стойкой и лямки через грудь — приметы механика, который стал главным.
+       Цвет из комплекта: оранжевый тоже меняется вместе с ним */
+    plnBlob(m,{c:[0,.565,0],r:[.178,.070,.168],box:.6,sub:1,col:suitD,mat:M,x:.3});
+    for(const sz of [-.075,.075]){
+      plnTube(m,{path:[[.205,.50,sz],[.150,.35,sz*.8],[.090,.19,sz*.5],[.02,.10,sz*.35]],
+        rad:.022,sides:6,col:P.torso.dark,mat:M,x:.35,cap:true});}
     belt(m,.55,.16,.035,joint,.35);
     /* панель на подложке: без рамки серая коробка читалась наклейкой на комбинезоне */
     plnBlob(m,{c:[.203,.32,0],r:[.060,.104,.094],box:.45,sub:1,col:P.torso.dark,mat:M,x:.30});
@@ -88337,6 +88343,8 @@ function plnManBuild(P,low,D){
     part(sh,m=>{
       ring(m,.05,-.05,.115,joint,.3);
       plnTube(m,{path:[[0,-.04,0],[0,-.36,0]],rad:t=>lerp(.105,.088,t),sides:10,col:suit,mat:M,x:.12,cap:true});
+      /* наколенник — вторая примета механика, садится на верх голени */
+      plnBlob(m,{c:[.062,-.012,0],r:[.052,.062,.078],box:.5,sub:1,col:suitD,mat:M,x:.3});
     });
     part(ft,m=>{
       ring(m,.035,-.035,.10,P.boots.dark,.3);
