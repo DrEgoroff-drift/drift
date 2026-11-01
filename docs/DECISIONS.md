@@ -1,14 +1,16 @@
 # Drift — rules and decisions that stand
 
 What holds across all the work, so it is not re-litigated: the working rules, the laws of the frame, and the
-forks the author decided or let us decide. Not a plan (that is `PLAN.md` — only what we want next) and not
+forks the author decided or let us decide. Not a plan (that was `PLAN.md` — closed and archived on
+31.10.2026; the game is in alpha, and work is driven by bug reports and economy measurements) and not
 a record (what is done: `PATCHNOTES.md` by version, `docs/done/` for the old plan bodies). Moved here from
 `PLAN.md` verbatim on 2026-09-23.
 
 ## The renderer (the author, 23.09)
 
-- **WebGPU draws the frame; Canvas 2D is the brush** for text and vector shapes, live on the transparent `#c` or
-  baked into textures. No 2D fallback: without WebGPU the game names the browsers that can play.
+- **WebGPU draws the frame, the interface included.** The 2D-style brush — text and vector shapes — is the
+  GPU canvas (`08ca-gpu-canvas`) or a baked texture; there is no Skia raster and no 2D fallback: without
+  WebGPU the game names the browsers that can play.
 - **Graphics only get better.** A ported layer is judged against the old one side by side; the same look is
   the floor, the aim is better within the laws below. The world stays math in JS; only the painting moved.
 - **The GPU canvas (`GcCtx`) is for bakes, not for a frame.** One call costs 1–3.5 µs at ×1 on the desktop
@@ -184,7 +186,7 @@ procedural and infinite · jumps stay for near · «пока только в п�
 - **Refactors rejected (0.438.0 audit):** a palette module, a `G.mode` table, removing `typeof` guards, a schema-driven `applySave`, an uncommitted `drift.html`.
 - **Releases:** push only after a green run — `test.ps1` (no flags: build, the Node tier the deploy runs, the smoke and the vision), and `-Full`; run and push in separate commands; after the push, the GitHub run's status and the md5 of `play.html` against `drift.html`. Patch bump for tests/tools/docs, minor for `src/`.
 - **The freeze item (M234/M238/M417/M418) stays closed** until a stall that is not a bake shows in `crash.log` (`stallWho`, 0.448.0).
-- **The plan holds only what we want next** (the author, 23.09: «план это план, а не то что мы сделали»). A finished item is deleted from `PLAN.md` in the commit that finishes it; its story goes to the patchnote, a long body to `docs/done/` (files of at most 40 KB, `build.ps1` warns past that).
+- **The plan held only what we wanted next** (the author, 23.09: «план это план, а не то что мы сделали»). While it was live, a finished item was deleted from `PLAN.md` in the commit that finished it; its story went to the patchnote, a long body to `docs/done/` (files of at most 40 KB, `build.ps1` warns past that). The plan was closed and archived on 31.10.2026.
 
 ## Decisions taken on the author's behalf, so they are not re-litigated
 
