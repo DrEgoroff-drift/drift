@@ -87,3 +87,18 @@ its own, not a loop artefact.
 - Rebuilding the ships: they are the game's identity and already good.
 - Raising polygon counts as the fix: irrelevant to every defect found above. The mannequins are not
   low-poly, they are *unmodelled*.
+
+## Graded later — the world objects are strong
+
+Measured 01.11 by dumping the builders out of the engine (`tools/kit_sheet.py`). These were the
+biggest unknown in the first pass, and the answer is the opposite of what the brief expected:
+
+| Object | Tris | Grade | Class | Notes |
+|---|---:|---|---|---|
+| shuttle | 878 | 8 | **A** | chunky pod, window, nose — reads at any distance |
+| barge | 6 056 | 8 | **A** | container ribs, tanks, cockpit; the industrial look is exactly the game's voice |
+| barge wreck | 5 278 | 8 | **A** | the same hull broken apart with debris — convincing |
+| station | 19 490 | 8 | **A** | ring, spokes, modules, docking arms; this is engine work of real quality |
+
+The station alone is 19 490 triangles of readable structure — nearly three times the whole
+character, and no one would call it primitive. **The world is not the problem.** The people are.
