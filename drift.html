@@ -95941,7 +95941,8 @@ function plnSurface(S,o){
   PLN.y0=tr.padY;
   /* в клети лифта (21pifc) окно поднимается за клетью: земля уходит вниз */
   const lw=!fly&&!hd?plnLiftWin(S):null;
-  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):lw),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  const L0=wallMs();const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):lw),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  if(NEAR.on)NEAR.wLand=Math.round((wallMs()-L0)*10)/10;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   /* стройка по бюджету кадра (M614, M630f): кадр без стройки — среднее FRAME_JS прошлых кадров за
      вычетом их стройки; стройке — что остаётся до PLN_BUILD.frame. Земля берёт своё первой,
@@ -95949,12 +95950,15 @@ function plnSurface(S,o){
   const B=PLN_BUILD,tb=wallMs();
   const lim=L.first?fbLeft(B.low,B.ms,B.frame):B.first;   /* общий счёт стройки кадра (17a0 FB) */
   if(fly&&o.warm&&!PLN.rush&&!L.warmDone){const tw=wallMs();const rw=plnWarmStep(L,S,p,C,V);if(NEAR.on)nearWarm(wallMs()-tw);if(rw)return "warm";}
-  plnLandStep(L,C.ex,V,null,lim);
+  {const _s=NEAR.on?wallMs():0;plnLandStep(L,C.ex,V,null,lim);if(NEAR.on)NEAR.wStep=Math.round((wallMs()-_s)*10)/10;}
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
   /* с заходом, посчитанным заранее (G.land.pre), массивы те же — пересадки нет */
-  if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,-1e9,1e9);
-  plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));
+  /* если флора выращена на другом S — пересаживаем только видимую полосу, а не весь мир:
+     диапазон −1e9…1e9 на первом кадре после посадки проходил всю землю и не давал кадру
+     завершиться (near-run-10..18: у surface ноль кадров). Так же делает plnLandMove */
+  if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,C.ex-250,C.ex+250);
+  {const _s=NEAR.on?wallMs():0;plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));if(NEAR.on)NEAR.wPlant=Math.round((wallMs()-_s)*10)/10;}
   fbSpend(wallMs()-tb);
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
@@ -95976,7 +95980,7 @@ function plnSurface(S,o){
     hero:[0,0,15,36],lamps:[],look,clouds:Hr.clouds,blobs:Q.blobs,batches:[],
     post:{shafts:[Hr.shafts,1600,.62,-.06],bloom:.085,vig:.42,grade:1}};
   Q.blobs.fill(0);
-  plnLandBatches(L,F.batches,C.ex,V);
+  {const _s=NEAR.on?wallMs():0;plnLandBatches(L,F.batches,C.ex,V);if(NEAR.on)NEAR.wBatch=Math.round((wallMs()-_s)*10)/10;}
   /* в воде человек сидит в круге по пояс: тело стоит ниже, чем его держит игра.
      Налобник горит ночью и в тени затмения; его свет и факел ранца ставит риг (21pha) */
   const lampK=Math.max(plnSmooth(.15,.6,Hr.night),plnSmooth(.45,.8,Hr.ecl));
@@ -128105,6 +128109,8 @@ function crashSay(e,where){
     (e&&e.message)||String(e),crashStack(e));
   let m="";
   try{m=(e&&e.message)||String(e);}catch(_){m="?";}
+  /* ?g11=near: сбой кадра — это и есть объяснение «кадра нет»; пишем его в диагностику */
+  try{if(typeof NEAR!=="undefined"&&NEAR.on)NEAR.crash=String(m).slice(0,240)+" @"+String(where||"");}catch(_){}
   const at=crashAt(e);
   if(at)m+=" · "+at;
   if(where)m+=" · "+where;
@@ -128151,6 +128157,9 @@ function frame(now){
      `frameLastAt=0` на возврате, и первый кадр после возврата не мерится. */
   const framePrev=frameLastAt;
   frameLastAt=now;
+  /* ?g11=near: считаем сами вызовы кадра — если после смены режима счётчик стоит,
+     значит rAF не приходит, и это не «долгий кадр», а остановка цикла */
+  if(NEAR.on)NEAR.frameCalls=(NEAR.frameCalls||0)+1;
   if(framePrev&&now-framePrev>2000)crashShip("stall","кадр стоял "+((now-framePrev)|0)+" мс","",stallWho(framePrev,now));
   /* пульс: раз в три минуты, потом раз в десять — версия, режим, средний fps,
      окно. Не ошибка, а мерка с настоящих телефонов: «60 fps в девяти режимах»
@@ -128181,12 +128190,13 @@ function frame(now){
     nearBlock(G.mode,pm);
     nearFrame({raf:now,start:fb0,end:fb0+FRAME_JS,js:FRAME_JS,gap:(framePrev?now-framePrev:0),
       vis:(typeof document!=="undefined"&&document.visibilityState)||"?",mode:G.mode,prev:pm,
-      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,rackB:NEAR.rackB,rackT:NEAR.rackT,rackF:NEAR.rackF,wSun:NEAR.wSun,wScene:NEAR.wScene,wGpu:NEAR.wGpu,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
+      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,rackB:NEAR.rackB,rackT:NEAR.rackT,rackF:NEAR.rackF,wSun:NEAR.wSun,wScene:NEAR.wScene,wGpu:NEAR.wGpu,wLand:NEAR.wLand,wStep:NEAR.wStep,wPlant:NEAR.wPlant,wBatch:NEAR.wBatch,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
       warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
       asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,sl:NEAR.sl,sg:NEAR.sg,dg:NEAR.dg,gw:NEAR.gw,
       pipes:NEAR.pipes,cave:NEAR.cave});}
   tactWork(FRAME_JS);   /* средняя работа кадра решает, можно ли 120 (0.1b) */
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
+  if(NEAR.on)NEAR.rafSched=(NEAR.rafSched||0)+1;
   requestAnimationFrame(frame);
 }
 /* то же для ошибок вне кадра: обработчик нажатия, ответ сервера, таймер.
@@ -131208,16 +131218,30 @@ async function g11RunNear(){
       ["surface",()=>{const _t=NEAR.on?wallMs():0;const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
         if(NEAR.on)NEAR.runs.find2=Math.round((wallMs()-_t)*10)/10;jump(s);const p=s.planets.find(p=>p.type==="jungle")||s.planets.find(p=>p.type!=="gas");
         const _t2=NEAR.on?wallMs():0;const tr=genTerrain(p);if(NEAR.on)NEAR.runs.terr=Math.round((wallMs()-_t2)*10)/10;G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
-        const _t3=NEAR.on?wallMs():0;enterSurface();if(NEAR.on)NEAR.runs.enter=Math.round((wallMs()-_t3)*10)/10;}],
+        const _t3=NEAR.on?wallMs():0;/* БЕЗ startLanding: G.land и G.land.pre считаем вручную —
+          так отделяем «виноват startLanding» от «виноват сам переход в surface» */
+        try{
+          const tr2=genTerrain(p);genPOI(tr2,p);genDeco(tr2,p);
+          G.land={p,tr:tr2,x:tr2.padX,y:groundAt(tr2,tr2.padX),vx:0,vy:0,a:0,gear:1,sq:0,sqv:0,hot:0,
+            g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:true,auto:true,hi:150};
+          G.land.pre=surfGen(tr2,p);
+          enterSurface();if(NEAR.on)NEAR.runs.enter=Math.round((wallMs()-_t3)*10)/10;
+          if(NEAR.on){NEAR.runs.surfMode=String(G.mode);NEAR.runs.surfHas=!!G.surf;
+            NEAR.runs.surfTr=!!(G.surf&&G.surf.tr);NEAR.runs.surfP=!!(G.surf&&G.surf.p);
+            NEAR.runs.plnOn=!!(typeof PLN!=="undefined"&&PLN.on);NEAR.runs.plnBad=(typeof PLN!=="undefined")?PLN.bad:-1;
+            NEAR.runs.noStartLanding=1;}
+        }catch(e){err.push("surface: "+((e&&e.message)||e));if(NEAR.on)NEAR.runs.surfMode="EXC";}}],
       ["dig",()=>{enterDig();}],
       ["cave",()=>{G.mode="surface";enterCave();}],
       ["landing-warm",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
         startLanding(s.planets.find(p=>p.type!=="gas"));}]
     ];
     for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}
-      /* ждём блок, но с потолком по времени: чистые 240 кадров на 240 Гц — это ~1 с,
-         и шесть блоков уже не влезают в окно стенда (near-run-07 дал 1 блок) */
-      for(let w=0;w<200&&NEAR.n<200;w++)await sleep(10);
+      /* 40 кадров блока, а не 200: блок landing уходит в `return "warm"` на первых
+         кадрах и при ожидании 200 съедает всё окно стенда (near-run-10/11 — один блок) */
+      for(let w=0;w<300&&NEAR.n<40;w++)await sleep(10);
+      /* сколько вызовов кадра пришлось на прогон: ноль прироста = rAF не приходит */
+      if(NEAR.on){NEAR.runs["fc_"+r[0]]=NEAR.frameCalls;NEAR.runs["rs_"+r[0]]=NEAR.rafSched;NEAR.runs["run_"+r[0]]=G&&G.running?1:0;}
       put(r[0]+" · кадров "+NEAR.n);}
   }catch(e){err.push(""+(e&&e.message||e));}
   const J=nearJSON();J.err=err;J.ua=navigator.userAgent.slice(0,80);
@@ -131488,12 +131512,12 @@ else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout
 const NEAR_MAX = 240;
 const NEAR = {on:false, blocks:[], cur:null, n:0, frameN:0,
   marks:{}, work:{}, warm:0, bakeN:0, bakeS:0, pipes:0, cave:0,
-  sw:0, gf:0, dw:0, rack:0, hit:0, dwAll:0, rackB:0, rackT:0, rackF:0, wSun:0, wScene:0, wGpu:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, runs:{}, gw:{}, maxFrames:NEAR_MAX};
+  sw:0, gf:0, dw:0, rack:0, hit:0, dwAll:0, rackB:0, rackT:0, rackF:0, wSun:0, wScene:0, wGpu:0, wLand:0, wStep:0, wPlant:0, wBatch:0, hud:0, gp:0, wp:0, crash:"", frameCalls:0, rafSched:0, sl:{}, sg:{}, dg:{}, runs:{}, gw:{}, maxFrames:NEAR_MAX};
 function nearOn(){ NEAR.on = true; }
 function nearBlock(mode, prev){
   if(!NEAR.on) return;
   if(!NEAR.cur || NEAR.cur.mode !== mode){
-    NEAR.cur = {mode, prev, fr:[]};
+    NEAR.cur = {mode, prev, fr:[], firstRec:null};
     NEAR.blocks.push(NEAR.cur);
     NEAR.n = 0; NEAR.work = {}; NEAR.warm = 0; NEAR.bakeN = 0; NEAR.bakeS = 0;
   }
@@ -131506,7 +131530,11 @@ function nearBake(sync){ if(NEAR.on){ NEAR.bakeN++; if(sync) NEAR.bakeS++; } }
 function nearPipe(){ if(NEAR.on) NEAR.pipes++; }
 function nearCave(){ if(NEAR.on) NEAR.cave++; }
 function nearFrame(rec){
-  if(!NEAR.on || !NEAR.cur || NEAR.n >= NEAR.maxFrames) return;
+  if(!NEAR.on || !NEAR.cur) return;
+  /* первый кадр блока помним всегда, даже если кадров больше не будет: тяжёлый первый
+     кадр Surface и есть предмет замера, а счётчик NEAR.n при нём почти не растёт */
+  if(!NEAR.cur.firstRec) NEAR.cur.firstRec = rec;
+  if(NEAR.n >= NEAR.maxFrames) return;
   const fr = NEAR.cur.fr, prev = fr.length ? fr[fr.length - 1] : null;
   NEAR.n++; NEAR.frameN++;
   rec.i = NEAR.frameN;
@@ -131536,14 +131564,14 @@ function nearJSON(){
     }
     const work = {};
     for(const f of b.fr) for(const k in (f.work || {})) if(!(work[k] >= f.work[k])) work[k] = f.work[k];
-    return {mode:b.mode, prev:b.prev, frames:b.fr.length,
+    return {mode:b.mode, prev:b.prev, frames:b.fr.length, first:b.firstRec,
       gap:nearStat(g), js:nearStat(j), long, jsLong, work,
       worstGap:b.fr.slice().sort((a, z) => z.gap - a.gap).slice(0, 8),
       worstJs:b.fr.slice().sort((a, z) => z.js - a.js).slice(0, 8),
       worstDw:b.fr.slice().sort((a, z) => (z.dw || 0) - (a.dw || 0)).slice(0, 8)};
   });
   return {dpr:devicePixelRatio, maxFrames:NEAR.maxFrames, blocks,
-    pipes:NEAR.pipes, cave:NEAR.cave, runs:NEAR.runs};
+    pipes:NEAR.pipes, cave:NEAR.cave, runs:NEAR.runs, crash:NEAR.crash, frameCalls:NEAR.frameCalls, rafSched:NEAR.rafSched};
 }
 
 /* ══════════════ дом изнутри: по нему ходят ══════════════

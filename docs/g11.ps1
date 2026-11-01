@@ -1,4 +1,4 @@
-﻿# Замер кадра: прогон ?g11 без рук.
+# Замер кадра: прогон ?g11 без рук.
 #
 # Пробник живёт в игре (28z-fps-probe): он обходит режимы, меряет rAF и шлёт
 # итог на стенд (docs/stand.ps1, порт 8777), который кладёт его в
@@ -11,7 +11,7 @@
 #    троттлинга продолжают рисовать в фоне и топят любой следующий прогон;
 #  * свой профиль (--user-data-dir), и убиваем только процессы с ним:
 #    браузер пользователя трогать нельзя.
-param([int]$WaitSec = 240, [switch]$Deep, [switch]$Stable, [switch]$EnableGpu, [switch]$Near)
+param([int]$WaitSec = 240, [switch]$Deep, [switch]$Stable, [switch]$EnableGpu, [switch]$Near, [string]$Scene = "")
 
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -30,6 +30,9 @@ if (-not $chrome) { throw "no headless browser found" }
 $url  = "http://localhost:8777/drift.html?g11"
 if ($Deep) { $url = $url + "=deep" }
 if ($Near) { $url = $url + "=near" }
+# -Scene: открыть сразу нужную сцену mkview (?s=surface и т.п.) — прямой вход в режим
+# без каскада landing→surface, который у g11RunNear съедал кадры (near-run-10..17)
+if ($Scene) { $url = $url + "&s=" + $Scene }
 # -Stable: софт-композит на 60 Гц — интервалы ровные (16.7 мс), без всплесков 33–79 мс.
 # По умолчанию GPU-композит на 240 Гц: крейсер 4.2 мс, но headless изредка пропускает такты
 # (почему — записано в 28z-fps-probe: это среда, не игра). Работа самой игры — в p50/p90, jsMax.

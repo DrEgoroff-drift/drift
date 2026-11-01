@@ -706,8 +706,8 @@ FWD_PAY_EVERY                src/21b6-base-forward.js:23
 FW_HOOKS                     src/28o-firstwatch.js:81-87
 FW_URG_MIN                   src/28o-firstwatch.js:17
 G                            src/08-state.js:207-293
-G11_CPU                      src/28z-fps-probe.js:284
-G11_GPU_KILL                 src/28z-fps-probe.js:309-340
+G11_CPU                      src/28z-fps-probe.js:298
+G11_GPU_KILL                 src/28z-fps-probe.js:323-354
 G11_LT                       src/28z-fps-probe.js:29
 GAL_ARMS                     src/17z2-galaxy-names.js:8-11
 GAL_BAR_A                    src/17z1-galaxy.js:20
@@ -3592,7 +3592,7 @@ craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
 crashAt                      src/28-loop.js:634-648
 crashN                       src/28-loop.js:629
-crashSay                     src/28-loop.js:655-684
+crashSay                     src/28-loop.js:655-686
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 crewAssignShip               src/12a-crew.js:252-260
@@ -3680,7 +3680,7 @@ cvs                          src/08-state.js:2
 cvsRect                      src/08-state.js:107-110
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:803-873
+dbg                          src/28-loop.js:809-879
 dcLensEq                     tests/91qc-descent.js:15-18
 dcWorld                      tests/91qc-descent.js:6-14
 dcol                         src/21b-surface-deco.js:155-160
@@ -4122,7 +4122,7 @@ drawSpa                      src/29rd-spa-r3.js:234-237
 drawStation                  src/17c-system-draw.js:192-209
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:100
-drawSurface                  src/21pz-pln-frame.js:439-458
+drawSurface                  src/21pz-pln-frame.js:443-462
 drawSurfaceHud               src/21e-surface-draw.js:40-143
 drawSurvey                   src/12w-survey.js:63-81
 drawSysHud                   src/17-mode-system.js:756-1105
@@ -4444,11 +4444,11 @@ forkSt                       src/28q-fork.js:19-22
 forkTick                     src/28q-fork.js:56-81
 forkWage                     src/28q-fork.js:48-55
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:688-745
+frame                        src/28-loop.js:690-751
 frameBody                    src/28-loop.js:478-484
 frameBodyIn                  src/28-loop.js:485-620
 frameCapNow                  src/28-loop.js:263-267
-frameLastAt                  src/28-loop.js:687
+frameLastAt                  src/28-loop.js:689
 freeVoice                    src/09-audio.js:104-108
 fridgeFee                    src/21ac4-base-fridge.js:19
 fridgeFirmAt                 src/21ac4-base-fridge.js:15-18
@@ -4481,9 +4481,9 @@ fwdLine                      src/21b6-base-forward.js:76-82
 fwdLineOf                    src/21b6-base-forward.js:118-124
 fwdMissing                   src/21b6-base-forward.js:42-52
 fwdStep                      src/21b6-base-forward.js:99-116
-g11CpuHook                   src/28z-fps-probe.js:285-290
+g11CpuHook                   src/28z-fps-probe.js:299-304
 g11Fps                       src/28z-fps-probe.js:19-26
-g11Iv                        src/28z-fps-probe.js:291-302
+g11Iv                        src/28z-fps-probe.js:305-316
 g11LongTasks                 src/28z-fps-probe.js:30-32
 galArmD                      src/17z1-galaxy.js:25-29
 galArmPt                     src/17z2-galaxy-names.js:14
@@ -4823,7 +4823,7 @@ gpuResize                    src/08b-gpu.js:408-453
 gpuScene                     src/08b-gpu.js:581-594
 gpuScene3D                   src/08b-gpu.js:598-606
 gpuScr                       src/08c-gpu-kit.js:144
-gpuSeg                       src/28z-fps-probe.js:236-239
+gpuSeg                       src/28z-fps-probe.js:250-253
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:318-329
 gpuShock                     src/08b-gpu.js:479
@@ -4837,9 +4837,9 @@ gpuSubmitFrame               src/08b-gpu.js:663-668
 gpuSysUnder                  src/17g-gpu-system.js:519-525
 gpuTakeSnap                  src/08b-gpu.js:30-37
 gpuTrail                     src/16ga-gpu-trail.js:61-108
-gpuTs                        src/28z-fps-probe.js:225-232
-gpuTsAround                  src/28z-fps-probe.js:242-246
-gpuTsResolve                 src/28z-fps-probe.js:248-266
+gpuTs                        src/28z-fps-probe.js:239-246
+gpuTsAround                  src/28z-fps-probe.js:256-260
+gpuTsResolve                 src/28z-fps-probe.js:262-280
 gpuUni                       src/08b-gpu.js:546-560
 gpuWake                      src/16ga-gpu-trail.js:117-150
 gpuWeatherFar                src/19cc-gpu-air.js:265-293
@@ -6241,12 +6241,12 @@ near                         tests/90-harness.js:197
 nearBake                     src/28zn-near.js:27
 nearBlock                    src/28zn-near.js:15-22
 nearCave                     src/28zn-near.js:29
-nearFrame                    src/28zn-near.js:30-42
-nearJSON                     src/28zn-near.js:49-69
+nearFrame                    src/28zn-near.js:30-46
+nearJSON                     src/28zn-near.js:53-73
 nearMark                     src/28zn-near.js:23
 nearOn                       src/28zn-near.js:14
 nearPipe                     src/28zn-near.js:28
-nearStat                     src/28zn-near.js:43-48
+nearStat                     src/28zn-near.js:47-52
 nearWarm                     src/28zn-near.js:26
 nearWork                     src/28zn-near.js:24
 nearestPOI                   src/20a-poi.js:200-205
@@ -7132,7 +7132,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:92
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:337-435
+plnSurface                   src/21pz-pln-frame.js:337-439
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -7323,7 +7323,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:765-792
+prof                         src/28-loop.js:771-798
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
@@ -10654,7 +10654,7 @@ zoomTo                       src/15-input.js:358
 ## src/27z-telemetry.js · 60 KB
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 73 KB
+## src/28-loop.js · 74 KB
   · авария:1
   · звук по кадрам:48
   · цикл:106
@@ -10663,8 +10663,8 @@ zoomTo                       src/15-input.js:358
   · РОВНЫЙ ТАКТ (0.1b):357
   · развилка режимов — одна на всех (M238):413
   · кадр, который не убивает игру (M234):621
-  · prof() — на что уходит кадр:753
-  · dbg() — что держит корабль:794
+  · prof() — на что уходит кадр:759
+  · dbg() — что держит корабль:800
 
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
@@ -10712,10 +10712,10 @@ zoomTo                       src/15-input.js:358
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
 
-## src/28z-fps-probe.js · 31 KB
+## src/28z-fps-probe.js · 33 KB
   · пробник G11: ?g11:1
 
-## src/28zn-near.js · 4 KB
+## src/28zn-near.js · 5 KB
   · ?g11=near: кадры ПЕРЕХОДА (диагностика, не игра):1
 
 ## src/29c-home-in.js · 16 KB

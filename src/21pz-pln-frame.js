@@ -350,7 +350,8 @@ function plnSurface(S,o){
   PLN.y0=tr.padY;
   /* в клети лифта (21pifc) окно поднимается за клетью: земля уходит вниз */
   const lw=!fly&&!hd?plnLiftWin(S):null;
-  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):lw),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  const L0=wallMs();const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):lw),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  if(NEAR.on)NEAR.wLand=Math.round((wallMs()-L0)*10)/10;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   /* стройка по бюджету кадра (M614, M630f): кадр без стройки — среднее FRAME_JS прошлых кадров за
      вычетом их стройки; стройке — что остаётся до PLN_BUILD.frame. Земля берёт своё первой,
@@ -358,12 +359,15 @@ function plnSurface(S,o){
   const B=PLN_BUILD,tb=wallMs();
   const lim=L.first?fbLeft(B.low,B.ms,B.frame):B.first;   /* общий счёт стройки кадра (17a0 FB) */
   if(fly&&o.warm&&!PLN.rush&&!L.warmDone){const tw=wallMs();const rw=plnWarmStep(L,S,p,C,V);if(NEAR.on)nearWarm(wallMs()-tw);if(rw)return "warm";}
-  plnLandStep(L,C.ex,V,null,lim);
+  {const _s=NEAR.on?wallMs():0;plnLandStep(L,C.ex,V,null,lim);if(NEAR.on)NEAR.wStep=Math.round((wallMs()-_s)*10)/10;}
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
   /* с заходом, посчитанным заранее (G.land.pre), массивы те же — пересадки нет */
-  if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,-1e9,1e9);
-  plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));
+  /* если флора выращена на другом S — пересаживаем только видимую полосу, а не весь мир:
+     диапазон −1e9…1e9 на первом кадре после посадки проходил всю землю и не давал кадру
+     завершиться (near-run-10..18: у surface ноль кадров). Так же делает plnLandMove */
+  if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,C.ex-250,C.ex+250);
+  {const _s=NEAR.on?wallMs():0;plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));if(NEAR.on)NEAR.wPlant=Math.round((wallMs()-_s)*10)/10;}
   fbSpend(wallMs()-tb);
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
@@ -385,7 +389,7 @@ function plnSurface(S,o){
     hero:[0,0,15,36],lamps:[],look,clouds:Hr.clouds,blobs:Q.blobs,batches:[],
     post:{shafts:[Hr.shafts,1600,.62,-.06],bloom:.085,vig:.42,grade:1}};
   Q.blobs.fill(0);
-  plnLandBatches(L,F.batches,C.ex,V);
+  {const _s=NEAR.on?wallMs():0;plnLandBatches(L,F.batches,C.ex,V);if(NEAR.on)NEAR.wBatch=Math.round((wallMs()-_s)*10)/10;}
   /* в воде человек сидит в круге по пояс: тело стоит ниже, чем его держит игра.
      Налобник горит ночью и в тени затмения; его свет и факел ранца ставит риг (21pha) */
   const lampK=Math.max(plnSmooth(.15,.6,Hr.night),plnSmooth(.45,.8,Hr.ecl));

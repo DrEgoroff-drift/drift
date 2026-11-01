@@ -10,12 +10,12 @@
 const NEAR_MAX = 240;
 const NEAR = {on:false, blocks:[], cur:null, n:0, frameN:0,
   marks:{}, work:{}, warm:0, bakeN:0, bakeS:0, pipes:0, cave:0,
-  sw:0, gf:0, dw:0, rack:0, hit:0, dwAll:0, rackB:0, rackT:0, rackF:0, wSun:0, wScene:0, wGpu:0, hud:0, gp:0, wp:0, sl:{}, sg:{}, dg:{}, runs:{}, gw:{}, maxFrames:NEAR_MAX};
+  sw:0, gf:0, dw:0, rack:0, hit:0, dwAll:0, rackB:0, rackT:0, rackF:0, wSun:0, wScene:0, wGpu:0, wLand:0, wStep:0, wPlant:0, wBatch:0, hud:0, gp:0, wp:0, crash:"", frameCalls:0, rafSched:0, sl:{}, sg:{}, dg:{}, runs:{}, gw:{}, maxFrames:NEAR_MAX};
 function nearOn(){ NEAR.on = true; }
 function nearBlock(mode, prev){
   if(!NEAR.on) return;
   if(!NEAR.cur || NEAR.cur.mode !== mode){
-    NEAR.cur = {mode, prev, fr:[]};
+    NEAR.cur = {mode, prev, fr:[], firstRec:null};
     NEAR.blocks.push(NEAR.cur);
     NEAR.n = 0; NEAR.work = {}; NEAR.warm = 0; NEAR.bakeN = 0; NEAR.bakeS = 0;
   }
@@ -28,7 +28,11 @@ function nearBake(sync){ if(NEAR.on){ NEAR.bakeN++; if(sync) NEAR.bakeS++; } }
 function nearPipe(){ if(NEAR.on) NEAR.pipes++; }
 function nearCave(){ if(NEAR.on) NEAR.cave++; }
 function nearFrame(rec){
-  if(!NEAR.on || !NEAR.cur || NEAR.n >= NEAR.maxFrames) return;
+  if(!NEAR.on || !NEAR.cur) return;
+  /* первый кадр блока помним всегда, даже если кадров больше не будет: тяжёлый первый
+     кадр Surface и есть предмет замера, а счётчик NEAR.n при нём почти не растёт */
+  if(!NEAR.cur.firstRec) NEAR.cur.firstRec = rec;
+  if(NEAR.n >= NEAR.maxFrames) return;
   const fr = NEAR.cur.fr, prev = fr.length ? fr[fr.length - 1] : null;
   NEAR.n++; NEAR.frameN++;
   rec.i = NEAR.frameN;
@@ -58,12 +62,12 @@ function nearJSON(){
     }
     const work = {};
     for(const f of b.fr) for(const k in (f.work || {})) if(!(work[k] >= f.work[k])) work[k] = f.work[k];
-    return {mode:b.mode, prev:b.prev, frames:b.fr.length,
+    return {mode:b.mode, prev:b.prev, frames:b.fr.length, first:b.firstRec,
       gap:nearStat(g), js:nearStat(j), long, jsLong, work,
       worstGap:b.fr.slice().sort((a, z) => z.gap - a.gap).slice(0, 8),
       worstJs:b.fr.slice().sort((a, z) => z.js - a.js).slice(0, 8),
       worstDw:b.fr.slice().sort((a, z) => (z.dw || 0) - (a.dw || 0)).slice(0, 8)};
   });
   return {dpr:devicePixelRatio, maxFrames:NEAR.maxFrames, blocks,
-    pipes:NEAR.pipes, cave:NEAR.cave, runs:NEAR.runs};
+    pipes:NEAR.pipes, cave:NEAR.cave, runs:NEAR.runs, crash:NEAR.crash, frameCalls:NEAR.frameCalls, rafSched:NEAR.rafSched};
 }

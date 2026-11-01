@@ -659,6 +659,8 @@ function crashSay(e,where){
     (e&&e.message)||String(e),crashStack(e));
   let m="";
   try{m=(e&&e.message)||String(e);}catch(_){m="?";}
+  /* ?g11=near: сбой кадра — это и есть объяснение «кадра нет»; пишем его в диагностику */
+  try{if(typeof NEAR!=="undefined"&&NEAR.on)NEAR.crash=String(m).slice(0,240)+" @"+String(where||"");}catch(_){}
   const at=crashAt(e);
   if(at)m+=" · "+at;
   if(where)m+=" · "+where;
@@ -705,6 +707,9 @@ function frame(now){
      `frameLastAt=0` на возврате, и первый кадр после возврата не мерится. */
   const framePrev=frameLastAt;
   frameLastAt=now;
+  /* ?g11=near: считаем сами вызовы кадра — если после смены режима счётчик стоит,
+     значит rAF не приходит, и это не «долгий кадр», а остановка цикла */
+  if(NEAR.on)NEAR.frameCalls=(NEAR.frameCalls||0)+1;
   if(framePrev&&now-framePrev>2000)crashShip("stall","кадр стоял "+((now-framePrev)|0)+" мс","",stallWho(framePrev,now));
   /* пульс: раз в три минуты, потом раз в десять — версия, режим, средний fps,
      окно. Не ошибка, а мерка с настоящих телефонов: «60 fps в девяти режимах»
@@ -735,12 +740,13 @@ function frame(now){
     nearBlock(G.mode,pm);
     nearFrame({raf:now,start:fb0,end:fb0+FRAME_JS,js:FRAME_JS,gap:(framePrev?now-framePrev:0),
       vis:(typeof document!=="undefined"&&document.visibilityState)||"?",mode:G.mode,prev:pm,
-      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,rackB:NEAR.rackB,rackT:NEAR.rackT,rackF:NEAR.rackF,wSun:NEAR.wSun,wScene:NEAR.wScene,wGpu:NEAR.wGpu,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
+      sw:NEAR.sw,gf:NEAR.gf,dw:NEAR.dw,rack:NEAR.rack,hit:NEAR.hit,dwAll:NEAR.dwAll,rackB:NEAR.rackB,rackT:NEAR.rackT,rackF:NEAR.rackF,wSun:NEAR.wSun,wScene:NEAR.wScene,wGpu:NEAR.wGpu,wLand:NEAR.wLand,wStep:NEAR.wStep,wPlant:NEAR.wPlant,wBatch:NEAR.wBatch,hud:NEAR.hud,gp:NEAR.gp,wp:NEAR.wp,
       warm:NEAR.warm,bake:NEAR.bakeN,bakeS:NEAR.bakeS,work:NEAR.work,
       asave:NEAR.asave,ticks:NEAR.ticks,vin:NEAR.vin,vout:NEAR.vout,sl:NEAR.sl,sg:NEAR.sg,dg:NEAR.dg,gw:NEAR.gw,
       pipes:NEAR.pipes,cave:NEAR.cave});}
   tactWork(FRAME_JS);   /* средняя работа кадра решает, можно ли 120 (0.1b) */
   FRAME_IN=false;   /* дальше до следующего кадра говорят нажатия — это отклик, а не голос мира */
+  if(NEAR.on)NEAR.rafSched=(NEAR.rafSched||0)+1;
   requestAnimationFrame(frame);
 }
 /* то же для ошибок вне кадра: обработчик нажатия, ответ сервера, таймер.

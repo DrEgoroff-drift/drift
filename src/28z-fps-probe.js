@@ -167,16 +167,30 @@ async function g11RunNear(){
       ["surface",()=>{const _t=NEAR.on?wallMs():0;const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
         if(NEAR.on)NEAR.runs.find2=Math.round((wallMs()-_t)*10)/10;jump(s);const p=s.planets.find(p=>p.type==="jungle")||s.planets.find(p=>p.type!=="gas");
         const _t2=NEAR.on?wallMs():0;const tr=genTerrain(p);if(NEAR.on)NEAR.runs.terr=Math.round((wallMs()-_t2)*10)/10;G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
-        const _t3=NEAR.on?wallMs():0;enterSurface();if(NEAR.on)NEAR.runs.enter=Math.round((wallMs()-_t3)*10)/10;}],
+        const _t3=NEAR.on?wallMs():0;/* БЕЗ startLanding: G.land и G.land.pre считаем вручную —
+          так отделяем «виноват startLanding» от «виноват сам переход в surface» */
+        try{
+          const tr2=genTerrain(p);genPOI(tr2,p);genDeco(tr2,p);
+          G.land={p,tr:tr2,x:tr2.padX,y:groundAt(tr2,tr2.padX),vx:0,vy:0,a:0,gear:1,sq:0,sqv:0,hot:0,
+            g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:true,auto:true,hi:150};
+          G.land.pre=surfGen(tr2,p);
+          enterSurface();if(NEAR.on)NEAR.runs.enter=Math.round((wallMs()-_t3)*10)/10;
+          if(NEAR.on){NEAR.runs.surfMode=String(G.mode);NEAR.runs.surfHas=!!G.surf;
+            NEAR.runs.surfTr=!!(G.surf&&G.surf.tr);NEAR.runs.surfP=!!(G.surf&&G.surf.p);
+            NEAR.runs.plnOn=!!(typeof PLN!=="undefined"&&PLN.on);NEAR.runs.plnBad=(typeof PLN!=="undefined")?PLN.bad:-1;
+            NEAR.runs.noStartLanding=1;}
+        }catch(e){err.push("surface: "+((e&&e.message)||e));if(NEAR.on)NEAR.runs.surfMode="EXC";}}],
       ["dig",()=>{enterDig();}],
       ["cave",()=>{G.mode="surface";enterCave();}],
       ["landing-warm",()=>{const s=find(s=>s.planets.some(p=>p.type!=="gas"));jump(s);
         startLanding(s.planets.find(p=>p.type!=="gas"));}]
     ];
     for(const r of runs){try{r[1]();}catch(e){err.push(r[0]+": "+(e&&e.message||e));}
-      /* ждём блок, но с потолком по времени: чистые 240 кадров на 240 Гц — это ~1 с,
-         и шесть блоков уже не влезают в окно стенда (near-run-07 дал 1 блок) */
-      for(let w=0;w<200&&NEAR.n<200;w++)await sleep(10);
+      /* 40 кадров блока, а не 200: блок landing уходит в `return "warm"` на первых
+         кадрах и при ожидании 200 съедает всё окно стенда (near-run-10/11 — один блок) */
+      for(let w=0;w<300&&NEAR.n<40;w++)await sleep(10);
+      /* сколько вызовов кадра пришлось на прогон: ноль прироста = rAF не приходит */
+      if(NEAR.on){NEAR.runs["fc_"+r[0]]=NEAR.frameCalls;NEAR.runs["rs_"+r[0]]=NEAR.rafSched;NEAR.runs["run_"+r[0]]=G&&G.running?1:0;}
       put(r[0]+" · кадров "+NEAR.n);}
   }catch(e){err.push(""+(e&&e.message||e));}
   const J=nearJSON();J.err=err;J.ua=navigator.userAgent.slice(0,80);
