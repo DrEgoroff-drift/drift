@@ -97719,7 +97719,9 @@ function caveTick(ms){
   }catch(e){st.P={C:null,done:true,put:{}};console.error("пещера заранее",e);}
   return true;
 }
-workAdd("cave",4,()=>G.mode==="surface",ms=>caveTick(ms));
+/* пещеру собираем уже в системе: игрок летает там минутами, а вход в шахту должен быть сразу.
+   На поверхности условие остаётся — догружаем, если не успели */
+workAdd("cave",4,()=>G.mode==="surface"||G.mode==="system",ms=>caveTick(ms));
 function cave3Frame(){
   const t0=wallMs(),C=G.cave,Fd=cave3Field(C),M=CAVE3,Ln=CAVE3_LENS;
   if(C.cy==null)C.cy=C.y;
