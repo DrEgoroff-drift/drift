@@ -65518,6 +65518,18 @@ function giantsAll(){
 function giantAt(sx,sy){for(const g of giantsAll())if(g.sx===sx&&g.sy===sy)return g;return null;}
 /* в системе: далеко от звезды, по зерну */
 function giantPos(g){const a=(g.seed%628)/100,R=2600;return {x:Math.cos(a)*R,y:Math.sin(a)*R,a};}
+/* тело великана — то, во что можно врезаться и что рисуется глыбой (15-input, 17-mode-system).
+   Центр — giantPos, радиус — половина длины глыбы: та же мера, которой меряется стыковка */
+function giantBody(g){
+  if(!g)return null;
+  const P=giantPos(g);
+  return {x:P.x,y:P.y,a:P.a,radius:(typeof GIANT_LEN==="number"?GIANT_LEN:1300)/2,g};
+}
+/* орбита великана в полёте (16-flight): отдаём ту же точку, что и тело */
+function giantOrbit(p){
+  const g=(p&&p.giant)||giantAt(G.sx,G.sy);
+  return g?giantPos(g):null;
+}
 /* ── карта: у каждого великана свой значок (D26) ── */
 function giantMapGlyph(k,x,y,r,col){   /* пером карты (17z4), обвод 1.3 */
   const w=1.3;
