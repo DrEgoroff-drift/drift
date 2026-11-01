@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 685 · top-level symbols: 8936
+Files: 685 · top-level symbols: 8938
 
 ## SYMBOLS
 
@@ -1684,6 +1684,7 @@ PLAN_MOD_DENS                src/27jb-kb.js:412
 PLAN_WANT                    src/05e-plan.js:78
 PLAYHOUR_HOOKS               src/28v-playhour.js:18-29
 PLN                          src/21p-pln.js:15
+PLNBODY                      src/21pg-pln-flora.js:280
 PLN_ACT                      src/21pif-pln-marks-act.js:18
 PLN_ACTS                     src/21pz-pln-frame.js:46
 PLN_ACT_DRILL_WRITE          src/21pif-pln-marks-act.js:275
@@ -6804,6 +6805,7 @@ plnBez                       src/21pa-pln-mesh.js:195-199
 plnBlob                      src/21pa-pln-mesh.js:71-115
 plnBlobSort                  src/21pe-pln-gpu.js:370-381
 plnBodies                    src/21pz-pln-frame.js:84-110
+plnBodyTick                  src/21pg-pln-flora.js:281-303
 plnBox                       src/21pf-pln-land.js:67-74
 plnBoxF                      src/21pf-pln-land.js:82-87
 plnCard                      src/21pa-pln-mesh.js:188-193
@@ -10157,7 +10159,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/21pfb-pln-land-mesh.js · 6 KB
 
-## src/21pg-pln-flora.js · 19 KB
+## src/21pg-pln-flora.js · 20 KB
   · планета: набор тел — трава, цветок, камень, скала, розетка, куст, дерево (M611):1
 
 ## src/21pga-pln-plant.js · 39 KB

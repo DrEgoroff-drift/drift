@@ -268,3 +268,37 @@ function plnKitTick(ms){
   try{return plnFloraKitStep(ms>0?ms:PLN_KIT_MS);}catch(e){PLN_FLORA.job=null;console.error("набор флоры заранее",e);return false;}
 }
 workAdd("flora",3,()=>G.mode==="system",ms=>plnKitTick(ms));
+
+/* ── всё про планеты системы — заранее ──
+   Игрок летает в системе минутами, а посадка на любую из них должна быть мгновенной.
+   Здесь по одной планете за проход (3 мс бюджета) считаем то, что сейчас считается
+   в момент нажатия «авто-посадка»: рельеф (genTerrain), залежи/флору/фауну (surfGen)
+   и ленту земли (plnLandMake). Результат кладём в тот же кэш, откуда его берут
+   startLanding и plnSurface — повторно не считается.
+   Лента самая дорогая (десятки мс), поэтому проход идёт по шагам: сначала рельеф
+   и вещи, следующим проходом — лента. */
+const PLNBODY={i:0,tr:null,phase:0};
+function plnBodyTick(ms){
+  const S=G.sys;
+  if(!S||!S.planets||!S.planets.length)return false;
+  const budget=ms>0?ms:2, t0=wallMs();
+  while(wallMs()-t0<budget){
+    if(PLNBODY.i>=S.planets.length){PLNBODY.i=0;PLNBODY.tr=null;PLNBODY.phase=0;return false;}
+    const p=S.planets[PLNBODY.i];
+    if(!p){PLNBODY.i++;continue;}
+    /* 0 — рельеф и вещи земли; 1 — лента земли */
+    if(PLNBODY.phase===0){
+      if(!p.__gr){p.__gr=genTerrain(p);try{p.__gs=surfGen(p.__gr,p);}catch(_){p.__gs=null;}}
+      PLNBODY.phase=1;
+    }else{
+      if(p.__gr&&!PLN_LAND.cur){
+        try{plnLandMake(p.__gr,p,p.__gr.padX);}catch(_){}
+      }
+      p.__gr=null;p.__gs=null;
+      PLNBODY.i++;PLNBODY.phase=0;
+      if(wallMs()-t0>=budget)break;
+    }
+  }
+  return true;
+}
+workAdd("plnbody",2,()=>G.mode==="system",ms=>plnBodyTick(ms));
