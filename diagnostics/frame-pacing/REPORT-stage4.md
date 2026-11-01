@@ -113,6 +113,22 @@ measure JS command-recording only.
 a real visible-window trace for the five scenes, and the control run without diagnostics, are
 still owed. Recorded here as an open item, not as a result.
 
+**GPU timings are real now** (`gpuTs`, `near-run-09`, `gpuTsOk: true`):
+
+| pass | ms |
+|---|---:|
+| `frame` (whole) | 0.84 |
+| `sum` | 0.8 |
+| `motes` | 0.21 |
+| `nebComp` / `nebHalf` / `nebGen` | 0.15 / 0.14 / 0.07 |
+| `final` | 0.08 |
+| `bloomDown` + `bloomUp` | 0.05 + 0.01 = **0.06** |
+| `ovl` | 0.01 |
+| `hull3d` | 0.02 |
+
+So the GPU side of the whole frame is **0.84 ms**, and the bloom is **0.06 ms** of it — neither 8
+nor 0. The earlier `gw.bloom = 0` was JS command-recording only; this table replaces that guess.
+
 ---
 
 ## 8. Normal mode vs diagnostic mode
