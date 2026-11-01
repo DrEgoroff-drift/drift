@@ -88297,7 +88297,9 @@ function plnManBuild(P,low,D){
   part(1,m=>{
     plnBlob(m,{c:[0,.30,0],r:[.24,.29,.21],box:.5,sub:2,col:u=>u[1]<-.6?suitD:suit,mat:M,x:.3});
     belt(m,.55,.16,.035,joint,.35);
-    plnBlob(m,{c:[.22,.32,0],r:[.05,.09,.08],box:.4,sub:2,col:P.torso.main,mat:M,x:.35});
+    /* панель на подложке: без рамки серая коробка читалась наклейкой на комбинезоне */
+    plnBlob(m,{c:[.203,.32,0],r:[.060,.104,.094],box:.45,sub:1,col:P.torso.dark,mat:M,x:.30});
+    plnBlob(m,{c:[.228,.32,0],r:[.048,.086,.076],box:.42,sub:1,col:P.torso.main,mat:M,x:.36});
     if(!bare){
     plnBlob(m,{c:[-.31,.28,0],r:[.14,.26,.19],box:.45,sub:2,col:u=>u[0]<-.6?P.pack.dark:lit(P.pack.main),mat:M,x:.25});
     for(const z of [-.09,.09])plnTube(m,{path:[[-.46,.04,z],[-.46,.52,z]],rad:.062,sides:10,col:P.pack.dark,mat:M,x:.45,cap:true});
@@ -88364,9 +88366,9 @@ function plnManBuild(P,low,D){
       plnBlob(m,{c:[.01,-.315,0],r:[.07,.085,.06],sub:1,lean:.25,col:P.gloves.main,mat:M,x:.2});
       /* пальцы: до этого кисть была одним блобом и читалась рукавицей. Четыре коротких
          трубки по кромке ладони и большой сбоку — тот же материал, та же палитра */
-      for(let f=0;f<4;f++){const dx=(f-1.5)*.026,dy=-.372-f*.004;
-        plnTube(m,{path:[[dx,dy,0],[dx-.002,dy-.050,-.006]],rad:t=>lerp(.013,.010,t),
-          sides:5,col:P.gloves.main,mat:M,x:.22,cap:true});}
+      for(let f=0;f<4;f++){const dx=(f-1.5)*.030,dz=(f-1.5)*.008,dy=-.368-f*.003;
+        plnTube(m,{path:[[dx,dy,dz*.35],[dx+dz*.6,dy-.058,dz]],rad:t=>lerp(.016,.011,t),
+          sides:6,col:P.gloves.main,mat:M,x:.22,cap:true});}
       plnTube(m,{path:[[-.050,-.300,.016],[-.062,-.352,.030]],rad:t=>lerp(.016,.012,t),
         sides:5,col:P.gloves.main,mat:M,x:.22,cap:true});
     });
