@@ -23,7 +23,7 @@ suite("персонажи: импорт, позы и оснащение",()=>{
   const P=plnManPalette(),m=mechManBuild(P,false),bare=mechManBuild(P,false,{dress:"bare"});
   ok(m.parts.some(q=>q.dyn==="tool"),"бур сохранён");
   ok(m.parts.some(q=>q.dyn==="flame"),"факел сохранён");
-  ok(m.parts.some(q=>q.dyn==="mechskin"),"плавные сгибы подключены");
+  ok(m.parts.some(q=>q.bone===2)&&m.parts.some(q=>q.bone===10),"шлем и перчатки на риге");
   ok(!bare.parts.some(q=>q.dyn==="flame"),"в жилом отсеке нет факела");
   const Q=mechManData();
   for(const key of ["air","jet","fall","drill","sit"]){

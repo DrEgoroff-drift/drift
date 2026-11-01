@@ -27,6 +27,8 @@ function mechManColour(P,D,Q,i,C){
   return cloth;
 }
 function mechManBuild(P,low,D){
+  /* Цельный герметичный скафандр: чистая геометрия на штатном риге. */
+  if(!D||!D.dress||D.dress==="suit")return plnManBuild(P,low,D);
   if(D&&D.dress&&D.dress!=="suit"&&D.dress!=="bare")return plnManBuild(P,low,D);
   const Q=mechManData(),parts=[],groups=Array.from({length:14},()=>[]),suited=!D||!D.dress||D.dress==="suit";
   const C=plnDressCols(D||{dress:"bare"}),colours=Array.from({length:Q.n},(_,i)=>mechManColour(P,D,Q,i,C));

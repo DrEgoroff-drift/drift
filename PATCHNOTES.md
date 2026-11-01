@@ -1,3 +1,7 @@
+## 0.499.107 — sealed field suit
+
+Rebuilt the suited player with clean articulated geometry: a closed visor, smoother orange shell, smaller backpack, shorter glove fingers and compact boots. Preserves equipment colours, headlamp, drill and jet animations. The unsuited mechanic remains available indoors.
+
 # Drift — patch notes
 
 The game version is shown on the title screen. It has nothing to do with the save format

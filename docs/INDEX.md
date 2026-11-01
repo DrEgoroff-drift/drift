@@ -6117,10 +6117,10 @@ mayakRec                     src/12pa-beacon.js:38-42
 mayakSector                  src/12pa-beacon.js:60-63
 mayakSold                    src/12pa-beacon.js:49-52
 mayakTick                    src/12pa-beacon.js:125-140
-mechManBuild                 src/21phb-mech-man.js:29-112
+mechManBuild                 src/21phb-mech-man.js:29-114
 mechManColour                src/21phb-mech-man.js:7-28
 mechManData                  src/21phb-mech-man.js:6
-mechManSkin                  src/21phb-mech-man.js:114-124
+mechManSkin                  src/21phb-mech-man.js:116-126
 mercFee                      src/12a-crew.js:218
 mergeKeyMap                  src/15-input.js:126-135
 meshBox                      src/12y2b-site-bird.js:12-21
