@@ -291,3 +291,12 @@ img.zoomable{cursor:zoom-in}
 .lb .nav:hover{color:var(--text)}
 .lb .prev{left:4px}.lb .next{right:4px}
 @media(max-width:700px){.lb .nav{font-size:26px;padding:10px 8px}}
+
+/* Public alpha: a clear invitation to play and report what fails. */
+.alpha-dot{display:inline-block;width:8px;height:8px;background:var(--phos);border-radius:50%;box-shadow:0 0 16px rgba(127,230,216,.6);margin-right:8px}
+.alpha-hero-note{max-width:42em;margin-top:22px;color:var(--text);font-size:14px;line-height:1.6}
+.alpha-invite{max-width:var(--max);margin:0 auto;padding:64px var(--gut);display:grid;grid-template-columns:1fr 1.2fr;gap:56px;border-bottom:1px solid var(--line)}
+.alpha-invite h2{font-size:clamp(28px,3.5vw,42px);margin:0}
+.alpha-invite-copy p{color:var(--text);max-width:42em;line-height:1.7;margin-bottom:24px}
+.alpha-invite-copy small{display:block;color:var(--dim);font-size:12px;line-height:1.6;margin-top:18px}
+@media(max-width:720px){.alpha-invite{grid-template-columns:1fr;gap:26px;padding-top:40px;padding-bottom:40px}.alpha-invite .btns{gap:12px}.alpha-invite .btn{width:100%;justify-content:center}.hero .tag{line-height:1.7;letter-spacing:.08em}}
