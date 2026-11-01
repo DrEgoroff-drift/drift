@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 685 · top-level symbols: 8945
+Files: 685 · top-level symbols: 8947
 
 ## SYMBOLS
 
@@ -879,17 +879,18 @@ GPU_FRONT_LIKE               src/08b-gpu.js:545
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:162
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:136
-GPU_LATE_GAP                 src/08b0-gpu-pipe.js:114
-GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:107
-GPU_LATE_KEYS                src/08b0-gpu-pipe.js:94-121
+GPU_LATE_CACHE               src/08b0-gpu-pipe.js:58
+GPU_LATE_GAP                 src/08b0-gpu-pipe.js:127
+GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:120
+GPU_LATE_KEYS                src/08b0-gpu-pipe.js:107-134
 GPU_LIT_DK                   src/17c-system-draw.js:23
 GPU_LIT_SH                   src/17c-system-draw.js:21
 GPU_MIP_LOD                  src/08c-gpu-kit.js:161
 GPU_OPQ                      src/21pe-pln-gpu.js:229
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-72
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-102
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:50
-GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:42-63
+GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:42-65
 GPU_PL_WGSL                  src/08b-gpu.js:497
 GPU_POST_WGSL                src/08b-gpu.js:80
 GPU_SCR                      src/08c-gpu-kit.js:143
@@ -4755,7 +4756,7 @@ gplSun                       src/17ga-gpu-planets.js:334-337
 gpsBake                      src/17gb-gpu-planet-strip.js:106-122
 gpsDesc                      src/17gb-gpu-planet-strip.js:98
 gpsPipe                      src/17gb-gpu-planet-strip.js:100-104
-gpuAfterWarm                 src/08b0-gpu-pipe.js:80-84
+gpuAfterWarm                 src/08b0-gpu-pipe.js:93-97
 gpuArena                     src/08c-gpu-kit.js:125-135
 gpuBake                      src/08ca-gpu-canvas.js:529-534
 gpuBakeDrop                  src/08ca-gpu-canvas.js:545
@@ -4791,7 +4792,8 @@ gpuImage                     src/08c-gpu-kit.js:207-220
 gpuImgBind                   src/08c-gpu-kit.js:200-206
 gpuImgLayout                 src/08c-gpu-kit.js:192-199
 gpuKitU                      src/08c-gpu-kit.js:145-150
-gpuLateGap                   src/08b0-gpu-pipe.js:115-121
+gpuLateGap                   src/08b0-gpu-pipe.js:128-134
+gpuLateRecipe                src/08b0-gpu-pipe.js:59-65
 gpuLight                     src/08b-gpu.js:480
 gpuLitSprite                 src/17c-system-draw.js:176-191
 gpuLtWrite                   src/08b-gpu.js:484-492
@@ -4810,12 +4812,12 @@ gpuOver                      src/08b-gpu.js:617-637
 gpuPass                      src/08b-gpu.js:466-469
 gpuPipe                      src/08c-gpu-kit.js:22-26
 gpuPipeDesc                  src/08c-gpu-kit.js:27-32
-gpuPipeRecipe                src/08b0-gpu-pipe.js:55-63
+gpuPipeRecipe                src/08b0-gpu-pipe.js:66-76
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
 gpuPipes                     src/08b-gpu.js:378-399
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
-gpuPipesLate                 src/08b0-gpu-pipe.js:122-141
-gpuPipesWarm                 src/08b0-gpu-pipe.js:66-78
+gpuPipesLate                 src/08b0-gpu-pipe.js:135-154
+gpuPipesWarm                 src/08b0-gpu-pipe.js:79-91
 gpuPirateBody                src/12i-pirate-hull.js:434-445
 gpuPirateLive                src/12i-pirate-hull.js:452-498
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
@@ -9096,9 +9098,9 @@ zoomTo                       src/15-input.js:358
 ## src/08b-gpu.js · 58 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08b0-gpu-pipe.js · 13 KB
+## src/08b0-gpu-pipe.js · 14 KB
   · конвейеры: одна воронка и прогрев (DESIGN-gpu §G):1
-  · поздний прогрев: конвейеры режимов:85
+  · поздний прогрев: конвейеры режимов:98
 
 ## src/08b1-gpu-pipe-keys.js · 2 KB
   · таблица ключей прогрева (08b0) — пишет детектор, руками не править:1

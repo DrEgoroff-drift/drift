@@ -12249,6 +12249,17 @@ const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.ma
 /* камни и пыль пояса (24be): три конвейера, каждый в двух видах — ×4 (ПК) и ×1 (телефон) */
 for(const k of ["rock","rockf","dust"])for(const m of ["","4"])GPU_PIPE_ONE["belt."+k+m]=()=>brockPipeDesc("belt."+k+m);
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
+/* поздние группы (21pe: конвейеры поверхности) отдают рецепты не сюда, а списком
+   при вызове — собираем их один раз на устройство, иначе детектор «ключи таблицы
+   собираются по рецепту» не видит pln.* и ругается на них */
+let GPU_LATE_CACHE=null,GPU_LATE_DEV=null;
+function gpuLateRecipe(key){
+  if(typeof GPU_LATE_GROUPS==="undefined"||!GPU_LATE_GROUPS.length)return null;
+  if(GPU_LATE_DEV!==GPU.dev){GPU_LATE_DEV=GPU.dev;GPU_LATE_CACHE=new Map();
+    for(const g of GPU_LATE_GROUPS){let a=null;try{a=g();}catch(_){a=null;}
+      if(a)for(const [k,o] of a)GPU_LATE_CACHE.set(k,o);}}
+  return GPU_LATE_CACHE.get(key)||null;
+}
 function gpuPipeRecipe(key){
   if(key.startsWith("gc:"))return {desc:gcPipeDesc(key.slice(3))};
   if(key.startsWith("gc1:"))return {desc:gcPipeDesc(key.slice(4),1)};   /* крупный набор без MSAA (08ca) */
@@ -12256,7 +12267,9 @@ function gpuPipeRecipe(key){
     const a=key.slice(5),i=a.lastIndexOf("|"),s=GPU_PIPE_SRC[a.slice(0,i)];if(!s)return null;
     const [code,lay]=s();return {desc:gpuPipeDesc(code,a.slice(i+1),lay),code};
   }
-  const f=GPU_PIPE_ONE[key];return f?{desc:f()}:null;
+  const f=GPU_PIPE_ONE[key];if(f)return {desc:f()};
+  const late=gpuLateRecipe(key);if(late)return {desc:late.desc};
+  return null;
 }
 /* прогрев: все ключи таблицы — createRenderPipelineAsync, кадр не ждёт. Потолок держит тот,
    кто ждёт (старт полёта, обвязка тестов): под виртуальным временем таймер здесь сработал бы сразу */
@@ -12376,24 +12389,32 @@ const GPU_PIPE_KEYS=[
   "ovl",
   "par",
   "par.add",
-  "r3.vol",
   "pipe:fld.abil.cone|over",
   "pipe:fld.belt.rocklay|over",
   "pipe:fld.belt.sky|over",
   "pipe:fld.gbm|add",
   "pipe:fld.gew|over",
-  "pipe:fld.gnb.emi|add","pipe:fld.gnb.emih|bake","pipe:fld.gnb.up|add",
+  "pipe:fld.gnb.emih|bake",
+  "pipe:fld.gnb.emi|add",
+  "pipe:fld.gnb.up|add",
   "pipe:fld.gst|hull",
   "pipe:fld.gsy.belt|over",
-  "pipe:fld.gsy.star|over","pipe:fld.gsy.starn|bake",
+  "pipe:fld.gsy.starn|bake",
+  "pipe:fld.gsy.star|over",
   "pipe:fld.hgflame|add",
+  "pipe:fld.map.gal|bake",
+  "pipe:fld.map.gal|over",
+  "pipe:fld.r3post|over",
   "pipe:fld.rail.fx|add",
   "pipe:gen|over",
   "pipe:gex|over",
   "pipe:gnb.stars|over",
   "pipe:gor0|over",
+  "pipe:gor1|over",
+  "pipe:gor2|over",
   "pipe:gor3|over",
   "pipe:gor4|over",
+  "pipe:gor6|over",
   "pipe:gor7|over",
   "pipe:gor8|over",
   "pipe:gsp.dust|over",
@@ -12407,6 +12428,28 @@ const GPU_PIPE_KEYS=[
   "pipe:kit.img|shade",
   "pipe:kit.shp|add",
   "pipe:kit.shp|over",
+  "pln.blur.4",
+  "pln.body1",
+  "pln.body4",
+  "pln.bodyo1",
+  "pln.bodyo4",
+  "pln.comp.4",
+  "pln.down.4",
+  "pln.shadow",
+  "pln.shafts.4",
+  "pln.sky1",
+  "pln.sky4",
+  "pln.up.4",
+  "pln.veil1",
+  "pln.veil4",
+  "pln.water1",
+  "pln.water4",
+  "pln.wx1",
+  "pln.wx4",
+  "r3.down",
+  "r3.main",
+  "r3.shadow",
+  "r3.vol",
   "rig.card"
 ];
 

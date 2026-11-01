@@ -52,6 +52,17 @@ const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.ma
 /* камни и пыль пояса (24be): три конвейера, каждый в двух видах — ×4 (ПК) и ×1 (телефон) */
 for(const k of ["rock","rockf","dust"])for(const m of ["","4"])GPU_PIPE_ONE["belt."+k+m]=()=>brockPipeDesc("belt."+k+m);
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
+/* поздние группы (21pe: конвейеры поверхности) отдают рецепты не сюда, а списком
+   при вызове — собираем их один раз на устройство, иначе детектор «ключи таблицы
+   собираются по рецепту» не видит pln.* и ругается на них */
+let GPU_LATE_CACHE=null,GPU_LATE_DEV=null;
+function gpuLateRecipe(key){
+  if(typeof GPU_LATE_GROUPS==="undefined"||!GPU_LATE_GROUPS.length)return null;
+  if(GPU_LATE_DEV!==GPU.dev){GPU_LATE_DEV=GPU.dev;GPU_LATE_CACHE=new Map();
+    for(const g of GPU_LATE_GROUPS){let a=null;try{a=g();}catch(_){a=null;}
+      if(a)for(const [k,o] of a)GPU_LATE_CACHE.set(k,o);}}
+  return GPU_LATE_CACHE.get(key)||null;
+}
 function gpuPipeRecipe(key){
   if(key.startsWith("gc:"))return {desc:gcPipeDesc(key.slice(3))};
   if(key.startsWith("gc1:"))return {desc:gcPipeDesc(key.slice(4),1)};   /* крупный набор без MSAA (08ca) */
@@ -59,7 +70,9 @@ function gpuPipeRecipe(key){
     const a=key.slice(5),i=a.lastIndexOf("|"),s=GPU_PIPE_SRC[a.slice(0,i)];if(!s)return null;
     const [code,lay]=s();return {desc:gpuPipeDesc(code,a.slice(i+1),lay),code};
   }
-  const f=GPU_PIPE_ONE[key];return f?{desc:f()}:null;
+  const f=GPU_PIPE_ONE[key];if(f)return {desc:f()};
+  const late=gpuLateRecipe(key);if(late)return {desc:late.desc};
+  return null;
 }
 /* прогрев: все ключи таблицы — createRenderPipelineAsync, кадр не ждёт. Потолок держит тот,
    кто ждёт (старт полёта, обвязка тестов): под виртуальным временем таймер здесь сработал бы сразу */
