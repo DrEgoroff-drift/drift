@@ -26,14 +26,10 @@ function startLanding(p){
   {const _t=NEAR.on?wallMs():0;genDeco(tr,p);if(NEAR.on)NEAR.sl.deco=Math.round((wallMs()-_t)*10)/10;}
   G.ap=null;
   {const _t=NEAR.on?wallMs():0;skyReroll(p);if(NEAR.on)NEAR.sl.sky=Math.round((wallMs()-_t)*10)/10;}           /* состав неба — свой на каждую посадку (19ca) */
-  /* автопосадка — сразу на площадку (автор 01.11: «я жму кнопку и жду, хочу сразу»):
-     спуск остаётся ручной посадке, где он и есть игра. Всё, что нужно для кадра
-     поверхности, уже посчитано заранее (plnbody), поэтому кадр ставится сразу */
-  const auto=G.opts.easyLand;
-  const x0=auto?tr.padX:tr.padX+(r()-.5)*640;
-  G.land={p,tr,x:x0,y:auto?groundAt(tr,x0)-11:landStartY(tr,x0),
+  const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
+  G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
-    g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto};
+    g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
   /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
   {const _t=NEAR.on?wallMs():0;G.land.pre=surfGen(tr,p);if(NEAR.on)NEAR.sl.pre=Math.round((wallMs()-_t)*10)/10;}
   G.mode="landing";

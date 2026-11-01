@@ -37,7 +37,6 @@ const GPU_PIPE_KEYS=[
   "ovl",
   "par",
   "par.add",
-  "r3.vol",
   "pipe:fld.abil.cone|over",
   "pipe:fld.belt.rocklay|over",
   "pipe:fld.belt.sky|over",
