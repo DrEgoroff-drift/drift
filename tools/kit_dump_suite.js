@@ -19,7 +19,9 @@ suite("zz-dump-kit", () => {
       const m = fn();
       out[name] = {
         vs: 12, len: m.len || 0, R: m.R || 0,
-        v: Array.prototype.slice.call(m.v || m.V || []).map(x => Math.round(x * 1e4) / 1e4)
+        v: Array.prototype.slice.call(m.v || m.V || []).map(x => Math.round(x * 1e4) / 1e4),
+        // у h3dPack есть индексный буфер: без него вершины подряд — мусор
+        i: Array.prototype.slice.call(m.i || m.I || [])
       };
     } catch (e) {
       out[name] = { err: String((e && e.message) || e) };
