@@ -33,11 +33,14 @@ function startLanding(p){
      точное равенство по границе ступени промахивалось бы. Мир при этом остаётся
      свой на каждую сторону захода, просто шаг чуть крупнее */
   let tr=null;
-  if(p.__tr&&(p.__tr.lon===lon||Math.abs((p.__tr.lon||0)-(lon||0))<=0.1)){tr=p.__tr;p.__tr=null;}
+  /* рельеф остаётся в кэше и после нажатия: повторная посадка на ту же планету
+     (вернулся в систему и сел снова) не должна снова платить за genTerrain */
+  if(p.__tr&&(p.__tr.lon===lon||Math.abs((p.__tr.lon||0)-(lon||0))<=0.1))tr=p.__tr;
   if(!tr)tr=genTerrain(p,lon);
   const r=rng(p.seed^0x77);
   if(NEAR.on)NEAR.sl.gen=Math.round((wallMs()-_t0)*10)/10;
   tr.lon=lon;
+  if(typeof p.__lon==="number")p.__lon=lon;
   /* достопримечательности вписываются в рельеф до того, как по нему расставят
      залежи и флору: они выравнивают под собой грунт (20a-poi) */
   {const _t=NEAR.on?wallMs():0;genPOI(tr,p);if(NEAR.on)NEAR.sl.poi=Math.round((wallMs()-_t)*10)/10;}
@@ -50,8 +53,13 @@ function startLanding(p){
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
-  /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
-  {const _t=NEAR.on?wallMs():0;G.land.pre=surfGen(tr,p);if(NEAR.on)NEAR.sl.pre=Math.round((wallMs()-_t)*10)/10;}
+  /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком.
+     Их посчитал фон (plnbody) вместе с рельефом: берём готовые, если они от этого же рельефа.
+     Кэш забираем: мир мог измениться (выработал залежь) — следующий фон посчитает заново */
+  let _pre=null;
+  if(p.__gs&&p.__gs.tr===tr)_pre=p.__gs;
+  p.__gs=null;
+  {const _t=NEAR.on?wallMs():0;G.land.pre=_pre||surfGen(tr,p);if(NEAR.on)NEAR.sl.pre=Math.round((wallMs()-_t)*10)/10;}
   G.mode="landing";
   /* заход и тяготение — табличкой на корабле (M803, drawLanding), без слоя — строкой #msg */
   G.land.hi=150;

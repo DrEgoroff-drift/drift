@@ -7,6 +7,16 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 
+## 0.499.105 — Character assets reach the public game
+
+- Published the imported mechanic, one hundred station residents and the existing site bird in the game. Includes the local 0.499.102–103 character work below, while retaining 0.499.104 planet prefetch.
+- The save format and existing saves remain unchanged.
+
+## 0.499.104 — Landing waits for nothing: the system's planets are prepared in flight
+
+- `21pg` / `19-mode-landing` / `21pf` / `21pz`: while the player flies in a system, `plnbody` prepares every planet's relief, POIs, deco and surface things, and builds the nearest planet's land strip in the same budgeted steps the descent used. «ПОСАДКА» takes the cached relief and `surfGen` and adopts the prepared strip (`plnLand`), so the descent starts at once instead of holding the system view for up to 240 frames (~4 s at 60 fps — the author's ~5 s wait). A repeat landing reuses the strip; changing the nearest planet or the system frees it (`plnLandFree`) — one land strip stays in memory.
+- New browser suite `91qo-prefetch`: the first visit, another planet, a repeat landing, a system change, and a landing before the background has finished.
+
 ## 0.499.103 — Mechanic silhouette and face restored
 
 - Replaced the mechanic's voxel-remeshed clothing with the welded source surface. Pockets, collar, folds and the original face survive simplification. Correct sRGB decoding restores eyes, eyebrows and skin contrast instead of a pale mask.
@@ -19,6 +29,7 @@ could ever save.
 - The surface mechanic retains four skin weights at moving seams instead of rigidly tearing the clothes apart. Remeshed clothing has a closed shell; offset duplicate patches are gone. The 8,520-triangle model is about 104 KB inline. The kit still supplies equipment colours; drill, lamp and jet remain connected to their original dynamic parts.
 - The parrot window uses the existing site's procedural 3D bird (`bird/` → `site/treplo3d.html`), including its body, beak, eyes, crest and individual feathers. Its geometry runs on the game's WebGPU renderer and existing behaviour state; no external Govorun GLB, separate renderer or animation loop is included. Memory, dialogue and console icon keep their existing logic.
 - Added character regression checks for complete bodies, normalized weights, valid indices, seated/walking poses, equipment and finite animated geometry. Source models and textures stay outside the repository.
+
 
 ## 0.499.101 — A hundred locked station residents
 
