@@ -69,11 +69,17 @@ for ob in meshes:
     mw = ob.matrix_world
     uv = me.uv_layers.active.data if me.uv_layers.active else None
     mats = [s.material for s in ob.material_slots] if ob.material_slots else []
-    img = image_of(mats[0]) if mats else None
-    bc = base_color(mats[0]) if mats else (0.6, 0.6, 0.6)
+    # цвет берём ПО МАТЕРИАЛУ треугольника: у фигуры их несколько (комбинезон, стекло,
+    # металл, кожа). Текстура, если она есть у материала, перебивает его базовый цвет.
+    mcache = {}
+    for mi, m in enumerate(mats):
+        img = image_of(m)
+        bc = base_color(m) if m else (0.6, 0.6, 0.6)
+        mcache[mi] = (img, bc)
     me.calc_loop_triangles()
     for tri in me.loop_triangles:
         total_tris += 1
+        img, bc = mcache.get(tri.material_index, (None, (0.6, 0.6, 0.6)))
         for li in tri.loops:
             v = me.vertices[me.loops[li].vertex_index]
             p = mw @ v.co
