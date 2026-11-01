@@ -1,4 +1,15 @@
 /* ══════════════ посадка ══════════════ */
+/* долгота захода, по которой строится мир: угол от планеты на корабль минус её поворот.
+   Квантуем — иначе предварительный прогрев (plnbody) никогда не совпадёт с нажатием
+   кнопки: корабль за кадр сдвигается на дробь, и точное равенство недостижимо.
+   126 ступеней на оборот: сторона захода по-прежнему своя, мир тот же. */
+function plnLonBucket(l){return Math.round(l/0.05)*0.05;}
+function plnLonOf(p){
+  if(!G.ship||typeof p.x!=="number")return null;
+  const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
+  const spin=(typeof planetSpinFrame==="function")?planetSpinFrame(p)/PLANET_SPIN*TAU:0;
+  return plnLonBucket(app-spin);
+}
 function startLanding(p){
   /* ── с какой стороны зашёл, туда и сядешь ──
      Раньше место посадки не зависело ни от чего: рельеф считался по одному
@@ -12,10 +23,16 @@ function startLanding(p){
     const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
     const spin=(typeof planetSpinFrame==="function")
       ? planetSpinFrame(p)/PLANET_SPIN*TAU : 0;
-    lon=app-spin;
+    lon=plnLonBucket(app-spin);
   }
   const _t0=NEAR.on?wallMs():0;
-  const tr=genTerrain(p,lon),r=rng(p.seed^0x77);
+  /* рельеф берём готовым, если его успел испечь plnbody (21pg) на ту же долготу:
+     иначе кнопка «ПОСАДКА» платит за genTerrain и ленту земли сама — это и была
+     задержка, которую автор видит как «нажал и жду» */
+  let tr=null;
+  if(p.__tr&&p.__tr.lon===lon){tr=p.__tr;p.__tr=null;}
+  if(!tr)tr=genTerrain(p,lon);
+  const r=rng(p.seed^0x77);
   if(NEAR.on)NEAR.sl.gen=Math.round((wallMs()-_t0)*10)/10;
   tr.lon=lon;
   /* достопримечательности вписываются в рельеф до того, как по нему расставят

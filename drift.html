@@ -12245,7 +12245,7 @@ const GPU_PIPE_SRC={
 for(const n in GPU_FLD)GPU_PIPE_SRC[n]=()=>[GPU_WGSL_COMMON+GPU_FLD_HEAD+GPU_FLD[n](),gpuFieldLayout()];
 /* одиночные ключи — функция дескриптора в своём модуле */
 const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),"gnb.res":()=>gnbResDesc(),"gnb.farc":()=>gnbFarcDesc(),
-  "gnb.noise":()=>gnbNoiseDesc(),"h3d.hull":()=>h3dDesc(),"h3d.pre":()=>h3dDesc("z"),"h3d.hull1":()=>h3dDesc("1"),gps:()=>gpsDesc(),ovl:()=>ovlDesc(),par:()=>parDesc(false),"par.add":()=>parDesc(true)};
+  "gnb.noise":()=>gnbNoiseDesc(),"h3d.hull":()=>h3dDesc(),"h3d.pre":()=>h3dDesc("z"),"h3d.hull1":()=>h3dDesc("1"),gps:()=>gpsDesc(),ovl:()=>ovlDesc(),par:()=>parDesc(false),"par.add":()=>parDesc(true),"r3.vol":()=>r3VolDesc()};
 /* камни и пыль пояса (24be): три конвейера, каждый в двух видах — ×4 (ПК) и ×1 (телефон) */
 for(const k of ["rock","rockf","dust"])for(const m of ["","4"])GPU_PIPE_ONE["belt."+k+m]=()=>brockPipeDesc("belt."+k+m);
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
@@ -12376,6 +12376,7 @@ const GPU_PIPE_KEYS=[
   "ovl",
   "par",
   "par.add",
+  "r3.vol",
   "pipe:fld.abil.cone|over",
   "pipe:fld.belt.rocklay|over",
   "pipe:fld.belt.sky|over",
@@ -70367,6 +70368,17 @@ function drawRocks(tr,camx,camy,pal){
 }
 
 /* ══════════════ посадка ══════════════ */
+/* долгота захода, по которой строится мир: угол от планеты на корабль минус её поворот.
+   Квантуем — иначе предварительный прогрев (plnbody) никогда не совпадёт с нажатием
+   кнопки: корабль за кадр сдвигается на дробь, и точное равенство недостижимо.
+   126 ступеней на оборот: сторона захода по-прежнему своя, мир тот же. */
+function plnLonBucket(l){return Math.round(l/0.05)*0.05;}
+function plnLonOf(p){
+  if(!G.ship||typeof p.x!=="number")return null;
+  const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
+  const spin=(typeof planetSpinFrame==="function")?planetSpinFrame(p)/PLANET_SPIN*TAU:0;
+  return plnLonBucket(app-spin);
+}
 function startLanding(p){
   /* ── с какой стороны зашёл, туда и сядешь ──
      Раньше место посадки не зависело ни от чего: рельеф считался по одному
@@ -70380,10 +70392,16 @@ function startLanding(p){
     const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
     const spin=(typeof planetSpinFrame==="function")
       ? planetSpinFrame(p)/PLANET_SPIN*TAU : 0;
-    lon=app-spin;
+    lon=plnLonBucket(app-spin);
   }
   const _t0=NEAR.on?wallMs():0;
-  const tr=genTerrain(p,lon),r=rng(p.seed^0x77);
+  /* рельеф берём готовым, если его успел испечь plnbody (21pg) на ту же долготу:
+     иначе кнопка «ПОСАДКА» платит за genTerrain и ленту земли сама — это и была
+     задержка, которую автор видит как «нажал и жду» */
+  let tr=null;
+  if(p.__tr&&p.__tr.lon===lon){tr=p.__tr;p.__tr=null;}
+  if(!tr)tr=genTerrain(p,lon);
+  const r=rng(p.seed^0x77);
   if(NEAR.on)NEAR.sl.gen=Math.round((wallMs()-_t0)*10)/10;
   tr.lon=lon;
   /* достопримечательности вписываются в рельеф до того, как по нему расставят
@@ -86828,21 +86846,35 @@ function plnBodyTick(ms){
   if(!S)S=G.sys;
   if(!S||!S.planets||!S.planets.length)return false;
   const budget=ms>0?ms:2, t0=wallMs();
+  /* ближайшая планета: её ленту земли и держим готовой (PLN_LAND.cur одна) */
+  {let b=null,bd=1e18;
+   for(const q of S.planets){if(!q||typeof q.x!=="number")continue;
+     const d=Math.hypot(G.ship.x-q.x,G.ship.y-q.y);if(d<bd){bd=d;b=q;}}
+   PLNBODY.near=b;}
   while(wallMs()-t0<budget){
     if(PLNBODY.i>=S.planets.length){PLNBODY.i=0;PLNBODY.tr=null;PLNBODY.phase=0;return false;}
     const p=S.planets[PLNBODY.i];
     if(!p){PLNBODY.i++;continue;}
-    /* 0 — рельеф и вещи земли; 1 — лента земли */
+    /* 0 — рельеф и вещи земли; 1 — лента земли.
+       Рельеф строим НА ТУ долготу, с которой его запросит startLanding (plnLonOf):
+       иначе кэш промахивался всегда и кнопка «ПОСАДКА» платила за всё сама —
+       та самая задержка «нажал и жду». Результат живёт в p.__tr до нажатия. */
     if(PLNBODY.phase===0){
-      if(!p.__gr){p.__gr=genTerrain(p);try{p.__gs=surfGen(p.__gr,p);}catch(_){p.__gs=null;}}
+      if(!p.__tr){
+        p.__tr=genTerrain(p,plnLonOf(p));
+        try{p.__gs=surfGen(p.__tr,p);}catch(_){p.__gs=null;}
+      }
+      p.__gr=p.__tr;
       PLNBODY.phase=1;
     }else{
-      if(p.__gr&&!PLN_LAND.cur){
+      /* ленту земли держим только для ближайшей планеты: PLN_LAND.cur — одна */
+      if(p.__tr&&p===PLNBODY.near&&PLN_LAND.cur!==p.__tr){
         try{
-          plnLandMake(p.__gr,p,p.__gr.padX);
+          if(PLN_LAND.cur)plnLandFree(PLN_LAND.cur);
+          plnLandMake(p.__tr,p,p.__tr.padX);
           /* флора печётся в ленту сразу: на посадке plnPlantStep уже не нужен —
              трава и деревья лежат в ломтях земли готовыми */
-          if(PLN_LAND.cur&&PLN_LAND.cur===p.__gr)try{plnPlantStep(PLN_LAND.cur,p,PLN_LAND.cur.padX,0,3);}catch(_){}
+          if(PLN_LAND.cur&&PLN_LAND.cur===p.__tr)try{plnPlantStep(PLN_LAND.cur,p,PLN_LAND.cur.padX,0,3);}catch(_){}
         }catch(_){}
       }
       p.__gr=null;p.__gs=null;

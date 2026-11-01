@@ -299,21 +299,35 @@ function plnBodyTick(ms){
   if(!S)S=G.sys;
   if(!S||!S.planets||!S.planets.length)return false;
   const budget=ms>0?ms:2, t0=wallMs();
+  /* ближайшая планета: её ленту земли и держим готовой (PLN_LAND.cur одна) */
+  {let b=null,bd=1e18;
+   for(const q of S.planets){if(!q||typeof q.x!=="number")continue;
+     const d=Math.hypot(G.ship.x-q.x,G.ship.y-q.y);if(d<bd){bd=d;b=q;}}
+   PLNBODY.near=b;}
   while(wallMs()-t0<budget){
     if(PLNBODY.i>=S.planets.length){PLNBODY.i=0;PLNBODY.tr=null;PLNBODY.phase=0;return false;}
     const p=S.planets[PLNBODY.i];
     if(!p){PLNBODY.i++;continue;}
-    /* 0 — рельеф и вещи земли; 1 — лента земли */
+    /* 0 — рельеф и вещи земли; 1 — лента земли.
+       Рельеф строим НА ТУ долготу, с которой его запросит startLanding (plnLonOf):
+       иначе кэш промахивался всегда и кнопка «ПОСАДКА» платила за всё сама —
+       та самая задержка «нажал и жду». Результат живёт в p.__tr до нажатия. */
     if(PLNBODY.phase===0){
-      if(!p.__gr){p.__gr=genTerrain(p);try{p.__gs=surfGen(p.__gr,p);}catch(_){p.__gs=null;}}
+      if(!p.__tr){
+        p.__tr=genTerrain(p,plnLonOf(p));
+        try{p.__gs=surfGen(p.__tr,p);}catch(_){p.__gs=null;}
+      }
+      p.__gr=p.__tr;
       PLNBODY.phase=1;
     }else{
-      if(p.__gr&&!PLN_LAND.cur){
+      /* ленту земли держим только для ближайшей планеты: PLN_LAND.cur — одна */
+      if(p.__tr&&p===PLNBODY.near&&PLN_LAND.cur!==p.__tr){
         try{
-          plnLandMake(p.__gr,p,p.__gr.padX);
+          if(PLN_LAND.cur)plnLandFree(PLN_LAND.cur);
+          plnLandMake(p.__tr,p,p.__tr.padX);
           /* флора печётся в ленту сразу: на посадке plnPlantStep уже не нужен —
              трава и деревья лежат в ломтях земли готовыми */
-          if(PLN_LAND.cur&&PLN_LAND.cur===p.__gr)try{plnPlantStep(PLN_LAND.cur,p,PLN_LAND.cur.padX,0,3);}catch(_){}
+          if(PLN_LAND.cur&&PLN_LAND.cur===p.__tr)try{plnPlantStep(PLN_LAND.cur,p,PLN_LAND.cur.padX,0,3);}catch(_){}
         }catch(_){}
       }
       p.__gr=null;p.__gs=null;
