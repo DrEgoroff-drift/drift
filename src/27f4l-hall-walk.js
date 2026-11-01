@@ -264,11 +264,7 @@ function hallWalkStripFill(){
 /* подписи: полоса подсвечивает место под ногами и под мышью, глагол — у места / ховера */
 function hallWalkUi(force){
   const W=HALL.walk;if(!W||typeof document==="undefined")return;
-  /* набор мест входит в ключ: полоса строится один раз в hallWalkDom, а стыковка меняет
-     станцию и её вкладки уже потом — без этого кнопка «СТОЙКА» так и не появлялась */
-  const sig=hallPlacesHere().map(p=>p.id).join(",");
-  const key=(W.at||"")+"|"+(W.eng||"")+"|"+(W.hot||"")+"|"+sig;if(!force&&W.uik===key)return;W.uik=key;
-  if(W.stripSig!==sig){W.stripSig=sig;hallWalkStripFill();}
+  const key=(W.at||"")+"|"+(W.eng||"")+"|"+(W.hot||"");if(!force&&W.uik===key)return;W.uik=key;
   const p=(W.hot||W.at)&&HALL_PLACES.find(q=>q.id===(W.hot||W.at)),a=document.getElementById("stWalkAct");
   if(a){a.textContent=p?p.verb:"";a.hidden=!p||!!W.eng;}
   const h=document.getElementById("stWalkHint");
