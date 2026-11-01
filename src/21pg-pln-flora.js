@@ -432,8 +432,12 @@ function plnBodyLandPrep(budget){
 }
 function plnBodyTick(ms){
   const budget=ms>0?ms:2,t0=wallMs();
-  /* смена системы: подготовка прежней больше не нужна (память и видеокарта) */
-  if(PLNBODY.sys!==G.sys){if(PLNBODY.sys)plnBodyClear(PLNBODY.sys);PLNBODY.sys=G.sys;}
+  /* смена системы: подготовка прежней больше не нужна (память и видеокарта).
+     В заходе и на поверхности лента в работе — дождёмся выхода в систему */
+  if(PLNBODY.sys!==G.sys){
+    if(G.mode==="landing"||G.mode==="surface")return true;
+    if(PLNBODY.sys)plnBodyClear(PLNBODY.sys);PLNBODY.sys=G.sys;
+  }
   /* цель с карты идёт первой; нет цели — текущая система */
   let S=null;
   if(PLNBODY.target&&typeof getSystem==="function"){

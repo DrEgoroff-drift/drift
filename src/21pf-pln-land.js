@@ -553,7 +553,7 @@ function plnLandFree(L){
 }
 /* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
 function plnLand(tr,p,sx){
-  const C=PLN_LAND,cur=C.cur;
+  const C=PLN_LAND;let cur=C.cur;
   /* ── готовая лента из фона (plnbody) ──
      Пока игрок летал в системе, ближайшая планета собрала свою ленту заранее тем же
      plnLandMake и теми же ступенями plnWarmStep, что и спуск. Нажатие забирает её
@@ -567,7 +567,10 @@ function plnLand(tr,p,sx){
     if(tr.plnCx==null)tr.plnCx=tr.padX/PLN_M+12.8;
     return plnLandMove(pre,sx);
   }
-  if(pre)plnBodyLandDrop(p);                 /* лента от другого рельефа больше не нужна */
+  if(pre){                                   /* лента от другого рельефа больше не нужна */
+    plnBodyLandDrop(p);
+    if(cur===pre)cur=C.cur;                  /* её же освободили — не трогаем дважды */
+  }
   if(cur&&cur.tr===tr&&cur.gen===PLN_GPU.gen&&cur.y0===tr.padY){
     if(cur.sx===sx)return cur;
     /* корабль сел не там, где ждали (спуск, M621): композиция липнет к площадке — землю не

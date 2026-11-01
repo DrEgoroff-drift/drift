@@ -6828,7 +6828,7 @@ plnBodyLandDrop              src/21pg-pln-flora.js:295-302
 plnBodyLandPrep              src/21pg-pln-flora.js:384-432
 plnBodyNear                  src/21pg-pln-flora.js:372-381
 plnBodyOrder                 src/21pg-pln-flora.js:336-341
-plnBodyTick                  src/21pg-pln-flora.js:433-461
+plnBodyTick                  src/21pg-pln-flora.js:433-465
 plnBox                       src/21pf-pln-land.js:67-74
 plnBoxF                      src/21pf-pln-land.js:82-87
 plnCard                      src/21pa-pln-mesh.js:188-193
@@ -6921,7 +6921,7 @@ plnInstFree                  src/21pe-pln-gpu.js:117
 plnInstSet                   src/21pe-pln-gpu.js:107-116
 plnKitTick                   src/21pg-pln-flora.js:267-269
 plnLampPool                  src/21pc-pln-wgsl-scene.js:15-18
-plnLand                      src/21pf-pln-land.js:555-580
+plnLand                      src/21pf-pln-land.js:555-583
 plnLandBare                  src/21pf-pln-land.js:256-259
 plnLandBatches               src/21pf-pln-land.js:543-545
 plnLandBuild                 src/21pf-pln-land.js:501-507
@@ -6938,7 +6938,7 @@ plnLandJobs                  src/21pf-pln-land.js:451-484
 plnLandLast                  src/21pe-pln-gpu.js:387-395
 plnLandLift                  src/21pf-pln-land.js:302
 plnLandMake                  src/21pf-pln-land.js:121-211
-plnLandMove                  src/21pf-pln-land.js:582-588
+plnLandMove                  src/21pf-pln-land.js:585-591
 plnLandNode                  src/21pfb-pln-land-mesh.js:9-15
 plnLandPath                  src/21pf-pln-land.js:397-406
 plnLandPond                  src/21pf-pln-land.js:236-247
