@@ -28,7 +28,7 @@ function startLanding(p){
   {const _t=NEAR.on?wallMs():0;skyReroll(p);if(NEAR.on)NEAR.sl.sky=Math.round((wallMs()-_t)*10)/10;}           /* состав неба — свой на каждую посадку (19ca) */
   const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
-    vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
+    vx:(r()-.5)*1.3,vy:.7,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
   /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
   {const _t=NEAR.on?wallMs():0;G.land.pre=surfGen(tr,p);if(NEAR.on)NEAR.sl.pre=Math.round((wallMs()-_t)*10)/10;}
@@ -46,7 +46,9 @@ function landStartY(tr,x){
   let ridge=groundAt(tr,x);
   const step=Math.sign(tr.padX-x)*16||16;
   for(let xx=x;Math.abs(tr.padX-xx)>8&&Math.abs(xx-x)<1400;xx+=step)ridge=Math.min(ridge,groundAt(tr,xx));
-  return Math.min(110,ridge-150);
+  /* 150 м над гребнем — это десятки секунд спуска на гравитации .03 (v0 .35). 70 м хватает,
+     чтобы кадр поверхности успел собраться, а ожидание короче в разы */
+  return Math.min(70,ridge-70);
 }
 function autoLandInputs(L,st){
   /* примитивный, но надёжный автопилот посадки */
