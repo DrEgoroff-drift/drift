@@ -322,6 +322,13 @@ const T=(()=>{
         /* раздел — кнопкой, как игрок: запись (15c-rec) видит тычок, а не присваивание */
         /* M816: зал на ходу — разделов нет, есть места: стойка в полосе, шаги (часов у стенда нет — шаг 0,1 с), глагол сам */
         const walk=!!(HALL.walk&&HALL.open);
+        /* как игрок: на ПК (min-width 900) полоса мест спрятана, пока мышь не поднята
+           к верхнему краю зала (.strip). Обработчик висит на #station, а ptr() шлёт в канву —
+           поэтому событие идёт прямо в #station */
+        if(walk){const sid=document.getElementById("station");
+          if(sid){const sr=sid.getBoundingClientRect(),SE=window.PointerEvent||window.MouseEvent;
+            sid.dispatchEvent(new SE("pointermove",{pointerId:9,isPrimary:true,bubbles:true,
+              clientX:sr.left+80,clientY:sr.top+30}));}}
         if(walk){if(!tap("stWalk-trade"))return R(false,"места СТОЙКА в полосе зала нет");
           for(let i=0;i<200&&HALL.walk.eng!=="trade";i++)hallWalkStep(.1);
           if(HALL.walk.eng!=="trade")return R(false,"до стойки не дошёл: x "+HALL.walk.x.toFixed(2));
