@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070c">
-<title>ДРЕЙФ — космическая игра в браузере</title>
+<title>ДРЕЙФ — открытая альфа · играем и тестируем</title>
 <meta name="description" content="Вы один на старом корабле. Летайте к звёздам, садитесь на планеты, идите пешком, копайте, торгуйте, стройте базу — а шесть держав воюют и мирятся без вас. Бесплатно, прямо в браузере, ставить ничего не нужно.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/icons/fav-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/icons/fav-180.png">
 <link rel="manifest" href="/drift.webmanifest">
 <meta property="og:type" content="website">
-<meta property="og:title" content="ДРЕЙФ — космическая игра в браузере">
+<meta property="og:title" content="ДРЕЙФ — открытая альфа">
 <meta property="og:description" content="Вы один на старом корабле. Садитесь на планеты, идите пешком, копайте, торгуйте, обживайтесь — и каждая планета узнаётся по силуэту.">
 <meta property="og:image" content="https://drift-game.ru/og.jpg">
 <meta property="og:url" content="https://drift-game.ru/">
@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700&family=Golos+Text:wght@400;500;600&display=swap">
-<link rel="preload" as="image" imagesrcset="/shots/world.webp 1600w, /shots/world-2x.webp 3200w, /shots/world-3840.webp 3840w" imagesizes="100vw" fetchpriority="high">
+<link rel="preload" as="image" href="/shots/alpha-hero-106.webp" fetchpriority="high">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -31,7 +31,7 @@
       "name": "Дрейф",
       "alternateName": ["ДРЕЙФ", "Drift", "Drift space game"],
       "url": "https://drift-game.ru/",
-      "description": "Бесплатная космическая игра в браузере без установки и без регистрации. Игрок летает между звёздами на старом корабле, садится на процедурно сгенерированные планеты, ходит пешком в скафандре, добывает руду, торгует, строит базу и нанимает людей. Шесть держав воюют и мирятся сами по себе. Заданий нет: есть топливо, трюм и любопытство.",
+      "description": "Бесплатная космическая игра в браузере без установки и без регистрации. Игрок летает между звёздами на старом корабле, садится на процедурно сгенерированные планеты, ходит пешком в скафандре, добывает руду, торгует, строит базу и нанимает людей. Шесть держав воюют и мирятся сами по себе. Маршрут выбираете вы: есть топливо, трюм и любопытство.",
       "inLanguage": "ru",
       "genre": ["Космический симулятор", "Песочница", "Space exploration", "Sandbox", "Roguelite"],
       "gamePlatform": ["Web browser", "PC", "Android", "iOS"],
@@ -43,11 +43,11 @@
       "offers": {"@type": "Offer", "price": "0", "priceCurrency": "RUB", "availability": "https://schema.org/InStock"},
       "image": "https://drift-game.ru/og.jpg",
       "screenshot": [
-        "https://drift-game.ru/shots/world.webp",
-        "https://drift-game.ru/shots/land.webp",
-        "https://drift-game.ru/shots/cave.webp",
-        "https://drift-game.ru/shots/sys.webp",
-        "https://drift-game.ru/shots/station.webp"
+        "https://drift-game.ru/shots/alpha-hero-106.webp",
+        "https://drift-game.ru/shots/alpha-surface-106.webp",
+        "https://drift-game.ru/shots/alpha-cave-106.webp",
+        "https://drift-game.ru/shots/alpha-system-106.webp",
+        "https://drift-game.ru/shots/alpha-station-106.webp"
       ],
       "author": {"@type": "Person", "name": "Андрей Егоров"},
       "publisher": {"@id": "https://drift-game.ru/#org"},
@@ -92,19 +92,20 @@
 
 <!-- ── герой: кадр игры во весь экран ── -->
 <section class="hero">
-  <div class="bg"><img src="/shots/world.webp" srcset="/shots/world.webp 1600w, /shots/world-2x.webp 3200w, /shots/world-3840.webp 3840w" sizes="100vw" width="1600" height="900" alt="Человек в скафандре идёт по зелёному холму чужой планеты; за ним озеро, корабль и рощи зонтичных деревьев" fetchpriority="high"></div>
+  <div class="bg"><img src="/shots/alpha-hero-106.webp" width="1920" height="1080" fetchpriority="high" alt="Настоящий кадр Дрейфа: зелёная планета, озеро и исследователь в скафандре"></div>
   <div class="shade"></div>
   <div class="in">
-    <div class="tag">бесплатно · в браузере · без регистрации</div>
+    <div class="tag"><span class="alpha-dot"></span> ОТКРЫТАЯ АЛЬФА · 0.499.106</div>
     <h1>ДРЕЙФ</h1>
     <p class="pitch">
       Вы один на старом корабле, и у вас <b>полбака топлива</b>. Впереди звезда, вокруг неё планеты.
-      Садитесь на любую, выходите и идите пешком. Никто не скажет, что делать дальше, — и никто не помешает.
+      Находите миры для посадки, выходите из корабля и идите пешком. Никто не скажет, что делать дальше, — и никто не помешает.
     </p>
     <div class="btns">
-      <a class="btn" href="/play.html" id="playBtn">Играть<s></s></a>
-      <a class="btn ghost" href="#planet">Как это выглядит</a>
+      <a class="btn" href="/play.html" id="playBtn">Играть в альфу<s></s></a>
+      <a class="btn ghost" href="#gal">Посмотреть игру</a>
     </div>
+    <p class="alpha-hero-note">Бесплатно. Без регистрации. Основная игра готова — теперь тестируем, ловим баги и настраиваем экономику.</p>
     <div class="who" id="who">…</div>
   </div>
   <div class="down">листайте вниз</div>
@@ -120,10 +121,18 @@
   </ul>
 </div>
 
+
+<section class="alpha-invite" id="alpha">
+  <div><div class="eyebrow">Альфа уже доступна</div><h2>Играем. Проверяем.<br><b>Делаем лучше.</b></h2></div>
+  <div class="alpha-invite-copy"><p>Основной функционал готов. Сейчас важнее всего найти ошибки и настроить экономику: цены, награды и окупаемость. Это ещё не стабильный релиз — и ваши наблюдения действительно помогают.</p>
+  <div class="btns"><a class="btn sm" href="https://github.com/DrEgoroff-drift/drift/issues/new" target="_blank" rel="noopener">Сообщить об ошибке</a><a class="btn ghost sm" href="https://github.com/DrEgoroff-drift/drift/releases/tag/v0.499.106-alpha.1" target="_blank" rel="noopener">Релиз и загрузка ↗</a></div>
+  <small>Пришлите версию, браузер, устройство и что произошло. Если есть — скриншот или короткое видео.</small></div>
+</section>
+
 <!-- ── сцены: по одному кадру на то, чем вы заняты ── -->
 <section class="scene right" id="planet">
   <div class="num"><b>01</b>посадка</div>
-  <div class="bg"><img src="/shots/land.webp" srcset="/shots/land.webp 1600w, /shots/land-2x.webp 3200w, /shots/land-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Корабль только что сел на зелёной планете у озера; вдали горы, в небе облака и гигантские грибы"></div>
+  <div class="bg"><img src="/shots/alpha-hero-106.webp" width="1920" height="1080" loading="lazy" alt="Исследование планеты в актуальной альфа-версии"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate amber">
@@ -138,7 +147,7 @@
 
 <section class="scene" id="walk">
   <div class="num"><b>02</b>пешком</div>
-  <div class="bg"><img src="/shots/ice.webp" srcset="/shots/ice.webp 1600w, /shots/ice-2x.webp 3200w, /shots/ice-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Ледяная планета на закате: человек в скафандре стоит на снежном гребне над пещерой, вокруг склоны и белая гора вдали"></div>
+  <div class="bg"><img src="/shots/alpha-ice-clean-106.webp" width="1920" height="1080" loading="lazy" alt="Прогулка по планете, реальный игровой интерфейс"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate">
@@ -153,7 +162,7 @@
 
 <section class="scene right" id="cave">
   <div class="num"><b>03</b>под землёй</div>
-  <div class="bg"><img src="/shots/cave.webp" srcset="/shots/cave.webp 1600w, /shots/cave-2x.webp 3200w, /shots/cave-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Пещера: человек в оранжевом скафандре с фонарём у подземного озера, вокруг сталактиты и кристаллы"></div>
+  <div class="bg"><img src="/shots/alpha-cave-clean-106.webp" width="1920" height="1080" loading="lazy" alt="Пещера в свете фонаря скафандра"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate">
@@ -168,7 +177,7 @@
 
 <section class="scene" id="fly">
   <div class="num"><b>04</b>полёт</div>
-  <div class="bg"><img src="/shots/sys.webp" srcset="/shots/sys.webp 1600w, /shots/sys-2x.webp 3200w, /shots/sys-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Корабль у полосатой планеты среди лиловой туманности, рядом луны"></div>
+  <div class="bg"><img src="/shots/alpha-system-clean-106.webp" width="1920" height="1080" loading="lazy" alt="Корабль приближается к планете"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate">
@@ -183,7 +192,7 @@
 
 <section class="scene right" id="station">
   <div class="num"><b>05</b>станция</div>
-  <div class="bg"><img src="/shots/station.webp" srcset="/shots/station.webp 1600w, /shots/station-2x.webp 3200w, /shots/station-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt="Торговый зал станции: стойка с продавцом, человек в скафандре у прилавка, справа таблица цен"></div>
+  <div class="bg"><img src="/shots/alpha-station-106.webp" width="1920" height="1080" loading="lazy" alt="Обновлённые жители и стойка в зале станции"></div>
   <div class="shade"></div>
   <div class="in">
     <div class="plate amber">
@@ -222,58 +231,16 @@
       <div class="eyebrow">Как это выглядит</div>
       <h2 style="margin:0">Ещё кадры из игры</h2>
     </div>
-    <div class="hint">снято в игре · по клику во весь экран</div>
+    <div class="hint">сборка 0.499.106 · реальные кадры · нажмите для увеличения</div>
   </div>
   <div class="strip-wrap">
   <div class="strip gal">
-    <figure>
-      <img src="/shots/desert.webp" loading="lazy" width="1600" height="900" alt="Пустынная планета: корабль на светлом песке, вдали столовые горы, человек идёт к залежам">
-      <figcaption><h3>Пустыня</h3><p>Корабль на песке, залежи в трёх шагах. Мир узнаётся силуэтом: столовые горы, торосы, шлаковые конусы.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/ocean.webp" loading="lazy" width="1600" height="900" alt="Океанский мир на закате: берег с травой и цветами, хвойные деревья, вода до горизонта">
-      <figcaption><h3>Берег</h3><p>Океанский мир. Вода одна на всю игру — та же, что в озере у пещеры и в луже после дождя.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/night.webp" loading="lazy" width="1600" height="900" alt="Ночь на планете: человек у светящихся кристаллов на берегу тёмного озера">
-      <figcaption><h3>Ночь</h3><p>Светится только то, что светится: кристаллы залежи, фонарь, окно корабля. Звезда взойдёт через несколько минут.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/cantina.webp" loading="lazy" width="1600" height="900" alt="Кантина станции: люди за столиками и стойкой, карточки наёмников с портретами">
-      <figcaption><h3>Кантина</h3><p>Кого нанять, с кем поговорить, кому отдать половину денег. У каждого — лицо, характер и скрытая удача.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/cockpit.webp" srcset="/shots/cockpit.webp 1600w, /shots/cockpit-2x.webp 3200w" sizes="(max-width: 683px) 82vw, 560px" decoding="async" loading="lazy" width="1600" height="900" alt="Пояс астероидов: каменные глыбы с жилами руды на фоне голубой полосы">
-      <figcaption><h3>Пояс</h3><p>Камни с жилами, которые надо расколоть и собрать. Приборы немного врут — чем дороже, тем меньше.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/map.webp" srcset="/shots/map.webp 1600w, /shots/map-2x.webp 3200w" sizes="(max-width: 683px) 82vw, 560px" decoding="async" loading="lazy" width="1600" height="900" alt="Карта галактики: звёзды, кольца, полоса Галактики, сетка секторов">
-      <figcaption><h3>Карта</h3><p>Каждая точка — звезда со своими планетами. У всего есть адрес: услышанное в эфире можно найти.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/hq.webp" loading="lazy" width="1600" height="900" alt="Штаб: три управляющих у голографического стола, карточка командира звена">
-      <figcaption><h3>Штаб</h3><p>Четыре места для управляющих: кто-то берёт на себя рутину — и свою долю.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/base.webp" srcset="/shots/base.webp 1600w, /shots/base-2x.webp 3200w" sizes="(max-width: 683px) 82vw, 560px" decoding="async" loading="lazy" width="1600" height="900" alt="База в разрезе: отсеки под поверхностью планеты, внутри люди">
-      <figcaption><h3>База</h3><p>Своя, в разрезе. Люди в ней живут по смене и работают, когда вы улетели.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/soroka.webp" srcset="/shots/soroka.webp 1600w, /shots/soroka-2x.webp 3200w" sizes="(max-width: 683px) 82vw, 560px" decoding="async" loading="lazy" width="1600" height="900" alt="Лавка на паруснике «Сорока»: витрины вдоль стен, хранитель за прилавком">
-      <figcaption><h3>«Сорока»</h3><p>Парусник ходит своим кругом и стоит двое суток. Цены не в кредитах, а в спичках.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/winter.webp" srcset="/shots/winter.webp 1600w, /shots/winter-2x.webp 3200w" sizes="(max-width: 683px) 82vw, 560px" decoding="async" loading="lazy" width="1600" height="900" alt="Домик зимовки: печь, приборная стена, человек у стола, за окном снег">
-      <figcaption><h3>Зимовка</h3><p>Тридцать суток на чужой планете: топить, чинить, слушать эфир. Полгалактики можно прожить, ни разу не выстрелив.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/raid.webp" loading="lazy" width="1600" height="900" alt="Отсек пиратской базы: человек в скафандре с оружием у вскрытого контейнера">
-      <figcaption><h3>Абордаж</h3><p>Пиратскую базу можно взять пешком, отсек за отсеком, уходя от того, кто уже идёт навстречу.</p></figcaption>
-    </figure>
-    <figure>
-      <img src="/shots/home.webp" loading="lazy" width="1600" height="900" alt="Комната дома: стол под лампой, жилец, карта на стене">
-      <figcaption><h3>Дом</h3><p>Стоит на своей планете. К нему идут пешком, в него заходят, и на стол ложатся письма и чужие дела.</p></figcaption>
-    </figure>
+<figure><img src="/shots/alpha-surface-106.webp" width="1920" height="1080" loading="lazy" alt="Чужая планета"><figcaption><h3>Чужая планета</h3><p>Выйдите из корабля и идите к горизонту. Рельеф, вода, растения и погода — часть мира.</p></figcaption></figure>
+<figure><img src="/shots/alpha-system-106.webp" width="1920" height="1080" loading="lazy" alt="Между звёздами"><figcaption><h3>Между звёздами</h3><p>Корабль, топливо и следующий мир. Маршрут выбираете вы.</p></figcaption></figure>
+<figure><img src="/shots/alpha-station-106.webp" width="1920" height="1080" loading="lazy" alt="Место с людьми"><figcaption><h3>Место с людьми</h3><p>Исправленные персонажи, торговая стойка и доска объявлений.</p></figcaption></figure>
+<figure><img src="/shots/alpha-cave-106.webp" width="1920" height="1080" loading="lazy" alt="Под поверхностью"><figcaption><h3>Под поверхностью</h3><p>Камень, залежи и свет собственного фонаря.</p></figcaption></figure>
+<figure><img src="/shots/alpha-home-106.webp" width="1920" height="1080" loading="lazy" alt="Свой угол"><figcaption><h3>Свой угол</h3><p>Дом на планете, в который можно вернуться.</p></figcaption></figure>
+<figure><img src="/shots/alpha-bird-106.webp" width="1920" height="1080" loading="lazy" alt="Говорун"><figcaption><h3>Говорун</h3><p>Тот самый разговорчивый спутник — в объёме и внутри игры.</p></figcaption></figure>
   </div>
   <button class="strip-nav prev" type="button" aria-label="предыдущие кадры">‹</button>
   <button class="strip-nav next" type="button" aria-label="следующие кадры">›</button>
@@ -394,7 +361,7 @@
   <div class="bg"><img src="/shots/night.webp" srcset="/shots/night.webp 1600w, /shots/night-2x.webp 3200w, /shots/night-3840.webp 3840w" sizes="100vw" width="1600" height="900" loading="lazy" alt=""></div>
   <div class="shade"></div>
   <h2>Полбака топлива уже залито</h2>
-  <p>Загрузка занимает пару секунд. Регистрироваться не обязательно. Нужен браузер с WebGPU:
+  <p>Можно играть прямо сейчас. Время загрузки зависит от устройства и соединения. Регистрироваться не обязательно. Нужен браузер с WebGPU:
     свежие Chrome, Edge, Яндекс Браузер или Opera, Safari 26 и новее.</p>
   <a class="btn" href="/play.html">Играть</a>
 </section>
@@ -409,7 +376,8 @@
   <a href="#get">установить</a>
   <a href="/parrot.html">птица</a>
   <a href="/treplo3d.html">птица в объёме</a>
-  <a href="https://github.com/DrEgoroff-drift/drift">исходники</a>
+  <a href="https://github.com/DrEgoroff-drift/drift">GitHub</a>
+  <a href="https://github.com/DrEgoroff-drift/drift/releases/tag/v0.499.106-alpha.1">альфа-релиз</a>
 </footer>
 
 </div>
