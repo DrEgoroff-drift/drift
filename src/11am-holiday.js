@@ -59,7 +59,7 @@ const HOL_GREET={
 function holMap(){if(!G.hol||typeof G.hol!=="object")G.hol={};return G.hol;}
 /* какой сегодня праздник по НАСТОЯЩЕМУ календарю игрока */
 function holNow(at){
-  const d=at?new Date(at.getTime()):new Date(now());
+  const d=at?new Date(at.getTime()):new Date(wallNow());   /* календарь настоящий — по стенным часам (01-core), не по игровым */
   const m=d.getMonth()+1, day=d.getDate();
   for(const h of HOLIDAYS){
     const [fm,fd]=h.from,[tm,td]=h.to;
@@ -85,7 +85,7 @@ function holEtherLine(){
    книжке: их имена уже написаны, придумывать некого. */
 function holDock(){
   const h=holNow();if(!h)return false;
-  const d=new Date(now());
+  const d=new Date(wallNow());
   const year=d.getMonth()+1>=7?d.getFullYear():d.getFullYear()-1;   /* год ПРАЗДНИКА, а не календаря */
   const key=(h.id==="ny"?year:d.getFullYear())+":"+h.id;
   const M=holMap();

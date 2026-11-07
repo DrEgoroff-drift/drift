@@ -377,7 +377,9 @@ function applySave(s){
       /* взят ли под руку (M198) — это РЕШЕНИЕ ИГРОКА, и оно необратимо, значит
          обязано пережить загрузку. Список полей здесь белый: не вписал — потерял
          молча, ровно как это уже случалось с полями управляющего */
-      mine:v.mine?1:0,handAt:+v.handAt||0};
+      mine:v.mine?1:0,handAt:+v.handAt||0,
+      /* переселение (12v-doom): тоже решение игрока, и тоже терялось молча */
+      moved:v.moved?1:0,from:typeof v.from==="string"?v.from:""};
     for(const k of RES_KEYS){
       if(v.stock&&v.stock[k]>0)S.stock[k]=clamp(+v.stock[k],0,SETTLE_STOCK*(S.mine?HAND_STOCK:1));
       if(v.diet&&v.diet[k]>0)S.diet[k]=Math.max(0,+v.diet[k]);

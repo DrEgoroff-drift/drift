@@ -229,7 +229,7 @@ function planExposure(s,d){
   if(!(d>0)||!G.ship)return d;
   const dir=Math.atan2(s.vy,s.vx),ad=Math.abs(angDiff(dir,G.ship.a));
   if(ad<Math.PI/3){
-    if(typeof wearAll==="function"){const W=wearAll(),id=G.shipId;W[id]=Math.min(1,(W[id]||0)+d*EXPO_REAR_WEAR);}
+    if(typeof wearAll==="function"){const W=wearAll(),id=G.shipId;W[id]=Math.min(WEAR_FULL,(W[id]||0)+d*EXPO_REAR_WEAR*WEAR_FULL);}
     if(!planExposure.t||G.t-planExposure.t>300){planExposure.t=G.t;say("Попадание в корму\nдвигатели принимают · износ растёт",90);}
     return d;
   }

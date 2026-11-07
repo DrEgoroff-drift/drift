@@ -194,9 +194,10 @@ function settleRaise(S){
     return pick;
   }
   const score={};
-  for(const b of SETTLE_BUILD){
+  for(let bi=0;bi<SETTLE_BUILD.length;bi++){
+    const b=SETTLE_BUILD[bi];
     score[b.k]=(S.diet[b.diet]||0)*1.0+(b.k===S.lean?SETTLE_STEP*.8:0)
-      +(hashi(S.seed,S.built.length*17+3,7)%23)*.6            // своя воля, не считалка
+      +(hashi(S.seed,S.built.length*17+3,bi+7)%23)*.6   // своя воля, не считалка
       -(S.built.filter(x=>x===b.k).length)*SETTLE_STEP*.55;   // второе то же — дороже
   }
   let best=SETTLE_BUILD[0].k;
@@ -284,11 +285,17 @@ function settleAsk(S,word){
     const has=Math.floor((S.stock[k]||0)+S.built.filter(x=>SETTLE_BY_K[x].give===k).length*6);
     const n=Math.min(room,Math.floor(has*share));
     if(n<=0)continue;
-    S.stock[k]=Math.max(0,(S.stock[k]||0)-n);
-    if(addRes(k,n)){room-=n;got+=n;}
+    /* сперва принять в трюм, потом списать с амбара: отказ addRes (истощение,
+       нехватка места по весу) не должен съедать чужой товар */
+    const gotN=addRes(k,n);
+    if(!gotN)continue;
+    S.stock[k]=Math.max(0,(S.stock[k]||0)-gotN);
+    room-=gotN;got+=gotN;
   }
-  if(got){S.paid+=got;S.mood=clamp(S.mood-4,0,100);}
-  if(typeof saveGame==="function")saveGame(true);
+  /* замок — только когда по-настоящему передали: «сегодня ничего нет» не сжигает
+     восемь минут ожидания */
+  if(got){S.asked=now;S.paid+=got;S.mood=clamp(S.mood-4,0,100);}
+  if(got&&typeof saveGame==="function")saveGame(true);
   return got;
 }
 /* ── речь ──
