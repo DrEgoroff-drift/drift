@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 710 · top-level symbols: 9057
+Files: 710 · top-level symbols: 9061
 
 ## SYMBOLS
 
@@ -71,7 +71,7 @@ AI_COST                      src/12f-mgr-ai.js:8
 AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12-18
 ALBUM_FX                     src/25g1-album-fx.js:14-21
-ALBUM_MAX                    src/25g-postcard.js:628
+ALBUM_MAX                    src/25g-postcard.js:631
 ALBUM_PAPER                  src/25g1-album-fx.js:31
 ALBUM_VIG                    src/25g1-album-fx.js:28
 ALLY_THR                     src/12a-crew.js:700
@@ -673,11 +673,11 @@ FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai1-fleet-art.js:14
 FLEET_CLASSES                src/12ai-fleet.js:20-40
 FLEET_COOL                   src/13-combat.js:213
-FLEET_ENG                    src/12ai1-fleet-art.js:413
+FLEET_ENG                    src/12ai1-fleet-art.js:429
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
-FLEET_MAP_LEGS               src/12ai-fleet.js:324
+FLEET_MAP_LEGS               src/12ai-fleet.js:325
 FLEET_MARK                   src/04b-fleet.js:56
 FLEET_N                      src/04b-fleet.js:106
 FLEET_NAMES                  src/12ai-fleet.js:41
@@ -803,7 +803,7 @@ GEO_Z                        tests/90b2-geom.js:28
 GEST                         src/17h-sys-gesture.js:27
 GEST_PAINT_COLS              src/17h-sys-gesture.js:20-23
 GEST_POST                    src/17h-sys-gesture.js:25
-GEST_POST_CV                 src/17h-sys-gesture.js:222
+GEST_POST_CV                 src/17h-sys-gesture.js:223
 GEST_SAID                    src/17h-sys-gesture.js:28
 GEST_T                       src/17h-sys-gesture.js:24
 GEW                          src/17-mode-system.js:48
@@ -2600,7 +2600,7 @@ aiDrift                      src/12f-mgr-ai.js:52-105
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
-albumAll                     src/25g-postcard.js:629
+albumAll                     src/25g-postcard.js:632
 albumBake                    src/25g1-album-fx.js:81
 albumCanvas                  src/25g1-album-fx.js:104-111
 albumClose                   src/25g1-album-fx.js:113
@@ -2608,7 +2608,7 @@ albumDpr                     src/25g1-album-fx.js:112
 albumL                       src/25g1-album-fx.js:23
 albumLightbox                src/25g1-album-fx.js:115-160
 albumM                       src/25g1-album-fx.js:25
-albumOpen                    src/25g-postcard.js:678
+albumOpen                    src/25g-postcard.js:681
 albumPaper                   src/25g1-album-fx.js:32-52
 albumPut                     src/25g1-album-fx.js:96-102
 albumRig                     src/25g1-album-fx.js:87-94
@@ -3110,7 +3110,7 @@ c3SignTex                    src/27f4-cant3d.js:236-245
 c3Stool                      src/27f4-cant3d.js:90-99
 c3StoryProp                  src/27f4-cant3d.js:222-234
 camBody                      src/17-mode-system.js:82-91
-camBtnTick                   src/25g-postcard.js:667-671
+camBtnTick                   src/25g-postcard.js:670-674
 camFree                      src/17p-cam-frame.js:11-23
 camOffset                    src/19c-light.js:155-162
 camReach                     src/17p-cam-frame.js:25-30
@@ -3737,37 +3737,38 @@ dealRun                      src/27n-ui-deal.js:20
 dealTaken                    src/27g-deals.js:159
 dealsTick                    src/27g-deals.js:201-220
 decRu                        src/27y-hud-words.js:51
-decoAntenna                  src/21bb-deco-biomes.js:283-296
+decoAntenna                  src/21bb-deco-biomes.js:339-352
 decoBake                     src/21bc-deco-gpu.js:28-43
-decoBlister                  src/21bb-deco-biomes.js:209-219
-decoBoulderLone              src/21bb-deco-biomes.js:121-131
+decoBlister                  src/21bb-deco-biomes.js:265-275
+decoBoulderLone              src/21bb-deco-biomes.js:176-187
 decoButte                    src/21bb-deco-biomes.js:39-62
 decoCanopy                   src/21ba-deco-shapes.js:227-312
 decoColumn                   src/21ba-deco-shapes.js:188-221
-decoCone                     src/21bb-deco-biomes.js:158-172
-decoCoral                    src/21bb-deco-biomes.js:245-265
-decoCrownRound               src/21bb-deco-biomes.js:322-327
+decoCone                     src/21bb-deco-biomes.js:214-228
+decoCoral                    src/21bb-deco-biomes.js:301-321
+decoCrownRound               src/21bb-deco-biomes.js:378-383
 decoDruse                    src/21ba-deco-shapes.js:12-37
 decoDryTree                  src/21bb-deco-biomes.js:63-90
 decoFrond                    src/21ba-deco-shapes.js:313-339
 decoGpu                      src/21bc-deco-gpu.js:50-71
-decoHummock                  src/21bb-deco-biomes.js:133-147
-decoLavaTree                 src/21bb-deco-biomes.js:173-187
+decoHummock                  src/21bb-deco-biomes.js:189-203
+decoLavaTree                 src/21bb-deco-biomes.js:229-243
+decoLichenCrown              src/21bb-deco-biomes.js:96-145
 decoLitSide                  src/21bb-deco-biomes.js:37
 decoPaint                    src/21bc-deco-gpu.js:11-22
-decoPodTree                  src/21bb-deco-biomes.js:189-208
+decoPodTree                  src/21bb-deco-biomes.js:245-264
 decoPoly                     src/21bb-deco-biomes.js:36
-decoScree                    src/21bb-deco-biomes.js:312-320
+decoScree                    src/21bb-deco-biomes.js:368-376
 decoShard                    src/21ba-deco-shapes.js:38-49
-decoShoreTree                src/21bb-deco-biomes.js:221-244
+decoShoreTree                src/21bb-deco-biomes.js:277-300
 decoSlab                     src/21ba-deco-shapes.js:53-99
-decoSpire                    src/21bb-deco-biomes.js:148-156
-decoStack                    src/21bb-deco-biomes.js:92-120
-decoStair                    src/21bb-deco-biomes.js:297-310
-decoStela                    src/21bb-deco-biomes.js:267-282
+decoSpire                    src/21bb-deco-biomes.js:204-212
+decoStack                    src/21bb-deco-biomes.js:146-175
+decoStair                    src/21bb-deco-biomes.js:353-366
+decoStela                    src/21bb-deco-biomes.js:323-338
 decoSway                     src/21bc-deco-gpu.js:45-49
 decoTruss                    src/21ba-deco-shapes.js:100-142
-decoTwinCanopy               src/21bb-deco-biomes.js:328
+decoTwinCanopy               src/21bb-deco-biomes.js:384
 decoWall                     src/21ba-deco-shapes.js:146-187
 deedAdd                      src/11ai-ledger.js:53-64
 depCheap                     src/21pzc-dep-value.js:22-27
@@ -4087,7 +4088,7 @@ drawBuilt                    src/21c-built.js:64-72
 drawCave                     src/22d-cave-pln.js:380-397
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:76
-drawCombat                   src/13-pirates.js:378-465
+drawCombat                   src/13-pirates.js:389-479
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrystalForest            src/20aa-poi-shapes.js:114-140
 drawDeadBattery              src/20aa-poi-shapes.js:217-271
@@ -4100,15 +4101,15 @@ drawElevator                 src/20aa-poi-shapes.js:90-112
 drawFactRoute                src/13b-occupy.js:303-346
 drawFactory                  src/20aa-poi-shapes.js:374-457
 drawFindsSystem              src/17b-finds.js:240-267
-drawFleet                    src/12ai-fleet.js:135-155
-drawFleetMap                 src/12ai-fleet.js:325-356
+drawFleet                    src/12ai-fleet.js:135-156
+drawFleetMap                 src/12ai-fleet.js:326-357
 drawFoeBody                  src/24ab-raid-foe.js:11-131
 drawGalaxy                   src/17z1-galaxy.js:64-67
 drawGalaxyNames              src/17z2-galaxy-names.js:38-68
 drawGalaxyStars              src/17z1-galaxy.js:86-115
-drawGestPost                 src/17h-sys-gesture.js:239-266
-drawGesture                  src/17h-sys-gesture.js:135-187
-drawGestureTop               src/17h-sys-gesture.js:191-220
+drawGestPost                 src/17h-sys-gesture.js:240-267
+drawGesture                  src/17h-sys-gesture.js:136-188
+drawGestureTop               src/17h-sys-gesture.js:192-221
 drawGiant                    src/17o-giants.js:197-210
 drawGiantsMap                src/17o-giants.js:82-93
 drawGlyph                    src/12t-settle.js:59-77
@@ -4144,7 +4145,7 @@ drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:148-184
 drawPlanetWorks              src/17e-station-body.js:71-116
 drawPortal                   src/20aa-poi-shapes.js:459-483
-drawPostcard                 src/25g-postcard.js:170-612
+drawPostcard                 src/25g-postcard.js:170-615
 drawRaid                     src/24aa-raid-draw.js:14-609
 drawRail                     src/18g-rail-ride.js:120-154
 drawRailArrive               src/18g-rail-ride.js:18-21
@@ -4154,7 +4155,7 @@ drawRoad                     src/27l-road-draw.js:79-512
 drawRocks                    src/19-mode-landing-ground.js:323-415
 drawRouteMap                 src/12r-route.js:267-316
 drawRungRing                 src/12ae-ladder.js:72-86
-drawRushTraffic              src/17g-sys-lane.js:152-166
+drawRushTraffic              src/17g-sys-lane.js:153-167
 drawScars                    src/03d-hull-marks.js:132-169
 drawScoop                    src/19a-mode-scoop.js:185-232
 drawSeal                     src/03d-hull-marks.js:174-185
@@ -4170,7 +4171,7 @@ drawSurfaceHud               src/21e-surface-draw.js:40-143
 drawSurvey                   src/12w-survey.js:63-81
 drawSysHud                   src/17-mode-system.js:756-1105
 drawSysLane                  src/17g-sys-lane.js:112-137
-drawSysLaneShips             src/17g-sys-lane.js:167-200
+drawSysLaneShips             src/17g-sys-lane.js:168-201
 drawSysRail                  src/18f-rail-station.js:62-70
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawSystem                   src/17-mode-system.js:560-744
@@ -4436,25 +4437,27 @@ fleaPlace                    src/12ua-flea.js:48-58
 fleaRec                      src/12ua-flea.js:34-39
 fleaRender                   src/12ua-flea.js:186-226
 fleaScrip                    src/12ua-flea.js:122
-fleetArtJob                  src/12ai1-fleet-art.js:33-370
-fleetArtOf                   src/12ai1-fleet-art.js:24-32
-fleetCaravanActive           src/12ai-fleet.js:311-317
+fleetArtJob                  src/12ai1-fleet-art.js:49-386
+fleetArtOf                   src/12ai1-fleet-art.js:40-48
+fleetBodyAhead               src/12ai1-fleet-art.js:36-39
+fleetBodyJob                 src/12ai1-fleet-art.js:28-31
+fleetCaravanActive           src/12ai-fleet.js:312-318
 fleetColor                   src/04b-fleet.js:95
-fleetEscortActive            src/12ai-fleet.js:309
+fleetEscortActive            src/12ai-fleet.js:310
 fleetFire                    src/13-combat.js:214-235
-fleetGlyph                   src/12ai1-fleet-art.js:373-405
-fleetHailFirst               src/12ai-fleet.js:165-185
+fleetGlyph                   src/12ai1-fleet-art.js:389-421
+fleetHailFirst               src/12ai-fleet.js:166-186
 fleetHere                    src/12ai-fleet.js:50-87
-fleetInteract                src/12ai-fleet.js:186-306
+fleetInteract                src/12ai-fleet.js:187-307
 fleetLabelY                  src/12ai-fleet.js:121-131
-fleetLogKey                  src/12ai-fleet.js:157
-fleetNormKey                 src/12ai-fleet.js:160
-fleetNormTwice               src/12ai-fleet.js:159
+fleetLogKey                  src/12ai-fleet.js:158
+fleetNormKey                 src/12ai-fleet.js:161
+fleetNormTwice               src/12ai-fleet.js:160
 fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipAt                  src/12ai1-fleet-art.js:414-447
+fleetShipAt                  src/12ai1-fleet-art.js:430-463
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:79-112
 floraOf                      src/20e-species.js:91-105
@@ -4700,7 +4703,7 @@ gestOnce                     src/17h-sys-gesture.js:51-55
 gestOwner                    src/17h-sys-gesture.js:29-35
 gestPaintHull                src/17h-sys-gesture.js:113-119
 gestPostNo                   src/17h-sys-gesture.js:56
-gestPostSprite               src/17h-sys-gesture.js:223-238
+gestPostSprite               src/17h-sys-gesture.js:224-239
 gestRect                     src/17h-sys-gesture.js:130
 gestShip                     src/17h-sys-gesture.js:133
 gestShipFrame                src/17h-sys-gesture.js:121-125
@@ -4867,7 +4870,7 @@ gpuPipeRecipe                src/08b0-gpu-pipe.js:66-76
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
 gpuPipes                     src/08b-gpu.js:378-399
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
-gpuPipesLate                 src/08b0-gpu-pipe.js:135-154
+gpuPipesLate                 src/08b0-gpu-pipe.js:135-160
 gpuPipesWarm                 src/08b0-gpu-pipe.js:79-91
 gpuPirateBody                src/12i-pirate-hull.js:434-445
 gpuPirateLive                src/12i-pirate-hull.js:452-498
@@ -5810,7 +5813,7 @@ laneBuoySprite               src/17g-sys-lane.js:73-76
 laneGlowSprite               src/17g-sys-lane.js:98-105
 laneLampCol                  src/17g-sys-lane.js:106-109
 laneLife                     src/17g-sys-lane.js:27-31
-laneShip                     src/17g-sys-lane.js:139-147
+laneShip                     src/17g-sys-lane.js:139-148
 last                         src/28-loop.js:107
 lastDroneTick                src/28-loop.js:108
 lastRunDay                   src/12k-letters.js:44
@@ -6740,6 +6743,7 @@ pinch0                       src/15-input.js:404
 pipeWho                      tests/91zzzzzzy4-pipes.js:62-67
 pirateArmTick                src/13d-loadout.js:184-202
 pirateArtOf                  src/12i-pirate-hull.js:247-423
+pirateBakeAhead              src/13-pirates.js:382-388
 pirateBaseGpu                src/24a-mode-raid.js:111-186
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-240
@@ -7361,7 +7365,7 @@ poiTone                      src/20a-poi.js:176-180
 postAddrs                    src/11e-post.js:47-71
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113-142
-postCanShoot                 src/25g-postcard.js:633-650
+postCanShoot                 src/25g-postcard.js:636-653
 postCaption                  src/25g-postcard.js:114-124
 postChoose                   src/25i-post-back.js:48-51
 postDock                     src/11e-post.js:80-97
@@ -7379,7 +7383,7 @@ postSetForm                  src/25i-post-back.js:44-47
 postSign                     src/25i-post-back.js:35-41
 postSigned                   src/25i-post-back.js:32
 postSnap                     src/25g-postcard.js:65-108
-postTake                     src/25g-postcard.js:651-665
+postTake                     src/25g-postcard.js:654-668
 postTerrain                  src/25g-postcard.js:41-47
 postWorld                    src/25g-postcard.js:49-54
 powCoupOn                    src/12b0-fx-pow.js:26-29
@@ -7779,7 +7783,7 @@ relicRoll                    src/12h-relic.js:104-110
 relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113-121
 relicUnequip                 src/12h-relic.js:87
-renderAlbum                  src/25g-postcard.js:679-703
+renderAlbum                  src/25g-postcard.js:682-706
 renderBarge                  src/12l-barge.js:663-754
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-325
@@ -9453,7 +9457,7 @@ zoomTo                       src/15-input.js:358
 ## src/12ai-fleet.js · 28 KB
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
-## src/12ai1-fleet-art.js · 39 KB
+## src/12ai1-fleet-art.js · 40 KB
   · ГЛАВТРАССА: как флот выглядит (выделено из 12ai, M415):1
 
 ## src/12aj-coop.js · 19 KB
@@ -9732,7 +9736,7 @@ zoomTo                       src/15-input.js:358
 ## src/13-combat.js · 14 KB
   · бой: выстрелы с владельцем (M361):1
 
-## src/13-pirates.js · 33 KB
+## src/13-pirates.js · 34 KB
   · пираты:1
 
 ## src/13a-guns.js · 22 KB
@@ -9829,7 +9833,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/16gaza-gpu-fargal.js · 3 KB
 
-## src/16gb-gpu-nebula.js · 35 KB
+## src/16gb-gpu-nebula.js · 36 KB
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/16gba-gpu-nebula-comp.js · 30 KB
@@ -10232,7 +10236,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ba-deco-shapes.js · 18 KB
   · приметы места: формы:1
 
-## src/21bb-deco-biomes.js · 24 KB
+## src/21bb-deco-biomes.js · 26 KB
   · большая вещь на каждый биом (M352):1
 
 ## src/21bc-deco-gpu.js · 4 KB
@@ -10597,9 +10601,9 @@ zoomTo                       src/15-input.js:358
   · орбита:223
   · атмосфера газового гиганта:391
 
-## src/25g-postcard.js · 43 KB
+## src/25g-postcard.js · 44 KB
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:614
+  · камера и альбом:617
 
 ## src/25g1-album-fx.js · 14 KB
   · альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3):1

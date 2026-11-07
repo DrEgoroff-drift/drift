@@ -12333,11 +12333,17 @@ function gpuPipesLate(){
   const d=gpuPipesDev(),t0=wallMs(),L=GPU_PIPES.late={n:0,ms:0,done:false,bad:[],asked:0};
   const todo=GPU_LATE_KEYS.map(k=>()=>{const r=gpuPipeRecipe(k);return r?[[k,r]]:(L.bad.push(k),[]);}).concat(
     GPU_LATE_GROUPS.map(g=>()=>g()));
-  const flat=[];let last=-1e9;
+  const flat=[];let last=-1e9,skip=0;
   const next=()=>{
     if(GPU_PIPES.dev!==d)return;   /* устройство сменилось: прогрев нового начнёт свой */
     /* темп смотрим перед каждым шагом: игрок вошёл в док — очередь ускоряется, не дожидаясь шага полёта */
     const wait=last+gpuLateGap()-wallMs();if(wait>1){setTimeout(next,Math.min(wait,250));return;}
+    /* телефон (07.11, S23 на зарядке): сборка одного конвейера — 15–73 мс процесса GPU, и кадр,
+       который и так не укладывается, получает от неё 33-мс рывок. Тяжёлый кадр — шаг откладываем
+       (не больше четырёх подряд: очереди нельзя встать навсегда), сборка уходит в тихий кадр.
+       Картинка не меняется — конвейеры режимов игроку не видны, пока не войдёт в режим */
+    if(resEma>19&&skip<4){skip++;last=wallMs();setTimeout(next,250);return;}
+    skip=0;
     while(!flat.length&&todo.length){try{for(const x of todo.shift()())flat.push(x);}catch(e){L.bad.push(String(e&&e.message||e).slice(0,60));}}
     const it=flat.shift();
     if(!it){L.done=true;L.ms=Math.round(wallMs()-t0);return;}
@@ -26712,7 +26718,8 @@ function drawFleet(zx,zy,Z){
   const F=fleetHere(G.sys);if(!F.length)return;
   for(const f of F){
     const p=fleetPos(f),x=zx(p.x),y=zy(p.y);
-    if(x<-260||x>W+260||y<-260||y>H+260){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);continue;}   /* мастер заранее (17a0) */
+    if(x<-260||x>W+260||y<-260||y>H+260){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);
+      if(pbOnScreen(x,y,0,0,.25))fleetBodyAhead(f);continue;}   /* мастер заранее (17a0), тело — за тесным краем */
     const s=fleetScale(Z),art=fleetArtOf(f,false);if(!art)continue;
     /* место, курс и масштаб известны — матрица сразу в fleetShipAt, без 2D-стека на #c (25.09) */
     const c=Math.cos(p.a)*s,q=Math.sin(p.a)*s;
@@ -26954,6 +26961,22 @@ const FLEET_PAINT=new WeakMap();
    за кадр, до готовности null. Без ahead — борт уже на экране, а мастера нет (загрузка,
    прыжок): допекаем целиком, планировщик считает PB_SYNC. На S23 пять мастеров за кадр
    давали хвост в 100 мс (Контроль, 25.09) */
+/* корпус тела борта (17c2e → hullGpuBake): тот же вызов, что сделает кадр первого появления
+   (те же аргументы, что arrWarmHull), — но заранее, пока борт ещё за краем экрана. Тело печётся
+   в кадре первого появления синхронно: на S23 одна выпечка 800–1024 px — до 30 мс JS и мипы на GPU
+   (07.11, ворота: хитчи 33 мс в кадрах первого появления лайнеров) */
+function* fleetBodyJob(f){
+  const id=bodyFleetHull(f);if(!id)return null;
+  const h=hullOf(id);return hullGpuBake(h,id,hullGpuSb(h,GPU.bw/W))!==null;
+}
+/* тело печётся заранее только за ТЕСНЫМ краем (0.25 экрана — зовут те, у кого есть x,y борта):
+   выпечка одна и влезает в полсекунды подхода. Широкий маргин (1.6, как у окраски) не годится:
+   далёких бортов много, кэш корпусов держит восемь, и выпечки тех, кто не появится, вытесняли бы
+   нужные — на маршрутах гостиницы и звезды это давало хитчи хуже исходных (07.11) */
+function fleetBodyAhead(f){
+  const key="fl"+f.k+f.seed+"!"+(f.by||"gt");
+  prebake("hbf|"+key,()=>fleetBodyJob(f),false);
+}
 function fleetArtOf(f,ahead){
   const key="fl"+f.k+f.seed+"!"+(f.by||"gt");
   const had=artGet(FLEET_ART,key);if(had)return had;
@@ -46866,6 +46889,17 @@ function lootIcon(col){
     for(let i=0;i<6;i++){const a=i/6*TAU,rr=s*(i%2?.72:1);i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
     g.closePath();g.fill();g.stroke();});
 }
+/* пират за краем экрана (маргин 1.6, как у полосы 17g): сварка (12i pirateArtOf) и тело (17c2e → hullGpuBake)
+   печутся заранее, в бюджете prebake, — те же вызовы, что сделает кадр первого появления, но без синхронной
+   выпечки в лицо (07.11, S23: две выпечки + мипы в одном кадре давали 33-мс рывок). Раз в полсекунды на борт:
+   prebake по тому же ключу просто отвечает кэшем, а тело, вытесненное кэшем корпусов, допекается */
+function pirateBakeAhead(p){
+  if(GPU.frameNo-(p.bkF|0)<24)return;p.bkF=GPU.frameNo;
+  prebake("pka|"+p.shipId+"|"+(p.rogue||p.hunter?1:0)+"|"+p.rank+"|"+(p.deserter?1:0),
+    function*(){return pirateArtOf(p.shipId,p.rogue||p.hunter,p.wreck?2:(p.hull||0)<(p.hullMax||1)*.5,p.rank|0,p.deserter?1:0)?{art:1}:null;},false);
+  const h=hullOf(p.shipId);
+  prebake("pkh|"+p.shipId,function*(){return hullGpuBake(h,p.shipId,hullGpuSb(h,GPU.bw/W))?{ok:1}:null;},false);
+}
 function drawCombat(zx,zy,Z){
   /* лучи (M364) и болты — светящейся энергией на видеокарте (13z) */
   gpuCombatEnergy(zx,zy,Z);
@@ -46898,7 +46932,10 @@ function drawCombat(zx,zy,Z){
      (gpuPirateLive, 12i) */
   const PV=[];
   for(const p of G.pirates){const x=zx(p.x),y=zy(p.y);
-    if(x>-60&&x<W+60&&y>-60&&y<H+60)PV.push({p,x,y,s:shipScaleAt(Z)*.82});}   /* один потолок с кораблём (16c, п. 2) */
+    if(x>-60&&x<W+60&&y>-60&&y<H+60)PV.push({p,x,y,s:shipScaleAt(Z)*.82});
+    /* борт ещё за краем (тот же маргин, что у полосы 17g): сварка и тело пекутся заранее —
+       кадр первого появления находит готовое, а не две выпечки с мипами в лицо */
+    else if(pbOnScreen(x,y,0,0,1.6))pirateBakeAhead(p);}   /* один потолок с кораблём (16c, п. 2) */
   gpuPirateLive(pass,PV,false);
   /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в чужой раскраске:
      выпечка по seed, свет звезды на видеокарте (G4), живой слой — gpuPirateLive. 2D-пути нет (25.09) */
@@ -54587,7 +54624,9 @@ ${GNB_WC}
   /* край мягкий и наружу, и внутрь: ~135 CSS px на тыле, ~115 на боках и к звезде — 10–90%
      непрозрачности ≥40 px при 760; резкая граница читалась лужей (автор, 24.09) */
   let wsoft=mix(135.,115.,smoothstep(-.75,-.25,fd));
-  let body=1.-smoothstep(-wsoft*.78,wsoft*.22,dpx);
+  /* L1b Б: на теневой стороне внешний скат длиннее — сгусток за стеной вливается
+     в неё, а не светится рыбкой с хвостом. Освещённый край не тронут. */
+  let body=1.-smoothstep(-wsoft*.78,wsoft*(.22+.28*max(-fd,0.)),dpx);
   /* газ за телом закрыт его силуэтом; звёзды — по толщине: столп в 20–60 px просвечивает
      ими вполсилы, стена глухая */
   /* толща неровная: сгустки и разрежения, а не ровная чернота */
@@ -62983,7 +63022,8 @@ function drawSysLane(zx,zy,Z){
 /* ── очередь у дока и два движения мимо неё ── */
 function laneShip(f,x,y,a,al,Z){
   /* за краем (до 1.6 экрана) или ещё прозрачен — мастер печётся заранее, шагом (17a0) */
-  if(al<=.02||x<-200||x>W+200||y<-200||y>H+200){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);return;}
+  if(al<=.02||x<-200||x>W+200||y<-200||y>H+200){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);
+    if(pbOnScreen(x,y,0,0,.25))fleetBodyAhead(f);return;}
   /* издали очередь сжимается с миром: эллипс ожидания 150×70 на ×0.16 — полсотни пикселей,
      корабли с полом масштаба ложились в нём друг на друга кашей (снимок автора 19.09) */
   const s=Math.min(fleetScale(Z),Z*1.4)*.62,c=Math.cos(a)*s,q=Math.sin(a)*s;
@@ -64630,6 +64670,7 @@ function gestRect(SH,P,x0,y0,w,h,C){gpuQuad(SH,P(x0,y0),P(x0+w,y0),P(x0+w,y0+h),
 /* за краем — мастер шагами, как у полосы (17g): пикет подходит с кормы из-за экрана, и печь его целиком в кадр
    прилёта незачем (S23, раунд 10) */
 function gestShip(f,x,y,r,s,al){const c=Math.cos(r)*s,q=Math.sin(r)*s,off=x<-200||x>W+200||y<-200||y>H+200;
+  if(off&&pbOnScreen(x,y,0,0,.25))fleetBodyAhead(f);
   fleetShipAt(f,off?fleetArtOf(f,true)||false:null,c,q,-q,c,x,y,al);}
 function drawGesture(zx,zy,Z){
   const g=gestLive();if(!g||typeof fleetShipAt!=="function")return;
@@ -72124,7 +72165,7 @@ function drawLanding(){
      которой шахту лечили в M219. Дымка живёт там, где земля встречается с
      воздухом: у кромки грунта, а если та ушла ниже кадра — у нижней кромки. */
   const hzY=clamp(groundAt(tr,L.x)-camy,H*.30,H*.86);
-  hazeBand(p,hzY,H*.20);   /* пол дымки не ниже .86H (M304) */
+  hazeBand(p,hzY,clamp(H*.20,64,110));   /* пол дымки не ниже .86H (M304); ширина — кисть 64-110 px, не пятая кадра */
   /* ── тёплый источник на заходе (M308): солнце за дымкой ──
      Терранский мир с высоты был одной температурой: прибор мерил pair 0, и
      это честно — синий воздух над синей землёй. Но у горизонта, со стороны
@@ -83845,10 +83886,64 @@ function decoDryTree(A){
   ctx.restore();
 }
 /* ── камень ── */
+/* крона лишайника выращена, не поставлена пятном (growLichen, 22a).
+   Лопасти клипуются по телу: над силуэтом ничего не висит. Зелёный —
+   тот же, что у валунов посадки (19), и только на живых мирах.
+   Считается в этой кисти: выпечка деко (21bc) зовёт её раз на свет. */
+function decoLichenCrown(A,pts){
+  const p=A.p,pal=A.pal;
+  if(!pts||pts.length<3||!p||!pal||!pal[3])return;
+  if(["terran","jungle","ocean","toxic"].indexOf(p.type)<0)return;
+  if(typeof growLichen!=="function")return;
+  let minY=pts[0][1],maxY=minY,minX=pts[0][0],maxX=minX;
+  for(let i=1;i<pts.length;i++){
+    const q=pts[i];
+    if(q[1]<minY)minY=q[1];if(q[1]>maxY)maxY=q[1];
+    if(q[0]<minX)minX=q[0];if(q[0]>maxX)maxX=q[0];
+  }
+  const bh=maxY-minY,bw=maxX-minX;
+  if(bh<6||bw<6)return;
+  /* гребень — верхняя треть: крона сужается к плечам вместе с камнем */
+  const band=minY+bh*.32;
+  let x0=maxX,x1=minX,nt=0;
+  for(let i=0;i<pts.length;i++){
+    if(pts[i][1]>band)continue;
+    if(pts[i][0]<x0)x0=pts[i][0];
+    if(pts[i][0]>x1)x1=pts[i][0];
+    nt++;
+  }
+  if(nt<2){x0=minX+bw*.25;x1=maxX-bw*.25;}
+  const span=Math.max(8,(x1-x0)*.5),cx=(x0+x1)*.5;
+  const rl=rng(hashi(POI_SEED|0,0x11C4,7));
+  const lit=DECO_LIT;
+  const tone=v=>Math.round(clamp(v*lit,0,255));
+  const gcol=[tone(lerp(pal[3][0],96,.5)),tone(lerp(pal[3][1],132,.35)),tone(lerp(pal[3][2],96,.5))];
+  const rgba="rgba("+gcol.join(",")+",";
+  ctx.save();decoPoly(pts);ctx.clip();
+  for(let i=0;i<3;i++){
+    const u=i-1,growR=4+rl()*4;
+    /* шум роста абсолютный (1.2): на радиусе камня контур вышел бы гладким
+       эллипсом. Растим как валун посадки и растягиваем лопасти на гребень */
+    const lp=growLichen(rl,growR,26);
+    if(!lp.length)continue;
+    const R=span*((i===1)?.58:.4)*(.84+rl()*.28),sc=Math.max(1,R/growR);
+    ctx.save();
+    ctx.translate(cx+u*span*.7+(rl()-.5)*span*.16,minY+bh*(.08+rl()*.05));
+    ctx.scale(sc,sc*.55);
+    ctx.beginPath();ctx.moveTo(lp[0][0],lp[0][1]);
+    for(let k=1;k<lp.length;k++)ctx.lineTo(lp[k][0],lp[k][1]);
+    ctx.closePath();
+    ctx.fillStyle=rgba+".26)";ctx.fill();
+    ctx.strokeStyle=rgba+".4)";ctx.lineWidth=Math.max(.8,R*.045)/sc;ctx.lineJoin="round";
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+}
 function decoStack(A){
   const {pal,w,hgt}=A,ls=decoLitSide();
   const tiers=2+Math.floor(h01(1,3,POI_SEED)*2);
-  let y=4,wd=w*1.6;
+  let y=4,wd=w*1.6,crown=null;
   for(let i=0;i<tiers;i++){
     const hh=hgt/tiers*(.8+h01(i,5,POI_SEED)*.4),off=(h01(i,7,POI_SEED)-.5)*w*.5;
     const pts=[];
@@ -83869,10 +83964,11 @@ function decoStack(A){
     /* трещина */
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=1.2;
     ctx.beginPath();ctx.moveTo(off-wd*.2,y-hh*.9);ctx.lineTo(off+wd*.05,y-hh*.55);ctx.lineTo(off-wd*.08,y-hh*.2);ctx.stroke();
+    crown=pts;
     y-=hh*.92;wd*=.72;
   }
-  /* лишайник — плоское пятно сверху */
-  ctx.fillStyle=dcol(pal,3,1.05,.5);ctx.beginPath();ctx.ellipse(0,y+hgt*.06,wd*.9,hgt*.03,0,0,TAU);ctx.fill();
+  /* лишайник — крона лопастей на верхнем камне, не пятно */
+  decoLichenCrown(A,crown);
 }
 function decoBoulderLone(A){
   const {pal,w,hgt}=A,ls=decoLitSide();
@@ -83884,6 +83980,7 @@ function decoBoulderLone(A){
   ctx.fillStyle=dcol(pal,4,1.15,.4);ctx.beginPath();ctx.ellipse(ls*w*.5,-hgt*.9,w*.55,hgt*.16,ls*.3,0,TAU);ctx.fill();
   ctx.fillStyle="rgba(0,0,0,.22)";ctx.beginPath();ctx.ellipse(-ls*w*.6,-hgt*.35,w*.6,hgt*.5,0,0,TAU);ctx.fill();
   ctx.restore();
+  decoLichenCrown(A,pts);
 }
 /* ── лёд ── */
 function decoHummock(A){
@@ -111424,14 +111521,17 @@ function drawPostcard(c,s,w,h){
   c.save();
   c.beginPath();c.rect(0,0,w,h);c.clip();
 
-  /* ── 1. небо ── */
+  /* ── 1. небо ──
+     Зенит — плоская заливка, переход к горизонту — кисть, лежащая на hy:
+     две массы вместо одного длинного ската. Кисть со своим зерном — звёзды
+     и грунт существующих карточек не сдвигаются (закон pcNebula). */
   const skH=dim(T.sky[0],.62), skZ=dim(T.sky[1],.5);
   {
-    const g=c.createLinearGradient(0,0,0,hy+h*.06);
-    g.addColorStop(0,pcC(skZ,day));
-    g.addColorStop(.70,pcC(pcMix(skZ,skH,.75),day));
-    g.addColorStop(1,pcC(skH,day));
-    c.fillStyle=g;c.fillRect(0,0,w,hy+h*.07);
+    c.fillStyle=pcC(skZ,day);c.fillRect(0,0,w,hy);
+    const bh=h*.08,rw=rng(hashi(p.seed,0x5748,3));
+    c.save();c.translate(0,hy);c.scale(1,.25);
+    pcWash(c,rw,w*.5,0,w*1.1,bh*1.6,pcC(skH,day),5);
+    c.restore();
   }
 
   /* ── 2. звёзды ──

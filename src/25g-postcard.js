@@ -233,14 +233,17 @@ function drawPostcard(c,s,w,h){
   c.save();
   c.beginPath();c.rect(0,0,w,h);c.clip();
 
-  /* ── 1. небо ── */
+  /* ── 1. небо ──
+     Зенит — плоская заливка, переход к горизонту — кисть, лежащая на hy:
+     две массы вместо одного длинного ската. Кисть со своим зерном — звёзды
+     и грунт существующих карточек не сдвигаются (закон pcNebula). */
   const skH=dim(T.sky[0],.62), skZ=dim(T.sky[1],.5);
   {
-    const g=c.createLinearGradient(0,0,0,hy+h*.06);
-    g.addColorStop(0,pcC(skZ,day));
-    g.addColorStop(.70,pcC(pcMix(skZ,skH,.75),day));
-    g.addColorStop(1,pcC(skH,day));
-    c.fillStyle=g;c.fillRect(0,0,w,hy+h*.07);
+    c.fillStyle=pcC(skZ,day);c.fillRect(0,0,w,hy);
+    const bh=h*.08,rw=rng(hashi(p.seed,0x5748,3));
+    c.save();c.translate(0,hy);c.scale(1,.25);
+    pcWash(c,rw,w*.5,0,w*1.1,bh*1.6,pcC(skH,day),5);
+    c.restore();
   }
 
   /* ── 2. звёзды ──

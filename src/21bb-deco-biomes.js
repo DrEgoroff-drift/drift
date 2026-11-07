@@ -89,10 +89,64 @@ function decoDryTree(A){
   ctx.restore();
 }
 /* ── камень ── */
+/* крона лишайника выращена, не поставлена пятном (growLichen, 22a).
+   Лопасти клипуются по телу: над силуэтом ничего не висит. Зелёный —
+   тот же, что у валунов посадки (19), и только на живых мирах.
+   Считается в этой кисти: выпечка деко (21bc) зовёт её раз на свет. */
+function decoLichenCrown(A,pts){
+  const p=A.p,pal=A.pal;
+  if(!pts||pts.length<3||!p||!pal||!pal[3])return;
+  if(["terran","jungle","ocean","toxic"].indexOf(p.type)<0)return;
+  if(typeof growLichen!=="function")return;
+  let minY=pts[0][1],maxY=minY,minX=pts[0][0],maxX=minX;
+  for(let i=1;i<pts.length;i++){
+    const q=pts[i];
+    if(q[1]<minY)minY=q[1];if(q[1]>maxY)maxY=q[1];
+    if(q[0]<minX)minX=q[0];if(q[0]>maxX)maxX=q[0];
+  }
+  const bh=maxY-minY,bw=maxX-minX;
+  if(bh<6||bw<6)return;
+  /* гребень — верхняя треть: крона сужается к плечам вместе с камнем */
+  const band=minY+bh*.32;
+  let x0=maxX,x1=minX,nt=0;
+  for(let i=0;i<pts.length;i++){
+    if(pts[i][1]>band)continue;
+    if(pts[i][0]<x0)x0=pts[i][0];
+    if(pts[i][0]>x1)x1=pts[i][0];
+    nt++;
+  }
+  if(nt<2){x0=minX+bw*.25;x1=maxX-bw*.25;}
+  const span=Math.max(8,(x1-x0)*.5),cx=(x0+x1)*.5;
+  const rl=rng(hashi(POI_SEED|0,0x11C4,7));
+  const lit=DECO_LIT;
+  const tone=v=>Math.round(clamp(v*lit,0,255));
+  const gcol=[tone(lerp(pal[3][0],96,.5)),tone(lerp(pal[3][1],132,.35)),tone(lerp(pal[3][2],96,.5))];
+  const rgba="rgba("+gcol.join(",")+",";
+  ctx.save();decoPoly(pts);ctx.clip();
+  for(let i=0;i<3;i++){
+    const u=i-1,growR=4+rl()*4;
+    /* шум роста абсолютный (1.2): на радиусе камня контур вышел бы гладким
+       эллипсом. Растим как валун посадки и растягиваем лопасти на гребень */
+    const lp=growLichen(rl,growR,26);
+    if(!lp.length)continue;
+    const R=span*((i===1)?.58:.4)*(.84+rl()*.28),sc=Math.max(1,R/growR);
+    ctx.save();
+    ctx.translate(cx+u*span*.7+(rl()-.5)*span*.16,minY+bh*(.08+rl()*.05));
+    ctx.scale(sc,sc*.55);
+    ctx.beginPath();ctx.moveTo(lp[0][0],lp[0][1]);
+    for(let k=1;k<lp.length;k++)ctx.lineTo(lp[k][0],lp[k][1]);
+    ctx.closePath();
+    ctx.fillStyle=rgba+".26)";ctx.fill();
+    ctx.strokeStyle=rgba+".4)";ctx.lineWidth=Math.max(.8,R*.045)/sc;ctx.lineJoin="round";
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+}
 function decoStack(A){
   const {pal,w,hgt}=A,ls=decoLitSide();
   const tiers=2+Math.floor(h01(1,3,POI_SEED)*2);
-  let y=4,wd=w*1.6;
+  let y=4,wd=w*1.6,crown=null;
   for(let i=0;i<tiers;i++){
     const hh=hgt/tiers*(.8+h01(i,5,POI_SEED)*.4),off=(h01(i,7,POI_SEED)-.5)*w*.5;
     const pts=[];
@@ -113,10 +167,11 @@ function decoStack(A){
     /* трещина */
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=1.2;
     ctx.beginPath();ctx.moveTo(off-wd*.2,y-hh*.9);ctx.lineTo(off+wd*.05,y-hh*.55);ctx.lineTo(off-wd*.08,y-hh*.2);ctx.stroke();
+    crown=pts;
     y-=hh*.92;wd*=.72;
   }
-  /* лишайник — плоское пятно сверху */
-  ctx.fillStyle=dcol(pal,3,1.05,.5);ctx.beginPath();ctx.ellipse(0,y+hgt*.06,wd*.9,hgt*.03,0,0,TAU);ctx.fill();
+  /* лишайник — крона лопастей на верхнем камне, не пятно */
+  decoLichenCrown(A,crown);
 }
 function decoBoulderLone(A){
   const {pal,w,hgt}=A,ls=decoLitSide();
@@ -128,6 +183,7 @@ function decoBoulderLone(A){
   ctx.fillStyle=dcol(pal,4,1.15,.4);ctx.beginPath();ctx.ellipse(ls*w*.5,-hgt*.9,w*.55,hgt*.16,ls*.3,0,TAU);ctx.fill();
   ctx.fillStyle="rgba(0,0,0,.22)";ctx.beginPath();ctx.ellipse(-ls*w*.6,-hgt*.35,w*.6,hgt*.5,0,0,TAU);ctx.fill();
   ctx.restore();
+  decoLichenCrown(A,pts);
 }
 /* ── лёд ── */
 function decoHummock(A){
