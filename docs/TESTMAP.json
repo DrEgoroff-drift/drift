@@ -52,6 +52,7 @@
   "tests/91qo-prefetch.js": ["src/06-galaxy.js", "src/07a-terrain.js", "src/08-state.js", "src/17-mode-system.js", "src/19-mode-landing.js", "src/21-mode-surface.js", "src/21pf-pln-land.js", "src/21pg-pln-flora.js"],
   "tests/91qo-savefuzz.js": ["src/08-state.js", "src/08a-statehash.js", "src/14-save.js", "src/14a-cloud.js"],
   "tests/91qp-cloudchaos.js": ["src/01-core.js", "src/14-save.js", "src/14a-cloud.js", "src/23cc-mine-play.js"],
+  "tests/91zzz-fleet-rare.js": ["src/08-state.js", "src/12m-rare.js", "src/21pii-pln-settle.js"],
   "tests/91zzza-e2e.js": ["src/08-state.js", "src/21pii-pln-settle.js", "src/28-loop.js", "src/28y-look.js"],
   "tests/91zzzb-land.js": ["src/01-core.js", "src/06-galaxy.js", "src/08-state.js", "src/12ue-boxes.js", "src/19-mode-landing.js", "src/21pii-pln-settle.js", "src/26-ui-station.js", "src/27z-telemetry.js", "src/28-loop.js", "src/28y-look.js"],
   "tests/91zzze-sync.js": ["src/08-state.js", "src/14-save.js", "src/14a-cloud.js"],
