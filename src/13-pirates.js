@@ -375,6 +375,17 @@ function lootIcon(col){
     for(let i=0;i<6;i++){const a=i/6*TAU,rr=s*(i%2?.72:1);i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
     g.closePath();g.fill();g.stroke();});
 }
+/* пират за краем экрана (маргин 1.6, как у полосы 17g): сварка (12i pirateArtOf) и тело (17c2e → hullGpuBake)
+   печутся заранее, в бюджете prebake, — те же вызовы, что сделает кадр первого появления, но без синхронной
+   выпечки в лицо (07.11, S23: две выпечки + мипы в одном кадре давали 33-мс рывок). Раз в полсекунды на борт:
+   prebake по тому же ключу просто отвечает кэшем, а тело, вытесненное кэшем корпусов, допекается */
+function pirateBakeAhead(p){
+  if(GPU.frameNo-(p.bkF|0)<24)return;p.bkF=GPU.frameNo;
+  prebake("pka|"+p.shipId+"|"+(p.rogue||p.hunter?1:0)+"|"+p.rank+"|"+(p.deserter?1:0),
+    function*(){return pirateArtOf(p.shipId,p.rogue||p.hunter,p.wreck?2:(p.hull||0)<(p.hullMax||1)*.5,p.rank|0,p.deserter?1:0)?{art:1}:null;},false);
+  const h=hullOf(p.shipId);
+  prebake("pkh|"+p.shipId,function*(){return hullGpuBake(h,p.shipId,hullGpuSb(h,GPU.bw/W))?{ok:1}:null;},false);
+}
 function drawCombat(zx,zy,Z){
   /* лучи (M364) и болты — светящейся энергией на видеокарте (13z) */
   gpuCombatEnergy(zx,zy,Z);
@@ -407,7 +418,10 @@ function drawCombat(zx,zy,Z){
      (gpuPirateLive, 12i) */
   const PV=[];
   for(const p of G.pirates){const x=zx(p.x),y=zy(p.y);
-    if(x>-60&&x<W+60&&y>-60&&y<H+60)PV.push({p,x,y,s:shipScaleAt(Z)*.82});}   /* один потолок с кораблём (16c, п. 2) */
+    if(x>-60&&x<W+60&&y>-60&&y<H+60)PV.push({p,x,y,s:shipScaleAt(Z)*.82});
+    /* борт ещё за краем (тот же маргин, что у полосы 17g): сварка и тело пекутся заранее —
+       кадр первого появления находит готовое, а не две выпечки с мипами в лицо */
+    else if(pbOnScreen(x,y,0,0,1.6))pirateBakeAhead(p);}   /* один потолок с кораблём (16c, п. 2) */
   gpuPirateLive(pass,PV,false);
   /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в чужой раскраске:
      выпечка по seed, свет звезды на видеокарте (G4), живой слой — gpuPirateLive. 2D-пути нет (25.09) */

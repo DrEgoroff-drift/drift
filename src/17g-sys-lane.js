@@ -138,7 +138,8 @@ function drawSysLane(zx,zy,Z){
 /* ── очередь у дока и два движения мимо неё ── */
 function laneShip(f,x,y,a,al,Z){
   /* за краем (до 1.6 экрана) или ещё прозрачен — мастер печётся заранее, шагом (17a0) */
-  if(al<=.02||x<-200||x>W+200||y<-200||y>H+200){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);return;}
+  if(al<=.02||x<-200||x>W+200||y<-200||y>H+200){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);
+    if(pbOnScreen(x,y,0,0,.25))fleetBodyAhead(f);return;}
   /* издали очередь сжимается с миром: эллипс ожидания 150×70 на ×0.16 — полсотни пикселей,
      корабли с полом масштаба ложились в нём друг на друга кашей (снимок автора 19.09) */
   const s=Math.min(fleetScale(Z),Z*1.4)*.62,c=Math.cos(a)*s,q=Math.sin(a)*s;

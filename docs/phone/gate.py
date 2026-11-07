@@ -9,7 +9,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from phcommon import PORT, OUT
 import cdp
 sys.stdout.reconfigure(encoding='utf-8')
-A = r'C:\Android\platform-tools\adb.exe'
+A = os.environ.get('ADB') or next((p for p in (
+    r'C:\Users\Drew\AppData\Local\Microsoft\WinGet\Packages\Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe\platform-tools\adb.exe',
+    r'C:\Android\platform-tools\adb.exe') if os.path.exists(p)), 'adb')
 S = OUT
 name = sys.argv[1]; DUR = int(sys.argv[2]) if len(sys.argv) > 2 else 30
 # host: another site = an empty WebGPU shader cache (Chrome keeps compiled pipelines per site, 25.09: the same build hitched
@@ -149,7 +151,7 @@ wrap(d,"createTexture",a=>{C.tex++;R.live++;const o=a[0]||{},z=o.size;
 R.gd=[];
 wrap(q,"writeTexture",a=>{C.wt++;C.by+=(a[1]&&a[1].byteLength)|0;});wrap(q,"copyExternalImageToTexture",a=>{C.cx++;const s=a[0]&&a[0].source;C.by+=s?(s.width*s.height*4)|0:0;});
 wrap(q,"writeBuffer",a=>{C.wb++;});
-{const M0=gpuMipTex;gpuMipTex=function(cv){const e=GPU_MIP.get(cv);if(e&&e.dev===GPU.dev)return e;const t=performance.now();const r=M0(cv);
+{const M0=typeof gpuMipTex==="function"?gpuMipTex:null;if(M0)gpuMipTex=function(cv){const e=GPU_MIP.get(cv);if(e&&e.dev===GPU.dev)return e;const t=performance.now();const r=M0(cv);
   R.mips.push([Math.round(t-start-WARM),+(performance.now()-t).toFixed(1),cv.width+"x"+cv.height,who(3)]);return r;};}
 {const td=GPUTexture.prototype.destroy;GPUTexture.prototype.destroy=function(){R.live--;return td.call(this);};}
 try{new PerformanceObserver(l=>{for(const e of l.getEntries())R.lt.push([Math.round(e.startTime-start-WARM),Math.round(e.duration)]);}).observe({type:"longtask",buffered:false});}catch(e){}

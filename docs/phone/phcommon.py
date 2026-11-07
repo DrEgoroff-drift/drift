@@ -8,7 +8,9 @@ The phone is the author's S23 (SM-S918), found by mdns over Wi-Fi and by model. 
 import os, re, subprocess, sys
 H = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(H, '..', 'night-2026-09-13', 'raw', 'phone-tools'))
-A = os.environ.get('ADB', r'C:\Android\platform-tools\adb.exe')
+A = os.environ.get('ADB') or next((p for p in (
+    r'C:\Users\Drew\AppData\Local\Microsoft\WinGet\Packages\Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe\platform-tools\adb.exe',
+    r'C:\Android\platform-tools\adb.exe') if os.path.exists(p)), 'adb')
 
 
 def _flag(k, dflt=None):

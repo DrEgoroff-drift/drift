@@ -136,11 +136,17 @@ function gpuPipesLate(){
   const d=gpuPipesDev(),t0=wallMs(),L=GPU_PIPES.late={n:0,ms:0,done:false,bad:[],asked:0};
   const todo=GPU_LATE_KEYS.map(k=>()=>{const r=gpuPipeRecipe(k);return r?[[k,r]]:(L.bad.push(k),[]);}).concat(
     GPU_LATE_GROUPS.map(g=>()=>g()));
-  const flat=[];let last=-1e9;
+  const flat=[];let last=-1e9,skip=0;
   const next=()=>{
     if(GPU_PIPES.dev!==d)return;   /* устройство сменилось: прогрев нового начнёт свой */
     /* темп смотрим перед каждым шагом: игрок вошёл в док — очередь ускоряется, не дожидаясь шага полёта */
     const wait=last+gpuLateGap()-wallMs();if(wait>1){setTimeout(next,Math.min(wait,250));return;}
+    /* телефон (07.11, S23 на зарядке): сборка одного конвейера — 15–73 мс процесса GPU, и кадр,
+       который и так не укладывается, получает от неё 33-мс рывок. Тяжёлый кадр — шаг откладываем
+       (не больше четырёх подряд: очереди нельзя встать навсегда), сборка уходит в тихий кадр.
+       Картинка не меняется — конвейеры режимов игроку не видны, пока не войдёт в режим */
+    if(resEma>19&&skip<4){skip++;last=wallMs();setTimeout(next,250);return;}
+    skip=0;
     while(!flat.length&&todo.length){try{for(const x of todo.shift()())flat.push(x);}catch(e){L.bad.push(String(e&&e.message||e).slice(0,60));}}
     const it=flat.shift();
     if(!it){L.done=true;L.ms=Math.round(wallMs()-t0);return;}

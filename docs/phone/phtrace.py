@@ -7,7 +7,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from phcommon import PORT, OUT
 import cdp
 sys.stdout.reconfigure(encoding='utf-8')
-A = r'C:\Android\platform-tools\adb.exe'
+A = os.environ.get('ADB') or next((p for p in (
+    r'C:\Users\Drew\AppData\Local\Microsoft\WinGet\Packages\Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe\platform-tools\adb.exe',
+    r'C:\Android\platform-tools\adb.exe') if os.path.exists(p)), 'adb')
 S = OUT
 name = sys.argv[1]; SECS = float(sys.argv[2]) if len(sys.argv) > 2 else 22
 from phcommon import device
