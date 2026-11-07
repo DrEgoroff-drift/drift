@@ -106,7 +106,8 @@ function groveOnKill(a,power){
   if(!a.grove)return;
   const M=groveAll();
   if(groveDepthHere()!==2)return;                    /* окраинный нарост — просто минерал */
-  if(power>=3){if(!M.shot){M.shot=1;logAdd("dim","Роща расступилась. Больше не подойдёт.");}}
+  /* порог — пушка корабля (1.5), ракета (3.2) тоже выстрел; резак (1.2) — срез */
+  if(power>=1.5){if(!M.shot){M.shot=1;logAdd("dim","Роща расступилась. Больше не подойдёт.");}}
   else{
     G.cargo.xeno=(G.cargo.xeno||0)+6;
     if(!M.cut){M.cut=1;logAdd("dim","Срезал. Роща сомкнулась — теперь навсегда.");}

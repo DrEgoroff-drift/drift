@@ -823,9 +823,9 @@ GIFT_W                       src/11at-gift.js:27
 GLAZE_PASS                   src/18a1-glaze.js:32
 GLOB                         src/25f-globus.js:44
 GLOB_STEP                    src/25f-globus.js:43
-GLOW_LAMP                    src/11i-glow.js:48
+GLOW_LAMP                    src/11i-glow.js:49
 GLOW_SP                      src/16a0-glow.js:5
-GLOW_TIERS                   src/11i-glow.js:80
+GLOW_TIERS                   src/11i-glow.js:81
 GLT_H                        src/08b-gpu.js:481
 GLW                          src/21piic-pln-glow.js:11
 GNB                          src/16gb-gpu-nebula.js:17
@@ -4735,18 +4735,18 @@ globusAim                    src/25f-globus.js:49-68
 globusDraw                   src/25f-globus.js:113-138
 globusPaint                  src/25f-globus.js:81-111
 globusTick                   src/25f-globus.js:70-77
-glowCaveX                    src/11i-glow.js:103-106
+glowCaveX                    src/11i-glow.js:109-112
 glowCone                     src/17e-station-body.js:55-59
-glowCorePlanet               src/11i-glow.js:33-37
+glowCorePlanet               src/11i-glow.js:33-38
 glowDepthAt                  src/11i-glow.js:24-29
 glowDepthHere                src/11i-glow.js:30
-glowDressFlora               src/11i-glow.js:42-45
-glowFlash                    src/11i-glow.js:89-101
-glowGroundLine               src/11i-glow.js:69-74
-glowIsCore                   src/11i-glow.js:38
-glowPatches                  src/11i-glow.js:59-68
-glowScan                     src/11i-glow.js:50-54
-glowTier                     src/11i-glow.js:81-87
+glowDressFlora               src/11i-glow.js:43-46
+glowFlash                    src/11i-glow.js:95-107
+glowGroundLine               src/11i-glow.js:70-75
+glowIsCore                   src/11i-glow.js:39
+glowPatches                  src/11i-glow.js:60-69
+glowScan                     src/11i-glow.js:51-55
+glowTier                     src/11i-glow.js:82-93
 glyphEl                      src/12t-settle.js:79-91
 glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:93-103
@@ -4950,10 +4950,10 @@ groveDepthHere               src/11j-grove.js:37
 groveDress                   src/11j-grove.js:60-76
 groveEtherLine               src/11j-grove.js:52-55
 groveMark                    src/11j-grove.js:77-80
-groveOnKill                  src/11j-grove.js:105-114
+groveOnKill                  src/11j-grove.js:105-115
 groveSys                     src/11j-grove.js:39-51
 groveTick                    src/11j-grove.js:85-101
-groveVisit                   src/11j-grove.js:116-118
+groveVisit                   src/11j-grove.js:117-119
 growLichen                   src/22a-cave-deco.js:252-284
 grownAll                     src/11q-grown.js:19
 grownDepthAt                 src/11q-grown.js:20-25
@@ -9357,10 +9357,10 @@ zoomTo                       src/15-input.js:358
 ## src/11h-hours.js · 9 KB
   · расхождение времён: уезд, где часам не верят:1
 
-## src/11i-glow.js · 7 KB
+## src/11i-glow.js · 8 KB
   · свет, который помнит: уезд вокруг Подглядки:1
 
-## src/11j-grove.js · 7 KB
+## src/11j-grove.js · 8 KB
   · роща: пояс, который отвечает на тягу:1
 
 ## src/11k-keepers.js · 10 KB

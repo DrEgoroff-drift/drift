@@ -33,9 +33,10 @@ function glowDepthHere(){return glowDepthAt(G.sx,G.sy);}
 function glowCorePlanet(sys){
   if(!sys||glowDepthAt(sys.sx,sys.sy)!==2)return null;
   const ps=sys.planets||[];
-  return ps.find(p=>p.type!=="gas"&&p.moons&&p.moons.length)||ps.find(p=>p.type!=="gas")||null;
+  /* без спутника луг темнеет никогда — обещать его нельзя (правило 2 луга) */
+  return ps.find(p=>p.type!=="gas"&&p.moons&&p.moons.length)||null;
 }
-function glowIsCore(p){const c=glowCorePlanet(G.sys);return !!(c&&p&&c.idx===p.idx);}
+function glowIsCore(p){const c=glowCorePlanet(G.sys);return !!(c&&p&&c.key===p.key);}
 /* ── окраина: флора светится, площадка освещена ──
    Зовётся из enterSurface: все растения мира получают glow. Это не редкость,
    а быт — поэтому всем, а не каждому третьему. */
@@ -80,7 +81,12 @@ function glowGroundLine(){
 const GLOW_TIERS=[{k:1.4,flash:1},{k:.9,flash:0},{k:.34,flash:0,run:1}];
 function glowTier(P,p){
   if(!glowIsCore(p))return null;
-  const t=GLOW_TIERS[(P.pass|0)%3];
+  /* три сцены в одно затмение: старый ярус по номеру прохода требовал двух
+     полных проходов тьмы (1100 кадров), а затмение держит ~857 — тихий бегущий
+     не начинался никогда. Громкий с прожектором — первая половина прохода,
+     обычный — вторая, бегущий — со второго прохода, он успевает (fast 2). */
+  const pass=P.pass|0, half=(typeof PEEP_PASS==="number"?PEEP_PASS:430)*.5;
+  const t=GLOW_TIERS[pass>=1?2:((P.ph||0)<half?0:1)];
   if(!t.run)return {k:t.k,flash:t.flash,scene:P.scene,near:0};
   /* бегущий: один, без ноши, в ту сторону, где устье; вдвое быстрее */
   return {k:t.k,flash:0,near:150,scene:{n:1,load:"",dir:P.scene.dir,beat:0,lag:0,fast:2}};
