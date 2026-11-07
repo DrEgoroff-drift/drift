@@ -501,11 +501,26 @@ function drawPostcard(c,s,w,h){
       if(rk.rad*q<.8)continue;
       c.fillStyle=pcC(dim(pcMix(GC.deep,GC.body,rk.tint*.75),.4),day*.92);
       c.beginPath();
+      const ldx=sunX-x, ldy=(up?sunY:hy)-y, ld=Math.hypot(ldx,ldy)||1, ux=ldx/ld, uy=ldy/ld;
+      let fx=x, fy=y, ext=0;
       for(let i=0;i<rk.poly.length;i++){
         const px=x+rk.poly[i][0]*q*(rk.flip?-1:1), py=y+rk.poly[i][1]*q*.85;
         i?c.lineTo(px,py):c.moveTo(px,py);
+        const t=(px-x)*ux+(py-y)*uy;
+        if(t>ext){ext=t;fx=px;fy=py;}
       }
       c.closePath();c.fill();
+      /* освещённая щека к звезде: несколько пикселей GC.lit к цвету звезды, альфа ниже кромки грунта */
+      c.save();c.clip();
+      const cheek=Math.min(5,ext*.55);
+      if(cheek>.4){
+        const lc=dim(pcMix(GC.lit,star,.35),.5);
+        const lg=c.createLinearGradient(fx,fy,fx-ux*cheek,fy-uy*cheek);
+        lg.addColorStop(0,pcA(lc,up?.34:.14));
+        lg.addColorStop(1,pcA(lc,0));
+        c.fillStyle=lg;c.fill();
+      }
+      c.restore();
     }
     const flora=T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
                 p.mix==="toxic"||p.mix==="jungle";

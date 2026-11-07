@@ -71,7 +71,7 @@ AI_COST                      src/12f-mgr-ai.js:8
 AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12-18
 ALBUM_FX                     src/25g1-album-fx.js:14-21
-ALBUM_MAX                    src/25g-postcard.js:631
+ALBUM_MAX                    src/25g-postcard.js:646
 ALBUM_PAPER                  src/25g1-album-fx.js:31
 ALBUM_VIG                    src/25g1-album-fx.js:28
 ALLY_THR                     src/12a-crew.js:700
@@ -2600,7 +2600,7 @@ aiDrift                      src/12f-mgr-ai.js:52-105
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
-albumAll                     src/25g-postcard.js:632
+albumAll                     src/25g-postcard.js:647
 albumBake                    src/25g1-album-fx.js:81
 albumCanvas                  src/25g1-album-fx.js:104-111
 albumClose                   src/25g1-album-fx.js:113
@@ -2608,7 +2608,7 @@ albumDpr                     src/25g1-album-fx.js:112
 albumL                       src/25g1-album-fx.js:23
 albumLightbox                src/25g1-album-fx.js:115-160
 albumM                       src/25g1-album-fx.js:25
-albumOpen                    src/25g-postcard.js:681
+albumOpen                    src/25g-postcard.js:696
 albumPaper                   src/25g1-album-fx.js:32-52
 albumPut                     src/25g1-album-fx.js:96-102
 albumRig                     src/25g1-album-fx.js:87-94
@@ -2907,7 +2907,7 @@ beltHudPush                  src/24bc-belt-hud.js:442-456
 beltIcy                      src/24-mode-belt.js:70
 beltImpactDmg                src/24-mode-belt.js:201
 beltMaw                      src/24be-belt-rock-gpu.js:279-284
-beltPoiGpu                   src/24bb-belt-poi-gpu.js:25-101
+beltPoiGpu                   src/24bb-belt-poi-gpu.js:25-102
 beltRock                     src/24-mode-belt.js:102-106
 beltRockOf                   src/24-mode-belt.js:97-101
 beltRockTick                 src/24-mode-belt.js:107-114
@@ -3110,7 +3110,7 @@ c3SignTex                    src/27f4-cant3d.js:236-245
 c3Stool                      src/27f4-cant3d.js:90-99
 c3StoryProp                  src/27f4-cant3d.js:222-234
 camBody                      src/17-mode-system.js:82-91
-camBtnTick                   src/25g-postcard.js:670-674
+camBtnTick                   src/25g-postcard.js:685-689
 camFree                      src/17p-cam-frame.js:11-23
 camOffset                    src/19c-light.js:155-162
 camReach                     src/17p-cam-frame.js:25-30
@@ -3268,7 +3268,7 @@ caveCeilLow                  src/22-mode-cave.js:82-88
 caveCeilOf                   src/22-mode-cave.js:90
 caveDeco                     src/22a-cave-deco.js:98-104
 caveDecoAhead                src/22a-cave-deco.js:105-112
-caveDecoG                    src/22a-cave-deco.js:113-220
+caveDecoG                    src/22a-cave-deco.js:113-201
 caveFloor                    src/22-mode-cave.js:61-66
 caveFloorLow                 src/22-mode-cave.js:75-81
 caveFloorOf                  src/22-mode-cave.js:89
@@ -3277,7 +3277,7 @@ caveGalR                     src/22-mode-cave.js:40
 caveGalY                     src/22-mode-cave.js:35
 caveGridRead                 src/22d-cave-pln.js:160-166
 caveGridStep                 src/22d-cave-pln.js:151-159
-caveLampSpot                 src/22a-cave-deco.js:260-265
+caveLampSpot                 src/22a-cave-deco.js:241-246
 caveLowY                     src/22-mode-cave.js:42
 caveMake                     src/22-mode-cave.js:177-226
 caveMoveX                    src/22-mode-cave.js:255-260
@@ -3737,38 +3737,38 @@ dealRun                      src/27n-ui-deal.js:20
 dealTaken                    src/27g-deals.js:159
 dealsTick                    src/27g-deals.js:201-220
 decRu                        src/27y-hud-words.js:51
-decoAntenna                  src/21bb-deco-biomes.js:339-352
+decoAntenna                  src/21bb-deco-biomes.js:345-358
 decoBake                     src/21bc-deco-gpu.js:28-43
-decoBlister                  src/21bb-deco-biomes.js:265-275
+decoBlister                  src/21bb-deco-biomes.js:271-281
 decoBoulderLone              src/21bb-deco-biomes.js:176-187
 decoButte                    src/21bb-deco-biomes.js:39-62
 decoCanopy                   src/21ba-deco-shapes.js:227-312
 decoColumn                   src/21ba-deco-shapes.js:188-221
-decoCone                     src/21bb-deco-biomes.js:214-228
-decoCoral                    src/21bb-deco-biomes.js:301-321
-decoCrownRound               src/21bb-deco-biomes.js:378-383
+decoCone                     src/21bb-deco-biomes.js:220-234
+decoCoral                    src/21bb-deco-biomes.js:307-327
+decoCrownRound               src/21bb-deco-biomes.js:384-389
 decoDruse                    src/21ba-deco-shapes.js:12-37
 decoDryTree                  src/21bb-deco-biomes.js:63-90
 decoFrond                    src/21ba-deco-shapes.js:313-339
 decoGpu                      src/21bc-deco-gpu.js:50-71
-decoHummock                  src/21bb-deco-biomes.js:189-203
-decoLavaTree                 src/21bb-deco-biomes.js:229-243
+decoHummock                  src/21bb-deco-biomes.js:189-206
+decoLavaTree                 src/21bb-deco-biomes.js:235-249
 decoLichenCrown              src/21bb-deco-biomes.js:96-145
 decoLitSide                  src/21bb-deco-biomes.js:37
 decoPaint                    src/21bc-deco-gpu.js:11-22
-decoPodTree                  src/21bb-deco-biomes.js:245-264
+decoPodTree                  src/21bb-deco-biomes.js:251-270
 decoPoly                     src/21bb-deco-biomes.js:36
-decoScree                    src/21bb-deco-biomes.js:368-376
+decoScree                    src/21bb-deco-biomes.js:374-382
 decoShard                    src/21ba-deco-shapes.js:38-49
-decoShoreTree                src/21bb-deco-biomes.js:277-300
+decoShoreTree                src/21bb-deco-biomes.js:283-306
 decoSlab                     src/21ba-deco-shapes.js:53-99
-decoSpire                    src/21bb-deco-biomes.js:204-212
+decoSpire                    src/21bb-deco-biomes.js:207-218
 decoStack                    src/21bb-deco-biomes.js:146-175
-decoStair                    src/21bb-deco-biomes.js:353-366
-decoStela                    src/21bb-deco-biomes.js:323-338
+decoStair                    src/21bb-deco-biomes.js:359-372
+decoStela                    src/21bb-deco-biomes.js:329-344
 decoSway                     src/21bc-deco-gpu.js:45-49
 decoTruss                    src/21ba-deco-shapes.js:100-142
-decoTwinCanopy               src/21bb-deco-biomes.js:384
+decoTwinCanopy               src/21bb-deco-biomes.js:390
 decoWall                     src/21ba-deco-shapes.js:146-187
 deedAdd                      src/11ai-ledger.js:53-64
 depCheap                     src/21pzc-dep-value.js:22-27
@@ -4124,7 +4124,7 @@ drawHotel                    src/17l-hotel.js:147-185
 drawHullMarks                src/03b-hull-paint.js:124-431
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-50
-drawLander                   src/19f-lander.js:54-285
+drawLander                   src/19f-lander.js:54-290
 drawLanding                  src/19-mode-landing.js:226-347
 drawLawRing                  src/12al2-laws.js:139-147
 drawLoreMarks                src/12q-lore.js:235-262
@@ -4145,7 +4145,7 @@ drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:148-184
 drawPlanetWorks              src/17e-station-body.js:71-116
 drawPortal                   src/20aa-poi-shapes.js:459-483
-drawPostcard                 src/25g-postcard.js:170-615
+drawPostcard                 src/25g-postcard.js:170-630
 drawRaid                     src/24aa-raid-draw.js:14-609
 drawRail                     src/18g-rail-ride.js:120-154
 drawRailArrive               src/18g-rail-ride.js:18-21
@@ -4953,7 +4953,7 @@ groveOnKill                  src/11j-grove.js:105-114
 groveSys                     src/11j-grove.js:39-51
 groveTick                    src/11j-grove.js:85-101
 groveVisit                   src/11j-grove.js:116-118
-growLichen                   src/22a-cave-deco.js:271-303
+growLichen                   src/22a-cave-deco.js:252-284
 grownAll                     src/11q-grown.js:19
 grownDepthAt                 src/11q-grown.js:20-25
 grownDepthHere               src/11q-grown.js:26
@@ -7365,7 +7365,7 @@ poiTone                      src/20a-poi.js:176-180
 postAddrs                    src/11e-post.js:47-71
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113-142
-postCanShoot                 src/25g-postcard.js:636-653
+postCanShoot                 src/25g-postcard.js:651-668
 postCaption                  src/25g-postcard.js:114-124
 postChoose                   src/25i-post-back.js:48-51
 postDock                     src/11e-post.js:80-97
@@ -7383,7 +7383,7 @@ postSetForm                  src/25i-post-back.js:44-47
 postSign                     src/25i-post-back.js:35-41
 postSigned                   src/25i-post-back.js:32
 postSnap                     src/25g-postcard.js:65-108
-postTake                     src/25g-postcard.js:654-668
+postTake                     src/25g-postcard.js:669-683
 postTerrain                  src/25g-postcard.js:41-47
 postWorld                    src/25g-postcard.js:49-54
 powCoupOn                    src/12b0-fx-pow.js:26-29
@@ -7783,7 +7783,7 @@ relicRoll                    src/12h-relic.js:104-110
 relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113-121
 relicUnequip                 src/12h-relic.js:87
-renderAlbum                  src/25g-postcard.js:682-706
+renderAlbum                  src/25g-postcard.js:697-721
 renderBarge                  src/12l-barge.js:663-754
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-325
@@ -8728,7 +8728,7 @@ updateBarges                 src/12l-barge.js:170-203
 updateBase                   src/21a-mode-base.js:405-563
 updateBelt                   src/24-mode-belt.js:202-399
 updateCave                   src/22-mode-cave.js:261-446
-updateCaveDeco               src/22a-cave-deco.js:225-248
+updateCaveDeco               src/22a-cave-deco.js:206-229
 updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
@@ -10104,7 +10104,7 @@ zoomTo                       src/15-input.js:358
 ## src/19e-clouds.js · 5 KB
   · облака: данные планеты:1
 
-## src/19f-lander.js · 17 KB
+## src/19f-lander.js · 18 KB
   · посадочный корабль:1
 
 ## src/19g-landing-gpu.js · 31 KB
@@ -10236,7 +10236,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ba-deco-shapes.js · 18 KB
   · приметы места: формы:1
 
-## src/21bb-deco-biomes.js · 26 KB
+## src/21bb-deco-biomes.js · 27 KB
   · большая вещь на каждый биом (M352):1
 
 ## src/21bc-deco-gpu.js · 4 KB
@@ -10452,9 +10452,9 @@ zoomTo                       src/15-input.js:358
 ## src/22-mode-cave.js · 27 KB
   · пещера: поле породы в двух измерениях:1
 
-## src/22a-cave-deco.js · 17 KB
+## src/22a-cave-deco.js · 16 KB
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
-  · свой свет пещеры (M248):252
+  · свой свет пещеры (M248):233
 
 ## src/22b-cave-props.js · 5 KB
   · пещера: гладкий обвод и то, что в ней лежит (M305):1
@@ -10603,7 +10603,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/25g-postcard.js · 44 KB
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:617
+  · камера и альбом:632
 
 ## src/25g1-album-fx.js · 14 KB
   · альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3):1

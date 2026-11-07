@@ -69,7 +69,8 @@ function beltPoiGpu(pass,q,px,py,sc,fog){
     for(let i=0;i<3;i++){const a=i/3*TAU,o=P(0,0),b=P(Math.cos(a)*S*.24,Math.sin(a)*S*.24),c=P(Math.cos(a+.5)*S*.16,Math.sin(a+.5)*S*.16),C=dim(.4);
       SH.push([5,o[0],o[1],b[0],b[1],c[0],c[1],C[0],C[1],C[2],1,0]);}
     M=M0;
-    const bl=Math.pow(Math.max(0,Math.sin(G.t*.05+q.ph)),8);
+    /* маяк дышит, а не мигает: синус с полом — как мачта дома (21f), не ступенька */
+    const bl=.35+.65*(Math.sin(G.t*.06)+1)*.5;
     if(bl>.03){disc(-S*.9,-S*.1,Math.max(1.4,S*.03),[120,230,255,+(.9*bl*fog).toFixed(2)]);SH[SH.length-1].e=1;}
   }else if(q.k==="ring"){
     /* дуга: лента четырёхугольников, общие стороны жёсткие; концы срезаны, как butt */

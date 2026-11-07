@@ -271,9 +271,12 @@ function drawLander(broken,opt){
     const by=bY-bodyH*.02, br=bodyH*.13;
     ctx.fillStyle=rgba(h.dark,1);ctx.fillRect(bx-br*.9,by-br*.6,br*1.8,br*1.2);
   }
-  ctx.restore();
   if(broken){
-    /* побитый корпус: трещины в выпечке; дым — фигурами в кадре посадки (19) */
+    /* побитый корпус: трещины в выпечке, на теле, а не под брюхом; дым — фигурами
+       в кадре посадки (19). Клип по силуэту ДО сдвига: иначе трещины режутся чужим контуром */
+    ctx.save();
+    hullPath(0,0,1);ctx.clip();
+    ctx.translate(0,cY);
     ctx.strokeStyle="rgba(255,90,60,.9)";ctx.lineWidth=1.6;
     const r=rng(0x9911);
     for(let i=0;i<5;i++){
@@ -281,5 +284,7 @@ function drawLander(broken,opt){
       ctx.beginPath();ctx.moveTo(Math.cos(a)*d*.3,Math.sin(a)*d*.3);
       ctx.lineTo(Math.cos(a)*d,Math.sin(a)*d-4);ctx.stroke();
     }
+    ctx.restore();
   }
+  ctx.restore();
 }

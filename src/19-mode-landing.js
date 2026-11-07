@@ -283,7 +283,7 @@ function drawLanding(){
       const wc=[Math.round(sc[0]*.4+153),Math.round(sc[1]*.4+120),Math.round(sc[2]*.3+70)];
       const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04,gw=lgGpu();
       /* на видеокарте — пятно, растянутое в тот же эллипс, сложением */
-      if(gw)gpuImage(gw,lgGlowTex(wc.join(",")),[{x:gx,y:gy,w:W*.72,h:H*.32,a:k}],{blend:"add"});
+      if(gw)gpuImage(gw,lgGlowTex(wc.join(",")),[{x:gx,y:gy,w:W*.72,h:clamp(H*.32,64,110),a:k}],{blend:"add"});
     }
   }
   /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */

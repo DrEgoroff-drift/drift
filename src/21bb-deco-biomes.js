@@ -193,22 +193,28 @@ function decoHummock(A){
     const bx=(i-(n-1)/2)*w*1.1,hh=hgt*(.6+h01(i,5,POI_SEED)*.5),bw=w*(.8+h01(i,7,POI_SEED)*.5);
     const pts=[[bx-bw,4],[bx-bw*.7,-hh*.55],[bx-bw*.2,-hh],[bx+bw*.35,-hh*.85],[bx+bw*.75,-hh*.4],[bx+bw,4]];
     ctx.fillStyle=dcol(pal,1,1);decoPoly(pts);ctx.fill();
+    ctx.save();decoPoly(pts);ctx.clip();
     /* синяя тень внутри — тёмный треугольник в глубине тороса */
     ctx.fillStyle="rgba(40,80,140,.28)";decoPoly([[bx-bw*.5,-hh*.2],[bx,-hh*.75],[bx+bw*.4,-hh*.2]]);ctx.fill();
-    /* просвечивающая кромка со стороны звезды и карниз снега */
+    /* карниз снега внутри силуэта — на пике тело уже точки, шапка шире */
+    ctx.fillStyle=dcol(pal,4,1.2,.9);decoPoly([[bx-bw*.25,-hh],[bx+bw*.38,-hh*.86],[bx+bw*.42,-hh*.8],[bx-bw*.3,-hh*.94]]);ctx.fill();
+    ctx.restore();
+    /* просвечивающая кромка со стороны звезды — обвод, клип срезал бы половину */
     ctx.strokeStyle="rgba(235,245,255,.75)";ctx.lineWidth=1.6;
     ctx.beginPath();ctx.moveTo(bx+ls*bw*.75,-hh*.4);ctx.lineTo(bx+ls*bw*.3,-hh*.9);ctx.stroke();
-    ctx.fillStyle=dcol(pal,4,1.2,.9);decoPoly([[bx-bw*.25,-hh],[bx+bw*.38,-hh*.86],[bx+bw*.42,-hh*.8],[bx-bw*.3,-hh*.94]]);ctx.fill();
   }
 }
 function decoSpire(A){
   const {pal,w,hgt}=A,ls=decoLitSide();
   const lean=(h01(1,3,POI_SEED)-.5)*w*.6;
+  const pts=[[-w*.7,4],[-w*.25+lean*.6,-hgt*.55],[lean,-hgt],[w*.2+lean*.6,-hgt*.5],[w*.75,4]];
   ctx.fillStyle=dcol(pal,1,.95);
-  decoPoly([[-w*.7,4],[-w*.25+lean*.6,-hgt*.55],[lean,-hgt],[w*.2+lean*.6,-hgt*.5],[w*.75,4]]);ctx.fill();
+  decoPoly(pts);ctx.fill();
+  ctx.save();decoPoly(pts);ctx.clip();
   ctx.fillStyle="rgba(40,80,140,.3)";decoPoly([[-w*.3,4],[lean*.5,-hgt*.5],[lean,-hgt],[-w*.1+lean*.6,-hgt*.5]]);ctx.fill();
   ctx.fillStyle="rgba(235,245,255,.7)";decoPoly([[ls*w*.75,4],[ls*w*.2+lean*.6,-hgt*.5],[lean,-hgt],[lean+ls*w*.06,-hgt*.94],[ls*w*.3+lean*.6,-hgt*.48],[ls*w*.9,4]]);ctx.fill();
   ctx.fillStyle=dcol(pal,4,1.25,.8);decoPoly([[lean-w*.1,-hgt*.9],[lean,-hgt],[lean+w*.12,-hgt*.9],[lean+w*.1,-hgt*.86],[lean-w*.08,-hgt*.86]]);ctx.fill();
+  ctx.restore();
 }
 /* ── вулкан ── */
 function decoCone(A){
