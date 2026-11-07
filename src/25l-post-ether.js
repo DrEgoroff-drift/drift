@@ -30,16 +30,16 @@ const ETH_HOLD=2;                  /* тиков консоли на строк�
 let ethCard=null,ethLine=0,ethHold=0,ethAsk=0;
 
 /* час можно подставить: иначе проверить окно можно было бы только вечером,
-   то есть никогда — а окно тут вся веха */
+   то есть никогда — а окно тут вся веха. Время — стенное: закон модуля */
 function mailNight(h){
-  h=(h==null)?new Date(now()).getHours():h;
+  h=(h==null)?new Date(wallNow()).getHours():h;
   return h>=ETH_H0||h<ETH_H1;
 }
 /* вечер считается по календарю ВЕЧЕРА, а не суток: час ночи принадлежит
    вчерашнему вечеру, иначе счёт «две за вечер» обнуляется в полночь и
    получается четыре */
 function mailEve(at){
-  const d=at?new Date(at.getTime()):new Date(now());
+  const d=at?new Date(at.getTime()):new Date(wallNow());
   if(d.getHours()<ETH_H1)d.setDate(d.getDate()-1);
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }

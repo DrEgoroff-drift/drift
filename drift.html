@@ -40174,6 +40174,12 @@ function tinMake(p){
    Работает, пока в бункере есть сырьё. Кончилось — встала и снова просит. */
 function tinTick(T){
   if(!T)return null;
+  /* закрыта (M158): смена, которую некому снять, больше не идёт. Комбинат — отдельно (11r) */
+  if(typeof tinClosed==="function"&&tinClosed()&&!(typeof planIsCoreT==="function"&&planIsCoreT(T))){
+    if(T.run){T.run=0;T.fed=0;}
+    T.last=clockNow();
+    return T;
+  }
   if(typeof planEndless==="function")planEndless(T);   /* комбинат не останавливается (11r) */
   const now=clockNow();
   const mins=Math.min(now-(T.last||now),TIN_CAP)/60000;
@@ -41183,6 +41189,7 @@ function settleTakeHand(S){
   S.mine=1;
   S.handAt=(typeof celDay==="function")?celDay():0;
   S._plan=null;                    /* улица пересчитается по-новому */
+  if(G.surf)G.surf._wallX=undefined;   /* хотспот стены снят со старого x0: улица переехала */
   if(typeof recordAdd==="function")
     recordAdd("посёлок "+(S.name||""),"взят под руку");
   if(typeof logAdd==="function")
@@ -113407,16 +113414,16 @@ const ETH_HOLD=2;                  /* тиков консоли на строк�
 let ethCard=null,ethLine=0,ethHold=0,ethAsk=0;
 
 /* час можно подставить: иначе проверить окно можно было бы только вечером,
-   то есть никогда — а окно тут вся веха */
+   то есть никогда — а окно тут вся веха. Время — стенное: закон модуля */
 function mailNight(h){
-  h=(h==null)?new Date(now()).getHours():h;
+  h=(h==null)?new Date(wallNow()).getHours():h;
   return h>=ETH_H0||h<ETH_H1;
 }
 /* вечер считается по календарю ВЕЧЕРА, а не суток: час ночи принадлежит
    вчерашнему вечеру, иначе счёт «две за вечер» обнуляется в полночь и
    получается четыре */
 function mailEve(at){
-  const d=at?new Date(at.getTime()):new Date(now());
+  const d=at?new Date(at.getTime()):new Date(wallNow());
   if(d.getHours()<ETH_H1)d.setDate(d.getDate()-1);
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }

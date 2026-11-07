@@ -42,6 +42,7 @@ function settleTakeHand(S){
   S.mine=1;
   S.handAt=(typeof celDay==="function")?celDay():0;
   S._plan=null;                    /* улица пересчитается по-новому */
+  if(G.surf)G.surf._wallX=undefined;   /* хотспот стены снят со старого x0: улица переехала */
   if(typeof recordAdd==="function")
     recordAdd("посёлок "+(S.name||""),"взят под руку");
   if(typeof logAdd==="function")

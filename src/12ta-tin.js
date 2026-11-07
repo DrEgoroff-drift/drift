@@ -117,6 +117,12 @@ function tinMake(p){
    Работает, пока в бункере есть сырьё. Кончилось — встала и снова просит. */
 function tinTick(T){
   if(!T)return null;
+  /* закрыта (M158): смена, которую некому снять, больше не идёт. Комбинат — отдельно (11r) */
+  if(typeof tinClosed==="function"&&tinClosed()&&!(typeof planIsCoreT==="function"&&planIsCoreT(T))){
+    if(T.run){T.run=0;T.fed=0;}
+    T.last=clockNow();
+    return T;
+  }
   if(typeof planEndless==="function")planEndless(T);   /* комбинат не останавливается (11r) */
   const now=clockNow();
   const mins=Math.min(now-(T.last||now),TIN_CAP)/60000;

@@ -5226,7 +5226,7 @@ hallWinY                     src/27f4a-hall.js:427
 hallWindow                   src/27f4b-hall-dress.js:25-32
 hallWorkY                    src/27f4a-hall.js:45
 hallYardFit                  src/27f4f-hall-yard.js:24-33
-handBtnTick                  src/12td-settle-hand.js:98-109
+handBtnTick                  src/12td-settle-hand.js:99-110
 hangAlarmOn                  src/08bj-ovl-hang.js:63
 hangAt                       src/08bj-ovl-hang.js:41-45
 hangBlock                    src/08bj-ovl-hang.js:48-52
@@ -8229,9 +8229,9 @@ settleAt                     src/12t-settle.js:107
 settleCanHand                src/12td-settle-hand.js:36-39
 settleCanLive                src/12t-settle.js:111-113
 settleGive                   src/12t-settle.js:222-238
-settleHandLine               src/12td-settle-hand.js:65-68
-settleHandPick               src/12td-settle-hand.js:56-63
-settleHandPlan               src/12td-settle-hand.js:73-94
+settleHandLine               src/12td-settle-hand.js:66-69
+settleHandPick               src/12td-settle-hand.js:57-64
+settleHandPlan               src/12td-settle-hand.js:74-95
 settleHere                   src/12t-settle.js:108
 settleKeyOf                  src/12t-settle.js:105
 settleLeftBehind             src/12t-settle.js:357-367
@@ -8246,7 +8246,7 @@ settleRaise                  src/12t-settle.js:180-218
 settleSpotX                  src/12t-settle.js:132-137
 settleStockSum               src/12t-settle.js:239-242
 settleStop                   src/12t-settle.js:371-381
-settleTakeHand               src/12td-settle-hand.js:40-53
+settleTakeHand               src/12td-settle-hand.js:40-54
 settleTick                   src/12t-settle.js:154-177
 settleWallHereX              src/12t-settle.js:125-131
 settleWallX                  src/12t-settle.js:120
@@ -8642,22 +8642,22 @@ tinAskOf                     src/12ta-tin.js:97-106
 tinAt                        src/12ta-tin.js:58
 tinCanLive                   src/12ta-tin.js:63-68
 tinClosed                    src/12k-letters.js:45
-tinEntries                   src/12ta-tin.js:215-224
-tinFeed                      src/12ta-tin.js:134-152
+tinEntries                   src/12ta-tin.js:221-230
+tinFeed                      src/12ta-tin.js:140-158
 tinHereRec                   src/12ta-tin.js:59
 tinKeyOf                     src/12ta-tin.js:56
-tinLine                      src/12ta-tin.js:226-233
+tinLine                      src/12ta-tin.js:232-239
 tinMake                      src/12ta-tin.js:107-115
 tinMap                       src/12ta-tin.js:57
-tinMarkOf                    src/12ta-tin.js:172-179
+tinMarkOf                    src/12ta-tin.js:178-185
 tinPl                        src/12ta-tin.js:49-55
 tinPlanet                    src/12ta-tin.js:70-74
-tinSignal                    src/12ta-tin.js:237-246
-tinSkyOf                     src/12ta-tin.js:183-190
+tinSignal                    src/12ta-tin.js:243-252
+tinSkyOf                     src/12ta-tin.js:189-196
 tinSpotX                     src/12ta-tin.js:80-93
-tinStrip                     src/12ta-tin.js:194-213
-tinTakeOut                   src/12ta-tin.js:155-168
-tinTick                      src/12ta-tin.js:118-130
+tinStrip                     src/12ta-tin.js:200-219
+tinTakeOut                   src/12ta-tin.js:161-174
+tinTick                      src/12ta-tin.js:118-136
 tmCount                      tests/91zzzzy-time.js:26-34
 tmShift                      tests/91zzzzy-time.js:17-24
 toggleLog                    src/11-log.js:152-156
@@ -9645,7 +9645,7 @@ zoomTo                       src/15-input.js:358
 ## src/12t-settle.js · 23 KB
   · посёлок: вы даёте, решают они:1
 
-## src/12ta-tin.js · 14 KB
+## src/12ta-tin.js · 15 KB
   · Жестянка: смена, которую некому снять:1
 
 ## src/12tb-grok.js · 22 KB
