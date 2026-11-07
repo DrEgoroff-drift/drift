@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 710 · top-level symbols: 9061
+Files: 711 · top-level symbols: 9061
 
 ## SYMBOLS
 
@@ -1508,7 +1508,7 @@ NEWS_CAUSE                   src/12an-chron-news.js:107-118
 NEWS_DECL                    src/12an-chron-news.js:38-45
 NEWS_EVERY                   src/12p-news.js:13
 NEWS_KEEP                    src/12p-news.js:15
-NEWS_KINDS                   src/12p-news.js:92-149
+NEWS_KINDS                   src/12p-news.js:92-169
 NEWS_LINES                   src/12an-chron-news.js:28
 NEWS_MAX_ROLL                src/12p-news.js:14
 NEWS_NAME                    src/12an-chron-news.js:32
@@ -1535,7 +1535,7 @@ NPC_LIB                      src/27f3b-npc-lib.js:5-106
 NPC_OF                       src/27f3b-npc-lib.js:108
 NPC_PICKET                   src/13d-npc.js:13
 NPC_SHIPS                    src/03-ships.js:201
-OCC_CALM_MS                  src/13b-occupy.js:268
+OCC_CALM_MS                  src/13b-occupy.js:271
 OCC_FRESH                    src/13b-occupy.js:41
 OCC_LVL                      src/13b-occupy.js:20-25
 OCC_MAX                      src/13b-occupy.js:19
@@ -4098,7 +4098,7 @@ drawDronesSystem             src/12e-drone-flight.js:252-283
 drawDustMotes                src/19-mode-landing.js:211-214
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:90-112
-drawFactRoute                src/13b-occupy.js:303-346
+drawFactRoute                src/13b-occupy.js:306-349
 drawFactory                  src/20aa-poi-shapes.js:374-457
 drawFindsSystem              src/17b-finds.js:240-267
 drawFleet                    src/12ai-fleet.js:135-156
@@ -4773,8 +4773,8 @@ gnbResolve                   src/16gc-gpu-nebfade.js:88-99
 gnbStar                      src/16gba-gpu-nebula-comp.js:261-266
 gnbStars                     src/16gba-gpu-nebula-comp.js:42-49
 gnbTarget                    src/16gba-gpu-nebula-comp.js:187-194
-goalCard                     src/13b-occupy.js:233-262
-goalOwnYacht                 src/13b-occupy.js:226-232
+goalCard                     src/13b-occupy.js:236-265
+goalOwnYacht                 src/13b-occupy.js:229-235
 gorBody                      src/17gab1-gpu-orb-draw.js:46-70
 gorCode                      src/17gab1-gpu-orb-draw.js:14-24
 gorLin                       src/17gab1-gpu-orb-draw.js:4
@@ -6359,7 +6359,7 @@ newsMarks                    src/12p-news.js:19
 newsName                     src/12an-chron-news.js:33-36
 newsOf                       src/12an-chron-news.js:440-448
 newsPick                     src/12an-chron-news.js:65-68
-newsRender                   src/12p-news.js:184-206
+newsRender                   src/12p-news.js:204-226
 newsRivals                   src/12p-news.js:43
 newsRu                       src/12an-chron-news.js:50-53
 newsScene                    src/12an-chron-news.js:402-435
@@ -6369,7 +6369,7 @@ newsSomewhere                src/12p-news.js:28-39
 newsSpan                     src/12an-chron-news.js:90-102
 newsSysOf                    src/12an-chron-news.js:73-86
 newsTail                     src/12an-chron-news.js:373-376
-newsTick                     src/12p-news.js:153-180
+newsTick                     src/12p-news.js:173-200
 noLayer                      src/18c-chunks.js:73
 nodeCount                    src/05a-nodes.js:104-108
 nodeDrop                     src/05a-nodes.js:149-154
@@ -6412,27 +6412,27 @@ npcWreckNear                 src/13d-npc.js:213-221
 npcWreckPose                 src/13d-npc.js:225-229
 npcYalta                     src/13d-npc.js:127-137
 occAt                        src/13b-occupy.js:31-34
-occCalmNear                  src/13b-occupy.js:278-287
-occExtraPirates              src/13b-occupy.js:210-213
+occCalmNear                  src/13b-occupy.js:281-290
+occExtraPirates              src/13b-occupy.js:213-216
 occHere                      src/13b-occupy.js:53
 occInfo                      src/13b-occupy.js:54
 occInit                      src/13b-occupy.js:29
 occKey                       src/13b-occupy.js:30
-occKill                      src/13b-occupy.js:141-173
-occLairLevel                 src/13b-occupy.js:292
-occLairName                  src/13b-occupy.js:293-296
+occKill                      src/13b-occupy.js:144-176
+occLairLevel                 src/13b-occupy.js:295
+occLairName                  src/13b-occupy.js:296-299
 occLvl                       src/13b-occupy.js:35
 occNest                      src/13b-occupy.js:60-65
 occPowerAt                   src/13b-occupy.js:42-49
 occPowerHere                 src/13b-occupy.js:50
-occPriceMul                  src/13b-occupy.js:187-198
+occPriceMul                  src/13b-occupy.js:190-201
 occReqMul                    src/13b-occupy.js:52
-occService                   src/13b-occupy.js:200-208
-occSet                       src/13b-occupy.js:66-72
-occSummary                   src/13b-occupy.js:217-220
-occSuppress                  src/13b-occupy.js:269-277
-occThreat                    src/13b-occupy.js:176-185
-occTick                      src/13b-occupy.js:77-136
+occService                   src/13b-occupy.js:203-211
+occSet                       src/13b-occupy.js:66-75
+occSummary                   src/13b-occupy.js:220-223
+occSuppress                  src/13b-occupy.js:272-280
+occThreat                    src/13b-occupy.js:179-188
+occTick                      src/13b-occupy.js:80-139
 odo                          src/11d-place.js:24
 odoAdd                       src/11d-place.js:26
 odoSum                       src/11d-place.js:25
@@ -9620,7 +9620,7 @@ zoomTo                       src/15-input.js:358
 ## src/12o-hunter.js · 7 KB
   · охотник: тень репутации:1
 
-## src/12p-news.js · 12 KB
+## src/12p-news.js · 14 KB
   · пересказ: мир двигался, пока вас не было:1
 
 ## src/12p1-doublespeak.js · 3 KB
@@ -11072,6 +11072,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91qo-savefuzz.js · 4 KB
 
 ## tests/91qp-cloudchaos.js · 2 KB
+
+## tests/91zzz-fleet-rare.js · 6 KB
 
 ## tests/91zzza-e2e.js · 3 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1

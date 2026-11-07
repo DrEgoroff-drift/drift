@@ -92,18 +92,30 @@ function rivalDefeated(p){
 const NEWS_KINDS=[
   {id:"squeeze",apply(r){
     const s=newsSomewhere(r);if(!s)return null;
-    /* настоящая перемена: давление на рынке — те же цены, что увидит игрок */
+    /* настоящая перемена: давление на рынке — те же цены, что увидит игрок.
+       Сперва состарить запись (12-economy): иначе свежая надбавка растворится
+       распадом вместе со старым давлением, и скупка пройдёт незаметной */
+    if(typeof marketFor==="function")marketFor(s);
     const k=pick(TRADE_KEYS,r);
     const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:now()});
-    m.pressure[k]=clamp((m.pressure[k]||0)+.35+r()*.3,-.6,.8);
+    const was=m.pressure[k]||0;
+    m.pressure[k]=clamp(was+.35+r()*.3,-.6,.8);
+    if(m.pressure[k]===was)return null;   /* не сдвинулось — слуха без перемены нет */
     newsMark(s.sx+","+s.sy,"цены сдвинулись","#f2b25c");
     return {ru:"«"+s.station.name+"» скупает "+RES[k].ru.toLowerCase()+
       ": кто-то опустошил склады",sx:s.sx,sy:s.sy};
   }},
   {id:"owner",apply(r){
     const s=newsSomewhere(r);if(!s)return null;
+    if(typeof marketFor==="function")marketFor(s);
     const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:now()});
-    for(const k of TRADE_KEYS)m.pressure[k]=clamp((m.pressure[k]||0)+(r()-.5)*.5,-.6,.8);
+    let moved=false;
+    for(const k of TRADE_KEYS){
+      const was=m.pressure[k]||0;
+      m.pressure[k]=clamp(was+(r()-.5)*.5,-.6,.8);
+      if(m.pressure[k]!==was)moved=true;
+    }
+    if(!moved)return null;   /* цены не шелохнулись — слуха без перемены нет */
     newsMark(s.sx+","+s.sy,"сменился хозяин","#7fe6d8");
     return {ru:"«"+s.station.name+"» перешла другим людям: и цены, и порядки там теперь чужие",
       sx:s.sx,sy:s.sy};
@@ -116,7 +128,11 @@ const NEWS_KINDS=[
     if(G.wrecks[key].length>=12)return null;
     const a=r()*TAU,rad=1800+r()*1400;
     const good=pick(TRADE_KEYS,r),nm=pick(BARGE_CAPNAMES,r);
-    G.wrecks[key].push({seed:hashi(s.seed,0x3E7,3),x:Math.cos(a)*rad,y:Math.sin(a)*rad,
+    /* семя — адрес остова (12m: редкость по ключу места): два остова в одном
+       секторе не должны оказаться одним и тем же адресом */
+    let salt=3+G.wrecks[key].length,seed;
+    do{seed=hashi(s.seed,0x3E7,salt);salt++;}while(G.wrecks[key].some(w=>w.seed===seed));
+    G.wrecks[key].push({seed,x:Math.cos(a)*rad,y:Math.sin(a)*rad,
       tier:clamp(1+Math.floor(sysDanger(s.sx,s.sy)*2),0,3),seen:0,good,name:nm});
     newsMark(key,"остов баржи","#ff9d7a");
     return {ru:"Баржа «"+nm+"» не дошла до «"+s.station.name+"»: остов лежит там же",
@@ -126,13 +142,17 @@ const NEWS_KINDS=[
     /* кого-то сбили без вас: если ваш охотник ещё жив — не его; чужого капитана
        мир убирает сам, и это видно по спокойствию сектора */
     const s=newsSomewhere(r);if(!s)return null;
-    /* правим состояние тихо, без «tell»: это чужое дело, а не ваш поступок */
+    /* правим состояние тихо, без «tell»: это чужое дело, а не ваш поступок.
+       Слух обязан говорить правду: очаг гасится и без оседлого капитана —
+       тогда снят очаг, а не человек (иначе подпись без кода). */
     if(!G.occCalm)G.occCalm={};
     G.occCalm[occKey(s.sx,s.sy)]=now();
     const had=typeof occLvl==="function"?occLvl(s.sx,s.sy):0;
     if(had&&typeof occSet==="function")occSet(s.sx,s.sy,had-1);
     newsMark(s.sx+","+s.sy,"стало тише","#8fd08a");
-    return {ru:"В секторе "+s.sx+","+s.sy+" кто-то другой снял пиратского капитана — там тише",
+    return {ru:"В секторе "+s.sx+","+s.sy+(had?
+      " кто-то другой снял пиратского капитана — там тише":
+      " кто-то разогнал пиратский очаг — там тише"),
       sx:s.sx,sy:s.sy};
   }},
   {id:"rival",apply(r){

@@ -68,7 +68,10 @@ function occSet(sx,sy,lvl){
   const k=occKey(sx,sy);
   if(lvl<=0){delete G.occ[k];return;}
   const o=G.occ[k]||(G.occ[k]={lvl:0,kills:0,t:now()});
-  o.lvl=Math.min(OCC_MAX,lvl);o.kills=0;o.t=now();
+  o.lvl=Math.min(OCC_MAX,lvl);o.kills=0;
+  /* t не трогаем: это момент захвата, а не последнего изменения —
+     маяк (12pa) читает t как «потерян в эту смену», и отбитый на уровень
+     ниже сектор не должен звучать как сданный */
 }
 /* ── наступление ──
    Один бросок на такт: берём случайную занятую систему и пробуем расширить её
