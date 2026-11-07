@@ -34,7 +34,7 @@ function lightsDepthHere(){return lightsDepthAt(G.sx,G.sy);}
 function lightsPeriod(){
   const at=(typeof regionOfTheme==="function")?regionOfTheme("lights"):null;
   if(!at)return 28;
-  return 24+(hashi(at.rx,at.ry,0x7E1)>>>3)%12;
+  return 24+((hashi(at.rx,at.ry,0x7E1)>>>3)%12);   /* скобки: + и >>> без них складывались в период веками — соединение не наступало никогда */
 }
 /* планета ядра: первый твёрдый мир системы ядра, на него и садятся */
 function lightsCorePlanet(sys){
@@ -107,12 +107,12 @@ function lightsDrawReveal(tr,camx,camy,p){
   const r=rng(hashi(p.seed|0,0x7E1,0x12));
   const o=lifeHere(0,0),K=o.s,X=v=>o.x+v*K,Y=v=>o.y+v*K,SH=[];
   /* дорога: пунктир по грунту — капсулами через шаг (как setLineDash 9/7) */
-  let prev=null,n=0;
-  for(let wx=ex-1400;wx<=ex+1400;wx+=12){
+  let prev=null;
+  for(let wx=ex-1400,i=0;wx<=ex+1400;wx+=12,i++){
     const sx=wx-camx;if(sx<-20||sx>W+20){prev=null;continue;}
     const sy=groundAt(tr,wx)-camy-1.5;
-    if(prev&&(n&1))SH.push([2,X(prev[0]),Y(prev[1]),X(sx),Y(sy),.6*K,0,255,240,206,.42*a]);
-    prev=[sx,sy];n++;
+    if(prev&&(i&1))SH.push([2,X(prev[0]),Y(prev[1]),X(sx),Y(sy),.6*K,0,255,240,206,.42*a]);
+    prev=[sx,sy];
   }
   /* фундаменты: прямоугольники и поперечина */
   for(let i=0;i<6;i++){

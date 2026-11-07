@@ -1209,7 +1209,7 @@ HOTEL_SHOP_N                 src/17l-hotel.js:329
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
 HOTEL_T                      src/17l-hotel.js:17
-HOURS_COIN                   src/11h-hours.js:87
+HOURS_COIN                   src/11h-hours.js:89
 HOURS_ETHER                  src/11h-hours.js:23-30
 HOUSES                       src/12u-scrip.js:21-26
 HOUSE_BY_ID                  src/12u-scrip.js:27
@@ -5533,18 +5533,18 @@ hotelUp                      src/17l-hotel.js:84
 hotelWinLit                  src/17l-hotel.js:35-44
 hotelWindows                 src/17l-hotel.js:204-219
 hoursAll                     src/11h-hours.js:31
-hoursCorePlanet              src/11h-hours.js:43-47
+hoursCorePlanet              src/11h-hours.js:43-49
 hoursDepthAt                 src/11h-hours.js:33-40
 hoursDepthHere               src/11h-hours.js:41
-hoursDrawPeople              src/11h-hours.js:104-130
-hoursDrift                   src/11h-hours.js:66-69
-hoursEtherLine               src/11h-hours.js:71-74
-hoursGroundLine              src/11h-hours.js:78-83
-hoursIsCore                  src/11h-hours.js:48
-hoursMachine                 src/11h-hours.js:91-99
-hoursMachineHere             src/11h-hours.js:88-90
-hoursNobody                  src/11h-hours.js:76
-hoursOffset                  src/11h-hours.js:52-63
+hoursDrawPeople              src/11h-hours.js:107-133
+hoursDrift                   src/11h-hours.js:68-71
+hoursEtherLine               src/11h-hours.js:73-76
+hoursGroundLine              src/11h-hours.js:80-85
+hoursIsCore                  src/11h-hours.js:50
+hoursMachine                 src/11h-hours.js:93-102
+hoursMachineHere             src/11h-hours.js:90-92
+hoursNobody                  src/11h-hours.js:78
+hoursOffset                  src/11h-hours.js:54-65
 houseOf                      src/12u-scrip.js:35-39
 housePlan                    src/12tb-settle-draw.js:62-71
 houseRGB                     src/17d-house-shapes.js:16
@@ -9354,7 +9354,7 @@ zoomTo                       src/15-input.js:358
 ## src/11g-lights.js · 9 KB
   · три света: область без ночи:1
 
-## src/11h-hours.js · 8 KB
+## src/11h-hours.js · 9 KB
   · расхождение времён: уезд, где часам не верят:1
 
 ## src/11i-glow.js · 7 KB

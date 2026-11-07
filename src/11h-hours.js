@@ -42,8 +42,10 @@ function hoursDepthHere(){return hoursDepthAt(G.sx,G.sy);}
 /* планета ядра: первая, где может жить посёлок (12t) */
 function hoursCorePlanet(sys){
   if(!sys||hoursDepthAt(sys.sx,sys.sy)!==2)return null;
-  for(const p of sys.planets||[])if(typeof settleCanLive==="function"&&settleCanLive(p))return p;
-  return null;
+  const ps=sys.planets||[],live=p=>typeof settleCanLive==="function"&&settleCanLive(p);
+  /* спутник — условие затмения: без него человек в затмение не придёт никогда
+     (11i-glow выбирает планету ядра так же) */
+  return ps.find(p=>live(p)&&p.moons&&p.moons.length)||ps.find(live)||null;
 }
 function hoursIsCore(p){const c=hoursCorePlanet(G.sys);return !!(c&&p&&c.idx===p.idx);}
 /* ── смещение ──
@@ -90,6 +92,7 @@ function hoursMachineHere(S){
 }
 function hoursMachine(){
   if(G.credits<HOURS_COIN){say("Автомат\nмонеты нет");return false;}
+  if(held()+1>stat().cargoMax){say("Трюм полон");return false;}
   G.credits-=HOURS_COIN;
   const k="organics";                                   // паёк: то же, чем кормят посёлок (12t)
   G.cargo[k]=(G.cargo[k]||0)+1;
