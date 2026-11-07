@@ -59,7 +59,7 @@ function pirateRoleTick(p,dt,d,want){
      бесконечность — отход без возврата в бросок; с 09.10 отход возвращает в
      бросок всегда, и порог один на всех: под третью стоковый ствол его
      ещё догоняет, под четвертью — уже добыча за три секунды бега) */
-  if(hp<.25&&!roleAllyNear(p))return roleFlee(p,dt,want);
+  if(hp<.25&&!p.rogue&&!roleAllyNear(p))return roleFlee(p,dt,want);
   const rank=p.rank|0;
   if(rank===0){
     /* шакал: бросок — залп — отход; под тридцатью процентами разрывает дистанцию */

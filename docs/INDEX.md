@@ -4292,7 +4292,7 @@ etherTick                    src/11b-speech.js:39-82
 etherWho                     src/11-log.js:38-41
 evacCost                     src/21-mode-surface.js:698
 evacFrom                     src/21-mode-surface.js:699
-exileCandidates              src/12g-mgr-rogue.js:123-130
+exileCandidates              src/12g-mgr-rogue.js:144-151
 exitBase                     src/21a-mode-base.js:154-158
 exitBelt                     src/24-mode-belt.js:190-198
 exitCave                     src/22-mode-cave.js:243-247
@@ -7981,11 +7981,11 @@ roadToday                    src/27k-road.js:191
 roadTripRu                   src/27k-road.js:227
 roadTurnPay                  src/27k-road.js:106
 roadTurnTick                 src/27k-road.js:527-540
-rogueDefeated                src/12g-mgr-rogue.js:91-120
-rogueFrom                    src/12g-mgr-rogue.js:38-65
-rogueHere                    src/12g-mgr-rogue.js:66-69
+rogueDefeated                src/12g-mgr-rogue.js:112-141
+rogueFrom                    src/12g-mgr-rogue.js:38-81
+rogueHere                    src/12g-mgr-rogue.js:82-85
 rogueSector                  src/12g-mgr-rogue.js:15-22
-rogueSpawn                   src/12g-mgr-rogue.js:72-88
+rogueSpawn                   src/12g-mgr-rogue.js:88-109
 rogueTakesCrew               src/12g-mgr-rogue.js:25-35
 roleAllyNear                 src/13c-roles.js:32-35
 roleDamp                     src/13c-roles.js:10
@@ -9569,7 +9569,7 @@ zoomTo                       src/15-input.js:358
 ## src/12f1-mgr-rent.js · 6 KB
   · второе ядро — в аренду (M488, DESIGN-birchpunk):1
 
-## src/12g-mgr-rogue.js · 8 KB
+## src/12g-mgr-rogue.js · 9 KB
   · ушедший управляющий: ренегат:1
 
 ## src/12h-relic.js · 8 KB

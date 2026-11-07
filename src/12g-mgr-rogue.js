@@ -51,7 +51,23 @@ function rogueFrom(m,why){
   R.hull=R.hullMax;
   if(!G.rogues)G.rogues=[];
   G.rogues.push(R);
-  while(G.rogues.length>ROGUE_CAP)G.rogues.shift();
+  while(G.rogues.length>ROGUE_CAP){
+    /* вытесненный из списка не исчезает бесследно: корпус возвращается, а сам
+       он — в изгнанники, как после разгрома */
+    const old=G.rogues.shift();
+    if(!old)continue;
+    if(old.shipId&&old.shipId!==G.shipId&&!G.owned[old.shipId]){
+      G.owned[old.shipId]=true;
+      const S=shipData(old.shipId);
+      logAdd("dim","«"+(S?S.ru:old.shipId)+"» вернулся в ангар: "+old.name+" выбыл из списка");
+    }
+    if(!G.exiles)G.exiles=[];
+    if(!G.exiles.some(e=>e.seed===old.seed))
+      G.exiles.push({name:old.name,role:old.role,seed:old.seed,lv:old.lv,
+        perks:(old.perks||[]).slice(),traits:(old.traits||[]).slice(),
+        fee:Math.round((old.fee||0)*.35),t:now()});
+    while(G.exiles.length>ROGUE_CAP)G.exiles.shift();
+  }
   /* корпус уходит вместе с ним: он теперь на нём летает, а не стоит в ангаре */
   if(m.shipId&&m.shipId!==G.shipId)delete G.owned[m.shipId];
   logAdd("warn",m.name+" ушёл"+(S?" на «"+S.ru+"»":"")+
@@ -73,9 +89,14 @@ function rogueSpawn(){
   const R=rogueHere();if(!R)return;
   const r=rng(hashi(R.seed,0x51A,9));
   const a=r()*TAU,rad=1500+r()*900;
+  /* барон, а не шакал: противник поздней игры, которого вырастил сам игрок.
+     Ранг 3 даёт барский набор (13d) и поле; без ранга он уходил в прыжок при
+     25% корпуса, и разгром не засчитывался — он «спасался» и лечился */
+  const sh=Math.round(R.hullMax*.7);
   G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,
     hull:R.hull,hullMax:R.hullMax,name:R.name,seed:R.seed,
     shipId:R.shipId||pirateShipId(R.seed),
+    rank:3,shield:sh,shieldMax:sh,shieldHit:0,shieldType:"pulse",
     dmg:R.dmg,cool:0,aware:false,thrust:false,rogue:1});
   /* уведённые люди летят с ним — их видно поимённо, и это неприятно намеренно */
   for(let i=0;i<Math.min(R.crew.length,3);i++){
@@ -123,7 +144,7 @@ function rogueDefeated(p){
 function exileCandidates(){
   if(!G.exiles||!G.exiles.length)return [];
   return G.exiles.map(e=>({
-    name:e.name,role:e.role,seed:e.seed,traits:e.traits.slice(),perks:e.perks.slice(),
+    id:"m"+e.seed,name:e.name,role:e.role,seed:e.seed,traits:e.traits.slice(),perks:e.perks.slice(),
     xp:MGR_XP[clamp(e.lv-1,0,MGR_XP.length-1)],loy:28,rules:[],lv0:e.lv,
     tMs:0,earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],
     fee:e.fee,exile:1}));

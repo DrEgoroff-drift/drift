@@ -447,7 +447,7 @@ function mgrTick(){
        поэтому ультиматум и уход проверяются здесь, а не внутри жалованья */
     if(!m.ai&&m.loy<25&&!m.gone)mgrUltimatum(m);
     if(!m.ai&&m.loy<=0&&!m.gone)mgrDefect(m);
-    if(m.gone){G.mgrs.splice(i,1);continue;}
+    if(m.gone)continue;   /* mgrDefect уже убрал его из списка — повторный splice уносит соседа */
     /* пьющий иногда просто не работает — черта видна заранее, претензий нет */
     const idle=mgrHas(m,"drink")&&
       rng(hashi(m.seed,Math.floor(now/600000),0xD21))()<mgrTrait("drink").idle;
