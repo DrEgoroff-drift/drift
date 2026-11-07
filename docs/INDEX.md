@@ -2293,7 +2293,7 @@ STATE_HASH_SKIP              src/08a-statehash.js:25-34
 STAT_SHOW                    src/05-parts.js:426-438
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
-STORIES                      src/12k-stories-a.js:45-348
+STORIES                      src/12k-stories-a.js:45-349
 STORIES_B                    src/12k-stories-b.js:27-438
 STORIES_C                    src/12k-stories-c.js:23-291
 STORIES_D                    src/12k-stories-d.js:15-74
@@ -4153,7 +4153,7 @@ drawRailMap                  src/18e-rail-net.js:235-283
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:79-512
 drawRocks                    src/19-mode-landing-ground.js:323-415
-drawRouteMap                 src/12r-route.js:267-316
+drawRouteMap                 src/12r-route.js:269-318
 drawRungRing                 src/12ae-ladder.js:72-86
 drawRushTraffic              src/17g-sys-lane.js:153-167
 drawScars                    src/03d-hull-marks.js:132-169
@@ -7803,7 +7803,7 @@ renderPrices                 src/12aa-need.js:265-292
 renderQsl                    src/11an-qsl.js:147-189
 renderRecord                 src/11aa-record.js:107-144
 renderRelays                 src/11ap-relay.js:252-298
-renderRoute                  src/12r-route.js:342-441
+renderRoute                  src/12r-route.js:344-443
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
 renderStrips                 src/27i-ui-table.js:330-366
@@ -8024,18 +8024,18 @@ routeForkTxt                 src/12r-route.js:68-71
 routeHas                     src/12r-route.js:39
 routeInit                    src/12r-route.js:30
 routeLegs                    src/12r-route.js:113-148
-routeLine                    src/12r-route.js:320-329
+routeLine                    src/12r-route.js:322-331
 routeNext                    src/12r-route.js:165-175
 routeNote                    src/12r-route.js:53-62
 routeNoteFor                 src/12r-route.js:45-49
 routeOf                      src/12r-route.js:31-38
 routePl                      src/12r-route.js:40
-routeSell                    src/12r-route.js:233-245
+routeSell                    src/12r-route.js:233-247
 routeSoldBefore              src/12r-route.js:209-215
 routeSum                     src/12r-route.js:152-160
-routeSumLine                 src/12r-route.js:331-336
+routeSumLine                 src/12r-route.js:333-338
 routeSys                     src/12r-route.js:95-103
-routeToFactor                src/12r-route.js:250-261
+routeToFactor                src/12r-route.js:252-263
 routeToggle                  src/12r-route.js:76-94
 routeValue                   src/12r-route.js:224-228
 routeVisit                   src/12r-route.js:179-191
@@ -9590,7 +9590,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/12k-stories-a.js · 33 KB
   · истории, часть первая:1
-  · длинные — в духе институтской фантастики:244
+  · длинные — в духе институтской фантастики:245
 
 ## src/12k-stories-b.js · 37 KB
   · истории, часть вторая:1

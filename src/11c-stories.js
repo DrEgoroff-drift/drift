@@ -93,7 +93,7 @@ function storyAnchorRoll(S,key){
 }
 function storyPlace(S,c){
   const P=storyPins();
-  if(P[S.id])return P[S.id];
+  if(P[S.id])return P[S.id]===c.key?P[S.id]:null;   /* прибитая история живёт по своему адресу, а не ходит за игроком */
   const key=storyAddrMatch(S,c);
   if(!key)return null;
   const fixed=(S.at||"").slice(0,6)==="fixed:";

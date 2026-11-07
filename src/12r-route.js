@@ -235,8 +235,10 @@ function routeSell(){
   if(R.legs.length<2||price<=0)return 0;
   for(const l of routeLegs()){
     if(!l.k)continue;
-    const mk=G.market[l.to.key];
-    if(mk)mk.pressure[l.k]=clamp((mk.pressure[l.k]||0)-.14,-.35,0);
+    /* цена оседает и у станции, где игрок ещё не был: рынок там появится при
+       первом взгляде, но перемена мира уже случилась */
+    const mk=G.market[l.to.key]||(G.market[l.to.key]={pressure:{}});
+    mk.pressure[l.k]=clamp((mk.pressure[l.k]||0)-.14,-.35,0);
   }
   earn(price,"trade");
   R.sold=(R.sold|0)+1;R.soldSets.push(R.legs.slice());

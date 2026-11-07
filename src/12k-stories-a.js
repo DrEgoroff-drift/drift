@@ -74,7 +74,7 @@ const STORIES=[
      называется: игрок в лучшем случае почувствует, что край его помнит */
   {id:"t6",via:"queue",when:{flag:"kept"},text:"— Лампу? Горит. Пока на неё идут — горит."}
  ],
- turns:[{after:"seen:t2",days:14,set:"off",unless:{strip:"here"},else:"kept"}]},
+ turns:[{after:"seen:t2",days:14,set:"off",unless:{card:true},else:"kept"}]},
 
 /* ── 3. Смена не придёт ── версии · три типа станций */
 {id:"no_shift",form:"versions",at:"stype:indust",cast:[],
@@ -96,7 +96,7 @@ const STORIES=[
   {id:"t1",via:"cant",when:{none:["door","brought"]},scene:{seat:"end",figure:0,props:["bread","bread"]}},
   {id:"t2",via:"queue",text:"— Пекарь? Он не пёк никогда. Прозвище — за то, что встаёт рано. Всё остальное люди выдумали."},
   {id:"t3",via:"queue",when:{visits:2},text:"— Пёк. Ещё как пёк. Потом печь увезли, а он остался. Теперь собирает что попало."},
-  {id:"t4",via:"news",when:{visits:2},text:"Пекарь ищет дверцу от печи. Обожжённую. Платит как за редкость."},
+  {id:"t4",via:"news",when:{visits:2,none:["door","brought"]},text:"Пекарь ищет дверцу от печи. Обожжённую. Платит как за редкость."},
   {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3,none:["door","brought"]},text:"— Не то. Я узнаю, когда будет то."},
   {id:"t6",via:"cant",when:{any:["door","brought"]},scene:{seat:"end",figure:1,props:[]}},
   {id:"t7",via:"queue",when:{flag:"brought"},text:"— Нашёл. В грузе, что выкладывали ему на стол. Говорит, узнал по ожогу, сразу."}
@@ -164,7 +164,8 @@ const STORIES=[
   {id:"t2",via:"queue",when:{noflag:"used"},text:"— Ставлю. Придут — уберу. Баржа по плечу ходила, пока там не завелись эти. Всё равно ставлю."},
   {id:"t3",via:"cant",when:{freed:1},scene:{seat:"end",figure:0,props:["cup","cup"]}},
   {id:"t4",via:"queue",when:{freed:1},text:"— Две вымыл. Двое пришли. Остальные — ну, остальные."}
- ]},
+ ],
+ turns:[{day:0,set:"used",when:{freed:1}}]},
 
 /* ── 11. Старое имя ── версии · после конца мира */
 {id:"old_name",form:"versions",at:"any",cast:[],
