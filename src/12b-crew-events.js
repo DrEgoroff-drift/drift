@@ -208,7 +208,7 @@ const CREW_EVENTS=[
     addPart(p);
     return {tone:"tech",ru:"снял с чужого борта: "+p.name};
   }},
-  {id:"capture",cat:"jack",when:()=>Object.keys(SHIPS).some(id=>!G.owned[id]),run:(c,r,gross)=>{
+  {id:"capture",cat:"jack",run:(c,r,gross)=>{
     /* пиратский корпус — чужой и битый (M482, shipyard §6): своя сборка с 1–3 шрамами,
        а не чистый корпус из каталога. Стапель — того, у кого пираты его взяли */
     const seed=hashi(c.seed,(c.trips|0)*131+9,0xC4A7)>>>0,sh=genUniqueShip(seed);

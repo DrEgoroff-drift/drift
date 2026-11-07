@@ -141,6 +141,12 @@ function stationMercs(sys){
     if(G.crew.some(c=>c.id===p.id))continue;
     const m=genMerc(p.seed,null);
     m.id=p.id;m.fee=p.fee|0;m.pax=1;m.story=p.story||"";
+    /* ушедший с базы приходит тем же человеком, каким ушёл (14-save хранит
+       его личность намеренно): имя, дело, черты и опыт — из записи */
+    if(p.name)m.name=String(p.name);
+    if(p.spec&&CREW_SPEC[p.spec])m.spec=p.spec;
+    if(Array.isArray(p.traits)&&p.traits.length)m.traits=p.traits.slice();
+    if(p.xp!=null)m.xp=Math.max(0,p.xp|0);
     out.push(m);
   }
   return out;
@@ -441,7 +447,7 @@ function crewTick(){
     let trips=Math.floor(c.tripMin/tm);
     if(trips>CREW_TRIP_QUEUE){trips=CREW_TRIP_QUEUE;c.tripMin=0;}
     else c.tripMin-=trips*tm;
-    for(let i=0;i<trips&&!c.gone&&!crewBusy(c);i++){
+    for(let i=0;i<trips&&!c.gone&&!crewBusy(c)&&c.order&&c.order.kind!=="home";i++){
       c.xp=(c.xp||0)+tm*mgrCrewXp();
       crewTrip(c,tm);
     }
@@ -458,7 +464,7 @@ function crewTrip(c,tm){
   const danger=sysDanger(c.order.sx,c.order.sy);
   /* жалованье списывается за отработанный рейс целиком */
   crewPayroll(c,tm);
-  if(c.gone)return;
+  if(c.gone||!c.order||c.order.kind==="home")return;
   const gross=Math.round(crewPay(c)*tm*CREW_YIELD*crewEff(c)*(.85+crewLuck(c)*.2));
   const ev=rollCrewEvent(c,r,danger);
   applyCrewEvent(c,ev,r,gross,danger);
@@ -600,7 +606,7 @@ function crewPayload(c,value,r){
 function spawnAllies(){
   G.allies=[];
   for(const c of G.crew){
-    if(!c.shipId||!c.order||c.order.kind==="home")continue;
+    if(!c.shipId||!c.order||c.order.kind==="home"||c.order.kind==="base"||c.order.kind==="barge")continue;
     if(crewBusy(c))continue;          // пленных и загулявших в небе нет
     if(c.order.sx!==G.sx||c.order.sy!==G.sy)continue;
     const a=rng(hashi(c.seed,G.sx*131+G.sy,5))()*TAU;
