@@ -49905,7 +49905,7 @@ function applySaveRest(s){
       B.push({name:b.name.slice(0,48),t:Math.max(0,+b.t||0)});
       if(B.length>=GREEN_BEDS)break;
     }
-    G.green={beds:B};
+    G.green={beds:B,w:s.green&&s.green.w?1:0};
   }
   /* кино (M205): только список виденных сеансов, и тот ради строки в книжке.
      Где и когда идёт фильм — считается от координат и недели */
@@ -85429,15 +85429,31 @@ function greenAll(){
   if(!Array.isArray(G.green.beds))G.green.beds=[];
   return G.green;
 }
-/* поливает ли кто-нибудь: Вега на борту или дома. Больше поливать некому */
+/* поливает ли кто-нибудь: Вега на борту или дома. Переехала она с первого
+   акта (11w: «Я переезжаю»), поэтому «дома» — любой stage>0 без борта */
 function greenWatered(){
-  return !!(G.vega&&(G.vega.aboard||(G.vega.stage|0)>=3));
+  return !!(G.vega&&(G.vega.stage|0)>0);
 }
-/* сколько выросло: 0 — только посеяно, 1 — взрослое */
+/* сколько выросло: 0 — только посеяно, 1 — взрослое. Растёт по стенным часам
+   (закон файла: настоящие сутки, Date.now посева), и рост не отматывается:
+   при смене полива накопленный возраст пересчитывается в новое t */
+function greenRateSync(){
+  const w=greenWatered()?1:0,g=greenAll();
+  if(g.w==null){g.w=w;return;}
+  if(g.w===w)return;
+  const nw=wallNow(),kOld=g.w?GREEN_VEGA:1,kNew=w?GREEN_VEGA:1;
+  for(const b of g.beds){
+    if(!b||!b.t)continue;
+    const grown=clamp((nw-b.t)*kOld/GREEN_FULL,0,1);
+    b.t=nw-(grown>=1?GREEN_FULL/kNew:grown*GREEN_FULL/kNew);
+  }
+  g.w=w;
+}
 function greenGrow(b){
+  greenRateSync();
   if(!b||!b.t)return 0;
   const k=greenWatered()?GREEN_VEGA:1;
-  return clamp((now()-b.t)*k/GREEN_FULL,0,1);
+  return clamp((wallNow()-b.t)*k/GREEN_FULL,0,1);
 }
 /* какие виды ещё не посеяны: реестр помнит порядок открытия, и сеется тот,
    что описан позже прочих — то есть тот, который ещё в руках */
@@ -85455,7 +85471,7 @@ function greenSow(){
   if(!greenCanSow())return null;
   const name=greenNext();
   G.bio=(G.bio|0)-1;                       /* уходит образец, как у управляющего */
-  const b={name,t:now()};
+  const b={name,t:wallNow()};
   greenAll().beds.push(b);
   logAdd("good","Посеяно у дома: "+name);
   tell("good","Посеяно: "+name,"ПОСЕЯНО\n"+name.toUpperCase()+
@@ -85530,7 +85546,12 @@ function greenPrompt(){
    1. Ни одного числа в экономику. Никогда.
    2. Ничего, кроме списка объявленных кварталов. */
 const PENN_DAYS=90;                 /* квартал в календарных сутках */
-function pennQuarter(){return Math.floor(celDay()/PENN_DAYS);}
+function pennQuarter(){
+  /* G.t в сейв не идёт и после загрузки квартал был всегда 0, а G.penn — нет:
+     знамя отскакивало на держателя нулевого квартала. Сутки календаря — минута
+     игры; G.playMs (28v) эту минуту переживает выход. */
+  return Math.floor((G.playMs||0)/(PENN_DAYS*CEL_DAY*16.667));
+}
 function pennAll(){if(!Array.isArray(G.penn))G.penn=[];return G.penn;}
 /* счёт базы: построено плюс сведённый баланс. Выручки тут нет намеренно */
 function pennScore(B){
@@ -85538,7 +85559,7 @@ function pennScore(B){
   const built=(B.cells||[]).filter(c=>!!c).length;
   let p=0;
   try{p=(typeof basePower==="function")?basePower(B):0;}catch(e){p=0;}
-  const bal=(p&&typeof p==="object")?((p.out|0)-(p.use|0)):(p|0);
+  const bal=(p&&typeof p==="object")?Math.round((+p.prod||0)-(+p.cons||0)):(p|0);
   /* сведённый баланс — это ноль или чуть выше: запас в двадцать киловатт
      говорит не о хозяйстве, а о том, что реактор поставили и забыли */
   const tidy=bal>=0?Math.max(0,6-Math.abs(bal))*2:-8;
@@ -113137,7 +113158,7 @@ function mailWire(s){
      первой же строкой (`!s.v` — «снимок не читается»), и своя отправленная
      карточка ложилась в стопку чёрным прямоугольником. Сервер эту единицу
      всё равно ставит сам, но карточка живёт и до сервера, и после него */
-  return {v:POST_V,m:s.m,sx:s.sx|0,sy:s.sy|0,pi:s.pi|0,mi:s.mi==null?-1:s.mi|0,
+  return {v:POST_V,m:s.m,sx:s.sx|0,sy:s.sy|0,pi:s.pi==null?-1:s.pi|0,mi:s.mi==null?-1:s.mi|0,
     lon:(s.lon==null?null:+s.lon),cx:s.cx|0,t:s.t|0,ver:String(s.ver||VER),
     f:String(s.f||""),c:(s.c||[]).map(x=>x|0),g:(s.g||[]).map(x=>x|0)};
 }

@@ -20,7 +20,12 @@
    1. Ни одного числа в экономику. Никогда.
    2. Ничего, кроме списка объявленных кварталов. */
 const PENN_DAYS=90;                 /* квартал в календарных сутках */
-function pennQuarter(){return Math.floor(celDay()/PENN_DAYS);}
+function pennQuarter(){
+  /* G.t в сейв не идёт и после загрузки квартал был всегда 0, а G.penn — нет:
+     знамя отскакивало на держателя нулевого квартала. Сутки календаря — минута
+     игры; G.playMs (28v) эту минуту переживает выход. */
+  return Math.floor((G.playMs||0)/(PENN_DAYS*CEL_DAY*16.667));
+}
 function pennAll(){if(!Array.isArray(G.penn))G.penn=[];return G.penn;}
 /* счёт базы: построено плюс сведённый баланс. Выручки тут нет намеренно */
 function pennScore(B){
@@ -28,7 +33,7 @@ function pennScore(B){
   const built=(B.cells||[]).filter(c=>!!c).length;
   let p=0;
   try{p=(typeof basePower==="function")?basePower(B):0;}catch(e){p=0;}
-  const bal=(p&&typeof p==="object")?((p.out|0)-(p.use|0)):(p|0);
+  const bal=(p&&typeof p==="object")?Math.round((+p.prod||0)-(+p.cons||0)):(p|0);
   /* сведённый баланс — это ноль или чуть выше: запас в двадцать киловатт
      говорит не о хозяйстве, а о том, что реактор поставили и забыли */
   const tidy=bal>=0?Math.max(0,6-Math.abs(bal))*2:-8;

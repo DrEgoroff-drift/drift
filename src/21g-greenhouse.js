@@ -32,15 +32,31 @@ function greenAll(){
   if(!Array.isArray(G.green.beds))G.green.beds=[];
   return G.green;
 }
-/* поливает ли кто-нибудь: Вега на борту или дома. Больше поливать некому */
+/* поливает ли кто-нибудь: Вега на борту или дома. Переехала она с первого
+   акта (11w: «Я переезжаю»), поэтому «дома» — любой stage>0 без борта */
 function greenWatered(){
-  return !!(G.vega&&(G.vega.aboard||(G.vega.stage|0)>=3));
+  return !!(G.vega&&(G.vega.stage|0)>0);
 }
-/* сколько выросло: 0 — только посеяно, 1 — взрослое */
+/* сколько выросло: 0 — только посеяно, 1 — взрослое. Растёт по стенным часам
+   (закон файла: настоящие сутки, Date.now посева), и рост не отматывается:
+   при смене полива накопленный возраст пересчитывается в новое t */
+function greenRateSync(){
+  const w=greenWatered()?1:0,g=greenAll();
+  if(g.w==null){g.w=w;return;}
+  if(g.w===w)return;
+  const nw=wallNow(),kOld=g.w?GREEN_VEGA:1,kNew=w?GREEN_VEGA:1;
+  for(const b of g.beds){
+    if(!b||!b.t)continue;
+    const grown=clamp((nw-b.t)*kOld/GREEN_FULL,0,1);
+    b.t=nw-(grown>=1?GREEN_FULL/kNew:grown*GREEN_FULL/kNew);
+  }
+  g.w=w;
+}
 function greenGrow(b){
+  greenRateSync();
   if(!b||!b.t)return 0;
   const k=greenWatered()?GREEN_VEGA:1;
-  return clamp((now()-b.t)*k/GREEN_FULL,0,1);
+  return clamp((wallNow()-b.t)*k/GREEN_FULL,0,1);
 }
 /* какие виды ещё не посеяны: реестр помнит порядок открытия, и сеется тот,
    что описан позже прочих — то есть тот, который ещё в руках */
@@ -58,7 +74,7 @@ function greenSow(){
   if(!greenCanSow())return null;
   const name=greenNext();
   G.bio=(G.bio|0)-1;                       /* уходит образец, как у управляющего */
-  const b={name,t:now()};
+  const b={name,t:wallNow()};
   greenAll().beds.push(b);
   logAdd("good","Посеяно у дома: "+name);
   tell("good","Посеяно: "+name,"ПОСЕЯНО\n"+name.toUpperCase()+

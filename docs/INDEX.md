@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 711 · top-level symbols: 9061
+Files: 711 · top-level symbols: 9062
 
 ## SYMBOLS
 
@@ -911,7 +911,7 @@ GRADE_U                      src/19c-light.js:245
 GRADE_WGSL                   src/19c-light.js:235
 GREEN_BEDS                   src/21g-greenhouse.js:27
 GREEN_FULL                   src/21g-greenhouse.js:28
-GREEN_SP                     src/21g-greenhouse.js:72
+GREEN_SP                     src/21g-greenhouse.js:88
 GREEN_VEGA                   src/21g-greenhouse.js:29
 GREY_K                       src/18a1-glaze.js:25
 GRIB_BOOM                    src/21ac1-base-banya.js:20
@@ -4906,14 +4906,15 @@ gpuWorld                     src/08b-gpu.js:677-696
 gradeGpu                     src/19c-light.js:246-257
 gradePass                    src/19c-light.js:258-278
 greenAll                     src/21g-greenhouse.js:30-34
-greenCanSow                  src/21g-greenhouse.js:54-56
-greenGrow                    src/21g-greenhouse.js:40-44
-greenNext                    src/21g-greenhouse.js:47-53
-greenPrompt                  src/21g-greenhouse.js:106-112
-greenSow                     src/21g-greenhouse.js:57-69
-greenSpecies                 src/21g-greenhouse.js:73-87
-greenSpeciesFields           src/21g-greenhouse.js:90-104
-greenWatered                 src/21g-greenhouse.js:36-38
+greenCanSow                  src/21g-greenhouse.js:70-72
+greenGrow                    src/21g-greenhouse.js:55-60
+greenNext                    src/21g-greenhouse.js:63-69
+greenPrompt                  src/21g-greenhouse.js:122-128
+greenRateSync                src/21g-greenhouse.js:43-54
+greenSow                     src/21g-greenhouse.js:73-85
+greenSpecies                 src/21g-greenhouse.js:89-103
+greenSpeciesFields           src/21g-greenhouse.js:106-120
+greenWatered                 src/21g-greenhouse.js:37-39
 greyA                        src/18a1-glaze.js:15-18
 greyOf                       src/18a1-glaze.js:11-14
 greyStretch                  src/18a1-glaze.js:26
@@ -6718,12 +6719,12 @@ peepMake                     src/20c-peep.js:52-63
 peepScene                    src/20c-peep.js:42-48
 peepUpdate                   src/20c-peep.js:67-83
 peepWalk                     src/20c-peep.js:88-117
-pennAll                      src/21h-pennant.js:24
-pennHash                     src/21h-pennant.js:41-45
-pennHolder                   src/21h-pennant.js:47-57
-pennQuarter                  src/21h-pennant.js:23
-pennScore                    src/21h-pennant.js:26-36
-pennTick                     src/21h-pennant.js:59-74
+pennAll                      src/21h-pennant.js:29
+pennHash                     src/21h-pennant.js:46-50
+pennHolder                   src/21h-pennant.js:52-62
+pennQuarter                  src/21h-pennant.js:23-28
+pennScore                    src/21h-pennant.js:31-41
+pennTick                     src/21h-pennant.js:64-79
 peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
 pfFresh                      tests/91qo-prefetch.js:15

@@ -57,7 +57,7 @@ function mailWire(s){
      первой же строкой (`!s.v` — «снимок не читается»), и своя отправленная
      карточка ложилась в стопку чёрным прямоугольником. Сервер эту единицу
      всё равно ставит сам, но карточка живёт и до сервера, и после него */
-  return {v:POST_V,m:s.m,sx:s.sx|0,sy:s.sy|0,pi:s.pi|0,mi:s.mi==null?-1:s.mi|0,
+  return {v:POST_V,m:s.m,sx:s.sx|0,sy:s.sy|0,pi:s.pi==null?-1:s.pi|0,mi:s.mi==null?-1:s.mi|0,
     lon:(s.lon==null?null:+s.lon),cx:s.cx|0,t:s.t|0,ver:String(s.ver||VER),
     f:String(s.f||""),c:(s.c||[]).map(x=>x|0),g:(s.g||[]).map(x=>x|0)};
 }

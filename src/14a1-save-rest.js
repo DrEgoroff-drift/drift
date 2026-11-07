@@ -267,7 +267,7 @@ function applySaveRest(s){
       B.push({name:b.name.slice(0,48),t:Math.max(0,+b.t||0)});
       if(B.length>=GREEN_BEDS)break;
     }
-    G.green={beds:B};
+    G.green={beds:B,w:s.green&&s.green.w?1:0};
   }
   /* кино (M205): только список виденных сеансов, и тот ради строки в книжке.
      Где и когда идёт фильм — считается от координат и недели */
