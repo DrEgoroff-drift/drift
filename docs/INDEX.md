@@ -2224,12 +2224,12 @@ SKIPPED_PROBE                tests/90-harness.js:60
 SKIPPED_SKIP                 tests/90-harness.js:66
 SKIPPED_SLOW                 tests/90-harness.js:62
 SKY_BULL                     src/11ak-skywatch.js:27
-SKY_HOR                      src/11ak-skywatch.js:80
+SKY_HOR                      src/11ak-skywatch.js:82
 SKY_KINDS                    src/11ak-skywatch.js:29-33
 SKY_LAPSE                    src/11ak-skywatch.js:28
 SKY_LOUD                     src/19b-sky.js:15
 SKY_NOISE_WGSL               src/19ca-gpu-sky.js:71
-SKY_OFF                      src/11ak-skywatch.js:123
+SKY_OFF                      src/11ak-skywatch.js:125
 SKY_PIN                      src/19ca-gpu-sky.js:32
 SKY_QUIET                    src/19b-sky.js:16
 SKY_WORLD_KINDS              src/19b-sky.js:72-80
@@ -8275,29 +8275,29 @@ sirenHeard                   src/16c-abil.js:47-64
 sixthGone                    src/12k-stories-d.js:77
 sizeIdx                      src/05d-mounts.js:69
 skyAll                       src/11ak-skywatch.js:34-38
-skyBlock                     src/11ak-skywatch.js:236-265
+skyBlock                     src/11ak-skywatch.js:240-279
 skyBodyDraw                  src/19cb-gpu-sky-bodies.js:296-300
-skyCanReport                 src/11ak-skywatch.js:204-207
+skyCanReport                 src/11ak-skywatch.js:206-209
 skyClip                      src/19cb-gpu-sky-bodies.js:290-295
 skyCloudCols                 src/19cc-gpu-air.js:108-117
-skyCometName                 src/11ak-skywatch.js:200-203
+skyCometName                 src/11ak-skywatch.js:202-205
 skyDay                       src/19c-light.js:78-95
-skyDrop                      src/11ak-skywatch.js:148-152
+skyDrop                      src/11ak-skywatch.js:150-154
 skyFind                      src/11ak-skywatch.js:47-56
 skyGiantCols                 src/19cb-gpu-sky-bodies.js:304-322
 skyMeteor                    src/19ca-gpu-sky.js:240-251
-skyNameComet                 src/11ak-skywatch.js:186-198
+skyNameComet                 src/11ak-skywatch.js:188-200
 skyNebCols                   src/19ca-gpu-sky.js:234-238
-skyOfferHere                 src/11ak-skywatch.js:124-137
-skyOn                        src/11ak-skywatch.js:59-66
-skyPick                      src/11ak-skywatch.js:81-120
+skyOfferHere                 src/11ak-skywatch.js:126-139
+skyOn                        src/11ak-skywatch.js:59-68
+skyPick                      src/11ak-skywatch.js:83-122
 skyPin                       src/19ca-gpu-sky.js:34
-skyReport                    src/11ak-skywatch.js:208-232
+skyReport                    src/11ak-skywatch.js:210-236
 skyReroll                    src/19ca-gpu-sky.js:36-41
 skyRoll                      src/19ca-gpu-sky.js:43-69
 skyScene                     src/19b-sky.js:17-36
-skyTake                      src/11ak-skywatch.js:138-147
-skyTick                      src/11ak-skywatch.js:157-182
+skyTake                      src/11ak-skywatch.js:140-149
+skyTick                      src/11ak-skywatch.js:159-184
 skyTint                      src/19b-sky.js:46-49
 skyU                         src/19b-sky.js:43
 skyWhere                     src/11ak-skywatch.js:39
@@ -9304,7 +9304,7 @@ zoomTo                       src/15-input.js:358
 ## src/11aj-told.js · 5 KB
   · ляпнул лишнего:1
 
-## src/11ak-skywatch.js · 17 KB
+## src/11ak-skywatch.js · 18 KB
   · небесная вахта:1
 
 ## src/11am-holiday.js · 8 KB

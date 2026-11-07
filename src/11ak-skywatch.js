@@ -60,7 +60,9 @@ function skyOn(o,t){
   if(!o||!G.sys||G.sys.sx!==o.sx||G.sys.sy!==o.sy)return 0;
   if(o.kind==="comet"){const c=celComet(G.sys,t);return c&&c.k>.40?c.k:0;}
   if(o.kind==="conj"){const c=celConj(G.sys,t);return c&&c.k>.30?c.k:0;}
-  const p=(typeof celHere==="function")?celHere():null;
+  /* грунт, а не борт: заход и забытый G.land после срыва посадки не считаются
+     (celHere отдал бы планету и с орбиты) */
+  const p=(G.surf&&G.surf.p)||(G.dig&&G.dig.p)||null;
   if(!p||p.key!==o.pkey)return 0;
   const e=celEclipse(p,t);return e&&e.k>.45?e.k:0;
 }
@@ -169,12 +171,12 @@ function skyTick(){
     }
   }
   if(S.lastDay===d)return;S.lastDay=d;
-  if(!o.bull&&d>o.day+SKY_BULL){
+  if(!o.bull&&d>=o.day+SKY_BULL){
     o.bull=1;
     logAdd("ether","Бюллетень института: "+SKY_KINDS[o.kind].ru+", "+skyWhere(o)+
       ", сутки "+o.day+". Наблюдение расчётное — наблюдателя не было.");
   }
-  if(d>o.day+SKY_LAPSE){
+  if(d>=o.day+SKY_LAPSE){
     if(o.got)logAdd("warn","Лента наблюдения так и не сдана. Наряд закрыт.");
     else logAdd("dim","Наряд на наблюдение просрочен: "+skyWhere(o)+", сутки "+o.day+".");
     skyDrop();
@@ -223,7 +225,9 @@ function skyReport(){
     logAdd("good","Вахта закрыта первым: "+K.ru+" · "+skyWhere(o)+" · +"+pay+" кр");
   }else{
     S.late=(S.late|0)+1;
-    peopleLine("бюллетень вышел позавчера. Ленту подошьём — сверка тоже работа.","стойка института",true);
+    const bullDay=o.day+SKY_BULL, ago=celDay()-bullDay;
+    const when=ago<=0?"сегодня":ago===1?"вчера":ago===2?"позавчера":(ago+" суток назад");
+    peopleLine("бюллетень вышел "+when+". Ленту подошьём — сверка тоже работа.","стойка института",true);
     recordAdd("институт","наблюдение сдано после бюллетеня · "+K.ru+" · "+skyWhere(o));
     logAdd("dim","Вахта закрыта после бюллетеня: "+K.ru+" · +"+pay+" кр");
   }
@@ -244,18 +248,28 @@ function skyBlock(){
   if(wl)$body.appendChild(el("div","row","<div class='nm'><b>"+wl.ru+"</b><s>"+wl.note+"</s></div>"));
   if(O){
     const K=SKY_KINDS[O.kind], left=O.day-celDay();
+    const when=left>0?("через "+left+" сут"):left===0?"сегодня":"срок прошёл";
     const r=el("div","row","<div class='nm'><b>"+K.ru+" · "+skyWhere(O)+"</b><s>сутки "+O.day+
-      " · через "+left+" сут · "+K.need+"</s></div>");
+      " · "+when+" · "+K.need+"</s></div>");
     const b=el("button","act sm","ВЗЯТЬ НАРЯД");
     b.onclick=()=>{skyTake(O);renderTab();};
     r.appendChild(b);$body.appendChild(r);
   }
   if(o){
     const K=SKY_KINDS[o.kind], left=o.day-celDay();
+    /* идёт ли событие ещё — честно, из системы события, а не «идёт к концу» три недели */
+    const live=!o.got&&(function(){
+      const es=getSystem(o.sx,o.sy);if(!es)return false;
+      const t=celDay()*CEL_DAY;
+      if(o.kind==="comet"){const c=celComet(es,t);return !!(c&&c.k>.40);}
+      if(o.kind==="conj"){const c=celConj(es,t);return !!(c&&c.k>.30);}
+      for(const q of (es.planets||[]))if(q.key===o.pkey){const e=celEclipse(q,t);return !!(e&&e.k>.45);}
+      return false;
+    })();
     const st=o.got
       ?(o.bull?"лента есть · бюллетень уже вышел, половина платы":"лента есть · сдать сейчас")
       :(left>0?("ещё "+left+" сут · "+K.need)
-        :(left===0?("сегодня · "+K.need):"событие идёт к концу · "+K.need));
+        :(left===0?("сегодня · "+K.need):(live?"событие ещё идёт · "+K.need:"событие уже прошло · "+K.need)));
     const r=el("div","row","<div class='nm'><b>"+K.ru+" · "+skyWhere(o)+"</b><s>сутки "+o.day+" · "+st+"</s></div>");
     const b=el("button","act sm gold","СДАТЬ ОТЧЁТ");
     b.disabled=!o.got;

@@ -42,7 +42,7 @@ const WALL_S="s", WALL_C="c";              /* стена посёлка · ус�
 const WALL_KIND_RU={s:"стене посёлка",c:"устье пещеры"};
 /* в памяти вкладки, а не в G: см. правило 1 */
 const WALL_CACHE=new Map();
-let wallBusy=0;
+let wallBusy=-1e9;   /* реальные часы: под прибитыми часами (CLOCK_PIN) кулдаун не замирает */
 
 function wallOn(){return typeof traceOn==="function"&&traceOn();}
 function wallCall(op,body){
@@ -68,7 +68,7 @@ function wallAsk(kind){
   if(!key)return;
   const ck=wallCacheKey(kind,key);
   if(WALL_CACHE.has(ck))return;
-  const now=clockNow();
+  const now=wallNow();
   if(now-wallBusy<15000)return;
   wallBusy=now;
   /* заглушка на время ответа: без неё каждый кадр слал бы новый запрос */
