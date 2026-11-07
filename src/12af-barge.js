@@ -46,7 +46,13 @@ function bargeStart(c){
   const R=routeOf();
   if(R.legs.length<2)return"Сначала проложите маршрут из двух и более плеч";
   if(R.loops<1)return"Баржа идёт по прохоженной дороге — пройдите круг сами";
-  const legs=R.legs.filter(key=>{const H=G.hold&&G.hold[key];return H&&H.bld&&Object.keys(H.bld).length;});
+  /* плечо кормит только если хоть один цех на нём что-то ЕСТ: семьи E–I
+     (пирс, контора) есть в bld, но eats у них пуст */
+  const legs=R.legs.filter(key=>{
+    const H=G.hold&&G.hold[key];if(!H||!H.bld)return false;
+    for(const id in H.bld){const d=BLD[id];if(d&&Object.keys(d.eats).length)return true;}
+    return false;
+  });
   if(!legs.length)return"На маршруте нет ваших цехов — барже некого кормить";
   c.barge={legs:R.legs.slice(),cursor:0,t0:now(),fed:0,name:bargeName(c)};
   c.cargo=c.cargo||{};

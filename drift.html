@@ -26239,7 +26239,13 @@ function bargeStart(c){
   const R=routeOf();
   if(R.legs.length<2)return"Сначала проложите маршрут из двух и более плеч";
   if(R.loops<1)return"Баржа идёт по прохоженной дороге — пройдите круг сами";
-  const legs=R.legs.filter(key=>{const H=G.hold&&G.hold[key];return H&&H.bld&&Object.keys(H.bld).length;});
+  /* плечо кормит только если хоть один цех на нём что-то ЕСТ: семьи E–I
+     (пирс, контора) есть в bld, но eats у них пуст */
+  const legs=R.legs.filter(key=>{
+    const H=G.hold&&G.hold[key];if(!H||!H.bld)return false;
+    for(const id in H.bld){const d=BLD[id];if(d&&Object.keys(d.eats).length)return true;}
+    return false;
+  });
   if(!legs.length)return"На маршруте нет ваших цехов — барже некого кормить";
   c.barge={legs:R.legs.slice(),cursor:0,t0:now(),fed:0,name:bargeName(c)};
   c.cargo=c.cargo||{};
@@ -37102,7 +37108,7 @@ function updateBarges(dt){
 function bargeMineHit(s){
   for(const b of G.barges){
     if(Math.hypot(s.x-b.x,s.y-b.y)<26){
-      b.hp-=s.dmg;b.distress=1;b.mineHit=1;   // выстрелив по ней, вы её и добиваете
+      b.hp-=s.dmg;b.mineHit=1;if(b.wasPirateDistress)b.distress=1;   // ваш выстрел метит убийцу; подранок, которого били вы, идёт дальше, а не висит в «беде» навсегда
       if(typeof sfx==="function")sfx("hit",{v:.3});
       if(b.hp<=0)bargeSunk(b,"player");
       return true;
@@ -37141,19 +37147,27 @@ function bargeSunk(b,cause){
   if(b.escort)bargeEscortEnd(b,false);
   const key=G.sx+","+G.sy;
   if(!G.wrecks[key])G.wrecks[key]=[];
-  if(G.wrecks[key].length<12)
-    G.wrecks[key].push({seed:hashi(b.seed,0x3E7,cause==="player"?1:2),
+  if(G.wrecks[key].length<12){
+    /* семя — адрес остова: утонувшая дважды в одном окне баржа не должна
+       оставлять два остова с одним адресом и одной подписью */
+    let salt=cause==="player"?1:2,seed=hashi(b.seed,0x3E7,salt);
+    while(G.wrecks[key].some(w=>w.seed===seed))seed=hashi(b.seed,0x3E7,++salt);
+    G.wrecks[key].push({seed,
       x:b.x,y:b.y,tier:clamp(1+Math.floor(sysDanger(G.sx,G.sy)*2),0,3),
       seen:0,good:b.good,name:b.capName});
+  }
   if(cause==="player"){
     const dst=bargeSysAt(b.from)||bargeSysAt(b.to);
     if(dst&&typeof repAdd==="function")repAdd(-3,dst);
     /* и у минуса появляется тело: за баржу приходит капитан с именем (12o) */
     if(dst&&typeof huntMark==="function")huntMark(dst,"разбитую баржу");
-    /* груз ваш: часть добычи падает контейнерами, как с пирата */
-    if(typeof addRes==="function")addRes(b.good,4+Math.floor(rnd()*6));
-    say("Баржа «"+b.capName+"» разбита вами\nгруз ваш · вас запомнят");
-    logAdd("warn","Вы разбили баржу «"+b.capName+"» · груз взят, репутация упала");
+    /* груз ваш: часть добычи падает контейнерами, как с пирата. Трюм берёт
+       сколько влезло по весу (и ноль под истощением) — платим тем, что легло */
+    const want=Math.min(b.qty|0,4+Math.floor(rnd()*6));
+    const got=want>0?addRes(b.good,want):0;
+    b.qty-=got;
+    say("Баржа «"+b.capName+"» разбита вами\n"+(got?"+"+got+" "+RES[b.good].ru.toLowerCase()+" · ":"трюм не взял ничего · ")+"вас запомнят");
+    logAdd("warn","Вы разбили баржу «"+b.capName+"» · "+(got?"груз +"+got:"груз не влез")+", репутация упала");
   }else{
     say("Баржу «"+b.capName+"» потопили пираты\nостался остов");
     logAdd("warn","Баржа «"+b.capName+"» погибла · остался остов");
@@ -37582,8 +37596,12 @@ function renderBarge(){
     const buy=n=>{
       n=Math.min(n,b.qty,Math.max(0,st.cargoMax-held()),Math.floor(G.credits/p));
       if(n<=0){say("Некуда или не на что");return;}
-      G.credits-=n*p;addRes(b.good,n);b.qty-=n;b.dealt+=n;bargeRepNudge(b);
-      logAdd("money","Куплено у баржи: "+RES[b.good].ru.toLowerCase()+" ×"+n+" по "+p+" кр");
+      /* трюм берёт по весу и ноль под истощением — платим за то, что легло */
+      const got=addRes(b.good,n);
+      if(got<n)say(got?"Часть груза не влезла по весу":"Руда этой державы истощена — у баржи купить нечего");
+      if(!got)return;
+      G.credits-=got*p;b.qty-=got;b.dealt+=got;bargeRepNudge(b);
+      logAdd("money","Куплено у баржи: "+RES[b.good].ru.toLowerCase()+" ×"+got+" по "+p+" кр");
       renderBarge();
     };
     $bgBody.appendChild(bargeElRow("КУПИТЬ "+RES[b.good].ru,
