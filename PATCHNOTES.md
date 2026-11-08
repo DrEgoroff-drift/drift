@@ -1,3 +1,10 @@
+## 0.499.108 — fleet night: fixes across the world
+
+- Frame: pirates and liner hulls prebake ahead of the screen edge; late pipelines skip assembly in heavy frames; the phone-gate tools are fixed.
+- Visual: landing stones grow clipped lichen crowns; the landing haze and sunset are brushes, not shares of the frame; the postcard sky gets a flat zenith with a horizon stripe; the nebula's dark-side dust ramp is longer; ice light stays inside the silhouette; the belt-rig beacon breathes instead of blinking; crash cracks sit on the hull; the dead cave-lichen loop is gone.
+- World: news is honest (market aging, captain story, unique wreck seeds); pinned stories stay at their own address; sold routes move unseen markets; rear hits no longer wipe hull wear; settlement hand-overs pay what the hold took; the settlement's own will actually varies; resettled villages remember their escape; holidays, the greenhouse and the night band read the real calendar; closed tins stop; a quitting hand stops working; the capture jackpot stays in the pool; the renegade fights as a baron and cannot flee-heal; the three lights finally meet; the eclipse walker gets a moon; the quiet runner reaches the cave; the gun parts the grove.
+- Tests: a rare-table integrity suite reads the live tables.
+
 ## 0.499.107 — sealed field suit
 
 Rebuilt the suited player with clean articulated geometry: a closed visor, smoother orange shell, smaller backpack, shorter glove fingers and compact boots. Preserves equipment colours, headlamp, drill and jet animations. The unsuited mechanic remains available indoors.
