@@ -698,7 +698,7 @@ function renderAlbum(box){
   const A=albumAll();
   box.innerHTML="";
   if(!A.length){
-    tableRow(box,"dim","","альбом пуст: кнопка ФОТО на пульте — на грунте и на заходе");
+    tableRow(box,"dim","","альбом пуст: кнопка ФОТО на пульте — на грунте, на заходе, в пещере, шахте, поясе, атмосфере и в системе");
     return;
   }
   const wrap=document.createElement("div");

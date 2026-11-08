@@ -214,8 +214,8 @@ function opisPlanOnly(){
   box.appendChild(lg);
   /* правка — КБ, и только у причала: в полёте чертёж не переделывают (M477) */
   if(G.mode==="dock"&&typeof kbOpen==="function"){
-    const b=document.createElement("button");b.className="act";b.textContent="КБ · ПРАВИТЬ ЧЕРТЁЖ";b.onclick=kbOpen;box.appendChild(b);
-  }else{const e=document.createElement("s");e.className="chalk";e.textContent=" · правка чертежа — в КБ у причала";lg.appendChild(e);}
+    const b=document.createElement("button");b.className="act";b.textContent="ЧЕРТЁЖНАЯ · ПРАВИТЬ";b.onclick=kbOpen;box.appendChild(b);
+  }else{const e=document.createElement("s");e.className="chalk";e.textContent=" · правка — в чертёжной у причала";lg.appendChild(e);}
   return box;
 }
 /* ── открытость (M479, DESIGN-shipyard §3): борт принимает то, что по нему пришло ──
@@ -230,7 +230,7 @@ function planExposure(s,d){
   const dir=Math.atan2(s.vy,s.vx),ad=Math.abs(angDiff(dir,G.ship.a));
   if(ad<Math.PI/3){
     if(typeof wearAll==="function"){const W=wearAll(),id=G.shipId;W[id]=Math.min(WEAR_FULL,(W[id]||0)+d*EXPO_REAR_WEAR*WEAR_FULL);}
-    if(!planExposure.t||G.t-planExposure.t>300){planExposure.t=G.t;say("Попадание в корму\nдвигатели принимают · износ растёт",90);}
+    if(!planExposure.t||G.t-planExposure.t>300){planExposure.t=G.t;say("Попадание в корму\nизнос растёт — поверните носом",90);}
     return d;
   }
   if(ad>Math.PI*2/3||typeof draftOf!=="function")return d;

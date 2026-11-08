@@ -339,7 +339,7 @@ function hud(){
   /* строка кошелька — только при перемене: toLocaleString("ru") стоил 3 мкс из 16 каждого кадра (M826) */
   {const cr=Math.round(G.credits);if($purse&&($purse.__c!==cr||$purse.__d!==G.data||$purse.__l!==cl||$purse.textContent!==$purse.__s)){
     $purse.__c=cr;$purse.__d=G.data;$purse.__l=cl;   /* и сверка с самим узлом: его пишут и мимо hud() (см. setTx) */
-    setTx($purse,$purse.__s=cr.toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));}}
+    setTx($purse,$purse.__s=cr.toLocaleString("ru")+" кр · "+G.data+" данных"+(cl?" · "+cl:""));}}
   /* кошелёк шапки станции: экран может стоять открытым, когда мир меняет цифры (загрузка под ним, M331) — пишем при смене */
   if(HUD_NUM.wc!==G.credits||HUD_NUM.wd!==G.data){HUD_NUM.wc=G.credits;HUD_NUM.wd=G.data;if(typeof stWalletSync==="function")stWalletSync();}
   /* масштаб — служебная цифра, и место ей в шапке под кассой (R6, 12.09), а не

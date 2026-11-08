@@ -607,7 +607,7 @@ function renderTabBody(){
       const r=el("div","row");
       const st8=c.state==="hostage"
         ? "<br><b style='color:#ff6b57'>В ПЛЕНУ · выкуп "+(c.ransom||0).toLocaleString("ru")+
-          " кр — платить или штурмовать базу в секторе "+c.ransomSx+","+c.ransomSy+"</b>"
+          " кр — выкуп в ДЕЛЕ или штурм базы в секторе "+c.ransomSx+":"+c.ransomSy+"</b>"
         : (c.state==="away"?"<br><b style='color:#f2b25c'>В ЗАГУЛЕ</b>":"");
       /* карточка человека (M301, DESIGN-screens §3): словами — кто, что делает,
          на чём и в каком духе; цифры блоком ниже. Главный вопрос — окупается ли —

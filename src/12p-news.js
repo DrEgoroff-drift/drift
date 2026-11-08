@@ -116,8 +116,8 @@ const NEWS_KINDS=[
       if(m.pressure[k]!==was)moved=true;
     }
     if(!moved)return null;   /* цены не шелохнулись — слуха без перемены нет */
-    newsMark(s.sx+","+s.sy,"сменился хозяин","#7fe6d8");
-    return {ru:"«"+s.station.name+"» перешла другим людям: и цены, и порядки там теперь чужие",
+    newsMark(s.sx+","+s.sy,"цены сдвинулись","#7fe6d8");
+    return {ru:"«"+s.station.name+"» перешла другим людям — цены там теперь чужие",
       sx:s.sx,sy:s.sy};
   }},
   {id:"barge",apply(r){
@@ -209,7 +209,7 @@ function newsRender(){
   for(const n of list.slice(-6).reverse()){
     const mins=Math.max(1,Math.round((now()-n.t)/60000));
     $body.appendChild(el("div","row","<div class='nm'><b>"+n.ru+"</b><s>"+(n.id==="ds"?"сводка · слышно "+mins+" мин назад":"сектор "+
-      n.sx+", "+n.sy+" · слышно "+mins+" мин назад · на карте появилась метка")+"</s></div>"));
+      n.sx+":"+n.sy+" · слышно "+mins+" мин назад · на карте появилась метка")+"</s></div>"));
   }
   /* соперники: у каждого унесённого предмета есть человек и место */
   const rv=Object.keys(G.rivals||{});
@@ -219,7 +219,7 @@ function newsRender(){
       const R=RARE_BY_ID[id],V=G.rivals[id];
       if(!R||!V)continue;
       $body.appendChild(el("div","row","<div class='nm'><b>«"+R.ru+"» · "+V.who+
-        "</b><s>сектор "+V.sx+", "+V.sy+" · её всё ещё можно забрать: адрес сменился, "+
+        "</b><s>сектор "+V.sx+":"+V.sy+" · его всё ещё можно забрать: адрес сменился, "+
         "а не пропал</s></div>"));
     }
   }

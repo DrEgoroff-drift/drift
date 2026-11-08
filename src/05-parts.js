@@ -38,7 +38,7 @@ const AFFIX=[
   {k:"turnMul",  ru:"поворот",          step:.07, kinds:["engine"]},
   {k:"hullAdd",  ru:"корпус",           step:11,  kinds:["hull"], flat:1},
   {k:"fuelAdd",  ru:"бак",              step:10,  kinds:["core"], flat:1},
-  {k:"jumpAdd",  ru:"дальность прыжка", step:.35, kinds:["core"], flat:1,fix:1,unit:" пк"},
+  {k:"jumpAdd",  ru:"дальность прыжка", step:.35, kinds:["core"], flat:1,fix:1,unit:" парсек"},
   {k:"cargoMul", ru:"трюм",             step:.09, kinds:["util"]},
   {k:"drillMul", ru:"бур",              step:.10, kinds:["util"]},
   {k:"scanAdd",  ru:"обзор",            step:90,  kinds:["util"], flat:1},

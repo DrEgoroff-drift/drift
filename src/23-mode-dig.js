@@ -66,7 +66,7 @@ function enterDig(){
      «W A S D — копать» и без того постоянно висит в подсказке у пэдов —
      тестировщик увидел одну и ту же строку дважды на одном экране. Остаётся
      только то, чего нет больше нигде. */
-  say("на поверхности W — выход · ОГОНЬ — импульс");
+  say("на поверхности вверх — выход · огонь — импульс");
   /* залежь под этим стволом — табличкой прибора на входе, как в поясе (M466) */
   if(typeof farReadShow==="function"){const pi=farPlanetIdx(S.p);
     if(pi>=0)farReadShow(farHere(pi).filter(d=>{const v=RES[d.k].far.verb;return v==="mine"||v==="drill";}));}
@@ -149,7 +149,7 @@ function updateDig(dt){
   document.getElementById("dronebtn").style.display="none";
   /* износ растёт с глубиной; на нуле — аварийный возврат, без урона кораблю */
   S.suit=Math.max(0,S.suit-(.0025+D.row*.0006)*st.suitWear*kitHeatMul()*dt);
-  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");
+  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\nкнопка «→ КОРАБЛЬ» — сразу к борту");
     if(typeof vegaOffend==="function"&&vegaAboard())vegaOffend("копь до предупреждения");}   /* M153 */
   if(S.suit<=0){suitFailure();return;}
   /* фауна живёт независимо от того, бурим мы сейчас или стоим */

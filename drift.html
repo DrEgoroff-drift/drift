@@ -3628,7 +3628,7 @@ function sysJitter(gx,gy){
 }
 const DESC_MOOD=[
   {w:["тихий","забытый","сонный"],ok:s=>!s.station&&!s.belt},
-  {w:["оживлённый","обжитой","многообещающий"],ok:s=>!!(s.station&&s.belt)},
+  {w:["оживлённый","обжитой","бойкий"],ok:s=>!!(s.station&&s.belt)},
   {w:["пограничный","неспокойный","дикий"],ok:s=>sysDanger(s.sx,s.sy)>.55},
   {w:["разведанный","картографированный"],ok:s=>!!s.station&&sysDanger(s.sx,s.sy)<=.55}
 ];
@@ -3641,7 +3641,7 @@ function genDesc(r,sys){
   const bits=[mood[0].toUpperCase()+mood.slice(1)+" "+tail];
   const kinds=sys.planets.map(p=>p.T.ru).filter((v,i,a)=>a.indexOf(v)===i);
   if(kinds.length)bits.push(kinds.length+" "+pl3(kinds.length,"тип","типа","типов")+" миров: "+kinds.join(", "));
-  if(sys.belt)bits.push("пояс богат "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
+  if(sys.belt)bits.push("в поясе: "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
   if(sys.station)bits.push(sys.station.kind.toLowerCase());
   return bits.join(" · ");
 }
@@ -6998,7 +6998,7 @@ const TECH={
   synth:{ru:"Топливный синтез",note:"лёд в трюме превращается в топливо (ДЕЙСТВИЕ в полёте)",cost:45},
   pack:{ru:"Сжатие груза",note:"+40% к вместимости любого трюма",cost:70},
   cera:{ru:"Керамическая броня",note:"+30 корпуса, мягче удар при посадке",cost:60},
-  coil:{ru:"Гиперкатушка",note:"+2.0 пк к дальности прыжка",cost:95},
+  coil:{ru:"Гиперкатушка",note:"+2 парсека к дальности прыжка",cost:95},
   drone:{ru:"Дрон-бур",note:"удваивает скорость бурения",cost:85},
   dock:{ru:"Автодок",note:"корпус медленно чинится сам",cost:80},
   navi:{ru:"Навигационный ИИ",note:"автопилот тратит вдвое меньше топлива",cost:55},
@@ -7438,7 +7438,7 @@ const AFFIX=[
   {k:"turnMul",  ru:"поворот",          step:.07, kinds:["engine"]},
   {k:"hullAdd",  ru:"корпус",           step:11,  kinds:["hull"], flat:1},
   {k:"fuelAdd",  ru:"бак",              step:10,  kinds:["core"], flat:1},
-  {k:"jumpAdd",  ru:"дальность прыжка", step:.35, kinds:["core"], flat:1,fix:1,unit:" пк"},
+  {k:"jumpAdd",  ru:"дальность прыжка", step:.35, kinds:["core"], flat:1,fix:1,unit:" парсек"},
   {k:"cargoMul", ru:"трюм",             step:.09, kinds:["util"]},
   {k:"drillMul", ru:"бур",              step:.10, kinds:["util"]},
   {k:"scanAdd",  ru:"обзор",            step:90,  kinds:["util"], flat:1},
@@ -9709,8 +9709,8 @@ function opisPlanOnly(){
   box.appendChild(lg);
   /* правка — КБ, и только у причала: в полёте чертёж не переделывают (M477) */
   if(G.mode==="dock"&&typeof kbOpen==="function"){
-    const b=document.createElement("button");b.className="act";b.textContent="КБ · ПРАВИТЬ ЧЕРТЁЖ";b.onclick=kbOpen;box.appendChild(b);
-  }else{const e=document.createElement("s");e.className="chalk";e.textContent=" · правка чертежа — в КБ у причала";lg.appendChild(e);}
+    const b=document.createElement("button");b.className="act";b.textContent="ЧЕРТЁЖНАЯ · ПРАВИТЬ";b.onclick=kbOpen;box.appendChild(b);
+  }else{const e=document.createElement("s");e.className="chalk";e.textContent=" · правка — в чертёжной у причала";lg.appendChild(e);}
   return box;
 }
 /* ── открытость (M479, DESIGN-shipyard §3): борт принимает то, что по нему пришло ──
@@ -9725,7 +9725,7 @@ function planExposure(s,d){
   const dir=Math.atan2(s.vy,s.vx),ad=Math.abs(angDiff(dir,G.ship.a));
   if(ad<Math.PI/3){
     if(typeof wearAll==="function"){const W=wearAll(),id=G.shipId;W[id]=Math.min(WEAR_FULL,(W[id]||0)+d*EXPO_REAR_WEAR*WEAR_FULL);}
-    if(!planExposure.t||G.t-planExposure.t>300){planExposure.t=G.t;say("Попадание в корму\nдвигатели принимают · износ растёт",90);}
+    if(!planExposure.t||G.t-planExposure.t>300){planExposure.t=G.t;say("Попадание в корму\nизнос растёт — поверните носом",90);}
     return d;
   }
   if(ad>Math.PI*2/3||typeof draftOf!=="function")return d;
@@ -19091,7 +19091,7 @@ function qslSend(id){
   const r=rng(hashi(id.length*17,now()&0x7fffffff,0x0952));
   Q.sent[id]={t:now(),due:now()+QSL_WAIT+Math.floor(r()*QSL_SPREAD)};
   logAdd("tech","Карточка послана: "+o.call+" · ответ идёт неделями");
-  tell("good","Карточка послана: "+o.call,"КАРТОЧКА ПОСЛАНА\n"+o.call+"\nответ придёт не скоро");
+  tell("good","Карточка послана: "+o.call,"КАРТОЧКА ПОСЛАНА\n"+o.call+"\nответ придёт через недели");
   return true;
 }
 /* ── ответ ──
@@ -20387,7 +20387,7 @@ function speechHere(){
   const Hh=(typeof houseOf==="function")?houseOf(G.sys):null;
   if(Hh&&st.i%4===3&&line!==null){
     const rt=(typeof scripRate==="function")?scripRate(Hh.id):100;
-    line="— Тут всё "+Hh.ru+": "+Hh.note+". Боны их нынче по "+rt+(rt>115?". Дорого, да.":rt<85?". Дешевеют.":".");
+    line="— Тут всё "+Hh.ru+": "+Hh.note+". Боны их нынче по "+rt+" кр"+(rt>115?". Дорого, да.":rt<85?". Дешевеют.":".");
   }else if(st.i%4===1&&line!==null){
     const back=(typeof cantStyle==="function")?(cantStyle().back||""):"";
     const PL={outpost:["— Тихо у нас. Вот и хорошо.","— Рейс раз в неделю, если повезёт."],
@@ -20453,7 +20453,7 @@ function tapeTear(){
   /* лента отрывается — значит, кольцо начинается заново: то, что унесли,
      на бумаге больше не пишется */
   T.n=0;T.head=0;T.back=0;T.zero=null;
-  tell("tech","Лента оторвана · сектор "+s.sx+":"+s.sy+" · невязка "+s.mis.toFixed(3),
+  tell("tech","Лента оторвана · сектор "+s.sx+":"+s.sy+" · невязка "+decRu(s.mis),
        "Лента оторвана\nсектор "+s.sx+":"+s.sy);
   return s;
 }
@@ -21964,7 +21964,7 @@ function keepersBlock(){
     }else{
       const left=KEEP_DARK_AFTER-(((G.odo&&G.odo.jumps)|0)-K.fed);
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>Ящик у двери</b><s>"+(left>0?"рукав горит · ещё "+left+" прыжков":"рукав гаснет — нужен паёк")+" · у вас: "+RES[KEEP_NEED].ru+" ×"+(G.cargo[KEEP_NEED]|0)+"</s>"));
+      r.appendChild(el("div","nm","<b>Ящик у двери</b><s>"+(left>0?"рукав горит · ещё "+left+" "+pl3(left,"прыжок","прыжка","прыжков"):(keepersDark()?"рукав гаснет — нужен паёк":"рукав на пределе — паёк к следующему прыжку"))+" · у вас: "+RES[KEEP_NEED].ru+" ×"+(G.cargo[KEEP_NEED]|0)+"</s>"));
       const b=el("button","act sm","ОСТАВИТЬ ПАЁК");b.disabled=(G.cargo[KEEP_NEED]|0)<1;b.onclick=()=>{keepersFeed();renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }
@@ -22121,7 +22121,7 @@ function chartsBlock(){
   const r=el("div","row");
   if(!C.have){
     r.appendChild(el("div","nm","<b>Карта местных</b><s>на ней есть всё. "+CHARTS_PRICE+" кр</s>"));
-    const b=el("button","act sm","ВЫМЕНЯТЬ");b.disabled=G.credits<CHARTS_PRICE;b.onclick=()=>{chartsBuy();renderTab();};r.appendChild(b);
+    const b=el("button","act sm","КУПИТЬ");b.disabled=G.credits<CHARTS_PRICE;b.onclick=()=>{chartsBuy();renderTab();};r.appendChild(b);
   }else{
     r.appendChild(el("div","nm","<b>Карта местных</b><s>в трюме</s>"));
     const b=el("button","act sm","ВЫБРОСИТЬ");b.onclick=()=>{chartsDrop();renderTab();};r.appendChild(b);
@@ -22584,7 +22584,7 @@ function retDock(){
 function retBlock(){
   if(retDepthHere()!==2)return;
   $body.appendChild(el("div","sec","ТАБЛО ПРИБЫТИЙ"));
-  let rows=RET_BOARD.map(([nm,late])=>"<s"+(late?" style='color:#c9a45a'":"")+">"+nm+" · "+(late?"задерживается · "+late+" лет":"прибыл")+"</s>").join("<br>");
+  let rows=RET_BOARD.map(([nm,late])=>"<s"+(late?" style='color:#c9a45a'":"")+">"+nm+" · "+(late?"задерживается · "+late+" "+pl3(late,"год","года","лет"):"прибыл")+"</s>").join("<br>");
   if(typeof expDeparted==="function"&&expDeparted()&&G.exp.said)rows+="<br><s style='color:#6f7b86'> — · ушли · не ждут</s>";   /* строка без имени (M159) */
   if(typeof islandReturned==="function")for(const w of islandReturned())rows+="<br><s style='color:#8fd08a'>"+w+" · вернулся с Острова</s>";   /* M160 */
   if(typeof sixthGone==="function"&&sixthGone())rows+="<br><s style='color:#8a94a0'>Варламова З. · убыла · не ждут</s>";   /* шестая (M157) */
@@ -22685,7 +22685,7 @@ function rumoursHere(seed){
     q.where=rumourWhere(q);
     /* порядок, в котором это и рассказывают: КТО — ПРО ЧТО — ГДЕ — ПОЧЕМУ верить.
        Одним куском: в тетради строка идёт сплошняком, переносов там нет */
-    q.text=capRu(S.ru)+" рассказывал про место: "+q.img+". "+
+    q.text=capRu(S.ru)+" "+(S.f?"рассказывала":"рассказывал")+" про место: "+q.img+". "+
            capRu(q.where)+". "+capRu(det)+".";
     /* три строки для экрана: что, где, с чьих слов */
     q.lines=[capRu(q.img),capRu(q.where),"со слов: "+S.ru+" — "+det];
@@ -24500,7 +24500,7 @@ function hireMerc(c){
   /* спасённый с баржи, если это он: больше в кантине не мелькает */
   if(Array.isArray(G.bargePax))G.bargePax=G.bargePax.filter(p=>p.id!==m.id);
   tell("money","Нанят "+m.name+" · "+CREW_SPEC[m.spec].ru+" · −"+c.fee+" кр",
-       "Нанят "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nвыдайте корабль на вкладке ЭКИПАЖ");
+       "Нанят "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nвыдайте корабль — вкладка НАЁМНИКИ");
   return true;
 }
 /* Расчёт стоит денег — и это не жадность, а защита механики. Удача скрыта, значит
@@ -24698,7 +24698,7 @@ function crewTick(){
         c.idleSaid=1;
         logAdd("warn",c.name+" сидит без дела: "+
           (!c.shipId?"ему не выдан корабль":(c.hull<=0?"его корпус разбит":"у него нет приказа"))+
-          " · МЕНЮ → ЭКИПАЖ");
+          " · МЕНЮ → ДЕЛО");
       }
       crewRest(c,min);continue;
     }
@@ -27796,7 +27796,7 @@ function lockerPutRes(k,n){
 function lockerTake(i){
   const L=lockerRec();const it=L.items[i];if(!it)return false;
   if(it.p){
-    if(G.inv.length>=PART_MAX){say("В инвентаре нет места");return false;}
+    if(G.inv.length>=PART_MAX){say("В описи нет места");return false;}
     const p=unpackPart(it.p);if(!p)return false;
     G.inv.push(p);
   }else if(it.tool){
@@ -31966,7 +31966,7 @@ const CREW_EVENTS=[
     const ps=hashi(c.seed,(c.trips|0)*77+5,0x9A1E),pt=3+Math.floor(r()*3),pkd=pick(PART_KEYS,r);
     /* хорошая деталь едет посылкой (M492): извещение в ПОЧТУ, получать в окне */
     const sent=(typeof kpSendPart==="function")?kpSendPart(ps,pt,pkd,c.name):null;
-    if(sent)return {tone:"tech",ru:"снял с чужого борта: "+sent.name+" · выслал Космопочтой"};
+    if(sent)return {tone:"tech",ru:"снял с чужого борта: "+sent.name+" · выслал Космопочтой · ждёт в ПОЧТЕ"};
     const p=genPart(ps,pt,pkd);
     addPart(p);
     return {tone:"tech",ru:"снял с чужого борта: "+p.name};
@@ -34070,7 +34070,7 @@ const MGR_JOBS=[
      " уровнем и вижу, сколько это приносит. Мне столько не достаётся. "+
      "Или мы договариваемся сегодня, или я ухожу — и ухожу не пустым.",
    opts:[
-     {ru:"ПОДНЯТЬ ДОЛЮ · +3 п.п.",said:"Вот теперь разговор.",cutUp:.03,setLoy:62},
+     {ru:"ПОДНЯТЬ ДОЛЮ НА 3 %",said:"Вот теперь разговор.",cutUp:.03,setLoy:62},
      {ru:"ОТСТУПНЫЕ",said:"Деньги — не то же самое, что уважение. Но сойдёт.",
       payoff:1,setLoy:52},
      {ru:"ОТКАЗАТЬ",said:"Понял. Больше не побеспокою.",bad:1,defect:1}
@@ -37830,7 +37830,7 @@ function rareTake(where,key,placeRu){
   if(typeof rivalHolds==="function"&&rivalHolds(R.id)){
     const V=rivalOf(R.id);
     tell("dim","Здесь было пусто: «"+R.ru+"» унёс "+V.who,
-         "«"+R.ru+"»\nздесь её больше нет\nона у "+V.who+" · сектор "+V.sx+", "+V.sy);
+         "«"+R.ru+"»\nздесь его больше нет\nон у "+V.who+" · сектор "+V.sx+":"+V.sy);
     return null;
   }
   rareList().push(R.id);
@@ -38313,8 +38313,8 @@ const NEWS_KINDS=[
       if(m.pressure[k]!==was)moved=true;
     }
     if(!moved)return null;   /* цены не шелохнулись — слуха без перемены нет */
-    newsMark(s.sx+","+s.sy,"сменился хозяин","#7fe6d8");
-    return {ru:"«"+s.station.name+"» перешла другим людям: и цены, и порядки там теперь чужие",
+    newsMark(s.sx+","+s.sy,"цены сдвинулись","#7fe6d8");
+    return {ru:"«"+s.station.name+"» перешла другим людям — цены там теперь чужие",
       sx:s.sx,sy:s.sy};
   }},
   {id:"barge",apply(r){
@@ -38406,7 +38406,7 @@ function newsRender(){
   for(const n of list.slice(-6).reverse()){
     const mins=Math.max(1,Math.round((now()-n.t)/60000));
     $body.appendChild(el("div","row","<div class='nm'><b>"+n.ru+"</b><s>"+(n.id==="ds"?"сводка · слышно "+mins+" мин назад":"сектор "+
-      n.sx+", "+n.sy+" · слышно "+mins+" мин назад · на карте появилась метка")+"</s></div>"));
+      n.sx+":"+n.sy+" · слышно "+mins+" мин назад · на карте появилась метка")+"</s></div>"));
   }
   /* соперники: у каждого унесённого предмета есть человек и место */
   const rv=Object.keys(G.rivals||{});
@@ -38416,7 +38416,7 @@ function newsRender(){
       const R=RARE_BY_ID[id],V=G.rivals[id];
       if(!R||!V)continue;
       $body.appendChild(el("div","row","<div class='nm'><b>«"+R.ru+"» · "+V.who+
-        "</b><s>сектор "+V.sx+", "+V.sy+" · её всё ещё можно забрать: адрес сменился, "+
+        "</b><s>сектор "+V.sx+":"+V.sy+" · его всё ещё можно забрать: адрес сменился, "+
         "а не пропал</s></div>"));
     }
   }
@@ -40303,7 +40303,7 @@ function tinStrip(T){
   const R=(typeof loreTake==="function")?loreTake("tin:"+T.sx+":"+T.sy+":"+e.i):null;
   const sky=tinSkyOf(e.day);
   tell("tech","Лента Жестянки · запись "+(e.i+1)+" из "+list.length,
-    "ЗАПИСЬ "+(e.i+1)+"\nСУТКИ "+e.day+" · ПЕЛЕНГ "+e.hdg+"°\nСОБЫТИЕ "+e.code+
+    "ЗАПИСЬ "+(e.i+1)+"\nСУТКИ "+e.day+" · ПЕЛЕНГ "+e.hdg+"°"+
     (sky?"\n\nнебо тех суток: "+sky:"")+
     (M?"\n\nпеленг упирается в сектор "+M.sx+":"+M.sy+" — метка на карте":"")+
     (R?"":"\n\nбольше эта лента ничего не помнит"));
@@ -99068,7 +99068,7 @@ function enterCave(){
      подсказке у пэдов. Одно и то же трижды в одном кадре игрок читает как
      шум. Сообщение оставляет себе только то, чего больше нигде нет: как тут
      ходить и кого можно встретить. */
-  say("ищите проход · шахты ведут вниз · W — ранец"+
+  say("ищите проход · шахты ведут вниз · тяга — ранец"+
     (watch>0?"\nздесь ходят дозорные посёлка":"")+(cl?"\n"+cl:""),cl?320:190);
 }
 function exitCave(){
@@ -103343,7 +103343,7 @@ function enterDig(){
      «W A S D — копать» и без того постоянно висит в подсказке у пэдов —
      тестировщик увидел одну и ту же строку дважды на одном экране. Остаётся
      только то, чего нет больше нигде. */
-  say("на поверхности W — выход · ОГОНЬ — импульс");
+  say("на поверхности вверх — выход · огонь — импульс");
   /* залежь под этим стволом — табличкой прибора на входе, как в поясе (M466) */
   if(typeof farReadShow==="function"){const pi=farPlanetIdx(S.p);
     if(pi>=0)farReadShow(farHere(pi).filter(d=>{const v=RES[d.k].far.verb;return v==="mine"||v==="drill";}));}
@@ -103426,7 +103426,7 @@ function updateDig(dt){
   document.getElementById("dronebtn").style.display="none";
   /* износ растёт с глубиной; на нуле — аварийный возврат, без урона кораблю */
   S.suit=Math.max(0,S.suit-(.0025+D.row*.0006)*st.suitWear*kitHeatMul()*dt);
-  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");
+  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\nкнопка «→ КОРАБЛЬ» — сразу к борту");
     if(typeof vegaOffend==="function"&&vegaAboard())vegaOffend("копь до предупреждения");}   /* M153 */
   if(S.suit<=0){suitFailure();return;}
   /* фауна живёт независимо от того, бурим мы сейчас или стоим */
@@ -112111,7 +112111,7 @@ function renderAlbum(box){
   const A=albumAll();
   box.innerHTML="";
   if(!A.length){
-    tableRow(box,"dim","","альбом пуст: кнопка ФОТО на пульте — на грунте и на заходе");
+    tableRow(box,"dim","","альбом пуст: кнопка ФОТО на пульте — на грунте, на заходе, в пещере, шахте, поясе, атмосфере и в системе");
     return;
   }
   const wrap=document.createElement("div");
@@ -113516,8 +113516,8 @@ function ethTick(q){
       mailPick=mailOpen;
       mailBack=-1;
     }
-    logAdd("ether","Из ночного эфира принята карточка · стопка на столе, ответ открыт");
-    tell("good","Карточка принята из ночного эфира","ПРИНЯТО\nстопка на столе\nответ открыт");
+    logAdd("ether","Из ночного эфира принята карточка · стопка в ПОЧТЕ");
+    tell("good","Карточка принята из ночного эфира","ПРИНЯТО\nстопка в ПОЧТЕ\nоткройте стол, чтобы ответить");
     ethCard=null;ethLine=0;ethHold=6;
     if(tableOpenNow)tableRender();
   }
@@ -114639,7 +114639,7 @@ function renderTabBody(){
       const r=el("div","row");
       const st8=c.state==="hostage"
         ? "<br><b style='color:#ff6b57'>В ПЛЕНУ · выкуп "+(c.ransom||0).toLocaleString("ru")+
-          " кр — платить или штурмовать базу в секторе "+c.ransomSx+","+c.ransomSy+"</b>"
+          " кр — выкуп в ДЕЛЕ или штурм базы в секторе "+c.ransomSx+":"+c.ransomSy+"</b>"
         : (c.state==="away"?"<br><b style='color:#f2b25c'>В ЗАГУЛЕ</b>":"");
       /* карточка человека (M301, DESIGN-screens §3): словами — кто, что делает,
          на чём и в каком духе; цифры блоком ниже. Главный вопрос — окупается ли —
@@ -124081,7 +124081,7 @@ function renderStrips(box){
     const cv=document.createElement("canvas");cv.style.cssText="width:260px;height:90px";
     /* поле кисти 520×180 на 260×90 CSS: не реже прежних двух пикселей на точку */
     panelGpu(cv,520,180,Math.max(1,panelNd()/2),c=>drawMisFigure(c,520,180));
-    const nm=document.createElement("div");nm.className="nm";nm.innerHTML="<b>"+F.length+" ленты легли рядом</b><s></s>";
+    const nm=document.createElement("div");nm.className="nm";nm.innerHTML="<b>"+F.length+" "+pl3(F.length,"лента","ленты","лент")+" легли рядом</b><s></s>";
     row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
   }
   L.forEach((s,k)=>{
@@ -129596,7 +129596,7 @@ function hud(){
   /* строка кошелька — только при перемене: toLocaleString("ru") стоил 3 мкс из 16 каждого кадра (M826) */
   {const cr=Math.round(G.credits);if($purse&&($purse.__c!==cr||$purse.__d!==G.data||$purse.__l!==cl||$purse.textContent!==$purse.__s)){
     $purse.__c=cr;$purse.__d=G.data;$purse.__l=cl;   /* и сверка с самим узлом: его пишут и мимо hud() (см. setTx) */
-    setTx($purse,$purse.__s=cr.toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));}}
+    setTx($purse,$purse.__s=cr.toLocaleString("ru")+" кр · "+G.data+" данных"+(cl?" · "+cl:""));}}
   /* кошелёк шапки станции: экран может стоять открытым, когда мир меняет цифры (загрузка под ним, M331) — пишем при смене */
   if(HUD_NUM.wc!==G.credits||HUD_NUM.wd!==G.data){HUD_NUM.wc=G.credits;HUD_NUM.wd=G.data;if(typeof stWalletSync==="function")stWalletSync();}
   /* масштаб — служебная цифра, и место ей в шапке под кассой (R6, 12.09), а не

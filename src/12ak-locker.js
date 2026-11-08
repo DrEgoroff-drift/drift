@@ -102,7 +102,7 @@ function lockerPutRes(k,n){
 function lockerTake(i){
   const L=lockerRec();const it=L.items[i];if(!it)return false;
   if(it.p){
-    if(G.inv.length>=PART_MAX){say("В инвентаре нет места");return false;}
+    if(G.inv.length>=PART_MAX){say("В описи нет места");return false;}
     const p=unpackPart(it.p);if(!p)return false;
     G.inv.push(p);
   }else if(it.tool){

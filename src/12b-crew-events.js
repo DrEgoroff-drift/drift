@@ -203,7 +203,7 @@ const CREW_EVENTS=[
     const ps=hashi(c.seed,(c.trips|0)*77+5,0x9A1E),pt=3+Math.floor(r()*3),pkd=pick(PART_KEYS,r);
     /* хорошая деталь едет посылкой (M492): извещение в ПОЧТУ, получать в окне */
     const sent=(typeof kpSendPart==="function")?kpSendPart(ps,pt,pkd,c.name):null;
-    if(sent)return {tone:"tech",ru:"снял с чужого борта: "+sent.name+" · выслал Космопочтой"};
+    if(sent)return {tone:"tech",ru:"снял с чужого борта: "+sent.name+" · выслал Космопочтой · ждёт в ПОЧТЕ"};
     const p=genPart(ps,pt,pkd);
     addPart(p);
     return {tone:"tech",ru:"снял с чужого борта: "+p.name};

@@ -75,7 +75,7 @@ function chartsBlock(){
   const r=el("div","row");
   if(!C.have){
     r.appendChild(el("div","nm","<b>Карта местных</b><s>на ней есть всё. "+CHARTS_PRICE+" кр</s>"));
-    const b=el("button","act sm","ВЫМЕНЯТЬ");b.disabled=G.credits<CHARTS_PRICE;b.onclick=()=>{chartsBuy();renderTab();};r.appendChild(b);
+    const b=el("button","act sm","КУПИТЬ");b.disabled=G.credits<CHARTS_PRICE;b.onclick=()=>{chartsBuy();renderTab();};r.appendChild(b);
   }else{
     r.appendChild(el("div","nm","<b>Карта местных</b><s>в трюме</s>"));
     const b=el("button","act sm","ВЫБРОСИТЬ");b.onclick=()=>{chartsDrop();renderTab();};r.appendChild(b);

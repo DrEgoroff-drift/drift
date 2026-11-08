@@ -123,7 +123,7 @@ function rareTake(where,key,placeRu){
   if(typeof rivalHolds==="function"&&rivalHolds(R.id)){
     const V=rivalOf(R.id);
     tell("dim","Здесь было пусто: «"+R.ru+"» унёс "+V.who,
-         "«"+R.ru+"»\nздесь её больше нет\nона у "+V.who+" · сектор "+V.sx+", "+V.sy);
+         "«"+R.ru+"»\nздесь его больше нет\nон у "+V.who+" · сектор "+V.sx+":"+V.sy);
     return null;
   }
   rareList().push(R.id);

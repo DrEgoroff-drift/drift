@@ -140,7 +140,7 @@ function speechHere(){
   const Hh=(typeof houseOf==="function")?houseOf(G.sys):null;
   if(Hh&&st.i%4===3&&line!==null){
     const rt=(typeof scripRate==="function")?scripRate(Hh.id):100;
-    line="— Тут всё "+Hh.ru+": "+Hh.note+". Боны их нынче по "+rt+(rt>115?". Дорого, да.":rt<85?". Дешевеют.":".");
+    line="— Тут всё "+Hh.ru+": "+Hh.note+". Боны их нынче по "+rt+" кр"+(rt>115?". Дорого, да.":rt<85?". Дешевеют.":".");
   }else if(st.i%4===1&&line!==null){
     const back=(typeof cantStyle==="function")?(cantStyle().back||""):"";
     const PL={outpost:["— Тихо у нас. Вот и хорошо.","— Рейс раз в неделю, если повезёт."],
@@ -206,7 +206,7 @@ function tapeTear(){
   /* лента отрывается — значит, кольцо начинается заново: то, что унесли,
      на бумаге больше не пишется */
   T.n=0;T.head=0;T.back=0;T.zero=null;
-  tell("tech","Лента оторвана · сектор "+s.sx+":"+s.sy+" · невязка "+s.mis.toFixed(3),
+  tell("tech","Лента оторвана · сектор "+s.sx+":"+s.sy+" · невязка "+decRu(s.mis),
        "Лента оторвана\nсектор "+s.sx+":"+s.sy);
   return s;
 }

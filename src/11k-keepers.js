@@ -148,7 +148,7 @@ function keepersBlock(){
     }else{
       const left=KEEP_DARK_AFTER-(((G.odo&&G.odo.jumps)|0)-K.fed);
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>Ящик у двери</b><s>"+(left>0?"рукав горит · ещё "+left+" прыжков":"рукав гаснет — нужен паёк")+" · у вас: "+RES[KEEP_NEED].ru+" ×"+(G.cargo[KEEP_NEED]|0)+"</s>"));
+      r.appendChild(el("div","nm","<b>Ящик у двери</b><s>"+(left>0?"рукав горит · ещё "+left+" "+pl3(left,"прыжок","прыжка","прыжков"):(keepersDark()?"рукав гаснет — нужен паёк":"рукав на пределе — паёк к следующему прыжку"))+" · у вас: "+RES[KEEP_NEED].ru+" ×"+(G.cargo[KEEP_NEED]|0)+"</s>"));
       const b=el("button","act sm","ОСТАВИТЬ ПАЁК");b.disabled=(G.cargo[KEEP_NEED]|0)<1;b.onclick=()=>{keepersFeed();renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }

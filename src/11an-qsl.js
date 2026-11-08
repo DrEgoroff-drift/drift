@@ -82,7 +82,7 @@ function qslSend(id){
   const r=rng(hashi(id.length*17,now()&0x7fffffff,0x0952));
   Q.sent[id]={t:now(),due:now()+QSL_WAIT+Math.floor(r()*QSL_SPREAD)};
   logAdd("tech","Карточка послана: "+o.call+" · ответ идёт неделями");
-  tell("good","Карточка послана: "+o.call,"КАРТОЧКА ПОСЛАНА\n"+o.call+"\nответ придёт не скоро");
+  tell("good","Карточка послана: "+o.call,"КАРТОЧКА ПОСЛАНА\n"+o.call+"\nответ придёт через недели");
   return true;
 }
 /* ── ответ ──

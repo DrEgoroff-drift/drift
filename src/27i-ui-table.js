@@ -351,7 +351,7 @@ function renderStrips(box){
     const cv=document.createElement("canvas");cv.style.cssText="width:260px;height:90px";
     /* поле кисти 520×180 на 260×90 CSS: не реже прежних двух пикселей на точку */
     panelGpu(cv,520,180,Math.max(1,panelNd()/2),c=>drawMisFigure(c,520,180));
-    const nm=document.createElement("div");nm.className="nm";nm.innerHTML="<b>"+F.length+" ленты легли рядом</b><s></s>";
+    const nm=document.createElement("div");nm.className="nm";nm.innerHTML="<b>"+F.length+" "+pl3(F.length,"лента","ленты","лент")+" легли рядом</b><s></s>";
     row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
   }
   L.forEach((s,k)=>{

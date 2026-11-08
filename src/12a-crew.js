@@ -235,7 +235,7 @@ function hireMerc(c){
   /* спасённый с баржи, если это он: больше в кантине не мелькает */
   if(Array.isArray(G.bargePax))G.bargePax=G.bargePax.filter(p=>p.id!==m.id);
   tell("money","Нанят "+m.name+" · "+CREW_SPEC[m.spec].ru+" · −"+c.fee+" кр",
-       "Нанят "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nвыдайте корабль на вкладке ЭКИПАЖ");
+       "Нанят "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nвыдайте корабль — вкладка НАЁМНИКИ");
   return true;
 }
 /* Расчёт стоит денег — и это не жадность, а защита механики. Удача скрыта, значит
@@ -433,7 +433,7 @@ function crewTick(){
         c.idleSaid=1;
         logAdd("warn",c.name+" сидит без дела: "+
           (!c.shipId?"ему не выдан корабль":(c.hull<=0?"его корпус разбит":"у него нет приказа"))+
-          " · МЕНЮ → ЭКИПАЖ");
+          " · МЕНЮ → ДЕЛО");
       }
       crewRest(c,min);continue;
     }

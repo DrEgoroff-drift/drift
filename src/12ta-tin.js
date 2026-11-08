@@ -209,7 +209,7 @@ function tinStrip(T){
   const R=(typeof loreTake==="function")?loreTake("tin:"+T.sx+":"+T.sy+":"+e.i):null;
   const sky=tinSkyOf(e.day);
   tell("tech","Лента Жестянки · запись "+(e.i+1)+" из "+list.length,
-    "ЗАПИСЬ "+(e.i+1)+"\nСУТКИ "+e.day+" · ПЕЛЕНГ "+e.hdg+"°\nСОБЫТИЕ "+e.code+
+    "ЗАПИСЬ "+(e.i+1)+"\nСУТКИ "+e.day+" · ПЕЛЕНГ "+e.hdg+"°"+
     (sky?"\n\nнебо тех суток: "+sky:"")+
     (M?"\n\nпеленг упирается в сектор "+M.sx+":"+M.sy+" — метка на карте":"")+
     (R?"":"\n\nбольше эта лента ничего не помнит"));
