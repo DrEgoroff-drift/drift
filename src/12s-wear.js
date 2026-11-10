@@ -44,7 +44,7 @@ function wearRu(w){
 }
 function wearLine(id){
   const w=wearOf(id);
-  return"НАЛЁТ "+Math.round(w*100)+"% · "+wearRu(w).toUpperCase()+
+  return"ПЫЛЬ "+Math.round(w*100)+"% · "+wearRu(w).toUpperCase()+
     (w>.12?" · РУЛЬ И ТЯГА −"+Math.round(12*w)+"%":"");
 }
 /* Обслуживание. `part` — доля, которую снимают: гараж дома снимает всё и не

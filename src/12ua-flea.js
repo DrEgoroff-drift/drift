@@ -133,7 +133,7 @@ function fleaBuy(id,pay,sys){
     const n=fleaScrip(lot);
     if(scripHeld(H.id)<n)return null;
     G.scrip[H.id]=scripHeld(H.id)-n;
-    logAdd("money","Блошинец: "+lot.ru+" за боны ×"+n);
+    logAdd("money","Блошинец: "+lot.ru+" за ваучеры ×"+n);
   }else{
     const n=fleaCredits(lot);
     if(G.credits<n)return null;
@@ -194,7 +194,7 @@ function fleaRender(){
     (8+Math.abs(hashi(G.sys.seed|0,fleaEpoch(),0xF1EA))%14)+" · ГОВОР, ТОЛКОТНЯ, КТО-ТО СПОРИТ О ЦЕНЕ"));
   const sys=G.sys,H=typeof houseOf==="function"?houseOf(sys):null;
   $body.appendChild(el("div","sec","РЯДЫ · ВСЁ ЗДЕСЬ ЧЬЁ-ТО · "+
-    (H?("СЧЁТ В БОНАХ "+H.ru.toUpperCase()+" · КРЕДИТЫ ДОРОЖЕ НА "+
+    (H?("СЧЁТ В ВАУЧЕРАХ "+H.ru.toUpperCase()+" · КРЕДИТЫ ДОРОЖЕ НА "+
         Math.round((FLEA_MARKUP-1)*100)+"%"):"ХОЗЯИНА НЕТ · ТОЛЬКО КРЕДИТЫ")));
   const lots=fleaLots(sys);
   if(!lots.length){
@@ -206,9 +206,9 @@ function fleaRender(){
     const cr=fleaCredits(lot),bn=fleaScrip(lot);
     const r=el("div","row");
     r.appendChild(el("div","nm","<b>"+lot.ru+"</b><s>"+lot.why+" · из вещей "+lot.who+
-      "<br>провенанс: "+lot.note+"<br>"+bn+" бон · или "+cr+" кр</s>"));
+      "<br>провенанс: "+lot.note+"<br>"+bn+" "+pl3(bn,"ваучер","ваучера","ваучеров")+" · или "+cr+" кр</s>"));
     if(H){
-      const b=el("button","act","ЗА БОНЫ "+bn);
+      const b=el("button","act","ЗА ВАУЧЕРЫ "+bn);
       b.disabled=scripHeld(H.id)<bn;
       b.onclick=()=>{fleaBuy(lot.id,"scrip",sys);renderTab();};
       r.appendChild(b);

@@ -58,7 +58,7 @@ function cantCard(m){
   f.innerHTML="<i class='ch-role'>"+R.ru.toUpperCase()+"</i><i class='ch-lv'>УР "+mgrLevel(m)+"</i>";
   f.appendChild(cantFace(m,124));
   c.appendChild(f);
-  c.appendChild(el("div","ch-id","<b>"+m.name+"</b><s>"+(taken?"домен занят: "+mgrOf(m.role).name:R.dom)+"</s>"));
+  c.appendChild(el("div","ch-id","<b>"+m.name+"</b><s>"+(taken?"работа занята: "+mgrOf(m.role).name:R.dom)+"</s>"));
   const tr=el("div","ch-tr");
   if(known)tr.innerHTML=m.traits.map(t=>{const T=mgrTrait(t);return "<i title='"+T.note+"'>"+T.ru+"</i>";}).join("");
   else tr.innerHTML="<i class='q'>черты — после разговора</i>";
@@ -139,7 +139,7 @@ function cantDossier(m){
     "<span><em>доля</em><b>"+(mgrCut(m)*100).toFixed(1)+"%</b></span><span><em>найм</em><b>"+fee.toLocaleString("ru")+" кр</b></span></div>"+
     (known?"<div class='ch-trl'>"+m.traits.map(x=>{const T=mgrTrait(x);return "<p><b>"+T.ru+"</b>"+T.note+"</p>";}).join("")+"</div>"
       :"<s class='rl'>чем хорош и чем плох — видно после разговора"+(m.traits.length>2?" (черт три)":"")+"</s>")+
-    (taken?"<s class='busy'>домен занят: "+mgrOf(m.role).name+"</s>":"");
+    (taken?"<s class='busy'>работа занята: "+mgrOf(m.role).name+"</s>":"");
   const acts=el("div","ch-acts");
   if(!known){const bt=el("button","act","РАССПРОСИТЬ");bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};acts.appendChild(bt);}
   const b=el("button","act"+(taken?"":" gold"),"НАНЯТЬ · "+fee.toLocaleString("ru")+" кр");

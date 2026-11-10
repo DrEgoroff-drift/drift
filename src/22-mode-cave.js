@@ -374,8 +374,8 @@ function updateCave(dt){
     const pl=(typeof farHunt==="function")?farHunt(G.surf&&G.surf.p,nearBug.x,nearBug.y):0;   /* жемчуг пустоты (M466) */
     C.fauna.splice(C.fauna.indexOf(nearBug),1);
     const d=bioMark(nearBug.name,6);G.data+=d;
-    tell(pl?"good":"tech","Образец: "+nearBug.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:"")+(pl?" · жемчуг ×"+pl:""),
-      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
+    tell(pl?"good":"tech","Образец: "+nearBug.name+" · углерод ×"+c+(x2?" · ксенопроба ×"+x2:"")+(pl?" · жемчуг ×"+pl:""),
+      "Образец взят\nуглерод ×"+c+(x2?"\nксенопроба ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
   }
   if(typeof farCaveAmberTake==="function")farCaveAmberTake(C);   /* янтарь со стены (M466) */
   let plant=null;

@@ -329,7 +329,7 @@ function digFauna(dt,st){
     const pl=(typeof farHunt==="function")?farHunt(D.p,near.x,near.y):0;   /* жемчуг пустоты (M466) */
     D.bugs.splice(D.bugs.indexOf(near),1);
     const d=bioMark(near.name,6);G.data+=d;
-    tell(pl?"good":"tech","Образец: "+near.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:"")+(pl?" · жемчуг ×"+pl:""),
-      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
+    tell(pl?"good":"tech","Образец: "+near.name+" · углерод ×"+c+(x2?" · ксенопроба ×"+x2:"")+(pl?" · жемчуг ×"+pl:""),
+      "Образец взят\nуглерод ×"+c+(x2?"\nксенопроба ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
   }
 }

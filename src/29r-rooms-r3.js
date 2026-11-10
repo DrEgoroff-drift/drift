@@ -264,7 +264,7 @@ function room3Frame(){
 function hq3Tags(L,tx){const out=[];let hi=-1;
   out.av=[[[-.6,1.0,.56],[.6,1.72,.56]]];   /* голограмма: кольца ±.6 и ±.36 вокруг 1.36, ближняя грань */
   HQ3_X.forEach((x,i)=>{if(L.occ[i])return;const R=MGR_ROLES[HQ_ORDER[i]],r=x>0;
-    out.push({p:[r?x+.7:x-.7,1.22,HQ3.B+.22],t:"ДОМЕН СВОБОДЕН",s:R?R.dom:"",c:"sg",al:r?"r":""});
+    out.push({p:[r?x+.7:x-.7,1.22,HQ3.B+.22],t:"РАБОТА СВОБОДНА",s:R?R.dom:"",c:"sg",al:r?"r":""});
     if(hi<0||Math.abs(x-tx)<Math.abs(HQ3_X[hi]-tx))hi=i;});
   if(hi>=0&&L.sel<0){const C=hq3Chair(hi);out.push({p:[C.x,.42,C.z],t:"ПУСТОЕ КРЕСЛО",s:"управляющих нанимают в кантине станции",c:"dn"});}
   return out;}

@@ -87,7 +87,7 @@ function renderBasesTab(st){
           const wb=document.createElement("button");wb.className="act gold";
           wb.textContent="ОТМЫТЬ «"+shipData(G.shipId).ru.toUpperCase()+"» · ДАРОМ";
           wb.addEventListener("click",()=>{const got=wearService(1);
-            logAdd("tech","Гараж дома: с «"+shipData(G.shipId).ru+"» снят налёт ("+Math.round(got*100)+"%)");renderTab();});
+            logAdd("tech","Гараж дома: с «"+shipData(G.shipId).ru+"» снята пыль ("+Math.round(got*100)+"%)");renderTab();});
           gr.appendChild(wb);
         }
         if(free.length){

@@ -187,7 +187,7 @@ PLN_ACT.kinds.anomaly={ru:"АНОМАЛИЯ",
     {id:"shard",ru:"осколок",dx:()=>0,r:5,air:3,verb:"ВЗЯТЬ ОСКОЛОК",sfx:"boom",when:m=>m.st<2,
       act:c=>{if(!plnActRoom())return plnActFull();
         const n=addRes("xeno",4);G.data+=20;c.m.st=3;c.m.way="drain";
-        return {short:"осколок пойман · ксенобиом ×"+n+" · +20 данных · аномалия схлопнулась"};}}],
+        return {short:"осколок пойман · ксенопроба ×"+n+" · +20 данных · аномалия схлопнулась"};}}],
   drive:(m,age,D,t,nk,q)=>{
     const E=plnActEase,P={},st=m.st|0,last=m.n.last;
     const dr=m.way==="drain",fed=m.way==="fed";

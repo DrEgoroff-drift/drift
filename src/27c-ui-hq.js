@@ -101,7 +101,7 @@ function renderCantina(){
     cantFolkRow(folk,true);
   }else{
     const m=free.find(x=>x.id===cantSel);
-    secHead("У СТОЙКИ",{back,note:"управляющий берёт домен целиком — звено, базы, маршрут или лабораторию — и долю с того, что домен приносит",key:"hire"});
+    secHead("У СТОЙКИ",{back,note:"управляющий берёт работу целиком — звено, базы, маршрут или лабораторию — и долю с того, что работа приносит",key:"hire"});
     cantDossier(m);
   }
   /* всё остальное, что живёт в зале: за сгибом, но с честным счётом */
@@ -239,8 +239,8 @@ function hqRender(){
   document.getElementById("hqCap").textContent=G.mgrs.length+" / "+MGR_CAP+" мест";
   let upkeep=0;for(const m of G.mgrs)upkeep+=mgrPay(m);
   document.getElementById("hqSub").textContent=G.mgrs.length
-    ? "оклады "+upkeep+" кр/мин — из долей доменов, не из вашей кассы"
-    : "домены пусты — управляющих нанимают в кантине станции";
+    ? "оклады "+upkeep+" кр/мин — из долей, не из вашей кассы"
+    : "места пусты — управляющих нанимают в кантине станции";
   $hqBody.textContent="";
   if(!G.mgrs.length){
     /* ── пустая рубка — это КАРТИНКА, а не пустой экран ──
@@ -253,7 +253,7 @@ function hqRender(){
        строки текста, и «пока никого» перестаёт читаться поломкой. */
     hqScene();
     $hqBody.appendChild(el("div","sec","НИКОГО · КАНТИНА ЕСТЬ НА ЛЮБОЙ СТАНЦИИ, КРОМЕ ЗАПРАВОЧНОЙ"));
-    $hqBody.appendChild(el("div","row","<div class='nm'><s>управляющий берёт домен целиком: "+
+    $hqBody.appendChild(el("div","row","<div class='nm'><s>управляющий берёт работу целиком: "+
       "звено наёмников, дроны и базы, торговый маршрут или лабораторию. Он не ускоряет "+
       "ранний старт — он поднимает потолок, когда потолок уже мешает.</s></div>"));
     hqAiOffer();
@@ -264,18 +264,18 @@ function hqRender(){
      Полоска портретов была плоской вырезкой — здесь видно и место, и то,
      чем домен занят прямо сейчас (`27f-hq-room`). */
   hqScene();
-  $hqBody.appendChild(el("div","sec note","тыкните по человеку у пульта · пустой пульт — свободный домен"));
+  $hqBody.appendChild(el("div","sec note","тыкните по человеку у пульта · пустой пульт — свободная работа"));
   if(typeof secTidy==="function")requestAnimationFrame(()=>secTidy($hqBody));   /* после карточек (M300) */
   const m=G.mgrs.find(x=>x.id===hqSel);
   const R=MGR_ROLES[m.role];
   $hqBody.appendChild(el("div","sec",m.name.toUpperCase()+" · "+R.ru.toUpperCase()+
-    " · ДОМЕН: "+R.dom.toUpperCase()));
+    " · РАБОТА: "+R.dom.toUpperCase()));
   const head=el("div","row");
   head.appendChild(faceEl(m,96));
   head.appendChild(el("div","nm",mgrHead(m)));
   $hqBody.appendChild(head);
   /* сводка домена: сколько он взял и что сделал — иначе доля выглядит грабежом */
-  $hqBody.appendChild(el("div","row","<div class='nm'><b>Домен</b><s>"+
+  $hqBody.appendChild(el("div","row","<div class='nm'><b>Работа</b><s>"+
     mgrDomainLine(m)+"<br>взял долей: "+(m.tookCr||0).toLocaleString("ru")+" кр"+
     (m.stole?" · <b style='color:#ff9d7a'>сверх того «потерялось» "+m.stole.toLocaleString("ru")+" кр</b>":"")+
     "<br>отдал вам: "+(m.earned||0).toLocaleString("ru")+" кр · съел окладом "+

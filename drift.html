@@ -3772,7 +3772,7 @@ const RES={
   crystal:  {ru:"Кристаллы", col:"#c58ae0",price:105},
   /* только с фауны — в породе и в поясе не встречаются */
   carbon:   {ru:"Углерод",   col:"#8a97a0",price:46},
-  xeno:     {ru:"Ксенобиом", col:"#ff7ac8",price:190},
+  xeno:     {ru:"Ксенопроба", col:"#ff7ac8",price:190},
   /* Редкие (M39): не товар, а сырьё под лабораторию, базы и корабли наёмников.
      Рынок их не берёт вовсе — иначе они превратились бы в дорогую строку
      в трюме и разогнали бы инфляцию. У каждого свой глагол добычи. */
@@ -20387,7 +20387,7 @@ function speechHere(){
   const Hh=(typeof houseOf==="function")?houseOf(G.sys):null;
   if(Hh&&st.i%4===3&&line!==null){
     const rt=(typeof scripRate==="function")?scripRate(Hh.id):100;
-    line="— Тут всё "+Hh.ru+": "+Hh.note+". Боны их нынче по "+rt+" кр"+(rt>115?". Дорого, да.":rt<85?". Дешевеют.":".");
+    line="— Тут всё "+Hh.ru+": "+Hh.note+". Ваучеры их нынче по "+rt+" кр"+(rt>115?". Дорого, да.":rt<85?". Дешевеют.":".");
   }else if(st.i%4===1&&line!==null){
     const back=(typeof cantStyle==="function")?(cantStyle().back||""):"";
     const PL={outpost:["— Тихо у нас. Вот и хорошо.","— Рейс раз в неделю, если повезёт."],
@@ -21626,7 +21626,7 @@ const GLOW_LAMP=[150/255,235/255,225/255];   /* PEEP_LIT (20c) — объявл�
 function glowScan(pl){
   if(!glowDepthHere()||!pl||!pl.glow)return;
   G.cargo.xeno=(G.cargo.xeno||0)+1;
-  logAdd("dim","Светящийся мох: в лампы идёт. +1 ксенобиом.");
+  logAdd("dim","Светящийся мох: в лампы идёт. +1 ксенопроба.");
 }
 /* ── планета ядра: пятна по формам ──
    Три пятна на мир, от зерна: колея (две пунктирные нитки), контур машины,
@@ -32868,7 +32868,7 @@ const MGR_ROLES={
   cmd: {ru:"Командир звена",dom:"звено наёмников", pay:70,cut:.07,col:"#e0885a",
         note:"держит наёмников: приказы, ремонт, дисциплина, трофеи"},
   keep:{ru:"Смотритель",    dom:"дроны и базы",    pay:58,cut:.05,col:"#8fd08a",
-        note:"следит за дронами и стройкой, не даёт домену простаивать"},
+        note:"следит за дронами и стройкой, не даёт работе простаивать"},
   fact:{ru:"Фактор",        dom:"торговый маршрут",pay:64,cut:.09,col:"#f2b25c",
         note:"водит маршрут между известными станциями — живые деньги без вас"},
   sci: {ru:"Исследователь",  dom:"лаборатория",     pay:52,cut:.04,col:"#7fb0e6",
@@ -32879,19 +32879,19 @@ const MGR_ROLE_KEYS=Object.keys(MGR_ROLES);
    Черта — то, с чем игрок мирится, перк — то, что игрок выбирает. Поэтому черта
    всегда двусторонняя: у неё есть и плюс, и цена. */
 const MGR_TRAITS=[
-  {id:"keen",  ru:"дотошный",      note:"+30% опыта, но домен работает на 10% медленнее",
+  {id:"keen",  ru:"дотошный",      note:"+30% опыта, но работа идёт на 10% медленнее",
    xp:1.3,speed:.9},
   {id:"grip",  ru:"хват",          note:"доля на 2 п.п. меньше, лояльность падает вдвое быстрее",
    cut:-.02,loyDrop:2},
-  {id:"selfish",ru:"свои интересы",note:"тихо забирает часть домена сверх доли",
+  {id:"selfish",ru:"свои интересы",note:"тихо забирает часть дохода сверх доли",
    steal:.06},
   {id:"mentor",ru:"наставник",     note:"подчинённые набирают опыт быстрее",
    sub:1.5},
   {id:"coward",ru:"трус",          note:"отзывает своих при первой опасности, даже когда не надо",
    timid:1},
-  {id:"legend",ru:"легенда",       note:"найм в его домен дешевле на четверть",
+  {id:"legend",ru:"легенда",       note:"найм на его работу дешевле на четверть",
    hire:.75},
-  {id:"drink", ru:"пьющий",        note:"иногда домен простаивает, зато он почти не обижается",
+  {id:"drink", ru:"пьющий",        note:"иногда работа простаивает, зато он почти не обижается",
    idle:.12,loyDrop:.4},
   {id:"para",  ru:"параноик",      note:"меньше риска, но требует держать резерв в 3000 кр",
    risk:.75,reserve:3000},
@@ -33159,7 +33159,7 @@ function mgrFee(m){return Math.round(m.fee*mgrHireMul());}
 function mgrTaken(role){return !!mgrOf(role);}
 function hireMgr(cand){
   if(G.mgrs.length>=MGR_CAP){say("Все четыре места заняты\nсначала расчёт");return false;}
-  if(mgrTaken(cand.role)){say("Этот домен уже за "+mgrOf(cand.role).name+"\nодин домен — один управляющий");return false;}
+  if(mgrTaken(cand.role)){say("Эта работа уже за "+mgrOf(cand.role).name+"\nодин человек — одна работа");return false;}
   const fee=mgrFee(cand);
   if(G.credits<fee){say("Не хватает кредитов");return false;}
   G.credits-=fee;
@@ -33169,7 +33169,7 @@ function hireMgr(cand){
     tMs:now(),earned:0,spent:0,tookCr:0,stole:0,route:[],log:[]});
   if(cand.exile&&G.exiles)G.exiles=G.exiles.filter(e=>e.seed!==cand.seed);
   G.mgrs.push(m);
-  mgrSay(m,"Принял домен: "+MGR_ROLES[m.role].dom);
+  mgrSay(m,"Принял работу: "+MGR_ROLES[m.role].dom);
   tell("money","Нанят "+m.name+" · "+MGR_ROLES[m.role].ru+" · −"+fee.toLocaleString("ru")+" кр",
        "Нанят "+m.name+"\n"+MGR_ROLES[m.role].ru+"\nэкран ШТАБ — перки и приказы");
   return true;
@@ -33247,20 +33247,20 @@ const MGR_RULES={
   cmd:[
     {id:"repair", ru:"корпус < 40% → отозвать и починить"},
     {id:"nofight",ru:"в секторе опасно → звено не вылетает"},
-    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"},
+    {id:"payfirst",ru:"кредитов < 2000 → работа не тратит"},
     {id:"ransom", ru:"своего взяли в плен → выкупить сразу"}
   ],
   keep:[
     {id:"redeploy",ru:"точка выработана → перебросить дрон"},
     {id:"sell",    ru:"трюм дрона полон → сдать там, где дороже"},
     {id:"build",   ru:"на базе есть недострой → достроить"},
-    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"}
+    {id:"payfirst",ru:"кредитов < 2000 → работа не тратит"}
   ],
   fact:[
     {id:"run",    ru:"маршрут известен → водить постоянно"},
     {id:"hold",   ru:"цена ниже средней → придержать товар"},
     {id:"safe",   ru:"на плече опасно → обойти сектор"},
-    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"},
+    {id:"payfirst",ru:"кредитов < 2000 → работа не тратит"},
     /* «Пороги» открывают два приказа по цене: без перка их в списке нет вовсе,
        поэтому перк расширяет не силу, а словарь того, что домену можно поручить */
     {id:"buylow", ru:"цена просела → закупить впрок",     need:"limit"},
@@ -33378,8 +33378,8 @@ function mgrPayroll(m,min){
   if(short>0){
     m.loy=Math.max(0,m.loy-min*.5*drop*((typeof holdLoyaltyHold==="function"&&holdLoyaltyHold())?0:1));   /* Красный уголок (G6) */
     if(!m.warnPay&&m.loy<45){
-      m.warnPay=1;mgrSay(m,"Домен пустой — сижу на голом проценте. Я это помню.","warn");
-      logAdd("warn",m.name+" на голом проценте: домен ничего не принёс — лояльность подтаивает");
+      m.warnPay=1;mgrSay(m,"Работа пустая — сижу на голом проценте. Я это помню.","warn");
+      logAdd("warn",m.name+" на голом проценте: работа ничего не принесла — лояльность подтаивает");
     }
   }else{
     m.warnPay=0;
@@ -34300,7 +34300,7 @@ function aiAfford(){
 function buildAi(role){
   if(!MGR_ROLES[role])return false;
   if(!aiCanBuild()){say("Нужна схема ядра\nперк исследователя «схема ядра»");return false;}
-  if(mgrTaken(role)){say("Домен занят\nсначала расчёт с человеком");return false;}
+  if(mgrTaken(role)){say("Работа занята\nсначала расчёт с человеком");return false;}
   if(G.mgrs.length>=MGR_CAP){say("Все четыре места заняты\nядро занимает место, а не добавляет");return false;}
   if(!aiAfford()){say("Не хватает материалов\n"+AI_COST.credits+" кр, иридий "+AI_COST.iridium+
     ", кристаллы "+AI_COST.crystal+", изотопы "+AI_COST.isotopes);return false;}
@@ -34312,8 +34312,8 @@ function buildAi(role){
     traits:[],lv0:1,xp:0,perks:[],rules:[],loy:100,drift:0,
     tMs:now(),earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],fee:0};
   G.mgrs.push(m);
-  mgrSay(m,"Ядро запущено. Домен принят: "+MGR_ROLES[role].dom,"good");
-  tell("","Собрано ИИ-ядро "+m.name+" · домен «"+MGR_ROLES[role].dom+"»",
+  mgrSay(m,"Ядро запущено. Работа принята: "+MGR_ROLES[role].dom,"good");
+  tell("","Собрано ИИ-ядро "+m.name+" · работа «"+MGR_ROLES[role].dom+"»",
        "Ядро "+m.name+" запущено\nдоли не берёт, оклада не просит\nи не спрашивает");
   return true;
 }
@@ -34368,7 +34368,7 @@ function aiDrift(m,min,work){
   if(m.drift>=100){
     m.gone=true;
     G.aiRift={sx:G.sx+(m.seed%9)-4,sy:G.sy+((m.seed>>4)%9)-4,name:m.name,t:now()};
-    logAdd("warn",m.name+" разошлось: домен «"+MGR_ROLES[m.role].dom+"» больше не ваш");
+    logAdd("warn",m.name+" разошлось: работа «"+MGR_ROLES[m.role].dom+"» больше не ваша");
     tell("warn","Расхождение: "+m.name,
       m.name+" больше не отвечает\nоно ушло в сектор "+G.aiRift.sx+","+G.aiRift.sy+
       "\nи что-то там строит");
@@ -34424,7 +34424,7 @@ const RENT_OPIN=["По моим данным, вы спите меньше ре�
 function rentTier(m){return m&&m.rent?(RENT_TIERS[m.rent.tier]||RENT_TIERS.base):null;}
 function rentAi(role,tier){
   if(!MGR_ROLES[role]||!RENT_TIERS[tier])return false;
-  if(mgrTaken(role)){say("Домен занят");return false;}
+  if(mgrTaken(role)){say("Работа занята");return false;}
   if(G.mgrs.length>=MGR_CAP){say("Все четыре места заняты\nарендное тоже занимает место");return false;}
   const seed=hashi(now()&0xffff,role.length*977,0xA12);
   const m={id:"hf"+seed,seed,name:"«HF-"+(100+seed%900)+"»",role,ai:1,rent:{tier,n:0},
@@ -38578,7 +38578,7 @@ function mayakCompose(s){
   const moves={};
   for(const m of (G.scripLog||[]))if(m.t>=t0&&m.t<t1)moves[m.id]=(moves[m.id]|0)+m.d;
   for(const id in moves){const d=moves[id];if(!d)continue;
-    lines.push({t:"Курс бон дома "+HOUSE_BY_ID[id].ru+": "+(d>0?"плюс ":"минус ")+Math.abs(d)+" "+pl3(Math.abs(d),"пункт","пункта","пунктов")+".",cause:{k:"scrip",id,d}});}
+    lines.push({t:"Курс ваучера дома "+HOUSE_BY_ID[id].ru+": "+(d>0?"плюс ":"минус ")+Math.abs(d)+" "+pl3(Math.abs(d),"пункт","пункта","пунктов")+".",cause:{k:"scrip",id,d}});}
   /* 5. праздник — со следствием */
   const hol=(typeof holNow==="function")?holNow():null;
   if(hol)lines.push({t:"Праздник: "+hol.ru+". Норма флота — двойная. Всех сдавших — с праздником.",cause:{k:"holiday",id:hol.id}});
@@ -39474,7 +39474,7 @@ function wearRu(w){
 }
 function wearLine(id){
   const w=wearOf(id);
-  return"НАЛЁТ "+Math.round(w*100)+"% · "+wearRu(w).toUpperCase()+
+  return"ПЫЛЬ "+Math.round(w*100)+"% · "+wearRu(w).toUpperCase()+
     (w>.12?" · РУЛЬ И ТЯГА −"+Math.round(12*w)+"%":"");
 }
 /* Обслуживание. `part` — доля, которую снимают: гараж дома снимает всё и не
@@ -41535,7 +41535,7 @@ function scripBuy(n){
   if(!G.scrip)G.scrip={};
   G.scrip[H.id]=scripHeld(H.id)+n;
   scripDone(n);
-  logAdd("money","Куплено бон "+H.ru+" ×"+n+" по "+p+" кр");
+  logAdd("money","Куплен "+pl3(n,"ваучер","ваучера","ваучеров")+" дома "+H.ru+" ×"+n+" по "+p+" кр");
   return n;
 }
 function scripSell(n){
@@ -41546,7 +41546,7 @@ function scripSell(n){
   G.scrip[H.id]=scripHeld(H.id)-n;
   earn(n*p,"scrip");
   scripDone(n);
-  logAdd("money","Продано бон "+H.ru+" ×"+n+" по "+p+" кр");
+  logAdd("money","Продан "+pl3(n,"ваучер","ваучера","ваучеров")+" дома "+H.ru+" ×"+n+" по "+p+" кр");
   return n;
 }
 /* ── вкладка на станции ──
@@ -41557,10 +41557,10 @@ function scripRender(){
   if(!H){$body.appendChild(el("div","sec","ЗДЕСЬ НЕТ ХОЗЯИНА"));return;}
   $body.appendChild(el("div","sec","ХОЗЯИН СТАНЦИИ · "+H.ru.toUpperCase()+" · "+H.note.toUpperCase()));
   const rate=scripRate(H.id);
-  $body.appendChild(el("div","row","<div class='nm'><b>Курс "+rate+" кр за бон</b><s>"+
+  $body.appendChild(el("div","row","<div class='nm'><b>Курс "+rate+" кр за ваучер</b><s>"+
     "покупка "+scripBuyPrice(H.id)+" · продажа "+scripSellPrice(H.id)+
-    " · у вас "+scripHeld(H.id)+" бон · за заход осталось "+scripLeft()+
-    "<br>бон — расписка этого дома, а не деньги: берут её только на его станциях</s></div>"));
+    " · у вас "+scripHeld(H.id)+" "+pl3(scripHeld(H.id),"ваучер","ваучера","ваучеров")+" · за заход осталось "+scripLeft()+
+    "<br>ваучер — расписка этого дома, а не деньги: берут её только на его станциях</s></div>"));
   const row=el("div","row");
   for(const n of [1,10,SCRIP_VISIT]){
     const b=el("button","act","КУПИТЬ "+n);
@@ -41580,7 +41580,7 @@ function scripRender(){
   for(const O of HOUSES){
     if(O.id===H.id)continue;
     $body.appendChild(el("div","row","<div class='nm'><b>"+O.ru+" · "+scripRate(O.id)+" кр</b><s>"+
-      O.note+" · у вас "+scripHeld(O.id)+" бон</s></div>"));
+      O.note+" · у вас "+scripHeld(O.id)+" "+pl3(scripHeld(O.id),"ваучер","ваучера","ваучеров")+"</s></div>"));
   }
   /* почему курс такой: без этой колонки боны стали бы рулеткой */
   const L=(G.scripLog||[]).slice(-6).reverse();
@@ -41729,7 +41729,7 @@ function fleaBuy(id,pay,sys){
     const n=fleaScrip(lot);
     if(scripHeld(H.id)<n)return null;
     G.scrip[H.id]=scripHeld(H.id)-n;
-    logAdd("money","Блошинец: "+lot.ru+" за боны ×"+n);
+    logAdd("money","Блошинец: "+lot.ru+" за ваучеры ×"+n);
   }else{
     const n=fleaCredits(lot);
     if(G.credits<n)return null;
@@ -41790,7 +41790,7 @@ function fleaRender(){
     (8+Math.abs(hashi(G.sys.seed|0,fleaEpoch(),0xF1EA))%14)+" · ГОВОР, ТОЛКОТНЯ, КТО-ТО СПОРИТ О ЦЕНЕ"));
   const sys=G.sys,H=typeof houseOf==="function"?houseOf(sys):null;
   $body.appendChild(el("div","sec","РЯДЫ · ВСЁ ЗДЕСЬ ЧЬЁ-ТО · "+
-    (H?("СЧЁТ В БОНАХ "+H.ru.toUpperCase()+" · КРЕДИТЫ ДОРОЖЕ НА "+
+    (H?("СЧЁТ В ВАУЧЕРАХ "+H.ru.toUpperCase()+" · КРЕДИТЫ ДОРОЖЕ НА "+
         Math.round((FLEA_MARKUP-1)*100)+"%"):"ХОЗЯИНА НЕТ · ТОЛЬКО КРЕДИТЫ")));
   const lots=fleaLots(sys);
   if(!lots.length){
@@ -41802,9 +41802,9 @@ function fleaRender(){
     const cr=fleaCredits(lot),bn=fleaScrip(lot);
     const r=el("div","row");
     r.appendChild(el("div","nm","<b>"+lot.ru+"</b><s>"+lot.why+" · из вещей "+lot.who+
-      "<br>провенанс: "+lot.note+"<br>"+bn+" бон · или "+cr+" кр</s>"));
+      "<br>провенанс: "+lot.note+"<br>"+bn+" "+pl3(bn,"ваучер","ваучера","ваучеров")+" · или "+cr+" кр</s>"));
     if(H){
-      const b=el("button","act","ЗА БОНЫ "+bn);
+      const b=el("button","act","ЗА ВАУЧЕРЫ "+bn);
       b.disabled=scripHeld(H.id)<bn;
       b.onclick=()=>{fleaBuy(lot.id,"scrip",sys);renderTab();};
       r.appendChild(b);
@@ -42623,7 +42623,7 @@ const WANDER_CAT=[
   {id:"sign",    fam:"tool",ru:"Табличка «НЕ КУПЛЕНО»",   note:"вешали на трюм, чтоб не спрашивали",
    fx:"сведения о вас с блошинца никому не продают", pay:{m:28}, hook:"12ua-flea"},
   {id:"hand",    fam:"tool",ru:"Мастерская рука",         note:"перчатка механика, который всё делал сам",
-   fx:"налёт на корпус ложится на треть медленнее", pay:{m:22}, hook:"12s-wear"},
+   fx:"пыль на корпус ложится на треть медленнее", pay:{m:22}, hook:"12s-wear"},
   {id:"trumpet", fam:"tool",ru:"Слуховая трубка",         note:"через неё слушали стойку, не подходя",
    fx:"приёмник в полёте чаще ловит слухи", pay:{m:18}, hook:"11t-rumours"},
   {id:"key",     fam:"tool",ru:"Ключ причала",            note:"диспетчер отдал, когда закрывали причал",
@@ -76657,7 +76657,7 @@ const POI_FIND={
                 Награда «ничего, вы это уже знаете» читается поломкой. */
              if(G.relicHint){
                const n=2+Math.floor(r()*3+d*2);
-               return addRes("xeno",n)?("образцы с плит: ксенобиом ×"+n)
+               return addRes("xeno",n)?("образцы с плит: ксенопроба ×"+n)
                                       :"плиты те же, а трюм полон";
              }
              for(let i=0;i<40;i++){
@@ -94220,7 +94220,7 @@ PLN_ACT.kinds.temple={ru:"ХРАМ",
     {id:"plates",ru:"плиты",dx:()=>.6,r:1.6,hold:2,tool:false,hum:false,verb:"ЧИТАТЬ ПЛИТЫ",sfx:"motif",when:m=>m.st===0,
       act:c=>{c.m.st=1;c.m.n.read=1;
         if(G.relicHint){const n=2+Math.floor(plnActRoll(c.q.seed,0x7EA,1)()*3+c.d*2),g=addRes("xeno",n);
-          return {short:g?"образцы с плит: ксенобиом ×"+g:"плиты те же, а трюм полон"};}
+          return {short:g?"образцы с плит: ксенопроба ×"+g:"плиты те же, а трюм полон"};}
         return {short:plnActHint(c.q.seed)||"надписи стёрты"};}},
     {id:"gift",ru:"алтарь",dx:()=>.6,r:1.6,fork:"altar",forkAlt:true,sfx:"motif",when:m=>m.st===1,
       verb:()=>{const k=plnTempleGift();return k?"ПОЛОЖИТЬ НА АЛТАРЬ: "+RES[k].ru.toUpperCase()+" ×3":null;},
@@ -94229,7 +94229,7 @@ PLN_ACT.kinds.temple={ru:"ХРАМ",
         G.cargo[k]-=3;
         const what=plnActRelic(c.q.seed,1,.4,"дар храму",()=>{
           if(typeof rareTake==="function")rareTake("temple",c.q.seed,"здесь: храм");
-          const n=addRes("xeno",4);return "ксенобиом ×"+n;});
+          const n=addRes("xeno",4);return "ксенопроба ×"+n;});
         c.m.st=2;c.m.way="gift";c.m.n.gift=k;
         return {short:"храм принял: "+RES[k].ru.toLowerCase()+" ×3 · "+what};}},
     {id:"refuge",ru:"алтарь",dx:()=>.6,r:1.6,when:m=>m.st===2&&m.way==="gift",verb:null,
@@ -94239,7 +94239,7 @@ PLN_ACT.kinds.temple={ru:"ХРАМ",
       act:c=>{if(!plnActRoom())return plnActFull();
         const r=plnActRoll(c.q.seed,0x5A1,1),n=addRes("xeno",4+Math.floor(r()*4+c.d*4)),lost=c.m.st===0;
         c.m.st=3;c.m.way="take";
-        return {short:"ксенобиом ×"+n+" · плиты разбиты"+(lost?" · надписи стёрты":"")};}}],
+        return {short:"ксенопроба ×"+n+" · плиты разбиты"+(lost?" · надписи стёрты":"")};}}],
   drive:(m,age,D,t,nk)=>{
     const E=plnActEase,P={},st=m.st|0,last=m.n.last,gift=m.way==="gift",take=m.way==="take";
     const ev=(id,a,b)=>last===id?E((age-a)/(b-a)):1;
@@ -94279,14 +94279,14 @@ PLN_ACT.kinds.monolith={ru:"МОНОЛИТ",
       note:m=>"не хватает слов: "+(2-plnMonoKnown(m.n.w).length),
       act:c=>{const what=plnActRelic(c.q.seed,2,.6,"монолит открылся",()=>{
           if(!G.relicHint){const h=plnActHint(c.q.seed^0x10);if(h)return h;}
-          return "ксенобиом ×"+addRes("xeno",3);});
+          return "ксенопроба ×"+addRes("xeno",3);});
         c.m.st=2;c.m.way="word";
         return {short:"монолит открылся · "+what};}},
     {id:"sample",ru:"кромка",dx:D=>D.w*1.05,r:1.3,hold:4,verb:"ВЗЯТЬ ОБРАЗЕЦ",fork:"face",sfx:"crackle",when:m=>m.st<2,
       act:c=>{if(!plnActRoom())return plnActFull();
         const r=plnActRoll(c.q.seed,0x5A2,1),n=addRes("xeno",5+Math.floor(r()*4+c.d*4));
         c.m.st=3;c.m.way="take";
-        return {short:"ксенобиом ×"+n+" · монолит молчит"};}}],
+        return {short:"ксенопроба ×"+n+" · монолит молчит"};}}],
   drive:(m,age,D,t,nk)=>{
     const E=plnActEase,P={},st=m.st|0,last=m.n.last;
     const o=st===2?(last==="say"?E(age/3):1):0,rip=last==="touch"&&age<1.2?1-age/1.2:0;
@@ -94637,7 +94637,7 @@ PLN_ACT.kinds.anomaly={ru:"АНОМАЛИЯ",
     {id:"shard",ru:"осколок",dx:()=>0,r:5,air:3,verb:"ВЗЯТЬ ОСКОЛОК",sfx:"boom",when:m=>m.st<2,
       act:c=>{if(!plnActRoom())return plnActFull();
         const n=addRes("xeno",4);G.data+=20;c.m.st=3;c.m.way="drain";
-        return {short:"осколок пойман · ксенобиом ×"+n+" · +20 данных · аномалия схлопнулась"};}}],
+        return {short:"осколок пойман · ксенопроба ×"+n+" · +20 данных · аномалия схлопнулась"};}}],
   drive:(m,age,D,t,nk,q)=>{
     const E=plnActEase,P={},st=m.st|0,last=m.n.last;
     const dr=m.way==="drain",fed=m.way==="fed";
@@ -99205,8 +99205,8 @@ function updateCave(dt){
     const pl=(typeof farHunt==="function")?farHunt(G.surf&&G.surf.p,nearBug.x,nearBug.y):0;   /* жемчуг пустоты (M466) */
     C.fauna.splice(C.fauna.indexOf(nearBug),1);
     const d=bioMark(nearBug.name,6);G.data+=d;
-    tell(pl?"good":"tech","Образец: "+nearBug.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:"")+(pl?" · жемчуг ×"+pl:""),
-      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
+    tell(pl?"good":"tech","Образец: "+nearBug.name+" · углерод ×"+c+(x2?" · ксенопроба ×"+x2:"")+(pl?" · жемчуг ×"+pl:""),
+      "Образец взят\nуглерод ×"+c+(x2?"\nксенопроба ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
   }
   if(typeof farCaveAmberTake==="function")farCaveAmberTake(C);   /* янтарь со стены (M466) */
   let plant=null;
@@ -103606,8 +103606,8 @@ function digFauna(dt,st){
     const pl=(typeof farHunt==="function")?farHunt(D.p,near.x,near.y):0;   /* жемчуг пустоты (M466) */
     D.bugs.splice(D.bugs.indexOf(near),1);
     const d=bioMark(near.name,6);G.data+=d;
-    tell(pl?"good":"tech","Образец: "+near.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:"")+(pl?" · жемчуг ×"+pl:""),
-      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
+    tell(pl?"good":"tech","Образец: "+near.name+" · углерод ×"+c+(x2?" · ксенопроба ×"+x2:"")+(pl?" · жемчуг ×"+pl:""),
+      "Образец взят\nуглерод ×"+c+(x2?"\nксенопроба ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
   }
 }
 
@@ -114872,7 +114872,7 @@ function renderBasesTab(st){
           const wb=document.createElement("button");wb.className="act gold";
           wb.textContent="ОТМЫТЬ «"+shipData(G.shipId).ru.toUpperCase()+"» · ДАРОМ";
           wb.addEventListener("click",()=>{const got=wearService(1);
-            logAdd("tech","Гараж дома: с «"+shipData(G.shipId).ru+"» снят налёт ("+Math.round(got*100)+"%)");renderTab();});
+            logAdd("tech","Гараж дома: с «"+shipData(G.shipId).ru+"» снята пыль ("+Math.round(got*100)+"%)");renderTab();});
           gr.appendChild(wb);
         }
         if(free.length){
@@ -116067,7 +116067,7 @@ function stTabYard(st){
         const cost=wearYardCost();
         const r=el("div","row");
         r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
-          "пескоструй, промывка сопел, подкраска: снимут налёт до "+Math.round(floor*100)+"%.<br>"+
+          "пескоструй, промывка сопел, подкраска: снимут пыль до "+Math.round(floor*100)+"%.<br>"+
           "ниже верфь не берётся — до чистого доводят только в своём гараже</s>"));
         r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
         const b=el("button","act","ОБСЛУЖИТЬ");
@@ -116076,14 +116076,14 @@ function stTabYard(st){
           if(G.credits<cost)return;
           G.credits-=cost;
           const got=wearServiceTo(floor);
-          tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
-               "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"% · это пол этой верфи\n"+
+          tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% пыли",
+               "Корпус обслужен\nпыль "+Math.round(wearOf()*100)+"% · это пол этой верфи\n"+
                "до чистого — только гараж дома");
           renderTab();
         };
         r.appendChild(b);$body.appendChild(r);
       }else if(w>.02){
-        $body.appendChild(el("div","row","<div class='nm'><s>налёт "+Math.round(w*100)+
+        $body.appendChild(el("div","row","<div class='nm'><s>пыль "+Math.round(w*100)+
           "% — это пол здешней верфи ("+Math.round(floor*100)+"%), ниже она не берётся. "+
           "На настоящей верфи снимают больше, дома — всё и бесплатно.</s></div>"));
       }
@@ -117807,7 +117807,7 @@ function renderCantina(){
     cantFolkRow(folk,true);
   }else{
     const m=free.find(x=>x.id===cantSel);
-    secHead("У СТОЙКИ",{back,note:"управляющий берёт домен целиком — звено, базы, маршрут или лабораторию — и долю с того, что домен приносит",key:"hire"});
+    secHead("У СТОЙКИ",{back,note:"управляющий берёт работу целиком — звено, базы, маршрут или лабораторию — и долю с того, что работа приносит",key:"hire"});
     cantDossier(m);
   }
   /* всё остальное, что живёт в зале: за сгибом, но с честным счётом */
@@ -117945,8 +117945,8 @@ function hqRender(){
   document.getElementById("hqCap").textContent=G.mgrs.length+" / "+MGR_CAP+" мест";
   let upkeep=0;for(const m of G.mgrs)upkeep+=mgrPay(m);
   document.getElementById("hqSub").textContent=G.mgrs.length
-    ? "оклады "+upkeep+" кр/мин — из долей доменов, не из вашей кассы"
-    : "домены пусты — управляющих нанимают в кантине станции";
+    ? "оклады "+upkeep+" кр/мин — из долей, не из вашей кассы"
+    : "места пусты — управляющих нанимают в кантине станции";
   $hqBody.textContent="";
   if(!G.mgrs.length){
     /* ── пустая рубка — это КАРТИНКА, а не пустой экран ──
@@ -117959,7 +117959,7 @@ function hqRender(){
        строки текста, и «пока никого» перестаёт читаться поломкой. */
     hqScene();
     $hqBody.appendChild(el("div","sec","НИКОГО · КАНТИНА ЕСТЬ НА ЛЮБОЙ СТАНЦИИ, КРОМЕ ЗАПРАВОЧНОЙ"));
-    $hqBody.appendChild(el("div","row","<div class='nm'><s>управляющий берёт домен целиком: "+
+    $hqBody.appendChild(el("div","row","<div class='nm'><s>управляющий берёт работу целиком: "+
       "звено наёмников, дроны и базы, торговый маршрут или лабораторию. Он не ускоряет "+
       "ранний старт — он поднимает потолок, когда потолок уже мешает.</s></div>"));
     hqAiOffer();
@@ -117970,18 +117970,18 @@ function hqRender(){
      Полоска портретов была плоской вырезкой — здесь видно и место, и то,
      чем домен занят прямо сейчас (`27f-hq-room`). */
   hqScene();
-  $hqBody.appendChild(el("div","sec note","тыкните по человеку у пульта · пустой пульт — свободный домен"));
+  $hqBody.appendChild(el("div","sec note","тыкните по человеку у пульта · пустой пульт — свободная работа"));
   if(typeof secTidy==="function")requestAnimationFrame(()=>secTidy($hqBody));   /* после карточек (M300) */
   const m=G.mgrs.find(x=>x.id===hqSel);
   const R=MGR_ROLES[m.role];
   $hqBody.appendChild(el("div","sec",m.name.toUpperCase()+" · "+R.ru.toUpperCase()+
-    " · ДОМЕН: "+R.dom.toUpperCase()));
+    " · РАБОТА: "+R.dom.toUpperCase()));
   const head=el("div","row");
   head.appendChild(faceEl(m,96));
   head.appendChild(el("div","nm",mgrHead(m)));
   $hqBody.appendChild(head);
   /* сводка домена: сколько он взял и что сделал — иначе доля выглядит грабежом */
-  $hqBody.appendChild(el("div","row","<div class='nm'><b>Домен</b><s>"+
+  $hqBody.appendChild(el("div","row","<div class='nm'><b>Работа</b><s>"+
     mgrDomainLine(m)+"<br>взял долей: "+(m.tookCr||0).toLocaleString("ru")+" кр"+
     (m.stole?" · <b style='color:#ff9d7a'>сверх того «потерялось» "+m.stole.toLocaleString("ru")+" кр</b>":"")+
     "<br>отдал вам: "+(m.earned||0).toLocaleString("ru")+" кр · съел окладом "+
@@ -118405,7 +118405,7 @@ function cantCard(m){
   f.innerHTML="<i class='ch-role'>"+R.ru.toUpperCase()+"</i><i class='ch-lv'>УР "+mgrLevel(m)+"</i>";
   f.appendChild(cantFace(m,124));
   c.appendChild(f);
-  c.appendChild(el("div","ch-id","<b>"+m.name+"</b><s>"+(taken?"домен занят: "+mgrOf(m.role).name:R.dom)+"</s>"));
+  c.appendChild(el("div","ch-id","<b>"+m.name+"</b><s>"+(taken?"работа занята: "+mgrOf(m.role).name:R.dom)+"</s>"));
   const tr=el("div","ch-tr");
   if(known)tr.innerHTML=m.traits.map(t=>{const T=mgrTrait(t);return "<i title='"+T.note+"'>"+T.ru+"</i>";}).join("");
   else tr.innerHTML="<i class='q'>черты — после разговора</i>";
@@ -118486,7 +118486,7 @@ function cantDossier(m){
     "<span><em>доля</em><b>"+(mgrCut(m)*100).toFixed(1)+"%</b></span><span><em>найм</em><b>"+fee.toLocaleString("ru")+" кр</b></span></div>"+
     (known?"<div class='ch-trl'>"+m.traits.map(x=>{const T=mgrTrait(x);return "<p><b>"+T.ru+"</b>"+T.note+"</p>";}).join("")+"</div>"
       :"<s class='rl'>чем хорош и чем плох — видно после разговора"+(m.traits.length>2?" (черт три)":"")+"</s>")+
-    (taken?"<s class='busy'>домен занят: "+mgrOf(m.role).name+"</s>":"");
+    (taken?"<s class='busy'>работа занята: "+mgrOf(m.role).name+"</s>":"");
   const acts=el("div","ch-acts");
   if(!known){const bt=el("button","act","РАССПРОСИТЬ");bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};acts.appendChild(bt);}
   const b=el("button","act"+(taken?"":" gold"),"НАНЯТЬ · "+fee.toLocaleString("ru")+" кр");
@@ -135047,7 +135047,7 @@ function room3Frame(){
 function hq3Tags(L,tx){const out=[];let hi=-1;
   out.av=[[[-.6,1.0,.56],[.6,1.72,.56]]];   /* голограмма: кольца ±.6 и ±.36 вокруг 1.36, ближняя грань */
   HQ3_X.forEach((x,i)=>{if(L.occ[i])return;const R=MGR_ROLES[HQ_ORDER[i]],r=x>0;
-    out.push({p:[r?x+.7:x-.7,1.22,HQ3.B+.22],t:"ДОМЕН СВОБОДЕН",s:R?R.dom:"",c:"sg",al:r?"r":""});
+    out.push({p:[r?x+.7:x-.7,1.22,HQ3.B+.22],t:"РАБОТА СВОБОДНА",s:R?R.dom:"",c:"sg",al:r?"r":""});
     if(hi<0||Math.abs(x-tx)<Math.abs(HQ3_X[hi]-tx))hi=i;});
   if(hi>=0&&L.sel<0){const C=hq3Chair(hi);out.push({p:[C.x,.42,C.z],t:"ПУСТОЕ КРЕСЛО",s:"управляющих нанимают в кантине станции",c:"dn"});}
   return out;}

@@ -59,7 +59,7 @@ PLN_ACT.kinds.temple={ru:"ХРАМ",
     {id:"plates",ru:"плиты",dx:()=>.6,r:1.6,hold:2,tool:false,hum:false,verb:"ЧИТАТЬ ПЛИТЫ",sfx:"motif",when:m=>m.st===0,
       act:c=>{c.m.st=1;c.m.n.read=1;
         if(G.relicHint){const n=2+Math.floor(plnActRoll(c.q.seed,0x7EA,1)()*3+c.d*2),g=addRes("xeno",n);
-          return {short:g?"образцы с плит: ксенобиом ×"+g:"плиты те же, а трюм полон"};}
+          return {short:g?"образцы с плит: ксенопроба ×"+g:"плиты те же, а трюм полон"};}
         return {short:plnActHint(c.q.seed)||"надписи стёрты"};}},
     {id:"gift",ru:"алтарь",dx:()=>.6,r:1.6,fork:"altar",forkAlt:true,sfx:"motif",when:m=>m.st===1,
       verb:()=>{const k=plnTempleGift();return k?"ПОЛОЖИТЬ НА АЛТАРЬ: "+RES[k].ru.toUpperCase()+" ×3":null;},
@@ -68,7 +68,7 @@ PLN_ACT.kinds.temple={ru:"ХРАМ",
         G.cargo[k]-=3;
         const what=plnActRelic(c.q.seed,1,.4,"дар храму",()=>{
           if(typeof rareTake==="function")rareTake("temple",c.q.seed,"здесь: храм");
-          const n=addRes("xeno",4);return "ксенобиом ×"+n;});
+          const n=addRes("xeno",4);return "ксенопроба ×"+n;});
         c.m.st=2;c.m.way="gift";c.m.n.gift=k;
         return {short:"храм принял: "+RES[k].ru.toLowerCase()+" ×3 · "+what};}},
     {id:"refuge",ru:"алтарь",dx:()=>.6,r:1.6,when:m=>m.st===2&&m.way==="gift",verb:null,
@@ -78,7 +78,7 @@ PLN_ACT.kinds.temple={ru:"ХРАМ",
       act:c=>{if(!plnActRoom())return plnActFull();
         const r=plnActRoll(c.q.seed,0x5A1,1),n=addRes("xeno",4+Math.floor(r()*4+c.d*4)),lost=c.m.st===0;
         c.m.st=3;c.m.way="take";
-        return {short:"ксенобиом ×"+n+" · плиты разбиты"+(lost?" · надписи стёрты":"")};}}],
+        return {short:"ксенопроба ×"+n+" · плиты разбиты"+(lost?" · надписи стёрты":"")};}}],
   drive:(m,age,D,t,nk)=>{
     const E=plnActEase,P={},st=m.st|0,last=m.n.last,gift=m.way==="gift",take=m.way==="take";
     const ev=(id,a,b)=>last===id?E((age-a)/(b-a)):1;
@@ -118,14 +118,14 @@ PLN_ACT.kinds.monolith={ru:"МОНОЛИТ",
       note:m=>"не хватает слов: "+(2-plnMonoKnown(m.n.w).length),
       act:c=>{const what=plnActRelic(c.q.seed,2,.6,"монолит открылся",()=>{
           if(!G.relicHint){const h=plnActHint(c.q.seed^0x10);if(h)return h;}
-          return "ксенобиом ×"+addRes("xeno",3);});
+          return "ксенопроба ×"+addRes("xeno",3);});
         c.m.st=2;c.m.way="word";
         return {short:"монолит открылся · "+what};}},
     {id:"sample",ru:"кромка",dx:D=>D.w*1.05,r:1.3,hold:4,verb:"ВЗЯТЬ ОБРАЗЕЦ",fork:"face",sfx:"crackle",when:m=>m.st<2,
       act:c=>{if(!plnActRoom())return plnActFull();
         const r=plnActRoll(c.q.seed,0x5A2,1),n=addRes("xeno",5+Math.floor(r()*4+c.d*4));
         c.m.st=3;c.m.way="take";
-        return {short:"ксенобиом ×"+n+" · монолит молчит"};}}],
+        return {short:"ксенопроба ×"+n+" · монолит молчит"};}}],
   drive:(m,age,D,t,nk)=>{
     const E=plnActEase,P={},st=m.st|0,last=m.n.last;
     const o=st===2?(last==="say"?E(age/3):1):0,rip=last==="touch"&&age<1.2?1-age/1.2:0;

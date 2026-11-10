@@ -111,7 +111,7 @@ function mayakCompose(s){
   const moves={};
   for(const m of (G.scripLog||[]))if(m.t>=t0&&m.t<t1)moves[m.id]=(moves[m.id]|0)+m.d;
   for(const id in moves){const d=moves[id];if(!d)continue;
-    lines.push({t:"Курс бон дома "+HOUSE_BY_ID[id].ru+": "+(d>0?"плюс ":"минус ")+Math.abs(d)+" "+pl3(Math.abs(d),"пункт","пункта","пунктов")+".",cause:{k:"scrip",id,d}});}
+    lines.push({t:"Курс ваучера дома "+HOUSE_BY_ID[id].ru+": "+(d>0?"плюс ":"минус ")+Math.abs(d)+" "+pl3(Math.abs(d),"пункт","пункта","пунктов")+".",cause:{k:"scrip",id,d}});}
   /* 5. праздник — со следствием */
   const hol=(typeof holNow==="function")?holNow():null;
   if(hol)lines.push({t:"Праздник: "+hol.ru+". Норма флота — двойная. Всех сдавших — с праздником.",cause:{k:"holiday",id:hol.id}});

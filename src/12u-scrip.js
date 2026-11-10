@@ -106,7 +106,7 @@ function scripBuy(n){
   if(!G.scrip)G.scrip={};
   G.scrip[H.id]=scripHeld(H.id)+n;
   scripDone(n);
-  logAdd("money","Куплено бон "+H.ru+" ×"+n+" по "+p+" кр");
+  logAdd("money","Куплен "+pl3(n,"ваучер","ваучера","ваучеров")+" дома "+H.ru+" ×"+n+" по "+p+" кр");
   return n;
 }
 function scripSell(n){
@@ -117,7 +117,7 @@ function scripSell(n){
   G.scrip[H.id]=scripHeld(H.id)-n;
   earn(n*p,"scrip");
   scripDone(n);
-  logAdd("money","Продано бон "+H.ru+" ×"+n+" по "+p+" кр");
+  logAdd("money","Продан "+pl3(n,"ваучер","ваучера","ваучеров")+" дома "+H.ru+" ×"+n+" по "+p+" кр");
   return n;
 }
 /* ── вкладка на станции ──
@@ -128,10 +128,10 @@ function scripRender(){
   if(!H){$body.appendChild(el("div","sec","ЗДЕСЬ НЕТ ХОЗЯИНА"));return;}
   $body.appendChild(el("div","sec","ХОЗЯИН СТАНЦИИ · "+H.ru.toUpperCase()+" · "+H.note.toUpperCase()));
   const rate=scripRate(H.id);
-  $body.appendChild(el("div","row","<div class='nm'><b>Курс "+rate+" кр за бон</b><s>"+
+  $body.appendChild(el("div","row","<div class='nm'><b>Курс "+rate+" кр за ваучер</b><s>"+
     "покупка "+scripBuyPrice(H.id)+" · продажа "+scripSellPrice(H.id)+
-    " · у вас "+scripHeld(H.id)+" бон · за заход осталось "+scripLeft()+
-    "<br>бон — расписка этого дома, а не деньги: берут её только на его станциях</s></div>"));
+    " · у вас "+scripHeld(H.id)+" "+pl3(scripHeld(H.id),"ваучер","ваучера","ваучеров")+" · за заход осталось "+scripLeft()+
+    "<br>ваучер — расписка этого дома, а не деньги: берут её только на его станциях</s></div>"));
   const row=el("div","row");
   for(const n of [1,10,SCRIP_VISIT]){
     const b=el("button","act","КУПИТЬ "+n);
@@ -151,7 +151,7 @@ function scripRender(){
   for(const O of HOUSES){
     if(O.id===H.id)continue;
     $body.appendChild(el("div","row","<div class='nm'><b>"+O.ru+" · "+scripRate(O.id)+" кр</b><s>"+
-      O.note+" · у вас "+scripHeld(O.id)+" бон</s></div>"));
+      O.note+" · у вас "+scripHeld(O.id)+" "+pl3(scripHeld(O.id),"ваучер","ваучера","ваучеров")+"</s></div>"));
   }
   /* почему курс такой: без этой колонки боны стали бы рулеткой */
   const L=(G.scripLog||[]).slice(-6).reverse();

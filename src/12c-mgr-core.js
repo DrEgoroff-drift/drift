@@ -10,7 +10,7 @@ const MGR_ROLES={
   cmd: {ru:"Командир звена",dom:"звено наёмников", pay:70,cut:.07,col:"#e0885a",
         note:"держит наёмников: приказы, ремонт, дисциплина, трофеи"},
   keep:{ru:"Смотритель",    dom:"дроны и базы",    pay:58,cut:.05,col:"#8fd08a",
-        note:"следит за дронами и стройкой, не даёт домену простаивать"},
+        note:"следит за дронами и стройкой, не даёт работе простаивать"},
   fact:{ru:"Фактор",        dom:"торговый маршрут",pay:64,cut:.09,col:"#f2b25c",
         note:"водит маршрут между известными станциями — живые деньги без вас"},
   sci: {ru:"Исследователь",  dom:"лаборатория",     pay:52,cut:.04,col:"#7fb0e6",
@@ -21,19 +21,19 @@ const MGR_ROLE_KEYS=Object.keys(MGR_ROLES);
    Черта — то, с чем игрок мирится, перк — то, что игрок выбирает. Поэтому черта
    всегда двусторонняя: у неё есть и плюс, и цена. */
 const MGR_TRAITS=[
-  {id:"keen",  ru:"дотошный",      note:"+30% опыта, но домен работает на 10% медленнее",
+  {id:"keen",  ru:"дотошный",      note:"+30% опыта, но работа идёт на 10% медленнее",
    xp:1.3,speed:.9},
   {id:"grip",  ru:"хват",          note:"доля на 2 п.п. меньше, лояльность падает вдвое быстрее",
    cut:-.02,loyDrop:2},
-  {id:"selfish",ru:"свои интересы",note:"тихо забирает часть домена сверх доли",
+  {id:"selfish",ru:"свои интересы",note:"тихо забирает часть дохода сверх доли",
    steal:.06},
   {id:"mentor",ru:"наставник",     note:"подчинённые набирают опыт быстрее",
    sub:1.5},
   {id:"coward",ru:"трус",          note:"отзывает своих при первой опасности, даже когда не надо",
    timid:1},
-  {id:"legend",ru:"легенда",       note:"найм в его домен дешевле на четверть",
+  {id:"legend",ru:"легенда",       note:"найм на его работу дешевле на четверть",
    hire:.75},
-  {id:"drink", ru:"пьющий",        note:"иногда домен простаивает, зато он почти не обижается",
+  {id:"drink", ru:"пьющий",        note:"иногда работа простаивает, зато он почти не обижается",
    idle:.12,loyDrop:.4},
   {id:"para",  ru:"параноик",      note:"меньше риска, но требует держать резерв в 3000 кр",
    risk:.75,reserve:3000},
@@ -301,7 +301,7 @@ function mgrFee(m){return Math.round(m.fee*mgrHireMul());}
 function mgrTaken(role){return !!mgrOf(role);}
 function hireMgr(cand){
   if(G.mgrs.length>=MGR_CAP){say("Все четыре места заняты\nсначала расчёт");return false;}
-  if(mgrTaken(cand.role)){say("Этот домен уже за "+mgrOf(cand.role).name+"\nодин домен — один управляющий");return false;}
+  if(mgrTaken(cand.role)){say("Эта работа уже за "+mgrOf(cand.role).name+"\nодин человек — одна работа");return false;}
   const fee=mgrFee(cand);
   if(G.credits<fee){say("Не хватает кредитов");return false;}
   G.credits-=fee;
@@ -311,7 +311,7 @@ function hireMgr(cand){
     tMs:now(),earned:0,spent:0,tookCr:0,stole:0,route:[],log:[]});
   if(cand.exile&&G.exiles)G.exiles=G.exiles.filter(e=>e.seed!==cand.seed);
   G.mgrs.push(m);
-  mgrSay(m,"Принял домен: "+MGR_ROLES[m.role].dom);
+  mgrSay(m,"Принял работу: "+MGR_ROLES[m.role].dom);
   tell("money","Нанят "+m.name+" · "+MGR_ROLES[m.role].ru+" · −"+fee.toLocaleString("ru")+" кр",
        "Нанят "+m.name+"\n"+MGR_ROLES[m.role].ru+"\nэкран ШТАБ — перки и приказы");
   return true;
@@ -389,20 +389,20 @@ const MGR_RULES={
   cmd:[
     {id:"repair", ru:"корпус < 40% → отозвать и починить"},
     {id:"nofight",ru:"в секторе опасно → звено не вылетает"},
-    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"},
+    {id:"payfirst",ru:"кредитов < 2000 → работа не тратит"},
     {id:"ransom", ru:"своего взяли в плен → выкупить сразу"}
   ],
   keep:[
     {id:"redeploy",ru:"точка выработана → перебросить дрон"},
     {id:"sell",    ru:"трюм дрона полон → сдать там, где дороже"},
     {id:"build",   ru:"на базе есть недострой → достроить"},
-    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"}
+    {id:"payfirst",ru:"кредитов < 2000 → работа не тратит"}
   ],
   fact:[
     {id:"run",    ru:"маршрут известен → водить постоянно"},
     {id:"hold",   ru:"цена ниже средней → придержать товар"},
     {id:"safe",   ru:"на плече опасно → обойти сектор"},
-    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"},
+    {id:"payfirst",ru:"кредитов < 2000 → работа не тратит"},
     /* «Пороги» открывают два приказа по цене: без перка их в списке нет вовсе,
        поэтому перк расширяет не силу, а словарь того, что домену можно поручить */
     {id:"buylow", ru:"цена просела → закупить впрок",     need:"limit"},
@@ -520,8 +520,8 @@ function mgrPayroll(m,min){
   if(short>0){
     m.loy=Math.max(0,m.loy-min*.5*drop*((typeof holdLoyaltyHold==="function"&&holdLoyaltyHold())?0:1));   /* Красный уголок (G6) */
     if(!m.warnPay&&m.loy<45){
-      m.warnPay=1;mgrSay(m,"Домен пустой — сижу на голом проценте. Я это помню.","warn");
-      logAdd("warn",m.name+" на голом проценте: домен ничего не принёс — лояльность подтаивает");
+      m.warnPay=1;mgrSay(m,"Работа пустая — сижу на голом проценте. Я это помню.","warn");
+      logAdd("warn",m.name+" на голом проценте: работа ничего не принесла — лояльность подтаивает");
     }
   }else{
     m.warnPay=0;

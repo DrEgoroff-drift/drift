@@ -29,7 +29,7 @@ function aiAfford(){
 function buildAi(role){
   if(!MGR_ROLES[role])return false;
   if(!aiCanBuild()){say("Нужна схема ядра\nперк исследователя «схема ядра»");return false;}
-  if(mgrTaken(role)){say("Домен занят\nсначала расчёт с человеком");return false;}
+  if(mgrTaken(role)){say("Работа занята\nсначала расчёт с человеком");return false;}
   if(G.mgrs.length>=MGR_CAP){say("Все четыре места заняты\nядро занимает место, а не добавляет");return false;}
   if(!aiAfford()){say("Не хватает материалов\n"+AI_COST.credits+" кр, иридий "+AI_COST.iridium+
     ", кристаллы "+AI_COST.crystal+", изотопы "+AI_COST.isotopes);return false;}
@@ -41,8 +41,8 @@ function buildAi(role){
     traits:[],lv0:1,xp:0,perks:[],rules:[],loy:100,drift:0,
     tMs:now(),earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],fee:0};
   G.mgrs.push(m);
-  mgrSay(m,"Ядро запущено. Домен принят: "+MGR_ROLES[role].dom,"good");
-  tell("","Собрано ИИ-ядро "+m.name+" · домен «"+MGR_ROLES[role].dom+"»",
+  mgrSay(m,"Ядро запущено. Работа принята: "+MGR_ROLES[role].dom,"good");
+  tell("","Собрано ИИ-ядро "+m.name+" · работа «"+MGR_ROLES[role].dom+"»",
        "Ядро "+m.name+" запущено\nдоли не берёт, оклада не просит\nи не спрашивает");
   return true;
 }
@@ -97,7 +97,7 @@ function aiDrift(m,min,work){
   if(m.drift>=100){
     m.gone=true;
     G.aiRift={sx:G.sx+(m.seed%9)-4,sy:G.sy+((m.seed>>4)%9)-4,name:m.name,t:now()};
-    logAdd("warn",m.name+" разошлось: домен «"+MGR_ROLES[m.role].dom+"» больше не ваш");
+    logAdd("warn",m.name+" разошлось: работа «"+MGR_ROLES[m.role].dom+"» больше не ваша");
     tell("warn","Расхождение: "+m.name,
       m.name+" больше не отвечает\nоно ушло в сектор "+G.aiRift.sx+","+G.aiRift.sy+
       "\nи что-то там строит");

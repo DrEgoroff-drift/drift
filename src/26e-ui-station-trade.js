@@ -301,7 +301,7 @@ function stTabYard(st){
         const cost=wearYardCost();
         const r=el("div","row");
         r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
-          "пескоструй, промывка сопел, подкраска: снимут налёт до "+Math.round(floor*100)+"%.<br>"+
+          "пескоструй, промывка сопел, подкраска: снимут пыль до "+Math.round(floor*100)+"%.<br>"+
           "ниже верфь не берётся — до чистого доводят только в своём гараже</s>"));
         r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
         const b=el("button","act","ОБСЛУЖИТЬ");
@@ -310,14 +310,14 @@ function stTabYard(st){
           if(G.credits<cost)return;
           G.credits-=cost;
           const got=wearServiceTo(floor);
-          tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
-               "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"% · это пол этой верфи\n"+
+          tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% пыли",
+               "Корпус обслужен\nпыль "+Math.round(wearOf()*100)+"% · это пол этой верфи\n"+
                "до чистого — только гараж дома");
           renderTab();
         };
         r.appendChild(b);$body.appendChild(r);
       }else if(w>.02){
-        $body.appendChild(el("div","row","<div class='nm'><s>налёт "+Math.round(w*100)+
+        $body.appendChild(el("div","row","<div class='nm'><s>пыль "+Math.round(w*100)+
           "% — это пол здешней верфи ("+Math.round(floor*100)+"%), ниже она не берётся. "+
           "На настоящей верфи снимают больше, дома — всё и бесплатно.</s></div>"));
       }

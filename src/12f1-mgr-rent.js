@@ -22,7 +22,7 @@ const RENT_OPIN=["По моим данным, вы спите меньше ре�
 function rentTier(m){return m&&m.rent?(RENT_TIERS[m.rent.tier]||RENT_TIERS.base):null;}
 function rentAi(role,tier){
   if(!MGR_ROLES[role]||!RENT_TIERS[tier])return false;
-  if(mgrTaken(role)){say("Домен занят");return false;}
+  if(mgrTaken(role)){say("Работа занята");return false;}
   if(G.mgrs.length>=MGR_CAP){say("Все четыре места заняты\nарендное тоже занимает место");return false;}
   const seed=hashi(now()&0xffff,role.length*977,0xA12);
   const m={id:"hf"+seed,seed,name:"«HF-"+(100+seed%900)+"»",role,ai:1,rent:{tier,n:0},
