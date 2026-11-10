@@ -133,7 +133,7 @@ function fleaBuy(id,pay,sys){
     const n=fleaScrip(lot);
     if(scripHeld(H.id)<n)return null;
     G.scrip[H.id]=scripHeld(H.id)-n;
-    logAdd("money","Блошинец: "+lot.ru+" за ваучеры ×"+n);
+    logAdd("money","Блошинец: "+lot.ru+" · "+n+" "+pl3(n,"ваучер","ваучера","ваучеров"));
   }else{
     const n=fleaCredits(lot);
     if(G.credits<n)return null;
@@ -208,7 +208,7 @@ function fleaRender(){
     r.appendChild(el("div","nm","<b>"+lot.ru+"</b><s>"+lot.why+" · из вещей "+lot.who+
       "<br>провенанс: "+lot.note+"<br>"+bn+" "+pl3(bn,"ваучер","ваучера","ваучеров")+" · или "+cr+" кр</s>"));
     if(H){
-      const b=el("button","act","ЗА ВАУЧЕРЫ "+bn);
+      const b=el("button","act","ЗА "+bn+" "+pl3(bn,"ВАУЧЕР","ВАУЧЕРА","ВАУЧЕРОВ"));
       b.disabled=scripHeld(H.id)<bn;
       b.onclick=()=>{fleaBuy(lot.id,"scrip",sys);renderTab();};
       r.appendChild(b);

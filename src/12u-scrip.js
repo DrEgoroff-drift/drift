@@ -106,7 +106,7 @@ function scripBuy(n){
   if(!G.scrip)G.scrip={};
   G.scrip[H.id]=scripHeld(H.id)+n;
   scripDone(n);
-  logAdd("money","Куплен "+pl3(n,"ваучер","ваучера","ваучеров")+" дома "+H.ru+" ×"+n+" по "+p+" кр");
+  logAdd("money","Куплено: "+n+" "+pl3(n,"ваучер","ваучера","ваучеров")+" дома "+H.ru+" по "+p+" кр");
   return n;
 }
 function scripSell(n){
@@ -117,7 +117,7 @@ function scripSell(n){
   G.scrip[H.id]=scripHeld(H.id)-n;
   earn(n*p,"scrip");
   scripDone(n);
-  logAdd("money","Продан "+pl3(n,"ваучер","ваучера","ваучеров")+" дома "+H.ru+" ×"+n+" по "+p+" кр");
+  logAdd("money","Продано: "+n+" "+pl3(n,"ваучер","ваучера","ваучеров")+" дома "+H.ru+" по "+p+" кр");
   return n;
 }
 /* ── вкладка на станции ──

@@ -184,7 +184,7 @@
     <button data-tab="market" class="on">РЫНОК</button>
     <button data-tab="barter">БАРТЕР</button>
     <button data-tab="flea">РЯДЫ</button>
-    <button data-tab="scrip">БОНЫ</button>
+    <button data-tab="scrip">ВАУЧЕРЫ</button>
     <button data-tab="yard">ВЕРФЬ</button>
     <button data-tab="mods">МОДУЛИ</button>
     <button data-tab="fuse">СПЛАВ КОРПУСОВ</button>
@@ -313,5 +313,19 @@
 if("serviceWorker" in navigator&&location.protocol==="https:")
   navigator.serviceWorker.register("/drift-sw.js").catch(()=>{});
 </script>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=114027617', 'ym');
+
+    ym(114027617, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/114027617" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
 </body>
 </html>

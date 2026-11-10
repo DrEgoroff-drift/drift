@@ -105,7 +105,7 @@ function renderBasesTab(st){
         cr.appendChild(el("div","nm","<b>Витрина</b><s>"+
           (shown.length?shown.map(k=>RES[k].ru.toLowerCase()+" ×"+G.home.showcase[k]).join(", ")
             :"пуста")+
-          "<br>надбавка доменам +"+Math.round(homeShowBonus()*100)+
+          "<br>надбавка работам +"+Math.round(homeShowBonus()*100)+
           "% · выставленное не продаётся</s>"));
         if(have.length){
           const cb=document.createElement("button");cb.className="act";
