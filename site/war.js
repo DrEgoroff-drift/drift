@@ -27,7 +27,7 @@ function earn(){}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.107";
+const VER="0.499.108";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -221,7 +221,7 @@ function sysJitter(gx,gy){
 }
 const DESC_MOOD=[
   {w:["тихий","забытый","сонный"],ok:s=>!s.station&&!s.belt},
-  {w:["оживлённый","обжитой","многообещающий"],ok:s=>!!(s.station&&s.belt)},
+  {w:["оживлённый","обжитой","бойкий"],ok:s=>!!(s.station&&s.belt)},
   {w:["пограничный","неспокойный","дикий"],ok:s=>sysDanger(s.sx,s.sy)>.55},
   {w:["разведанный","картографированный"],ok:s=>!!s.station&&sysDanger(s.sx,s.sy)<=.55}
 ];
@@ -234,7 +234,7 @@ function genDesc(r,sys){
   const bits=[mood[0].toUpperCase()+mood.slice(1)+" "+tail];
   const kinds=sys.planets.map(p=>p.T.ru).filter((v,i,a)=>a.indexOf(v)===i);
   if(kinds.length)bits.push(kinds.length+" "+pl3(kinds.length,"тип","типа","типов")+" миров: "+kinds.join(", "));
-  if(sys.belt)bits.push("пояс богат "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
+  if(sys.belt)bits.push("в поясе: "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
   if(sys.station)bits.push(sys.station.kind.toLowerCase());
   return bits.join(" · ");
 }
