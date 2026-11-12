@@ -2301,8 +2301,8 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:336
-STORY_WHEN                   src/11c-stories.js:148-219
+STORY_SEAT                   src/11c-stories.js:337
+STORY_WHEN                   src/11c-stories.js:148-220
 STP_FADE                     src/26e2-stapel-draw.js:293
 STP_G                        src/26e2-stapel-draw.js:292
 STP_INK                      src/26e2-stapel-draw.js:191
@@ -2641,7 +2641,7 @@ applyCrewEvent               src/12b-crew-events.js:227-236
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:216-630
-applySaveRest                src/14a1-save-rest.js:15-395
+applySaveRest                src/14a1-save-rest.js:15-397
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
@@ -2690,9 +2690,9 @@ bargeArtOf                   src/12l-barge.js:448-591
 bargeAttackers               src/12l-barge.js:199-201
 bargeAutoLoad                src/12ag-holdfx.js:35-55
 bargeBuyPrice                src/12l-barge.js:115-120
-bargeCrewRow                 src/12af-barge.js:162-183
+bargeCrewRow                 src/12af-barge.js:165-186
 bargeCur                     src/12l-barge.js:692
-bargeDealList                src/12af-barge.js:147-160
+bargeDealList                src/12af-barge.js:150-163
 bargeDestPrice               src/12l-barge.js:82-91
 bargeElRow                   src/12l-barge.js:721-730
 bargeEscortAccept            src/12l-barge.js:354-369
@@ -2702,15 +2702,15 @@ bargeEscortHalf              src/12l-barge.js:353
 bargeHullOk                  src/12af-barge.js:21-24
 bargeInteract                src/12l-barge.js:321-341
 bargeLegs                    src/12l-barge.js:43-67
-bargeLine                    src/12af-barge.js:141-145
+bargeLine                    src/12af-barge.js:144-148
 bargeLiveGpu                 src/12l-barge.js:603-613
 bargeLiveSet                 src/12l-barge.js:648-668
-bargeLoad                    src/12af-barge.js:104-117
+bargeLoad                    src/12af-barge.js:107-120
 bargeMarkup                  src/12l-barge.js:97-100
 bargeMineHit                 src/12l-barge.js:237-247
 bargeName                    src/12af-barge.js:25
 bargeNearOther               src/12l-barge.js:70-79
-bargeNextName                src/12af-barge.js:134-140
+bargeNextName                src/12af-barge.js:137-143
 bargePaxDeliver              src/12l-barge.js:309-319
 bargePilot                   src/12af-barge.js:31
 bargePilotQ                  src/12af-barge.js:30
@@ -2723,8 +2723,8 @@ bargeStart                   src/12af-barge.js:44-60
 bargeStationAsk              src/12l-barge.js:105-110
 bargeSunk                    src/12l-barge.js:274-307
 bargeSysAt                   src/12l-barge.js:25-36
-bargeTick                    src/12af-barge.js:62-102
-bargeUnload                  src/12af-barge.js:119-133
+bargeTick                    src/12af-barge.js:62-105
+bargeUnload                  src/12af-barge.js:122-136
 bargeWants                   src/12af-barge.js:34-42
 baseAdjAir                   src/21a4-base-adj.js:105
 baseAdjCount                 src/21a4-base-adj.js:55-59
@@ -2792,12 +2792,12 @@ baseJumpCost                 src/21a-mode-base.js:382-385
 baseKey                      src/21a-mode-base.js:84
 baseLife                     src/21a1-base-life.js:287-294
 baseLifeBoost                src/21a3-base-people.js:36-38
-baseLifeBulk                 src/21a1b-base-food.js:124-193
+baseLifeBulk                 src/21a1b-base-food.js:124-132
 baseLifeLeft                 src/21a1-base-life.js:315-318
-baseLifeLine                 src/21a1-base-life.js:460-473
+baseLifeLine                 src/21a1-base-life.js:462-475
 baseLifeMakers               src/21a1-base-life.js:306-313
 baseLifeNeed                 src/21a1-base-life.js:300-304
-baseLifeStep                 src/21a1-base-life.js:338-404
+baseLifeStep                 src/21a1-base-life.js:338-406
 baseLinkCan                  src/21a2-base-link.js:114
 baseLinkPark                 src/21a2-base-link.js:115-123
 baseList                     src/21a-mode-base.js:376-380
@@ -2818,8 +2818,8 @@ baseRaid                     src/21a-mode-base.js:253-294
 baseRefuel                   src/21b1-base-pay.js:101-114
 baseRepairShip               src/21b1-base-pay.js:117-131
 baseReport                   src/21a2-base-link.js:86-110
-baseResolve                  src/21a1-base-life.js:481-533
-baseResolveAll               src/21a1-base-life.js:537-540
+baseResolve                  src/21a1-base-life.js:483-538
+baseResolveAll               src/21a1-base-life.js:542-545
 baseRoleForce                src/12a-crew.js:183-186
 baseRows                     src/21a-mode-base.js:13
 baseRuinCheck                src/21b0-base-ruin.js:28-42
@@ -2839,7 +2839,7 @@ baseSpirit                   src/21a1b-base-food.js:18-45
 baseSpiritStep               src/21a1b-base-food.js:109-119
 baseStaff                    src/12a-crew.js:179-182
 baseStorm                    src/21a-mode-base.js:301-333
-baseSupply                   src/21a1-base-life.js:409-458
+baseSupply                   src/21a1-base-life.js:411-460
 baseT0                       src/21a1-base-life.js:31-35
 baseTenant                   src/21b0-base-ruin.js:45-56
 baseThreat                   src/21a5-base-dir.js:85-91
@@ -5310,7 +5310,7 @@ heardYours                   src/12x-parrot.js:71-74
 heatAdd                      src/13a-guns.js:47-52
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:370
-helmApply                    src/15a-helm.js:468-578
+helmApply                    src/15a-helm.js:469-579
 helmBand                     src/15b-helm-draw.js:145-148
 helmCamOff                   src/15b-helm-draw.js:130-143
 helmCanvasXY                 src/15a-helm.js:153
@@ -5319,25 +5319,25 @@ helmDrawMarks                src/15b-helm-draw.js:8-23
 helmDrawSticks               src/15b-helm-draw.js:157-227
 helmDry                      src/15b-helm-draw.js:150
 helmDryLabel                 src/15b-helm-draw.js:151-153
-helmEdgeInput                src/15a-helm.js:365-377
+helmEdgeInput                src/15a-helm.js:366-378
 helmHome                     src/15b-helm-draw.js:54-67
 helmLift                     src/15b-helm-draw.js:71-116
-helmLock                     src/15a-helm.js:300-307
-helmLockNext                 src/15a-helm.js:309-325
+helmLock                     src/15a-helm.js:301-308
+helmLockNext                 src/15a-helm.js:310-326
 helmMarkTop                  src/15b-helm-draw.js:119-124
-helmMarksClean               src/15a-helm.js:289-299
-helmPinchBlocked             src/15a-helm.js:276
+helmMarksClean               src/15a-helm.js:290-300
+helmPinchBlocked             src/15a-helm.js:277
 helmPtrEnd                   src/15a-helm.js:258-263
-helmScreenOpen               src/15a-helm.js:273
-helmShotAt                   src/15a-helm.js:341-344
+helmScreenOpen               src/15a-helm.js:274
+helmShotAt                   src/15a-helm.js:342-345
 helmStickFoot                src/15b-helm-draw.js:40-48
 helmStickShape               src/15b-helm-draw.js:31-37
 helmSyncPointer              src/15a-helm.js:179-199
 helmTake                     src/15a-helm.js:222-230
-helmTap                      src/15a-helm.js:327-339
-helmTargetable               src/15a-helm.js:283-287
-helmTargets                  src/15a-helm.js:288
-helmTick                     src/15a-helm.js:379-465
+helmTap                      src/15a-helm.js:328-340
+helmTargetable               src/15a-helm.js:284-288
+helmTargets                  src/15a-helm.js:289
+helmTick                     src/15a-helm.js:380-466
 helmTrail                    src/15a-helm.js:209-215
 helmTrailAge                 src/15a-helm.js:216-219
 hex2rgb                      src/01-core.js:221-224
@@ -5917,16 +5917,16 @@ litRGB                       src/19c-light.js:125-135
 lkNodes                      tests/91zzzzzh-leak.js:14
 loadGame                     src/14a-cloud.js:72-75
 lockerFree                   src/12ak-locker.js:39
-lockerHandOver               src/12ak-locker.js:64-94
+lockerHandOver               src/12ak-locker.js:64-96
 lockerHere                   src/12ak-locker.js:33-36
-lockerLine                   src/12ak-locker.js:141-144
-lockerPutPart                src/12ak-locker.js:96-102
-lockerPutRes                 src/12ak-locker.js:111-117
-lockerPutTool                src/12ak-locker.js:103-110
+lockerLine                   src/12ak-locker.js:143-146
+lockerPutPart                src/12ak-locker.js:98-104
+lockerPutRes                 src/12ak-locker.js:113-119
+lockerPutTool                src/12ak-locker.js:105-112
 lockerRec                    src/12ak-locker.js:24-30
 lockerSlots                  src/12ak-locker.js:31
-lockerTake                   src/12ak-locker.js:118-130
-lockerTakeRes                src/12ak-locker.js:131-139
+lockerTake                   src/12ak-locker.js:120-132
+lockerTakeRes                src/12ak-locker.js:133-141
 lockerTick                   src/12ak-locker.js:51-62
 lockerUsed                   src/12ak-locker.js:38
 lockerValue                  src/12ak-locker.js:41-49
@@ -6252,7 +6252,7 @@ mountAt                      src/05d-mounts.js:46-54
 mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
 mountsOf                     src/05d-mounts.js:29-45
-mouseWalkAt                  src/15-input.js:465-494
+mouseWalkAt                  src/15-input.js:466-495
 mpAlpha                      src/17z4-map-pen.js:25
 mpArc                        src/17z4-map-pen.js:64-70
 mpBegin                      src/17z4-map-pen.js:20
@@ -6909,10 +6909,10 @@ plnBodyDist                  src/21pg-pln-flora.js:383
 plnBodyDrop                  src/21pg-pln-flora.js:304-308
 plnBodyGsKey                 src/21pg-pln-flora.js:344-349
 plnBodyLandDrop              src/21pg-pln-flora.js:295-302
-plnBodyLandPrep              src/21pg-pln-flora.js:384-433
+plnBodyLandPrep              src/21pg-pln-flora.js:384-432
 plnBodyNear                  src/21pg-pln-flora.js:372-381
 plnBodyOrder                 src/21pg-pln-flora.js:336-341
-plnBodyTick                  src/21pg-pln-flora.js:434-468
+plnBodyTick                  src/21pg-pln-flora.js:433-467
 plnBox                       src/21pf-pln-land.js:67-74
 plnBoxF                      src/21pf-pln-land.js:82-87
 plnCard                      src/21pa-pln-mesh.js:188-193
@@ -8475,7 +8475,7 @@ stapelYardBy                 src/26e1-stapel.js:41-45
 starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:25-34
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:655-663
+start                        src/15-input.js:656-664
 startLanding                 src/19-mode-landing.js:13-68
 startScoop                   src/19a-mode-scoop.js:51-64
 stat                         src/08-state.js:297-369
@@ -8500,31 +8500,31 @@ storyAddrMatch               src/11c-stories.js:69-83
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:88-93
 storyById                    src/11c-stories.js:33
-storyCantScene               src/11c-stories.js:337-342
-storyCheckWhen               src/11c-stories.js:225-230
+storyCantScene               src/11c-stories.js:338-343
+storyCheckWhen               src/11c-stories.js:226-231
 storyCtx                     src/11c-stories.js:39-48
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:276-282
-storyFindLine                src/11c-stories.js:304-309
+storyEtherLine               src/11c-stories.js:277-283
+storyFindLine                src/11c-stories.js:305-310
 storyFixedAddr               src/11c-stories.js:55-67
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:389-397
+storyGroundLine              src/11c-stories.js:390-398
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:346-383
-storyNewsItem                src/11c-stories.js:311-329
-storyNote                    src/11c-stories.js:401-404
-storyPickOne                 src/11c-stories.js:267-272
+storyLint                    src/11c-stories.js:347-384
+storyNewsItem                src/11c-stories.js:312-330
+storyNote                    src/11c-stories.js:402-405
+storyPickOne                 src/11c-stories.js:268-273
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:94-107
-storyQueueLine               src/11c-stories.js:284-294
+storyQueueLine               src/11c-stories.js:285-295
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:253-265
-storyTableLine               src/11c-stories.js:296-302
-storyTraces                  src/11c-stories.js:234-251
+storyShow                    src/11c-stories.js:254-266
+storyTableLine               src/11c-stories.js:297-303
+storyTraces                  src/11c-stories.js:235-252
 storyTurns                   src/11c-stories.js:122-143
-storyWhen                    src/11c-stories.js:220-224
+storyWhen                    src/11c-stories.js:221-225
 stripPaint                   src/27i-ui-table.js:370-378
 stripSell                    src/11b-speech.js:231-242
 stripValue                   src/11b-speech.js:193-195
@@ -8606,7 +8606,7 @@ tactHz                       src/28-loop.js:378
 tactTick                     src/28-loop.js:388-401
 tactWork                     src/28-loop.js:381
 tailWhisk                    src/12y2d-site-bird.js:274-279
-tap                          src/15-input.js:496-626
+tap                          src/15-input.js:497-627
 tapeBuy                      src/12s1-tape.js:37-42
 tapeCan                      src/12s1-tape.js:22
 tapeFree                     src/12s1-tape.js:20
@@ -9348,7 +9348,7 @@ zoomTo                       src/15-input.js:370
 
 ## src/11c-stories.js · 24 KB
   · истории: следы, а не задания:1
-  · каналы:274
+  · каналы:275
 
 ## src/11d-clocks.js · 7 KB
   · часы над концами: сторож темпа (P8, M416):1
@@ -10176,7 +10176,7 @@ zoomTo                       src/15-input.js:370
 ## src/21a1a-base-heat.js · 9 KB
   · тепло, глубина, криоген (M392, DESIGN-base §4, §7, §16):1
 
-## src/21a1b-base-food.js · 12 KB
+## src/21a1b-base-food.js · 9 KB
   · харч и дух (M393, DESIGN-base §6, §8, §16):1
 
 ## src/21a2-base-link.js · 10 KB
@@ -11150,7 +11150,7 @@ zoomTo                       src/15-input.js:370
 
 ## tests/91zzzy-character-assets.js · 4 KB
 
-## tests/91zzzy-release-review.js · 1 KB
+## tests/91zzzy-release-review.js · 5 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

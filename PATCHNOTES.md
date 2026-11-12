@@ -1,3 +1,11 @@
+## 0.499.110 — Complete review of the 68-file collection
+
+- Reviewed every changed file in the collected 25 commits and its relevant callers; the per-file ledger is in `docs/REVIEW-2026-11-13.md`.
+- Fixed route destinations falling back to the first station, duplicate pawn IDs across locker handovers, and barge progress depending on catch-up batch size.
+- Base catch-up now produces and consumes resources in shift order, including capacity, food bonuses, ice use and conservation, before awarding that shift's output. The offline cap remains one day.
+- Fixed cross-planet story wall conditions, stale story continuations and migration of an old planet-pinned rumour. Corrected remaining reward/bonus descriptions and cleared gestures when pointer capture is lost.
+- Added regression coverage for routes, pawn handovers, story pin migration, base catch-up and deterministic barge progress. No binary assets added.
+
 ## 0.499.109 — Verified controls, journeys and save repairs
 
 - Collected the verification waves: captured touch gestures, screen-space stick thrust, coast in the dead zone, visible brake/fire controls, faster landing preparation, clearer map and station labels, consistent story outcomes, mail refusals and UTC limits, settlement and barge fixes, and base catch-up/food corrections.

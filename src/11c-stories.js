@@ -191,6 +191,7 @@ const STORY_WHEN={
     const k=(storyPins()[S.id])||c.key;
     if(!k||!G.walled)return !v;
     if(G.walled[k])return !!v;
+    if(String(k).includes("/"))return !v;   /* камень соседней планеты не считается */
     const sys=String(k).split("/")[0];
     let hit=false;
     for(const w in G.walled)if(G.walled[w]&&(w===sys||String(w).indexOf(sys+"/")===0)){hit=true;break;}

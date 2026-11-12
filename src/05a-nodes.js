@@ -27,7 +27,7 @@ const NODE_FAMS=[
   {id:"well", ru:"Колодец",     col:"#9fd8ff",crown:"Дно колодца",
    crownNote:"бак +60"},
   {id:"loom", ru:"Ткацкий",     col:"#8fd08a",crown:"Основа ткацкого",
-   crownNote:"дроны и базы работают на треть быстрее"},
+   crownNote:"дроны работают на треть быстрее"},
   {id:"cair", ru:"Курган",      col:"#e0d28a",crown:"Камень кургана",
    crownNote:"+30% к добыче в шахте и в поясе"},
   {id:"echo", ru:"Эхо",         col:"#c9c9d4",crown:"Эхо-камера",

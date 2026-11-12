@@ -165,11 +165,11 @@ function routeSum(){
 function routeNext(){
   const R=routeOf(),sys=routeSys(),legs=routeLegs();
   if(!legs.length||!sys.length)return null;
-  /* кольцо считает КУРСОР по ПЛЕЧАМ: раньше модуль брал модуло числа станций,
-     и при разной длине плечей и списка станций «куда лететь» указывал не туда,
-     а порядок кольца с тех пор не совпадал никогда (находка соседней волны) */
-  const n=legs.length,idx=R.cursor%n,to=sys.find(s=>s.key===legs[idx])||sys[0];
-  const inLeg=legs[(idx-1+n)%n],outLeg=legs[idx];
+  /* Курсор routeVisit считает исходные ключи станций. Расчётные плечи —
+     объекты {from,to}, а не строки; пропущенная станция не сдвигает адрес. */
+  const idx=R.cursor%R.legs.length,key=R.legs[idx],to=sys.find(s=>s.key===key);
+  if(!to)return null;
+  const inLeg=legs.find(l=>l.to.key===key),outLeg=legs.find(l=>l.from.key===key);
   const d=Math.hypot(to.sx-G.sx,to.sy-G.sy);
   const jumps=d>0?Math.max(1,Math.ceil(d/Math.max(.5,stat().jump))):0;
   return{sys:to,key:to.key,idx,inLeg,outLeg,dist:d,jumps};

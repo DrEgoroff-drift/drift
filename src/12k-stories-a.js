@@ -128,7 +128,7 @@ const STORIES=[
   {id:"t7",via:"cant",when:{flag:"rode"},scene:{seat:"door",figure:0,props:["paper"]}}
  ],
  /* эстафета уже видела её в пути — второй отъезд дома не заводится */
-  turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode"}]},
+  turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode",when:{unseenOf:"relay_krapiva.t1"}}]},
 
 /* ── 7. Ефимово место ── место · везде, где есть стойка */
 {id:"efim_stool",form:"place",at:"any",cast:["efim"],

@@ -263,6 +263,7 @@ function helmPtrEnd(e){
 }
 cvs.addEventListener("pointerup",helmPtrEnd);
 cvs.addEventListener("pointercancel",helmPtrEnd);
+cvs.addEventListener("lostpointercapture",helmPtrEnd);
 /* страховка: отпускание может случиться не над канвасом (браузерная полоса,
    экран, открывшийся под пальцем) — окно закрывает жест в любом случае, иначе
    стик остаётся жить с потерянным id */

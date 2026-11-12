@@ -66,9 +66,11 @@ function bargeTick(c,now){
   if(s<=0)return 0;
   s=Math.min(s,72);
   c.cargo=c.cargo||{};
-  let fed=0,stood=0,extra=0,saidBlk={};
+  let fed=0,stood=0,saidBlk={};
   const Q=bargePilotQ(c),roll=k=>(hashi(c.seed|0,B.cursor,k)>>>0)/4294967296;
   for(let i=0;i<s;i++){
+    let steps=1;
+    for(let j=0;j<steps;j++){
     const key=B.legs[B.cursor%B.legs.length];
     const[sx,sy]=key.split(",").map(Number);
     const sys=getSystem(sx,sy);
@@ -77,7 +79,7 @@ function bargeTick(c,now){
     const stand=roll(0xB4A1)<.07*Q.brk,skip=roll(0xB4A2)<Math.max(0,Q.rate-1);
     B.cursor++;
     if(stand){stood++;continue;}   /* автопилот встал на этом плече (M485) */
-    if(skip&&extra<s){extra++;i--;} /* торопыга: ещё одно плечо в ту же смену */
+    if(skip&&j===0)steps=2; /* одно лишнее плечо за смену, независимо от размера догона */
     if(!sys||!sys.station)continue;
     if(typeof occLvl==="function"&&occLvl(sx,sy)>=2){
       /* одна строка на станцию за догон, а не по строке на каждое пропущенное плечо */
@@ -89,6 +91,7 @@ function bargeTick(c,now){
       const q=c.cargo[k]|0;if(q<=0)continue;
       const n=bldFeed(sys,k,q);
       if(n>0){c.cargo[k]=q-n;fed+=n;}
+    }
     }
   }
   B.t0=(B.t0||now)+s*HOLD_SHIFT;

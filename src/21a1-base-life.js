@@ -335,7 +335,7 @@ function baseWake(B,n,by){
 /* ── одна смена жизнеобеспечения ──
    Машины делают из льда воздух и воду, люди их тратят. Всё целое, всё за один
    проход, и порядок важен: сперва произвели, потом съели. */
-function baseLifeStep(B,P,n){
+function baseLifeStep(B,P,n,bulk){
   const L=baseLife(B),M=baseLifeMakers(B),eff=clamp(P.eff,0,1);
   let said=0;
   /* производство: сколько машин, столько и льда со склада. Лёд кончился —
@@ -390,6 +390,7 @@ function baseLifeStep(B,P,n){
     L.food=Math.max(0,(L.food|0)-eat);
     if(wasFed&&L.food<=0){baseLog(B,"hungry",n);said=1;}
   }
+  if(!bulk){
   said|=baseSpiritStep(B,n)?1:0;
   /* маяк зовёт (M395): раз в тридцать смен кто-то просится остаться */
   if(typeof baseGuestRoll==="function")said|=baseGuestRoll(B,n)?1:0;
@@ -398,6 +399,7 @@ function baseLifeStep(B,P,n){
   if(typeof baseRuinCheck==="function")said|=baseRuinCheck(B,n)?1:0;
   /* открытая дверь (M399): однажды пропадает треть склада */
   if(typeof charterThiefStep==="function")said|=charterThiefStep(B,n)?1:0;
+  }
   /* запас пришёл — база встаёт на ход сама, но смена уходит на разгон */
   if(B.park>0&&L.air>need.air&&L.water>need.water){baseWake(B,n);said=1;}
   return said;
@@ -508,7 +510,6 @@ function baseResolve(B,now){
      никому не нужны, а руда за неё — нужна */
   const deep=Math.max(0,n-BASE_DETAIL);
   if(deep>0){
-    const P=basePower(B);
     /* ── арифметика позавчерашнего (разбор 0.409.1) ──
        Считалась только ДОБЫЧА: за визит база съедала не больше двадцати
        четырёх смен воздуха, а руды клала до семидесяти двух. Реже прилетать
@@ -517,12 +518,16 @@ function baseResolve(B,now){
 
        Подробностей за позавчера никто не помнит — но расход, производство,
        ПАЛАТА и запустение считаются ровно за столько смен, сколько прошло. */
-    baseEarn(B,P,BASE_MIN*deep,t0+deep);
-    baseMine(B,P,BASE_MIN*deep,t0+deep);
-    if(typeof baseLifeBulk==="function")baseLifeBulk(B,P,deep,t0+deep);
     for(let i=0;i<deep;i++){
-      const nn=t0+1+i;
+      const nn=t0+1+i,P=basePower(B);
       if(typeof palStep==="function")palStep(B,nn);
+      baseLifeBulk(B,P,1,nn);
+      /* запас решает, работала ли эта смена, до начисления руды и денег */
+      if(B.wake)B.wake=0;
+      else if(!baseParked(B)){
+        baseEarn(B,P,BASE_MIN,nn);
+        baseMine(B,P,BASE_MIN,nn);
+      }
       if(typeof baseRuinCheck==="function")baseRuinCheck(B,nn);
       if(B.ruin)break;
     }

@@ -459,6 +459,7 @@ function endPtr(e){
 }
 cvs.addEventListener("pointerup",endPtr);
 cvs.addEventListener("pointercancel",e=>ptr.delete(e.pointerId));
+cvs.addEventListener("lostpointercapture",e=>ptr.delete(e.pointerId));
 /* клик/протяжка мышью — «тыкнул и идёт», работает вместе с клавишами:
    на поверхности задаёт мировую точку, куда шагает астронавт; в шахте —
    клетку, к которой прокладывается ход (по пути буря непройденное) */

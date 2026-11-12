@@ -148,6 +148,8 @@ function applySaveRest(s){
     }
   G.seen=asMap(s.seen);
   G.storyPin=asMap(s.storyPin);
+  /* слух перенесён с планеты к торговой стойке: старый адрес иначе запирает его навсегда */
+  if(String(G.storyPin.pad_taken||"").includes("/"))delete G.storyPin.pad_taken;
   G.storyFlags=asMap(s.storyFlags);
   /* память места и одометр (11d): объекты с дефолтами, формат v:4 не менялся */
   G.place={};

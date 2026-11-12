@@ -398,7 +398,6 @@ function plnBodyLandPrep(budget){
   if(PLNBODY.landP&&PLNBODY.landP!==near)plnBodyLandDrop(PLNBODY.landP);
   const lon=plnLonOf(near);
   /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
-  /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
   if(near.__tr&&near.__lon!=null&&lon!=null&&Math.abs(near.__lon-lon)>0.1){
     plnBodyDrop(near);return;
   }

@@ -117,77 +117,16 @@ function baseSpiritStep(B,n){
   if(B.low<SPIRIT_HOLD)return 0;
   return baseWalkOut(B,n);
 }
-/* ── много смен разом (разбор 0.409.1) ──
-   Догон глубже суток считает не по одной смене, а арифметикой: столько-то
-   съели, столько-то машины успели сделать, и если запас на этом кончился —
-   база встала той сменой, на которой он кончился. Подробностей нет, счёт есть. */
+/* ── много смен разом ──
+   Не складываем выработку до расхода за весь срок: потолок бака съел бы
+   запас, а оранжерея выпила бы воду будущих смен. Максимум 72 шага;
+   считаем тем же ходом, без гостей, уходов людей и случайных событий. */
 function baseLifeBulk(B,P,shifts,n){
   if(shifts<=0)return 0;
-  const L=baseLife(B),M=baseLifeMakers(B),eff=clamp(P.eff,0,1);
-  const k=((eff<.5)?.5:eff)*((typeof baseLifeBoost==="function")?baseLifeBoost(B):1);
-  /* производство: сколько машины успели, пока хватало льда */
-  const feed=((typeof baseAdjIce==="function")?baseAdjIce(B):0)+
-             (((typeof dialIceFree==="function")&&dialIceFree(B))?3:0);
-  const iceNeed=Math.max(1,LIFE_LYSE.ice-feed);
-  const canLyse=Math.min(shifts*M.lyse,Math.floor((B.pool.ice|0)/Math.max(1,iceNeed)));
-  if(canLyse>0){
-    B.pool.ice=Math.max(0,(B.pool.ice|0)-canLyse*iceNeed);
-    L.air=Math.min(LIFE_CAP,L.air+Math.round(canLyse*LIFE_LYSE.air*k));
+  for(let i=0;i<shifts;i++){
+    const shift=n-shifts+1+i;
+    baseLifeStep(B,P,shift,true);
+    baseWearStep(B,shift);
   }
-  const frozen=(typeof baseFrozen==="function")&&baseFrozen(B,n);
-  if(!frozen&&M.melter){
-    const canMelt=Math.min(shifts*M.melter,Math.floor((B.pool.ice|0)/LIFE_MELT.ice));
-    if(canMelt>0){
-      B.pool.ice=Math.max(0,(B.pool.ice|0)-canMelt*LIFE_MELT.ice);
-      L.water=Math.min(LIFE_CAP,L.water+Math.round(canMelt*LIFE_MELT.water*k));
-    }
-  }
-  /* оранжерея и бак за те же смены: подробный проход их считает, а этот — нет,
-     и харч таял без выработки, хотя вода и воздух в нём прибавлялись. Порядок
-     тот же, что в смене: сперва произвели, потом едят. */
-  let grown=0;
-  for(const cell of B.cells){
-    if(!cell||cell.hp<=0)continue;
-    if(cell.k==="garden"){
-      if(!cell.sown){
-        if((B.pool.organics|0)<LIFE_GARDEN.seed)continue;
-        B.pool.organics-=LIFE_GARDEN.seed;cell.sown=1;
-      }
-      const can=Math.min(shifts,Math.floor(L.water/LIFE_GARDEN.water));
-      if(can<=0)continue;
-      L.water-=can*LIFE_GARDEN.water;
-      grown+=Math.round(can*LIFE_GARDEN.food*k);
-      L.air=Math.min(LIFE_CAP,L.air+Math.round(can*LIFE_GARDEN.air*k));
-    }else if(cell.k==="vat"){
-      const can=Math.min(shifts,Math.floor((B.pool.organics|0)/LIFE_VAT.organics));
-      if(can<=0)continue;
-      B.pool.organics-=can*LIFE_VAT.organics;
-      grown+=Math.round(can*LIFE_VAT.food*k);
-    }
-  }
-  if(grown)L.food=Math.min(LIFE_CAP,(L.food|0)+grown);
-  /* расход людьми — за все смены сразу */
-  const need=baseLifeNeed(B);
-  if(need.air||need.water||need.food){
-    /* запас ДО расхода: по нему видно, на какой смене он кончился */
-    const stockAir=L.air,stockWater=L.water;
-    const outAir=L.air-need.air*shifts,outWater=L.water-need.water*shifts;
-    L.air=Math.max(0,outAir);L.water=Math.max(0,outWater);
-    L.food=Math.max(0,(L.food|0)-need.food*shifts);
-    if((outAir<0||outWater<0)&&!B.park){
-      /* встала на той смене, на которой запас и кончился. Остаток берём ДО
-         расхода: после него он уже ноль, и смена всегда выходила первая, а
-         норма — всегда воздушная, даже когда кончилась вода */
-      const airSh=need.air?stockAir/need.air:Infinity;
-      const waterSh=need.water?stockWater/need.water:Infinity;
-      const dry=outAir<0&&airSh<=waterSh?"воздух":"вода";
-      const at=Math.max(0,Math.floor(Math.min(airSh,waterSh)));
-      /* не меньше единицы: `B.park<0` — это «стоит по приказу», и ноль/минус
-         здесь превратил бы кончившийся запас в приказ игрока */
-      basePark(B,"empty",Math.max(1,(n-shifts)+1+at),dry);
-    }
-  }
-  /* и износ за эти смены — по той же мерке, что в подробной части */
-  if(typeof baseWearStep==="function")for(let i=0;i<Math.min(shifts,24);i++)baseWearStep(B,n-i);
   return 1;
 }

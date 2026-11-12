@@ -72,7 +72,9 @@ function lockerHandOver(){
     for(let i=0;i<L.items.length;i++){
       const it=L.items[i];if(!it.p)continue;
       /* индекс в ключе: две части одного зерна не сливаются в один лот */
-      const k=hashi((it.p.s|0)+i*17,it.p.t|0,0x9A4E);
+      let k=hashi((it.p.s|0)+i*17,it.p.t|0,0x9A4E);
+      /* прошлый залог и уже купленный лот тоже занимают свой номер */
+      while(F.pawn.some(pw=>pw.k===k)||F.got.includes("pawn:"+k))k=(k+1)|0;
       F.pawn.push({k,p:it.p});mine.push(k);
     }
     while(F.pawn.length>12)F.pawn.shift();
