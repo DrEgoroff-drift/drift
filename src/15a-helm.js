@@ -75,10 +75,10 @@ const HELM_THR=.4;           /* маневровые против маршево
 const HELM_ACC=.082;         /* маршевый разгон за кадр (был литералом в helmApply) */
 const HELM_STOP=.095;        /* тормоз стика за кадр: сильнее газа (M422) */
 const HELM_BRAKE_DOT=-.5;    /* cos120°: заданный ход против нынешнего — это торможение */
-const HELM_TAKE=8;           /* px сдвига, после которых палец становится стиком:
-                                ровно порог `moved` в 15-input, иначе между 8 и 10 px
-                                палец не тычок и не стик (M422) */
-const HELM_TAKE_MS=420;      /* …или столько миллисекунд неподвижно (окно тапа — 400) */
+const HELM_TAKE=18;          /* px сдвига, после которых палец становится стиком, а не
+                                тычком: меньше было порогом дрожи большого пальца, и тычок
+                                по корпусу превращался в газ (бой 12.11). Порог `moved`
+                                в 15-input — то же число */
 const HELM_NUDGE=0;          /* px увода корабля от пальца. Было 70 (M422); автор на плейтесте
                                 13.09: «экран уезжает и корабль из-под пальца уезжает. Вот это
                                 не надо» (P8, правило 4) — корабль стоит под пальцем */
@@ -384,9 +384,6 @@ function helmTick(dt){
   /* сырые координаты пальца → пиксели канвы, раз за кадр, не на каждое
      событие движения (18.09, см. helmSyncPointer) */
   helmSyncPointer();
-  /* палец, пролежавший дольше окна тапа, — это стик, даже если не сдвинулся:
-     так «положил и держу» останавливает корабль без единого движения (M422) */
-  if(HELM.P&&now-HELM.P.t0>HELM_TAKE_MS)helmTake();
   helmMarksClean();
   /* ЦЕЛЬ на пэде и Tab — по фронту нажатия */
   const lockPad=!!keys.lock;
@@ -422,7 +419,12 @@ function helmTick(dt){
       c.slow=dot<HELM_BRAKE_DOT;
       c.head=c.slow?Math.atan2(sh.vy,sh.vx):Math.atan2(dy,dx);
       helmEdgeInput(c,sh);
-    }else c.brake=true;
+    }else{
+      /* мёртвая зона — накат, а не тормоз: палец, замерший посмотреть на болт,
+         не должен останавливать корабль (бой 12.11). Тормоз — жест назад,
+         кнопка ТОРМОЗ или S */
+      c.brake=false;
+    }
     input=true;
   }
   /* 2. клавиатура — одна раскладка, всё от носа (M436): W газ, S тормоз,
@@ -527,7 +529,19 @@ function helmApply(dt,st,sh,maxSp){
   /* газ или тормоз на пустом баке — окно выходов (16c, плейтест 11.09):
      раньше корабль молча не слушался, и подсказку перебивала любая другая */
   if((mag>0||c.brake||c.turn)&&dry&&typeof rescueAsk==="function")rescueAsk();   /* и руль (R2) */
-  if(mag>0&&G.fuel>0&&!o.slow){
+  if(mag>0&&G.fuel>0&&!o.slow&&c.assist){
+    /* тяга стика идёт в осях экрана полной маршевой силой (бой 12.11):
+       раньше она раскладывалась по носу, и вбок давала .4 — с меткой на
+       пирате корабль не мог уйти ни на одном стоковом корпусе. Нос пусть
+       смотрит в цель: ход и прицел больше не одно число */
+    const m2=Math.min(1,mag),ku=m2/mag;
+    const sideK=Math.abs(side)/(mag||1);
+    sh.vx+=c.tx*ku*HELM_ACC*st.thr*dt;
+    sh.vy+=c.ty*ku*HELM_ACC*st.thr*dt;
+    o.main=(along/(mag||1))>.05;o.thr=sideK>.05;
+    G.fuel=Math.max(0,G.fuel-(.021*Math.max(0,along/(mag||1))+.017*sideK)*dt);
+    if(typeof EN_THR==="number"&&sideK>0)G.energy=Math.max(0,(G.energy||0)-EN_THR*sideK*dt);
+  }else if(mag>0&&G.fuel>0&&!o.slow){
     let fwd=0,tx=0,ty=0;
     if(c.thrOnly||along<0){tx=c.tx*HELM_THR;ty=c.ty*HELM_THR;o.thr=true;}
     else{

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 711 · top-level symbols: 9062
+Files: 711 · top-level symbols: 9061
 
 ## SYMBOLS
 
@@ -1135,7 +1135,6 @@ HELM_RANGE                   src/15a-helm.js:116
 HELM_REACH                   src/15a-helm.js:89
 HELM_STOP                    src/15a-helm.js:76
 HELM_TAKE                    src/15a-helm.js:78
-HELM_TAKE_MS                 src/15a-helm.js:81
 HELM_THR                     src/15a-helm.js:74
 HELM_TRAIL                   src/15a-helm.js:113
 HELM_TRAIL_MAX               src/15a-helm.js:115
@@ -5308,7 +5307,7 @@ heardYours                   src/12x-parrot.js:71-74
 heatAdd                      src/13a-guns.js:47-52
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:370
-helmApply                    src/15a-helm.js:466-564
+helmApply                    src/15a-helm.js:468-578
 helmBand                     src/15b-helm-draw.js:145-148
 helmCamOff                   src/15b-helm-draw.js:130-143
 helmCanvasXY                 src/15a-helm.js:153
@@ -5335,7 +5334,7 @@ helmTake                     src/15a-helm.js:222-230
 helmTap                      src/15a-helm.js:327-339
 helmTargetable               src/15a-helm.js:283-287
 helmTargets                  src/15a-helm.js:288
-helmTick                     src/15a-helm.js:379-463
+helmTick                     src/15a-helm.js:379-465
 helmTrail                    src/15a-helm.js:209-215
 helmTrailAge                 src/15a-helm.js:216-219
 hex2rgb                      src/01-core.js:221-224
@@ -9786,7 +9785,7 @@ zoomTo                       src/15-input.js:370
   · ввод:87
   · полоса вкладок шире экрана:230
 
-## src/15a-helm.js · 43 KB
+## src/15a-helm.js · 44 KB
   · штурвал (M360):1
 
 ## src/15b-helm-draw.js · 16 KB

@@ -614,15 +614,15 @@ function hud(){
     if(has)setTx(padWord($msl),(on&&G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
-  /* ── системный режим ведут стики и захват (M360) ──
-     ◀ ▶ ▲ ТОРМОЗ ОГОНЬ уходят из ряда: курс и тяга — под большими пальцами,
-     огонь — по захвату. Остаются ДЕЙСТВИЕ, ВЗЛЁТ, РАКЕТА и ЦЕЛЬ. Остальные
-     режимы держат свои ряды как были. */
+  /* ── системный режим ведут стик и захват (M360) ──
+     ◀ ▶ ▲ уходят из ряда: курс и тяга — под большим пальцем. ТОРМОЗ и ОГОНЬ
+     ОСТАЮТСЯ (бой 12.11): огонь «по захвату» не выключался, а снять метку и
+     ударить без автоогня было нечем; тормоз — единственный способ встать,
+     когда мёртвая зона стала накатом. Остальные режимы держат ряды как были. */
   {
     const helmRow=G.mode==="system";
-    for(const b of ($helmHidePads||($helmHidePads=document.querySelectorAll(".pads [data-k=left],.pads [data-k=right],.pads [data-k=thrust],.pads [data-k=brake]"))))
+    for(const b of ($helmHidePads||($helmHidePads=document.querySelectorAll(".pads [data-k=left],.pads [data-k=right],.pads [data-k=thrust]"))))
       setSt(b,"display",helmRow?"none":"");
-    if(helmRow)setSt($fire,"display","none");
     const $lock=document.getElementById("lockbtn");
     if($lock){
       setSt($lock,"display",helmRow?"":"none");

@@ -432,7 +432,7 @@ cvs.addEventListener("pointermove",e=>{
   const p=ptr.get(e.pointerId);if(!p)return;
   const dx=e.clientX-p.x,dy=e.clientY-p.y;
   p.x=e.clientX;p.y=e.clientY;
-  if(Math.hypot(e.clientX-p.x0,e.clientY-p.y0)>8)p.moved=true;
+  if(Math.hypot(e.clientX-p.x0,e.clientY-p.y0)>18)p.moved=true;   /* порог тычка: как HELM_TAKE */
   if(ptr.size===2&&(G.mode==="system"||G.mode==="map")&&!(typeof helmPinchBlocked==="function"&&helmPinchBlocked())){
     const [a,b]=[...ptr.values()];
     const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
