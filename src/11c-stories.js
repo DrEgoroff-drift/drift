@@ -201,7 +201,14 @@ const STORY_WHEN={
   none:(v,S)=>v.every(f=>!storyFlag(S,f)),
   /* хотя бы один стоит — зеркало none: «после поворота» с else-исходом это
      тоже два состояния, а след, общий для обеих ветвей, один (потолок следов) */
-  any:(v,S)=>v.some(f=>storyFlag(S,f))
+  any:(v,S)=>v.some(f=>storyFlag(S,f)),
+  /* флаги чужой истории, список "id.flag": «после» не начинается раньше поворота */
+  anyOf:(v)=>v.some(k=>{
+    const i=String(k).indexOf(".");
+    if(i<0)return false;
+    const F=storyFlags()[k.slice(0,i)];
+    return !!(F&&F[k.slice(i+1)]!=null);
+  })
 };
 function storyWhen(S,t,c){
   const w=t.when;if(!w)return true;

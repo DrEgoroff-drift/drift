@@ -2294,16 +2294,16 @@ STAT_SHOW                    src/05-parts.js:426-438
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
 STORIES                      src/12k-stories-a.js:45-349
-STORIES_B                    src/12k-stories-b.js:27-438
-STORIES_C                    src/12k-stories-c.js:23-291
-STORIES_D                    src/12k-stories-d.js:15-74
+STORIES_B                    src/12k-stories-b.js:27-442
+STORIES_C                    src/12k-stories-c.js:23-292
+STORIES_D                    src/12k-stories-d.js:17-78
 STORM_WORLDS                 src/21a-mode-base.js:300
 STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:321
-STORY_WHEN                   src/11c-stories.js:148-205
+STORY_SEAT                   src/11c-stories.js:328
+STORY_WHEN                   src/11c-stories.js:148-212
 STP_FADE                     src/26e2-stapel-draw.js:293
 STP_G                        src/26e2-stapel-draw.js:292
 STP_INK                      src/26e2-stapel-draw.js:191
@@ -8273,7 +8273,7 @@ shipZ                        src/16-flight.js:174
 shipZoneR                    src/19f-lander.js:14
 shuttleAt                    src/17f-sys-traffic.js:45-64
 sirenHeard                   src/16c-abil.js:47-64
-sixthGone                    src/12k-stories-d.js:77
+sixthGone                    src/12k-stories-d.js:81
 sizeIdx                      src/05d-mounts.js:69
 skyAll                       src/11ak-skywatch.js:34-38
 skyBlock                     src/11ak-skywatch.js:240-279
@@ -8493,31 +8493,31 @@ storyAddrMatch               src/11c-stories.js:69-83
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:88-93
 storyById                    src/11c-stories.js:33
-storyCantScene               src/11c-stories.js:322-327
-storyCheckWhen               src/11c-stories.js:211-216
+storyCantScene               src/11c-stories.js:329-334
+storyCheckWhen               src/11c-stories.js:218-223
 storyCtx                     src/11c-stories.js:39-48
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:262-268
-storyFindLine                src/11c-stories.js:290-295
+storyEtherLine               src/11c-stories.js:269-275
+storyFindLine                src/11c-stories.js:297-302
 storyFixedAddr               src/11c-stories.js:55-67
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:374-382
+storyGroundLine              src/11c-stories.js:381-389
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:331-368
-storyNewsItem                src/11c-stories.js:297-314
-storyNote                    src/11c-stories.js:386-389
-storyPickOne                 src/11c-stories.js:253-258
+storyLint                    src/11c-stories.js:338-375
+storyNewsItem                src/11c-stories.js:304-321
+storyNote                    src/11c-stories.js:393-396
+storyPickOne                 src/11c-stories.js:260-265
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:94-107
-storyQueueLine               src/11c-stories.js:270-280
+storyQueueLine               src/11c-stories.js:277-287
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:239-251
-storyTableLine               src/11c-stories.js:282-288
-storyTraces                  src/11c-stories.js:220-237
+storyShow                    src/11c-stories.js:246-258
+storyTableLine               src/11c-stories.js:289-295
+storyTraces                  src/11c-stories.js:227-244
 storyTurns                   src/11c-stories.js:122-143
-storyWhen                    src/11c-stories.js:206-210
+storyWhen                    src/11c-stories.js:213-217
 stripPaint                   src/27i-ui-table.js:370-378
 stripSell                    src/11b-speech.js:231-242
 stripValue                   src/11b-speech.js:193-195
@@ -9337,7 +9337,7 @@ zoomTo                       src/15-input.js:370
 
 ## src/11c-stories.js · 23 KB
   · истории: следы, а не задания:1
-  · каналы:260
+  · каналы:267
 
 ## src/11d-clocks.js · 7 KB
   · часы над концами: сторож темпа (P8, M416):1
@@ -9593,10 +9593,10 @@ zoomTo                       src/15-input.js:370
   · истории, часть первая:1
   · длинные — в духе институтской фантастики:245
 
-## src/12k-stories-b.js · 37 KB
+## src/12k-stories-b.js · 38 KB
   · истории, часть вторая:1
 
-## src/12k-stories-c.js · 23 KB
+## src/12k-stories-c.js · 24 KB
   · истории, часть третья:1
 
 ## src/12k-stories-d.js · 8 KB
