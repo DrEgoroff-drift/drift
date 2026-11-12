@@ -116,7 +116,7 @@ const NEWS_KINDS=[
       if(m.pressure[k]!==was)moved=true;
     }
     if(!moved)return null;   /* цены не шелохнулись — слуха без перемены нет */
-    newsMark(s.sx+","+s.sy,"цены сдвинулись","#7fe6d8");
+    newsMark(s.sx+","+s.sy,"сменился хозяин","#7fe6d8");   /* бирка карты ждёт ровно эту строку (18b-map-hold) */
     return {ru:"«"+s.station.name+"» перешла другим людям — цены там теперь чужие",
       sx:s.sx,sy:s.sy};
   }},
