@@ -23,7 +23,10 @@ function plnOverAt(C,p){
 function plnOverPlate(txt,x,y,plate,ink,u){
   const f=(8*u).toFixed(2)+"px ui-monospace,monospace";
   const tw=gcMeasure(f,txt).width;   /* мерка атласа (08cb), без #c */
-  ovRect(x-tw/2-5*u,y-10*u,x+tw/2+5*u,y+4*u,plate,1);
+  /* не лезем в правый рельс: табличка «ПЕЩЕРА» ложилась поверх кнопки Меню */
+  const x0=x-tw/2-5*u,x1=x+tw/2+5*u;
+  if(x0<8||x1>W-118)return;
+  ovRect(x0,y-10*u,x1,y+4*u,plate,1);
   ovText(OVL.uq,x,y,txt,f,ink,"center","alphabetic",1,1);
 }
 /* то, что ещё не перерисовано: старые рисовалки в том же порядке, что клал старый кадр */

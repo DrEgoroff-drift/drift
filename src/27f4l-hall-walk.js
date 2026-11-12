@@ -266,7 +266,8 @@ function hallWalkUi(force){
   const W=HALL.walk;if(!W||typeof document==="undefined")return;
   const key=(W.at||"")+"|"+(W.eng||"")+"|"+(W.hot||"");if(!force&&W.uik===key)return;W.uik=key;
   const p=(W.hot||W.at)&&HALL_PLACES.find(q=>q.id===(W.hot||W.at)),a=document.getElementById("stWalkAct");
-  if(a){a.textContent=p?p.verb:"";a.hidden=!p||!!W.eng;}
+  /* у шлюза глагол места и есть выход — вторая кнопка была той же кнопкой */
+  if(a){const dup=!!p&&p.verb==="ОТСТЫКОВАТЬСЯ";a.textContent=dup?"":(p?p.verb:"");a.hidden=!p||!!W.eng||dup;}
   const h=document.getElementById("stWalkHint");
   if(h){h.textContent=hallWide()?"← A  D →   или веди мышью по залу":"←  веди пальцем по залу  →";h.hidden=!!W.eng||hallHintSeen();}
   document.querySelectorAll("#stWalkStrip button").forEach(b=>{

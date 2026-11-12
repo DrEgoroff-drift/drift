@@ -290,7 +290,7 @@ function cave3VeinBody(C,F,m,v,r){
       const t=s/4,x=lerp(xa,xb,t),o=lerp(oa,ob,t),sg=o<0?-1:1;
       let Y=null;
       for(const k of [1,.6,.35,.18]){const y=-(base(x)+sg*Math.max(5,Math.abs(o)*k))/P;if(solid(x/P,y)){Y=y;break;}}
-      pts.push([x/P,Y==null?-(base(x)+o)/P:Y,-.05]);
+      pts.push([x/P,Y==null?-(base(x)+o)/P:Y,.02]);
     }
   }
   const col=plnMul(CAVE3_DC.band,.92+r()*.16),rad=.07+.02*(v.w||1);
@@ -308,6 +308,8 @@ function cave3VeinBody(C,F,m,v,r){
     }
     run=[];
   };
+  /* трубка лежит В камне разреза, а не перед ним: валик, выехавший на .05 в
+     галерею, читался телом в пустоте (аудит сцен 12.11) */
   for(const p of pts){if(solid(p[0],p[1]))run.push(p);else seam();}
   seam();
   return {n,col};

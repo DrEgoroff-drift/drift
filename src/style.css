@@ -3125,3 +3125,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 @media (max-width:760px){
   body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet){flex:0 1 auto;max-width:min(240px,52vw);margin-left:auto;margin-right:auto}
 }
+
+/* дом: подпись комнаты — тёмные чернила по светлой штукатурке, а не серая
+   плашка тёмного экрана (в спальне «СПАЛЬНЯ» умирала на солнце) */
+#home3Tags .ht.sg b{color:rgba(48,36,24,.78)}

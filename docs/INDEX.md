@@ -1000,7 +1000,7 @@ HALL_COUNTER                 src/27f4b-hall-dress.js:185-193
 HALL_DAY_MS                  src/27f4a-hall.js:60
 HALL_DIAL_BOX                src/27f4g-hall-instr.js:25
 HALL_DIAL_KEY                src/27f4g-hall-instr.js:27
-HALL_DRAG                    src/27f4l-hall-walk.js:278
+HALL_DRAG                    src/27f4l-hall-walk.js:279
 HALL_DRESS                   src/27f4b-hall-dress.js:263-369
 HALL_F                       src/27f4a-hall.js:31
 HALL_FCUT                    src/27f4a-hall.js:32
@@ -1008,7 +1008,7 @@ HALL_FW                      src/27f4a-hall.js:539
 HALL_GOODS                   src/27f4e-hall-goods.js:6
 HALL_GOODS_ACC               src/27f4e-hall-goods.js:12
 HALL_HERO                    src/27f4a-hall.js:33
-HALL_HINT                    src/27f4l-hall-walk.js:313
+HALL_HINT                    src/27f4l-hall-walk.js:314
 HALL_HOLD                    src/27f4i-hall-hold.js:7
 HALL_I                       src/27f4a-hall.js:295
 HALL_INSTR                   src/27f4g-hall-instr.js:12
@@ -1047,7 +1047,7 @@ HALL_SHEET                   src/27f4h-hall-board.js:17-24
 HALL_STALLS                  src/27f4a-hall.js:290
 HALL_STRIP                   src/27f4a-hall.js:34
 HALL_TABMEM                  src/27f4l-hall-walk.js:19
-HALL_TL                      src/27f4l-hall-walk.js:333
+HALL_TL                      src/27f4l-hall-walk.js:334
 HALL_TYPES                   src/27f4a-hall.js:65-73
 HALL_WALK_D                  src/27f4l-hall-walk.js:17
 HALL_WALK_POV                src/27f4l-hall-walk.js:102
@@ -3169,14 +3169,14 @@ cave3Den                     src/22da-cave-pln-rock.js:222-247
 cave3DiveFrame               src/22d-cave-pln.js:53-58
 cave3DiveW                   src/22d-cave-pln.js:49
 cave3Down                    src/22da-cave-pln-rock.js:249-255
-cave3DressAhead              src/22dc-cave-pln-dress.js:417-429
-cave3DressBin                src/22dc-cave-pln-dress.js:318
-cave3DressBinG               src/22dc-cave-pln-dress.js:319-383
-cave3DressCryst              src/22dc-cave-pln-dress.js:385-404
-cave3DressFrame              src/22dc-cave-pln-dress.js:436-474
+cave3DressAhead              src/22dc-cave-pln-dress.js:419-431
+cave3DressBin                src/22dc-cave-pln-dress.js:320
+cave3DressBinG               src/22dc-cave-pln-dress.js:321-385
+cave3DressCryst              src/22dc-cave-pln-dress.js:387-406
+cave3DressFrame              src/22dc-cave-pln-dress.js:438-476
 cave3DressItems              src/22dc-cave-pln-dress.js:256-278
-cave3DressQ                  src/22dc-cave-pln-dress.js:405-413
-cave3DressTake               src/22dc-cave-pln-dress.js:431-434
+cave3DressQ                  src/22dc-cave-pln-dress.js:407-415
+cave3DressTake               src/22dc-cave-pln-dress.js:433-436
 cave3DripSty                 src/22dc-cave-pln-dress.js:26-29
 cave3EntryBox                src/22d-cave-pln.js:105-110
 cave3Events                  src/22d-cave-pln.js:66-79
@@ -3252,7 +3252,7 @@ cave3VaultCut                src/22da-cave-pln-rock.js:187
 cave3VaultLift               src/22da-cave-pln-rock.js:216-220
 cave3VaultPlan               src/22da-cave-pln-rock.js:188-215
 cave3Veil                    src/22dc-cave-pln-dress.js:217-239
-cave3VeinBody                src/22dc-cave-pln-dress.js:283-314
+cave3VeinBody                src/22dc-cave-pln-dress.js:283-316
 cave3WallZ                   src/22dh-cave-pln-gap.js:44-50
 cave3WingBin                 src/22di-cave-pln-wing.js:38-75
 cave3WingCone                src/22di-cave-pln-wing.js:25-37
@@ -4107,7 +4107,7 @@ drawFoeBody                  src/24ab-raid-foe.js:11-131
 drawGalaxy                   src/17z1-galaxy.js:64-67
 drawGalaxyNames              src/17z2-galaxy-names.js:38-68
 drawGalaxyStars              src/17z1-galaxy.js:86-115
-drawGestPost                 src/17h-sys-gesture.js:240-267
+drawGestPost                 src/17h-sys-gesture.js:240-273
 drawGesture                  src/17h-sys-gesture.js:136-188
 drawGestureTop               src/17h-sys-gesture.js:192-221
 drawGiant                    src/17o-giants.js:197-210
@@ -5090,7 +5090,7 @@ hallCrop                     src/27f4a-hall.js:491
 hallDialSvg                  src/27f4g-hall-instr.js:167-263
 hallDoor                     src/27f4a-hall.js:125-128
 hallDpr                      src/27f4a-hall.js:477
-hallDragEnd                  src/27f4l-hall-walk.js:279
+hallDragEnd                  src/27f4l-hall-walk.js:280
 hallDrawW                    src/27f4a-hall.js:480
 hallDrum                     src/27f4b-hall-dress.js:66
 hallEase                     src/27f4a-hall.js:129
@@ -5111,8 +5111,8 @@ hallGoodsWire                src/27f4e-hall-goods.js:44-51
 hallHasBar                   src/27f4a-hall.js:107
 hallHasFolk                  src/27f4l-hall-walk.js:31-34
 hallHero                     src/27f4a-hall.js:113
-hallHintDone                 src/27f4l-hall-walk.js:318-321
-hallHintSeen                 src/27f4l-hall-walk.js:314-317
+hallHintDone                 src/27f4l-hall-walk.js:319-322
+hallHintSeen                 src/27f4l-hall-walk.js:315-318
 hallHoldAt                   src/27f4i-hall-hold.js:25
 hallHoldChart                src/27f4i-hall-hold.js:48-75
 hallHoldDress                src/27f4i-hall-hold.js:32-45
@@ -5193,15 +5193,15 @@ hallTab                      src/27f4a-hall.js:522-528
 hallTablePose                src/27f4a-hall.js:55
 hallTagList                  src/27f4a-hall.js:438-447
 hallTagsDraw                 src/27f4a-hall.js:448-464
-hallTradeLine                src/27f4l-hall-walk.js:334-340
+hallTradeLine                src/27f4l-hall-walk.js:335-341
 hallWalkBack                 src/27f4l-hall-walk.js:185-188
 hallWalkCam                  src/27f4l-hall-walk.js:151-167
 hallWalkCls                  src/27f4l-hall-walk.js:205-211
 hallWalkDom                  src/27f4l-hall-walk.js:213-256
 hallWalkEngage               src/27f4l-hall-walk.js:170-184
 hallWalkFree                 src/27f4l-hall-walk.js:106
-hallWalkHitAt                src/27f4l-hall-walk.js:291-299
-hallWalkHot                  src/27f4l-hall-walk.js:300-304
+hallWalkHitAt                src/27f4l-hall-walk.js:292-300
+hallWalkHot                  src/27f4l-hall-walk.js:301-305
 hallWalkInit                 src/27f4l-hall-walk.js:55-62
 hallWalkLens                 src/27f4l-hall-walk.js:126-136
 hallWalkMoving               src/27f4l-hall-walk.js:168
@@ -5215,11 +5215,11 @@ hallWalkSpot                 src/27f4l-hall-walk.js:107
 hallWalkStep                 src/27f4l-hall-walk.js:66-81
 hallWalkStripFill            src/27f4l-hall-walk.js:258-263
 hallWalkTabs                 src/27f4l-hall-walk.js:198-204
-hallWalkTagList              src/27f4l-hall-walk.js:323-329
-hallWalkTapAt                src/27f4l-hall-walk.js:306-310
+hallWalkTagList              src/27f4l-hall-walk.js:324-330
+hallWalkTapAt                src/27f4l-hall-walk.js:307-311
 hallWalkTo                   src/27f4l-hall-walk.js:83-88
-hallWalkUi                   src/27f4l-hall-walk.js:265-276
-hallWalkWorldX               src/27f4l-hall-walk.js:281-287
+hallWalkUi                   src/27f4l-hall-walk.js:265-277
+hallWalkWorldX               src/27f4l-hall-walk.js:282-288
 hallWall                     src/27f4b-hall-dress.js:16-21
 hallWide                     src/27f4a-hall.js:114
 hallWinY                     src/27f4a-hall.js:427
@@ -7104,10 +7104,10 @@ plnMul                       src/21p-pln.js:36
 plnNoise                     src/21p-pln.js:60-67
 plnNorm                      src/21p-pln.js:40
 plnObsSky                    src/21pifa-pln-marks-act-stone.js:233-248
-plnOver                      src/21pj-pln-over.js:47-122
+plnOver                      src/21pj-pln-over.js:50-125
 plnOverAt                    src/21pj-pln-over.js:19-22
-plnOverOld                   src/21pj-pln-over.js:30-44
-plnOverPlate                 src/21pj-pln-over.js:23-28
+plnOverOld                   src/21pj-pln-over.js:33-47
+plnOverPlate                 src/21pj-pln-over.js:23-31
 plnOwnAtGate                 src/21pig-pln-own.js:631
 plnOwnBaseAt                 src/21pig-pln-own.js:98-113
 plnOwnBaseMesh               src/21pig-pln-own.js:124-263
@@ -10478,7 +10478,7 @@ zoomTo                       src/15-input.js:370
 ## src/22dbx-cave-pln-post.js · 10 KB
   · пещера на движке: шейдеры после сцены (M630b проход 5):1
 
-## src/22dc-cave-pln-dress.js · 29 KB
+## src/22dc-cave-pln-dress.js · 30 KB
   · пещера на движке: убранство залов (M630b):1
 
 ## src/22dd-cave-pln-lake.js · 6 KB
@@ -10754,7 +10754,7 @@ zoomTo                       src/15-input.js:370
 
 ## src/27f4k-hall-phone.js · 4 KB
 
-## src/27f4l-hall-walk.js · 29 KB
+## src/27f4l-hall-walk.js · 30 KB
   · M816 станция пешком (docs/DESIGN-station-walk.md):1
 
 ## src/27f5-portrait3d.js · 9 KB

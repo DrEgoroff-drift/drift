@@ -256,7 +256,13 @@ function drawGestPost(zx,zy,Z){
     const gnd=(typeof makerGround==="function")?makerGround(by):[200,200,200];
     const ink=by==="km"?"#faecd2":rgba(mixc(gnd,[255,255,255],.55),1);
     domLabel("gp"+by+(G.sx|0)+"_"+(G.sy|0),x,y-22*k,text.toUpperCase(),uiFont(text.length>14?9:11),ink,"center");
-    if(by==="gt")domLabel("gpstar"+(G.sx|0),x-34*k,y-22*k,"★",uiFont(11),"rgba(210,50,40,.95)","center");}
+    if(by==="gt"){
+      /* звезда набора: в ui-monospace глифа ★ нет — вместо неё был тофу-бокс, и
+         смещение −34k садилось внутрь букв. Меряем текст и берём sans-serif */
+      const f=uiFont(text.length>14?9:11);
+      const tw=(typeof gcMeasure==="function")?gcMeasure(f,text.toUpperCase()).width:0;
+      domLabel("gpstar"+(G.sx|0),x-tw/2-10*k,y-22*k,"★","10px sans-serif","rgba(210,50,40,.95)","center");
+    }}
   /* одна лампа — у каждого своё движение: ровно, вращаясь, дыша */
   const col=(typeof laneLampCol==="function")?laneLampCol(by):[255,190,110];
   const ts=G.t/60;

@@ -3139,6 +3139,10 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 @media (max-width:760px){
   body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet){flex:0 1 auto;max-width:min(240px,52vw);margin-left:auto;margin-right:auto}
 }
+
+/* дом: подпись комнаты — тёмные чернила по светлой штукатурке, а не серая
+   плашка тёмного экрана (в спальне «СПАЛЬНЯ» умирала на солнце) */
+#home3Tags .ht.sg b{color:rgba(48,36,24,.78)}
 </style>
 </head>
 <body>
@@ -64932,7 +64936,13 @@ function drawGestPost(zx,zy,Z){
     const gnd=(typeof makerGround==="function")?makerGround(by):[200,200,200];
     const ink=by==="km"?"#faecd2":rgba(mixc(gnd,[255,255,255],.55),1);
     domLabel("gp"+by+(G.sx|0)+"_"+(G.sy|0),x,y-22*k,text.toUpperCase(),uiFont(text.length>14?9:11),ink,"center");
-    if(by==="gt")domLabel("gpstar"+(G.sx|0),x-34*k,y-22*k,"★",uiFont(11),"rgba(210,50,40,.95)","center");}
+    if(by==="gt"){
+      /* звезда набора: в ui-monospace глифа ★ нет — вместо неё был тофу-бокс, и
+         смещение −34k садилось внутрь букв. Меряем текст и берём sans-serif */
+      const f=uiFont(text.length>14?9:11);
+      const tw=(typeof gcMeasure==="function")?gcMeasure(f,text.toUpperCase()).width:0;
+      domLabel("gpstar"+(G.sx|0),x-tw/2-10*k,y-22*k,"★","10px sans-serif","rgba(210,50,40,.95)","center");
+    }}
   /* одна лампа — у каждого своё движение: ровно, вращаясь, дыша */
   const col=(typeof laneLampCol==="function")?laneLampCol(by):[255,190,110];
   const ts=G.t/60;
@@ -97139,7 +97149,10 @@ function plnOverAt(C,p){
 function plnOverPlate(txt,x,y,plate,ink,u){
   const f=(8*u).toFixed(2)+"px ui-monospace,monospace";
   const tw=gcMeasure(f,txt).width;   /* мерка атласа (08cb), без #c */
-  ovRect(x-tw/2-5*u,y-10*u,x+tw/2+5*u,y+4*u,plate,1);
+  /* не лезем в правый рельс: табличка «ПЕЩЕРА» ложилась поверх кнопки Меню */
+  const x0=x-tw/2-5*u,x1=x+tw/2+5*u;
+  if(x0<8||x1>W-118)return;
+  ovRect(x0,y-10*u,x1,y+4*u,plate,1);
   ovText(OVL.uq,x,y,txt,f,ink,"center","alphabetic",1,1);
 }
 /* то, что ещё не перерисовано: старые рисовалки в том же порядке, что клал старый кадр */
@@ -102164,7 +102177,7 @@ function cave3VeinBody(C,F,m,v,r){
       const t=s/4,x=lerp(xa,xb,t),o=lerp(oa,ob,t),sg=o<0?-1:1;
       let Y=null;
       for(const k of [1,.6,.35,.18]){const y=-(base(x)+sg*Math.max(5,Math.abs(o)*k))/P;if(solid(x/P,y)){Y=y;break;}}
-      pts.push([x/P,Y==null?-(base(x)+o)/P:Y,-.05]);
+      pts.push([x/P,Y==null?-(base(x)+o)/P:Y,.02]);
     }
   }
   const col=plnMul(CAVE3_DC.band,.92+r()*.16),rad=.07+.02*(v.w||1);
@@ -102182,6 +102195,8 @@ function cave3VeinBody(C,F,m,v,r){
     }
     run=[];
   };
+  /* трубка лежит В камне разреза, а не перед ним: валик, выехавший на .05 в
+     галерею, читался телом в пустоте (аудит сцен 12.11) */
   for(const p of pts){if(solid(p[0],p[1]))run.push(p);else seam();}
   seam();
   return {n,col};
@@ -123155,7 +123170,8 @@ function hallWalkUi(force){
   const W=HALL.walk;if(!W||typeof document==="undefined")return;
   const key=(W.at||"")+"|"+(W.eng||"")+"|"+(W.hot||"");if(!force&&W.uik===key)return;W.uik=key;
   const p=(W.hot||W.at)&&HALL_PLACES.find(q=>q.id===(W.hot||W.at)),a=document.getElementById("stWalkAct");
-  if(a){a.textContent=p?p.verb:"";a.hidden=!p||!!W.eng;}
+  /* у шлюза глагол места и есть выход — вторая кнопка была той же кнопкой */
+  if(a){const dup=!!p&&p.verb==="ОТСТЫКОВАТЬСЯ";a.textContent=dup?"":(p?p.verb:"");a.hidden=!p||!!W.eng||dup;}
   const h=document.getElementById("stWalkHint");
   if(h){h.textContent=hallWide()?"← A  D →   или веди мышью по залу":"←  веди пальцем по залу  →";h.hidden=!!W.eng||hallHintSeen();}
   document.querySelectorAll("#stWalkStrip button").forEach(b=>{
