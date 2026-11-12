@@ -326,8 +326,8 @@ function repairBtns(){
   if(bf.parentNode)stShipCard(bf.parentNode);
   const h=repairQuote(.5),f=repairQuote(1);
   bh.style.display=h.units?"":"none";
-  bh.textContent="ДО 50% · "+h.cost.toLocaleString("ru");
-  bf.textContent=!f.units?"КОРПУС ЦЕЛ":(h.units?"ПОЛНОСТЬЮ · ":"РЕМОНТ · ")+f.cost.toLocaleString("ru");
+  bh.textContent="ДО 50% · "+h.cost.toLocaleString("ru")+" кр";
+  bf.textContent=!f.units?"КОРПУС ЦЕЛ":(h.units?"ПОЛНОСТЬЮ · ":"РЕМОНТ · ")+f.cost.toLocaleString("ru")+" кр";
   /* изолента — рядом с ремонтом, за копейки (M486) */
   let bt=document.getElementById("bTape");
   if(!bt&&bf.parentNode&&typeof tapeBuy==="function"){
@@ -335,7 +335,7 @@ function repairBtns(){
     bt.addEventListener("click",()=>{tapeBuy();repairBtns();});bf.parentNode.insertBefore(bt,bf.nextSibling);
   }
   /* подпись постоянная, запас — фишкой в углу: иначе кнопка росла с каждым рулоном и толкала соседей */
-  if(bt){const n=tapeRolls();bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE;bt.title=n?"в запасе рулонов: "+n:"";
+  if(bt){const n=tapeRolls();bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE+" кр";bt.title=n?"в запасе рулонов: "+n:"";
     if(n){const i=document.createElement("i");i.textContent=n>99?"99+":n;bt.appendChild(i);}}
 }
 document.getElementById("bRepairHalf").addEventListener("click",()=>repairDo(.5));
@@ -600,7 +600,7 @@ function renderTabBody(){
     $body.appendChild(el("div","sec","ВАШ ЭКИПАЖ "+G.crew.length+" / "+crewCap()+
       " · РАЗРЯД КООПЕРАТИВА, ЛИЦЕНЗИЯ И УПРАВЛЯЮЩИЙ ДАЮТ МЕСТА · ЗАРПЛАТА ИДЁТ ПОКА ОНИ РАБОТАЮТ"+
       (spare>0?"":" · СВОБОДНЫХ КОРПУСОВ НЕТ: НАЁМНИКУ НУЖЕН СВОЙ КОРАБЛЬ")));
-    if(!G.crew.length)$body.appendChild(el("div","sec","ПОКА НИКОГО — НАЙМИТЕ НИЖЕ"));
+    if(!G.crew.length)$body.appendChild(el("div","sec",(typeof coopHas==="function"&&!coopHas())?"ПОКА НИКОГО — НАЙМ ОТКРОЕТСЯ С КООПЕРАТИВОМ":"ПОКА НИКОГО — НАЙМИТЕ НИЖЕ"));
     G.crew.forEach((c,i)=>{
       const S=c.shipId?shipData(c.shipId):null;
       const hold=crewHold(c),cap=crewCargoMax(c);
@@ -615,7 +615,7 @@ function renderTabBody(){
       const net=(c.earned||0)-(c.spent||0);
       const mood=c.morale>=.7?"в духе":(c.morale>=.4?"ровно":"мрачен");
       /* <b> внутри .nm — блок; внутри строки цифр цвет даёт span, иначе строка ломается */
-      r.appendChild(el("div","nm","<b>"+c.name+"</b><s>"+CREW_SPEC[c.spec].ru+" · "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+","+c.order.sy+
+      r.appendChild(el("div","nm","<b>"+c.name+"</b><s>"+CREW_SPEC[c.spec].ru+" · "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+":"+c.order.sy+
         " · "+(S?"на «"+S.ru+"»":"корабль не выдан")+" · "+mood+st8+
         "<br>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+(kulibOf(c)?" · кулибин":"")+"</s>"+
         "<s class='fig'>итог <span style='color:"+(net>=0?"#8fd08a":"#ff6b57")+"'>"+net.toLocaleString("ru")+" кр</span>"+
@@ -627,12 +627,12 @@ function renderTabBody(){
       r.appendChild(box);
       /* ремонт: сам идёт медленно и бесплатно на приколе, за деньги — сразу */
       if(c.shipId&&c.hull<c.hullMax){
-        const bRep=el("button","act gold",crewRepairCost(c).toLocaleString("ru")+" кр");
+        const bRep=el("button","act gold","ПОЧИНИТЬ · "+crewRepairCost(c).toLocaleString("ru")+" кр");
         bRep.disabled=G.credits<crewRepairCost(c);
         bRep.onclick=()=>{if(crewRepair(c))renderTab();};
         r.appendChild(bRep);
       }
-      const bFire=el("button","act","РАСЧЁТ "+crewSeverance(c).toLocaleString("ru"));
+      const bFire=el("button","act","РАСЧЁТ · "+crewSeverance(c).toLocaleString("ru")+" кр");
       bFire.title="выходное пособие — чтобы перебор наёмников не был бесплатным";
       bFire.onclick=()=>{fireMerc(i);renderTab();};
       r.appendChild(bFire);
@@ -654,7 +654,7 @@ function renderTabBody(){
       }else{
         const ro=el("div","row");
         ro.appendChild(el("div","nm","<b>Приказ</b><s>"+ORDERS[c.order.kind].note+
-          "<br>район назначается по системе, где вы сейчас: "+G.sx+","+G.sy+"</s>"));
+          "<br>район — сектор "+G.sx+":"+G.sy+", где вы сейчас</s>"));
         for(const k in ORDERS){
           if(ORDERS[k].spec&&ORDERS[k].spec!==c.spec)continue;
           if(k==="base")continue;               // на базу отправляют отдельной строкой ниже

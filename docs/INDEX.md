@@ -3495,7 +3495,7 @@ clockSeg                     src/11d-clocks.js:79-83
 clockSet                     src/01-core.js:92
 clockWhy                     src/11d-clocks.js:94-100
 closeBarge                   src/12l-barge.js:646-653
-closeDeal                    src/27n-ui-deal.js:204
+closeDeal                    src/27n-ui-deal.js:205
 closeStation                 src/26-ui-station.js:230-256
 cloudBoot                    src/14a-cloud.js:188-203
 cloudBusy                    src/14a-cloud.js:95
@@ -3731,7 +3731,7 @@ dealBtnTick                  src/27n-ui-deal.js:38-44
 dealCount                    src/27n-ui-deal.js:23-28
 dealIdle                     src/27n-ui-deal.js:31-37
 dealRate                     src/27n-ui-deal.js:61-64
-dealRender                   src/27n-ui-deal.js:65-197
+dealRender                   src/27n-ui-deal.js:65-198
 dealRow                      src/27n-ui-deal.js:49-59
 dealRun                      src/27n-ui-deal.js:20
 dealTaken                    src/27g-deals.js:159
@@ -6465,7 +6465,7 @@ oldMasterHere                src/05b1-warranty.js:123-129
 oldMasterSeam                src/05b1-warranty.js:131-136
 openBarge                    src/12l-barge.js:636-645
 openCrewView                 src/27b-ui-crew.js:230-236
-openDeal                     src/27n-ui-deal.js:198-203
+openDeal                     src/27n-ui-deal.js:199-204
 openHq                       src/27c-ui-hq.js:532-537
 openStation                  src/26-ui-station.js:47
 openStationBody              src/26-ui-station.js:48-160
@@ -8422,9 +8422,9 @@ stTabBoard                   src/26e-ui-station-trade.js:11-148
 stTabFuse                    src/26b-ui-station-work.js:401
 stTabInstr                   src/26b-ui-station-work.js:243-400
 stTabLab                     src/26b-ui-station-work.js:332-400
-stTabMarket                  src/26e-ui-station-trade.js:149-277
+stTabMarket                  src/26e-ui-station-trade.js:149-281
 stTabMods                    src/26b-ui-station-work.js:105-400
-stTabYard                    src/26e-ui-station-trade.js:278-431
+stTabYard                    src/26e-ui-station-trade.js:282-435
 stTabsHere                   src/26-ui-station.js:176
 stTypeOf                     src/06-galaxy.js:69
 stWalletSync                 src/26-ui-station.js:546-549
@@ -10822,7 +10822,7 @@ zoomTo                       src/15-input.js:370
 ## src/27m-scroll-cue.js · 4 KB
   · «внизу ещё есть»:1
 
-## src/27n-ui-deal.js · 14 KB
+## src/27n-ui-deal.js · 15 KB
   · ДЕЛО — одно место для всего, что на вас работает:1
 
 ## src/27y-hud-words.js · 4 KB

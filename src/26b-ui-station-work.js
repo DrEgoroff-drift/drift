@@ -120,7 +120,7 @@ function stTabMods(){
       r.appendChild(el("div","nm","<b>КОРПУС · ОСНАСТКА И ЧЕРТЁЖ</b><s>"+
         Object.keys(fm).length+" из "+slots.length+" слотов занято · в инвентаре "+
         G.inv.length+" частей</s>"));
-      const b=el("button","act sm gold","ОТКРЫТЬ");
+      const b=el("button","act sm gold","ОПИСЬ");
       /* ОПИСЬ (M341) ложится ПОВЕРХ терминала, как стол: закрыл — снова на
          станции, а не в открытом космосе без управления */
       b.onclick=()=>{tableToggle(true,"hold");};
@@ -269,7 +269,7 @@ function stTabInstr(){
         q>=.75?"грубовато":"едва")+" · стрелка "+(T.jit>=1.6?"нервная":T.jit>=1?"живая":"спокойная")+
         " · перо "+(T.pen>=1.2?"жирное":T.pen>=.95?"обычное":"волосом")+"</s>"));
       if(fix>0){
-        const b=el("button","act sm gold",fix.toLocaleString("ru")+" кр");
+        const b=el("button","act sm gold","ВЫВЕРИТЬ · "+fix.toLocaleString("ru")+" кр");
         b.title="выверить и почистить";
         b.disabled=G.credits<fix;
         b.onclick=()=>{if(instrFix(id))renderTab();};
@@ -334,15 +334,15 @@ function stTabLab(){
     if(nodeCount()>0||Object.keys(G.crowns||{}).length)nodesRender();
     if(typeof probeBlock==="function")probeBlock();   /* вымпел: зонд без возврата (M196) */
     $body.appendChild(el("div","sec","ДАННЫЕ: "+G.data+
-      " · ИСТОЧНИКИ — НОВЫЕ ПЛАНЕТЫ (+6) И ВИДЫ (+9)"));
+      " · ИСТОЧНИКИ — НОВЫЕ ПЛАНЕТЫ (+6), РАСТЕНИЯ (+9), ЗВЕРИ (+14)"));
     for(const k in TECH){
       const T=TECH[k],max=T.max||1,lvl=techLv(k),done=lvl>=max,cost=techCost(k);
       const r=el("div","row");
       let dots="";
       if(T.max)for(let i=0;i<max;i++)dots+="<i class='"+(i<lvl?"f":"")+"'></i>";
-      r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+T.note+
+      r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+(k==="survey"?"в шахте пока ничего не меняет":T.note)+
         "</s>"+(dots?"<div class='dots'>"+dots+"</div>":"")));
-      const b=el("button","act"+(done?"":" gold"),done?(T.max?"МАКСИМУМ":"ИЗУЧЕНО"):cost+" дан");
+      const b=el("button","act"+(done?"":" gold"),done?(T.max?"МАКСИМУМ":"ИЗУЧЕНО"):cost+" данных");
       const noFar=!!(T.far&&!done&&!((G.cargo[T.far]|0)>0));   /* вещь из глубины (M466) */
       if(noFar)b.textContent="нет: "+RES[T.far].ru.toLowerCase();
       b.disabled=done||G.data<cost||noFar;

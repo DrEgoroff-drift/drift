@@ -113,7 +113,7 @@ function dealRender(){
       else if(!c.shipId){st="не выдан корабль — не работает и не получает";col="#ff9d7a";}
       else if(!c.order||c.order.kind==="home"){st="на приколе — приказа нет";col="#ff9d7a";}
       else if(c.hull<=0){st="корпус разбит — стоит";col="#ff9d7a";}
-      else st=ORDERS[c.order.kind].ru.toLowerCase()+" · сектор "+c.order.sx+","+c.order.sy+
+      else st=ORDERS[c.order.kind].ru.toLowerCase()+" · сектор "+c.order.sx+":"+c.order.sy+
               " · «"+(S?S.ru:"—")+"» "+Math.round(c.hull)+"/"+Math.round(c.hullMax);
       /* итог за всё время — не минутный счёт: он во второй строке, словами */
       dealRow(c.name+" · "+CREW_SPEC[c.spec].ru,st+" · итог "+(bal>=0?"+":"−")+Math.abs(bal).toLocaleString("ru")+" кр",
@@ -178,7 +178,7 @@ function dealRender(){
       const staff=(typeof baseStaff==="function")?baseStaff(B).length:0;
       const held=(typeof basePoolHeld==="function")?basePoolHeld(B):0;
       dealRow("База «"+B.name+"»",
-        "сектор "+B.sx+","+B.sy+" · людей "+staff+" · в закромах "+held+
+        "сектор "+B.sx+":"+B.sy+" · людей "+staff+" · в закромах "+held+
         (B.quiet?" · батарея обесточена, оборона молчит":""),
         null,B.quiet?"#ff9d7a":"",null);
     }
@@ -192,8 +192,9 @@ function dealRender(){
   }
   if(!crew.length&&!mgrs.length&&!runs.length&&!bases.length&&!holdL.length&&!(G.droneInventory|0))
     $dlBody.appendChild(el("div","row","<div class='nm'><s>на вас пока никто не работает. "+
-      "Наёмник ищет работу на станции (ЛЮДИ → ЭКИПАЖ), управляющий сидит в кантине, "+
+      "Наёмник ищет работу на станции (ЛЮДИ → НАЁМНИКИ), управляющий сидит в кантине, "+
       "дрона покупают на верфи, база строится с грунта.</s></div>"));
+  if(typeof addrify==="function")addrify($dlBody);   /* «сектор X:Y» — на карту, как на станции */
 }
 function openDeal(){
   for(const k in keys)keys[k]=false;
@@ -212,4 +213,11 @@ function closeDeal(){$dl.classList.remove("open");}
   });
   const c=document.getElementById("dlClose");
   if(c)c.addEventListener("click",()=>{closeDeal();saveGame(true);});
+  /* захват, не всплытие: строка человека сама ведёт в карточку, адрес — на карту */
+  if($dlBody)$dlBody.addEventListener("click",ev=>{
+    const u=ev.target.closest&&ev.target.closest("u.addr");if(!u)return;
+    ev.stopPropagation();ev.preventDefault();
+    closeDeal();
+    if(typeof gotoSector==="function")gotoSector(+u.dataset.sx,+u.dataset.sy,null);
+  },true);
 }

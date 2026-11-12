@@ -143,7 +143,7 @@ function stTabBoard(){
     /* имя системы ушло с доски на карту (M299): поле «ваше имя. На карте — оно»
        читалось как имя капитана, и туда вписывали позывной */
     boardLanes(0);
-    $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
+    $body.appendChild(el("div","sec","ПРИЁМНИК — В ШАПКЕ ЭКРАНА · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
     if(typeof HALL!=="undefined"&&HALL.open)hallBoardDress();   /* зал: строки — листы на пробке (27f4h, M814) */
 }
 function stTabMarket(st){
@@ -249,8 +249,12 @@ function stTabMarket(st){
         const q=G.cargo[k];if(!q)continue;
         const r=el("div","row");
         /* сперва «зачем», потом «откуда»: игрок и так знает, где это взял */
+        const use=k==="volatiles"?"научная станция, вкладка СПЛАВ КОРПУСОВ: точная и штучная сборка, сплав кораблей · криоцех на базе"
+          :k==="icecrys"?"научная станция, вкладка СПЛАВ КОРПУСОВ: штучная сборка и сплав кораблей"
+          :k==="alloy"?"научная станция, вкладка СПЛАВ КОРПУСОВ: сборка и сплав кораблей · постройки на базе"
+          :(RES[k].use||"");
         r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
-          (RES[k].use?RES[k].use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
+          (use?use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
       }
@@ -319,7 +323,7 @@ function stTabYard(st){
       }else if(w>.02){
         $body.appendChild(el("div","row","<div class='nm'><s>пыль "+Math.round(w*100)+
           "% — это пол здешней верфи ("+Math.round(floor*100)+"%), ниже она не берётся. "+
-          "На настоящей верфи снимают больше, дома — всё и бесплатно.</s></div>"));
+          (G.st.stype==="yard"?"Дома снимут всё и бесплатно.":"На настоящей верфи снимают больше, дома — всё и бесплатно.")+"</s></div>"));
       }
     }
     const yard=stationFleet(G.sys);
@@ -387,7 +391,7 @@ function stTabYard(st){
       const uid="u"+offer.seed;
       G.uniqueShips[uid]=offer;
       $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"+
-        (relicDeep("key")?" · УЖЕ С ЧАСТЯМИ В СЛОТАХ":"")));
+        (relicDeep("key")?" · ПРИДЁТ С ЧАСТЯМИ В ИНВЕНТАРЕ":"")));
       hallShipList([[uid,offer]]);
     }
     const dr=DRONES.miner;
@@ -398,7 +402,7 @@ function stTabYard(st){
     const shop=droneShopHas(G.sys),sells=G.st.stype==="yard"||G.st.stype==="indust";
     rd.appendChild(el("div","nm","<b>"+dr.ru+"</b><s>"+dr.note+
       "<br>окупится: "+(pb||"—")+"<br>в запасе: "+G.droneInventory+" · развёрнуто: "+G.drones.length+
-      (sells?(shop?"":"<br>здесь уже брали — следующая машина через двое суток"):"<br>продают только верфь и завод")+"</s>"));
+      (sells?(shop?"":"<br>здесь уже брали — следующая машина через двое суток"):"<br>продают только верфь и промышленный комбинат")+"</s>"));
     /* цена — от парка (12-economy dronePrice): каждая следующая ×1.6 */
     const dp=dronePrice();
     const bd=el("button","act"+(shop?" gold":""),"КУПИТЬ · "+dp.toLocaleString("ru")+" КР");

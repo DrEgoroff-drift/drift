@@ -114415,8 +114415,8 @@ function repairBtns(){
   if(bf.parentNode)stShipCard(bf.parentNode);
   const h=repairQuote(.5),f=repairQuote(1);
   bh.style.display=h.units?"":"none";
-  bh.textContent="ДО 50% · "+h.cost.toLocaleString("ru");
-  bf.textContent=!f.units?"КОРПУС ЦЕЛ":(h.units?"ПОЛНОСТЬЮ · ":"РЕМОНТ · ")+f.cost.toLocaleString("ru");
+  bh.textContent="ДО 50% · "+h.cost.toLocaleString("ru")+" кр";
+  bf.textContent=!f.units?"КОРПУС ЦЕЛ":(h.units?"ПОЛНОСТЬЮ · ":"РЕМОНТ · ")+f.cost.toLocaleString("ru")+" кр";
   /* изолента — рядом с ремонтом, за копейки (M486) */
   let bt=document.getElementById("bTape");
   if(!bt&&bf.parentNode&&typeof tapeBuy==="function"){
@@ -114424,7 +114424,7 @@ function repairBtns(){
     bt.addEventListener("click",()=>{tapeBuy();repairBtns();});bf.parentNode.insertBefore(bt,bf.nextSibling);
   }
   /* подпись постоянная, запас — фишкой в углу: иначе кнопка росла с каждым рулоном и толкала соседей */
-  if(bt){const n=tapeRolls();bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE;bt.title=n?"в запасе рулонов: "+n:"";
+  if(bt){const n=tapeRolls();bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE+" кр";bt.title=n?"в запасе рулонов: "+n:"";
     if(n){const i=document.createElement("i");i.textContent=n>99?"99+":n;bt.appendChild(i);}}
 }
 document.getElementById("bRepairHalf").addEventListener("click",()=>repairDo(.5));
@@ -114689,7 +114689,7 @@ function renderTabBody(){
     $body.appendChild(el("div","sec","ВАШ ЭКИПАЖ "+G.crew.length+" / "+crewCap()+
       " · РАЗРЯД КООПЕРАТИВА, ЛИЦЕНЗИЯ И УПРАВЛЯЮЩИЙ ДАЮТ МЕСТА · ЗАРПЛАТА ИДЁТ ПОКА ОНИ РАБОТАЮТ"+
       (spare>0?"":" · СВОБОДНЫХ КОРПУСОВ НЕТ: НАЁМНИКУ НУЖЕН СВОЙ КОРАБЛЬ")));
-    if(!G.crew.length)$body.appendChild(el("div","sec","ПОКА НИКОГО — НАЙМИТЕ НИЖЕ"));
+    if(!G.crew.length)$body.appendChild(el("div","sec",(typeof coopHas==="function"&&!coopHas())?"ПОКА НИКОГО — НАЙМ ОТКРОЕТСЯ С КООПЕРАТИВОМ":"ПОКА НИКОГО — НАЙМИТЕ НИЖЕ"));
     G.crew.forEach((c,i)=>{
       const S=c.shipId?shipData(c.shipId):null;
       const hold=crewHold(c),cap=crewCargoMax(c);
@@ -114704,7 +114704,7 @@ function renderTabBody(){
       const net=(c.earned||0)-(c.spent||0);
       const mood=c.morale>=.7?"в духе":(c.morale>=.4?"ровно":"мрачен");
       /* <b> внутри .nm — блок; внутри строки цифр цвет даёт span, иначе строка ломается */
-      r.appendChild(el("div","nm","<b>"+c.name+"</b><s>"+CREW_SPEC[c.spec].ru+" · "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+","+c.order.sy+
+      r.appendChild(el("div","nm","<b>"+c.name+"</b><s>"+CREW_SPEC[c.spec].ru+" · "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+":"+c.order.sy+
         " · "+(S?"на «"+S.ru+"»":"корабль не выдан")+" · "+mood+st8+
         "<br>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+(kulibOf(c)?" · кулибин":"")+"</s>"+
         "<s class='fig'>итог <span style='color:"+(net>=0?"#8fd08a":"#ff6b57")+"'>"+net.toLocaleString("ru")+" кр</span>"+
@@ -114716,12 +114716,12 @@ function renderTabBody(){
       r.appendChild(box);
       /* ремонт: сам идёт медленно и бесплатно на приколе, за деньги — сразу */
       if(c.shipId&&c.hull<c.hullMax){
-        const bRep=el("button","act gold",crewRepairCost(c).toLocaleString("ru")+" кр");
+        const bRep=el("button","act gold","ПОЧИНИТЬ · "+crewRepairCost(c).toLocaleString("ru")+" кр");
         bRep.disabled=G.credits<crewRepairCost(c);
         bRep.onclick=()=>{if(crewRepair(c))renderTab();};
         r.appendChild(bRep);
       }
-      const bFire=el("button","act","РАСЧЁТ "+crewSeverance(c).toLocaleString("ru"));
+      const bFire=el("button","act","РАСЧЁТ · "+crewSeverance(c).toLocaleString("ru")+" кр");
       bFire.title="выходное пособие — чтобы перебор наёмников не был бесплатным";
       bFire.onclick=()=>{fireMerc(i);renderTab();};
       r.appendChild(bFire);
@@ -114743,7 +114743,7 @@ function renderTabBody(){
       }else{
         const ro=el("div","row");
         ro.appendChild(el("div","nm","<b>Приказ</b><s>"+ORDERS[c.order.kind].note+
-          "<br>район назначается по системе, где вы сейчас: "+G.sx+","+G.sy+"</s>"));
+          "<br>район — сектор "+G.sx+":"+G.sy+", где вы сейчас</s>"));
         for(const k in ORDERS){
           if(ORDERS[k].spec&&ORDERS[k].spec!==c.spec)continue;
           if(k==="base")continue;               // на базу отправляют отдельной строкой ниже
@@ -115288,7 +115288,7 @@ function stTabMods(){
       r.appendChild(el("div","nm","<b>КОРПУС · ОСНАСТКА И ЧЕРТЁЖ</b><s>"+
         Object.keys(fm).length+" из "+slots.length+" слотов занято · в инвентаре "+
         G.inv.length+" частей</s>"));
-      const b=el("button","act sm gold","ОТКРЫТЬ");
+      const b=el("button","act sm gold","ОПИСЬ");
       /* ОПИСЬ (M341) ложится ПОВЕРХ терминала, как стол: закрыл — снова на
          станции, а не в открытом космосе без управления */
       b.onclick=()=>{tableToggle(true,"hold");};
@@ -115437,7 +115437,7 @@ function stTabInstr(){
         q>=.75?"грубовато":"едва")+" · стрелка "+(T.jit>=1.6?"нервная":T.jit>=1?"живая":"спокойная")+
         " · перо "+(T.pen>=1.2?"жирное":T.pen>=.95?"обычное":"волосом")+"</s>"));
       if(fix>0){
-        const b=el("button","act sm gold",fix.toLocaleString("ru")+" кр");
+        const b=el("button","act sm gold","ВЫВЕРИТЬ · "+fix.toLocaleString("ru")+" кр");
         b.title="выверить и почистить";
         b.disabled=G.credits<fix;
         b.onclick=()=>{if(instrFix(id))renderTab();};
@@ -115502,15 +115502,15 @@ function stTabLab(){
     if(nodeCount()>0||Object.keys(G.crowns||{}).length)nodesRender();
     if(typeof probeBlock==="function")probeBlock();   /* вымпел: зонд без возврата (M196) */
     $body.appendChild(el("div","sec","ДАННЫЕ: "+G.data+
-      " · ИСТОЧНИКИ — НОВЫЕ ПЛАНЕТЫ (+6) И ВИДЫ (+9)"));
+      " · ИСТОЧНИКИ — НОВЫЕ ПЛАНЕТЫ (+6), РАСТЕНИЯ (+9), ЗВЕРИ (+14)"));
     for(const k in TECH){
       const T=TECH[k],max=T.max||1,lvl=techLv(k),done=lvl>=max,cost=techCost(k);
       const r=el("div","row");
       let dots="";
       if(T.max)for(let i=0;i<max;i++)dots+="<i class='"+(i<lvl?"f":"")+"'></i>";
-      r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+T.note+
+      r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+(k==="survey"?"в шахте пока ничего не меняет":T.note)+
         "</s>"+(dots?"<div class='dots'>"+dots+"</div>":"")));
-      const b=el("button","act"+(done?"":" gold"),done?(T.max?"МАКСИМУМ":"ИЗУЧЕНО"):cost+" дан");
+      const b=el("button","act"+(done?"":" gold"),done?(T.max?"МАКСИМУМ":"ИЗУЧЕНО"):cost+" данных");
       const noFar=!!(T.far&&!done&&!((G.cargo[T.far]|0)>0));   /* вещь из глубины (M466) */
       if(noFar)b.textContent="нет: "+RES[T.far].ru.toLowerCase();
       b.disabled=done||G.data<cost||noFar;
@@ -115966,7 +115966,7 @@ function stTabBoard(){
     /* имя системы ушло с доски на карту (M299): поле «ваше имя. На карте — оно»
        читалось как имя капитана, и туда вписывали позывной */
     boardLanes(0);
-    $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
+    $body.appendChild(el("div","sec","ПРИЁМНИК — В ШАПКЕ ЭКРАНА · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
     if(typeof HALL!=="undefined"&&HALL.open)hallBoardDress();   /* зал: строки — листы на пробке (27f4h, M814) */
 }
 function stTabMarket(st){
@@ -116072,8 +116072,12 @@ function stTabMarket(st){
         const q=G.cargo[k];if(!q)continue;
         const r=el("div","row");
         /* сперва «зачем», потом «откуда»: игрок и так знает, где это взял */
+        const use=k==="volatiles"?"научная станция, вкладка СПЛАВ КОРПУСОВ: точная и штучная сборка, сплав кораблей · криоцех на базе"
+          :k==="icecrys"?"научная станция, вкладка СПЛАВ КОРПУСОВ: штучная сборка и сплав кораблей"
+          :k==="alloy"?"научная станция, вкладка СПЛАВ КОРПУСОВ: сборка и сплав кораблей · постройки на базе"
+          :(RES[k].use||"");
         r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
-          (RES[k].use?RES[k].use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
+          (use?use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
       }
@@ -116142,7 +116146,7 @@ function stTabYard(st){
       }else if(w>.02){
         $body.appendChild(el("div","row","<div class='nm'><s>пыль "+Math.round(w*100)+
           "% — это пол здешней верфи ("+Math.round(floor*100)+"%), ниже она не берётся. "+
-          "На настоящей верфи снимают больше, дома — всё и бесплатно.</s></div>"));
+          (G.st.stype==="yard"?"Дома снимут всё и бесплатно.":"На настоящей верфи снимают больше, дома — всё и бесплатно.")+"</s></div>"));
       }
     }
     const yard=stationFleet(G.sys);
@@ -116210,7 +116214,7 @@ function stTabYard(st){
       const uid="u"+offer.seed;
       G.uniqueShips[uid]=offer;
       $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"+
-        (relicDeep("key")?" · УЖЕ С ЧАСТЯМИ В СЛОТАХ":"")));
+        (relicDeep("key")?" · ПРИДЁТ С ЧАСТЯМИ В ИНВЕНТАРЕ":"")));
       hallShipList([[uid,offer]]);
     }
     const dr=DRONES.miner;
@@ -116221,7 +116225,7 @@ function stTabYard(st){
     const shop=droneShopHas(G.sys),sells=G.st.stype==="yard"||G.st.stype==="indust";
     rd.appendChild(el("div","nm","<b>"+dr.ru+"</b><s>"+dr.note+
       "<br>окупится: "+(pb||"—")+"<br>в запасе: "+G.droneInventory+" · развёрнуто: "+G.drones.length+
-      (sells?(shop?"":"<br>здесь уже брали — следующая машина через двое суток"):"<br>продают только верфь и завод")+"</s>"));
+      (sells?(shop?"":"<br>здесь уже брали — следующая машина через двое суток"):"<br>продают только верфь и промышленный комбинат")+"</s>"));
     /* цена — от парка (12-economy dronePrice): каждая следующая ×1.6 */
     const dp=dronePrice();
     const bd=el("button","act"+(shop?" gold":""),"КУПИТЬ · "+dp.toLocaleString("ru")+" КР");
@@ -129160,7 +129164,7 @@ function dealRender(){
       else if(!c.shipId){st="не выдан корабль — не работает и не получает";col="#ff9d7a";}
       else if(!c.order||c.order.kind==="home"){st="на приколе — приказа нет";col="#ff9d7a";}
       else if(c.hull<=0){st="корпус разбит — стоит";col="#ff9d7a";}
-      else st=ORDERS[c.order.kind].ru.toLowerCase()+" · сектор "+c.order.sx+","+c.order.sy+
+      else st=ORDERS[c.order.kind].ru.toLowerCase()+" · сектор "+c.order.sx+":"+c.order.sy+
               " · «"+(S?S.ru:"—")+"» "+Math.round(c.hull)+"/"+Math.round(c.hullMax);
       /* итог за всё время — не минутный счёт: он во второй строке, словами */
       dealRow(c.name+" · "+CREW_SPEC[c.spec].ru,st+" · итог "+(bal>=0?"+":"−")+Math.abs(bal).toLocaleString("ru")+" кр",
@@ -129225,7 +129229,7 @@ function dealRender(){
       const staff=(typeof baseStaff==="function")?baseStaff(B).length:0;
       const held=(typeof basePoolHeld==="function")?basePoolHeld(B):0;
       dealRow("База «"+B.name+"»",
-        "сектор "+B.sx+","+B.sy+" · людей "+staff+" · в закромах "+held+
+        "сектор "+B.sx+":"+B.sy+" · людей "+staff+" · в закромах "+held+
         (B.quiet?" · батарея обесточена, оборона молчит":""),
         null,B.quiet?"#ff9d7a":"",null);
     }
@@ -129239,8 +129243,9 @@ function dealRender(){
   }
   if(!crew.length&&!mgrs.length&&!runs.length&&!bases.length&&!holdL.length&&!(G.droneInventory|0))
     $dlBody.appendChild(el("div","row","<div class='nm'><s>на вас пока никто не работает. "+
-      "Наёмник ищет работу на станции (ЛЮДИ → ЭКИПАЖ), управляющий сидит в кантине, "+
+      "Наёмник ищет работу на станции (ЛЮДИ → НАЁМНИКИ), управляющий сидит в кантине, "+
       "дрона покупают на верфи, база строится с грунта.</s></div>"));
+  if(typeof addrify==="function")addrify($dlBody);   /* «сектор X:Y» — на карту, как на станции */
 }
 function openDeal(){
   for(const k in keys)keys[k]=false;
@@ -129259,6 +129264,13 @@ function closeDeal(){$dl.classList.remove("open");}
   });
   const c=document.getElementById("dlClose");
   if(c)c.addEventListener("click",()=>{closeDeal();saveGame(true);});
+  /* захват, не всплытие: строка человека сама ведёт в карточку, адрес — на карту */
+  if($dlBody)$dlBody.addEventListener("click",ev=>{
+    const u=ev.target.closest&&ev.target.closest("u.addr");if(!u)return;
+    ev.stopPropagation();ev.preventDefault();
+    closeDeal();
+    if(typeof gotoSector==="function")gotoSector(+u.dataset.sx,+u.dataset.sy,null);
+  },true);
 }
 
 /* ── СЛОВА ПРИБОРОВ: регистр имён и десятичная запятая (пара HUD 15/n) ──
