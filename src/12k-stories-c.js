@@ -101,8 +101,8 @@ const STORIES_C=[
 /* ── 82. Тот, кто красит ── привычка · комбинат, связано с комиссией */
 {id:"painter",form:"habit",at:"stype:indust",cast:["painter"],
  traces:[
-  {id:"t1",via:"queue",text:"— Красит. Всё. Стены, трубы, людей, если стоят. Остановиться не может."},
-  {id:"t2",via:"queue",when:{seenOf:"commission.t6",visits:2},text:"— Бумагу с линиями, говорят, тоже покрасил. Ровные поверх ровных. Комиссия бы одобрила."},
+  {id:"t1",via:"queue",text:"— Красит. Всё. Стены, трубы, людей, если стоят. Комиссия уехала, а он не остановился."},
+  {id:"t2",via:"queue",when:{seenOf:"commission.t6",visits:2},text:"— Бумагу с линиями тоже покрасил. Теперь там ровные линии поверх ровных линий. Комиссия бы одобрила."},
   {id:"t3",via:"cant",scene:{seat:"door",figure:1,col:[120,100,80],props:["jar","jar"]}}
  ],
  links:["commission"]},
