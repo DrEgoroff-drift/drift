@@ -241,7 +241,10 @@ cvs.addEventListener("pointerdown",e=>{
      второй палец при живом стике тоже тычок, а при ждущем — щипок, и тогда
      ждущий снимается, иначе зум на телефоне достался бы одному стику */
   const xy=helmCanvasXY(e);
-  if(HELM.S||HELM.P){HELM.P=null;return;}
+  /* залипший стик не должен глотать следующее касание: если стик или ждущий
+     палец принадлежат ДРУГОМУ указателю, это второй палец (тычок/щипок), и
+     ждущий снимается; свой же указатель второй раз стика не рождает */
+  if((HELM.S&&HELM.S.id!==e.pointerId)||(HELM.P&&HELM.P.id!==e.pointerId)){HELM.P=null;return;}
   HELM.P={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1],t0:now()};
 });
 function helmPtrEnd(e){
@@ -252,6 +255,11 @@ function helmPtrEnd(e){
 }
 cvs.addEventListener("pointerup",helmPtrEnd);
 cvs.addEventListener("pointercancel",helmPtrEnd);
+/* страховка: отпускание может случиться не над канвасом (браузерная полоса,
+   экран, открывшийся под пальцем) — окно закрывает жест в любом случае, иначе
+   стик остаётся жить с потерянным id */
+addEventListener("pointerup",helmPtrEnd);
+addEventListener("pointercancel",helmPtrEnd);
 cvs.addEventListener("contextmenu",e=>{if(G.mode==="system")e.preventDefault();});
 /* открытый экран над холстом: в Node любой селектор «находит» заглушку, поэтому спрашиваем класс */
 function helmScreenOpen(){return scrOpen();}

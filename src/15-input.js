@@ -416,6 +416,12 @@ const ptr=new Map();
 let pinch0=0,zoom0=1,mzoom0=1;
 cvs.addEventListener("pointerdown",e=>{
   ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t0:now(),moved:false});
+  /* захват указателя (12.11.2026): без него pointermove перестаёт доходить,
+     едва палец пересечёт приёмник, пэд или рельсу — стик замирает на последнем
+     векторе, а потерянный pointerup съедает следующее касание («джойстик не
+     появился»). Захват держит всю серию событий на канвасе до отпускания. */
+  try{if(e.pointerId!=null&&cvs.setPointerCapture)cvs.setPointerCapture(e.pointerId);}catch(_){}
+  if(e.pointerType!=="mouse")e.preventDefault();
   if(ptr.size===2){
     const [a,b]=[...ptr.values()];
     pinch0=Math.hypot(a.x-b.x,a.y-b.y)||1;zoom0=G.zoom;mzoom0=(typeof mapZoomK==="function")?mapZoomK():1;

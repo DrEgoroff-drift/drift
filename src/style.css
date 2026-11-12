@@ -55,7 +55,7 @@
 html,body{height:100%;overflow:hidden;background:var(--void);
   font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   color:var(--phos);user-select:none;-webkit-user-select:none;touch-action:none}
-#c{position:fixed;inset:0;width:100%;height:100%;display:block;opacity:0}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;opacity:0;touch-action:none}
 #nogpu{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;padding:22px 26px;background:#0b1018;border:1px solid #2a3a48;border-radius:10px;color:var(--text);font:14px/1.5 ui-monospace,monospace;z-index:50}
 #nogpu b{display:block;color:var(--amber);margin-bottom:8px}#nogpu s{text-decoration:none;color:#a59d8f}
 
@@ -264,10 +264,10 @@ body.minewords #prompt{visibility:hidden}
 .pads.faded{opacity:.14}
 body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],body.tankdry .pads button[data-k=right]{opacity:.3}   /* пустой бак: ими не сдвинуться (R2) */
 .pads>div>button,.pads>div{transform:scale(var(--padscale,1));transform-origin:bottom}
-.pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:auto;touch-action:none}
+.pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:none;touch-action:none}/* промежуток между кружками — не мёртвая зона: палец в щель рождает стик, а не пропадает */
 /* касание на пэде — не жест страницы: иначе первое движение пальца браузер
    забирает как прокрутку и гасит нажатие (палец «проваливается») */
-.pads button{-webkit-appearance:none;position:relative;isolation:isolate;touch-action:none;
+.pads button{-webkit-appearance:none;position:relative;isolation:isolate;touch-action:none;pointer-events:auto;
   background:radial-gradient(120% 120% at 50% 12%,rgba(var(--c-phos),.10),rgba(8,14,23,.60) 62%);
   border:0;color:var(--phos);font-family:inherit;font-size:15px;width:var(--padw,56px);height:var(--padw,56px);
   border-radius:50%;display:grid;place-items:center;backdrop-filter:var(--pl-blur);flex:0 0 auto;
@@ -3121,3 +3121,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags,#wan3Tags) .ht.sg::before,:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags,#wan3Tags) .ht.sg::after{display:none}
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags,#wan3Tags) .ht.sg b{font-size:11px;font-weight:500;letter-spacing:.2em;color:rgba(168,178,192,.62)}
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags,#wan3Tags) .ht.sg s{font-size:10px;color:rgba(168,178,192,.42)}
+/* телефон: живая строка эфира не растягивается на обе зоны больших пальцев */
+@media (max-width:760px){
+  body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet){flex:0 1 auto;max-width:min(240px,52vw);margin-left:auto;margin-right:auto}
+}

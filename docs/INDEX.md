@@ -4256,7 +4256,7 @@ econPriceMul                 src/12ax-fx-econ.js:66-73
 econTierBonus                src/12ax-fx-econ.js:44
 econVeinHere                 src/12ax-fx-econ.js:38-43
 el                           src/26-ui-station.js:343
-endPtr                       src/15-input.js:448-453
+endPtr                       src/15-input.js:454-459
 energyCap                    src/05c-arms.js:173
 energyRegen                  src/05c-arms.js:174
 engineLoop                   src/09-audio.js:342-368
@@ -5308,7 +5308,7 @@ heardYours                   src/12x-parrot.js:71-74
 heatAdd                      src/13a-guns.js:47-52
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:370
-helmApply                    src/15a-helm.js:450-548
+helmApply                    src/15a-helm.js:458-556
 helmBand                     src/15b-helm-draw.js:145-148
 helmCamOff                   src/15b-helm-draw.js:130-143
 helmCanvasXY                 src/15a-helm.js:153
@@ -5317,25 +5317,25 @@ helmDrawMarks                src/15b-helm-draw.js:8-23
 helmDrawSticks               src/15b-helm-draw.js:157-226
 helmDry                      src/15b-helm-draw.js:150
 helmDryLabel                 src/15b-helm-draw.js:151-153
-helmEdgeInput                src/15a-helm.js:349-361
+helmEdgeInput                src/15a-helm.js:357-369
 helmHome                     src/15b-helm-draw.js:54-67
 helmLift                     src/15b-helm-draw.js:71-116
-helmLock                     src/15a-helm.js:284-291
-helmLockNext                 src/15a-helm.js:293-309
+helmLock                     src/15a-helm.js:292-299
+helmLockNext                 src/15a-helm.js:301-317
 helmMarkTop                  src/15b-helm-draw.js:119-124
-helmMarksClean               src/15a-helm.js:273-283
-helmPinchBlocked             src/15a-helm.js:260
-helmPtrEnd                   src/15a-helm.js:247-252
-helmScreenOpen               src/15a-helm.js:257
-helmShotAt                   src/15a-helm.js:325-328
+helmMarksClean               src/15a-helm.js:281-291
+helmPinchBlocked             src/15a-helm.js:268
+helmPtrEnd                   src/15a-helm.js:250-255
+helmScreenOpen               src/15a-helm.js:265
+helmShotAt                   src/15a-helm.js:333-336
 helmStickFoot                src/15b-helm-draw.js:40-48
 helmStickShape               src/15b-helm-draw.js:31-37
 helmSyncPointer              src/15a-helm.js:179-199
 helmTake                     src/15a-helm.js:222-230
-helmTap                      src/15a-helm.js:311-323
-helmTargetable               src/15a-helm.js:267-271
-helmTargets                  src/15a-helm.js:272
-helmTick                     src/15a-helm.js:363-447
+helmTap                      src/15a-helm.js:319-331
+helmTargetable               src/15a-helm.js:275-279
+helmTargets                  src/15a-helm.js:280
+helmTick                     src/15a-helm.js:371-455
 helmTrail                    src/15a-helm.js:209-215
 helmTrailAge                 src/15a-helm.js:216-219
 hex2rgb                      src/01-core.js:221-224
@@ -6250,7 +6250,7 @@ mountAt                      src/05d-mounts.js:46-54
 mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
 mountsOf                     src/05d-mounts.js:29-45
-mouseWalkAt                  src/15-input.js:459-488
+mouseWalkAt                  src/15-input.js:465-494
 mpAlpha                      src/17z4-map-pen.js:25
 mpArc                        src/17z4-map-pen.js:64-70
 mpBegin                      src/17z4-map-pen.js:20
@@ -8468,7 +8468,7 @@ stapelYardBy                 src/26e1-stapel.js:41-45
 starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:25-34
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:649-657
+start                        src/15-input.js:655-663
 startLanding                 src/19-mode-landing.js:13-68
 startScoop                   src/19a-mode-scoop.js:51-64
 stat                         src/08-state.js:297-369
@@ -8599,7 +8599,7 @@ tactHz                       src/28-loop.js:378
 tactTick                     src/28-loop.js:388-401
 tactWork                     src/28-loop.js:381
 tailWhisk                    src/12y2d-site-bird.js:274-279
-tap                          src/15-input.js:490-620
+tap                          src/15-input.js:496-626
 tapeBuy                      src/12s1-tape.js:37-42
 tapeCan                      src/12s1-tape.js:22
 tapeFree                     src/12s1-tape.js:20
@@ -9786,7 +9786,7 @@ zoomTo                       src/15-input.js:370
   · ввод:87
   · полоса вкладок шире экрана:230
 
-## src/15a-helm.js · 41 KB
+## src/15a-helm.js · 42 KB
   · штурвал (M360):1
 
 ## src/15b-helm-draw.js · 16 KB
