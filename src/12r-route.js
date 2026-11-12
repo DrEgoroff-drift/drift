@@ -163,12 +163,13 @@ function routeSum(){
    которое в неё ВХОДИТ. Один источник правды для подвала карты, подсветки
    на карте и ряда «ПО МАРШРУТУ» на станции. */
 function routeNext(){
-  const R=routeOf(),sys=routeSys();
-  if(!sys.length)return null;
-  const n=sys.length,idx=R.cursor%n,to=sys[idx];
-  const legs=routeLegs();
-  const inLeg=legs.length?legs[(idx-1+n)%n]:null;
-  const outLeg=legs.length?legs[idx]:null;
+  const R=routeOf(),sys=routeSys(),legs=routeLegs();
+  if(!legs.length||!sys.length)return null;
+  /* кольцо считает КУРСОР по ПЛЕЧАМ: раньше модуль брал модуло числа станций,
+     и при разной длине плечей и списка станций «куда лететь» указывал не туда,
+     а порядок кольца с тех пор не совпадал никогда (находка соседней волны) */
+  const n=legs.length,idx=R.cursor%n,to=sys.find(s=>s.key===legs[idx])||sys[0];
+  const inLeg=legs[(idx-1+n)%n],outLeg=legs[idx];
   const d=Math.hypot(to.sx-G.sx,to.sy-G.sy);
   const jumps=d>0?Math.max(1,Math.ceil(d/Math.max(.5,stat().jump))):0;
   return{sys:to,key:to.key,idx,inLeg,outLeg,dist:d,jumps};

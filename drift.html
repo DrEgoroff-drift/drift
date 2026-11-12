@@ -37102,9 +37102,11 @@ function bargeDestPrice(b,good){
   if(!dst)return base;
   return marketFor(dst)[good]||base;
 }
-/* наценка баржи: 8–12% от seed, плюс поправка на норов. Обе цены (и как баржа
-   продаёт, и как покупает) ВСЕГДА хуже станции назначения — иначе баржа стала бы
-   бесплатным арбитражем. Выигрыш игрока тут во времени, а не в деньгах. */
+/* наценка баржи: 8–12% от seed, плюс поправка на норов. Продажа игроку — всегда
+   дороже прилавка назначения (не закупочной: у пугливого 5% проваливались ниже
+   +6% прилавка). Покупка у игрока — дешевле сдачи; при цене в 1 кр скидка
+   округляется в ноль, и строка говорит «не выгоднее», а не «дешевле».
+   Выигрыш игрока тут во времени, а не в деньгах. */
 function bargeMarkup(b){
   const r=rng(hashi(b.seed,0x8A2E,3));
   return clamp(.08+r()*.04-(BARGE_TEMPER[b.temper]||BARGE_TEMPER.bold).give,.03,.18);
@@ -37654,18 +37656,40 @@ function drawBarges(zx,zy,Z){
   }
   if(SH.length)gpuShapes(pass,SH);
 }
+/* какие плечи и правда родят баржу в этом окне — тот же бросок, что spawnBarges.
+   Своё зерно карты врало: точка была, а в системе никого, и наоборот. */
+function bargeLiveSet(legs){
+  const live={},bucket=Math.floor(now()/BARGE_PERIOD),rolled={};
+  const rollSys=(sx,sy)=>{
+    const k=sx+","+sy;if(rolled[k])return;rolled[k]=1;
+    const local=[];
+    for(let j=0;j<legs.length;j++)
+      if(legs[j][0].key===k||legs[j][1].key===k)local.push(j);
+    const r=rng(hashi(sx,sy,bucket*131+0x0BA6));
+    let made=0;
+    for(const j of local){
+      if(made>=2)break;
+      if(r()>=.6)continue;
+      made++;live[j]=1;
+    }
+  };
+  for(let i=0;i<legs.length;i++){
+    rollSys(legs[i][0].sx,legs[i][0].sy);
+    rollSys(legs[i][1].sx,legs[i][1].sy);
+  }
+  return live;
+}
 /* дот баржи на карте: медленная точка на плече маршрута фактора (18-mode-map) */
 function drawBargesMap(vis){
   const legs=bargeLegs();
   if(!legs.length)return;
   const at=key=>{const[sx,sy]=key.split(",").map(Number);
     return vis.find(v=>v.gx===sx&&v.gy===sy)||null;};
-  const bucket=Math.floor(now()/BARGE_PERIOD);
+  const bucket=Math.floor(now()/BARGE_PERIOD),live=bargeLiveSet(legs);
   for(let li=0;li<legs.length;li++){
     const a=at(legs[li][0].key),c=at(legs[li][1].key);
-    if(!a||!c)continue;
+    if(!a||!c||!live[li])continue;
     const r=rng(hashi(legs[li][0].sx+legs[li][1].sx,legs[li][0].sy+legs[li][1].sy,bucket*53));
-    if(r()>=.6)continue;
     /* точка ползёт туда-обратно по плечу — гружёная в одну сторону, порожняя в
        другую, видно без единой цифры */
     const ph=((G.t*.03+r()*7)%2);
@@ -37687,6 +37711,9 @@ function openBarge(b){
   document.getElementById("bgKind").textContent=
     "капитан "+T.ru+" · "+T.note+" · рейс: "+b.fac;
   logAdd("dim","Сблизились с баржой «"+b.capName+"»");
+  /* груз узла — в момент встречи, один раз за жизнь баржи: не забрали и ушли —
+     bargePloadHome вернёт на склад, прыжок не сжигает запас */
+  if(typeof planetBargeLoad==="function"&&!b.ploadTook){b.ploadTook=1;planetBargeLoad(b);}
   $bg.classList.add("open");renderBarge();
 }
 function closeBarge(){
@@ -37741,14 +37768,14 @@ function renderBarge(){
       if(n<=0){say("Некуда или не на что");return;}
       /* трюм берёт по весу и ноль под истощением — платим за то, что легло */
       const got=addRes(b.good,n);
-      if(got<n)say(got?"Часть груза не влезла по весу":"Руда этой державы истощена — у баржи купить нечего");
+      if(got<n)say(got?"Часть груза не влезла по весу":"Руда этой державы истощена — у баржи груз на месте");
       if(!got)return;
       G.credits-=got*p;b.qty-=got;b.dealt+=got;bargeRepNudge(b);
       logAdd("money","Куплено у баржи: "+RES[b.good].ru.toLowerCase()+" ×"+got+" по "+p+" кр");
       renderBarge();
     };
     $bgBody.appendChild(bargeElRow("КУПИТЬ "+RES[b.good].ru,
-      p+" кр/ед · на станции назначения "+bargeDestPrice(b,b.good)+" кр · экономите перелёт",
+      p+" кр/ед · на станции назначения "+bargeStationAsk(b,b.good)+" кр · экономите перелёт",
       [{txt:"+1",dis:canN<1,on:()=>buy(1)},{txt:"+10",dis:canN<1,on:()=>buy(10)},
        {txt:"ВСЁ",gold:1,dis:canN<1,on:()=>buy(canN)}]));
   }
@@ -37759,7 +37786,7 @@ function renderBarge(){
   }
   const mine=TRADE_KEYS.filter(k=>G.cargo[k]>0);
   if(mine.length){
-    $bgBody.appendChild(el("div","sec","ПРОДАТЬ БАРЖЕ · платит меньше станции, зато прямо здесь"));
+    $bgBody.appendChild(el("div","sec","ПРОДАТЬ БАРЖЕ · платит не выгоднее станции, зато прямо здесь"));
     for(const k of mine){
       const p=bargeBuyPrice(b,k);
       const sell=n=>{
@@ -39255,12 +39282,13 @@ function routeSum(){
    которое в неё ВХОДИТ. Один источник правды для подвала карты, подсветки
    на карте и ряда «ПО МАРШРУТУ» на станции. */
 function routeNext(){
-  const R=routeOf(),sys=routeSys();
-  if(!sys.length)return null;
-  const n=sys.length,idx=R.cursor%n,to=sys[idx];
-  const legs=routeLegs();
-  const inLeg=legs.length?legs[(idx-1+n)%n]:null;
-  const outLeg=legs.length?legs[idx]:null;
+  const R=routeOf(),sys=routeSys(),legs=routeLegs();
+  if(!legs.length||!sys.length)return null;
+  /* кольцо считает КУРСОР по ПЛЕЧАМ: раньше модуль брал модуло числа станций,
+     и при разной длине плечей и списка станций «куда лететь» указывал не туда,
+     а порядок кольца с тех пор не совпадал никогда (находка соседней волны) */
+  const n=legs.length,idx=R.cursor%n,to=sys.find(s=>s.key===legs[idx])||sys[0];
+  const inLeg=legs[(idx-1+n)%n],outLeg=legs[idx];
   const d=Math.hypot(to.sx-G.sx,to.sy-G.sy);
   const jumps=d>0?Math.max(1,Math.ceil(d/Math.max(.5,stat().jump))):0;
   return{sys:to,key:to.key,idx,inLeg,outLeg,dist:d,jumps};
@@ -114615,6 +114643,9 @@ function closeStation(){
     G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
     G.ship.vx=S.vx||0;G.ship.vy=S.vy||0;
   }
+  /* отстыковка снимает станцию: пока G.st жил, мир-история (11c, 11d) видел
+     станцию с соседней планеты системы — «вчерашний» мир всплывал на другой */
+  G.st=null;
   say("Отстыковка");
   /* запись на выходе — парой к записи на входе (плейтест 30.08.2026): вход
      сохранял 428 кр до ремонта, а всё купленное в доке жило лишь до перезагрузки */
