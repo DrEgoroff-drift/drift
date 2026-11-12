@@ -49,7 +49,7 @@ function startLanding(p){
   {const _t=NEAR.on?wallMs():0;genDeco(tr,p);if(NEAR.on)NEAR.sl.deco=Math.round((wallMs()-_t)*10)/10;}
   G.ap=null;
   {const _t=NEAR.on?wallMs():0;skyReroll(p);if(NEAR.on)NEAR.sl.sky=Math.round((wallMs()-_t)*10)/10;}           /* состав неба — свой на каждую посадку (19ca) */
-  const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
+  const x0=tr.padX+(r()-.5)*(G.opts.easyLand?260:220);
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
@@ -155,7 +155,7 @@ function updateLanding(dt){
     const tol=(G.tech.has("cera")?1.4:1)*(L.auto?3:1);
     const ok=L.vy<2.15*tol&&Math.abs(L.vx)<1.05*tol&&Math.abs(L.a)<.26*tol&&slope<9*tol;
     L.touch={vy:+L.vy.toFixed(2),vx:+L.vx.toFixed(2),a:+L.a.toFixed(2),slope:+slope.toFixed(1),tol};  /* что было в момент касания (тест 91zzzb) */
-    L.ok=ok;L.over=70;L.vx=0;L.vy=0;
+    L.ok=ok;L.over=40;L.vx=0;L.vy=0;
     /* удар: стойки проседают тем глубже, чем жёстче пришли, и отдают пружиной */
     L.gear=1;L.sq=Math.min(1,.3+sp*.3);L.sqv=0;L.hot=1;
     if(ok)say("Посадка выполнена");

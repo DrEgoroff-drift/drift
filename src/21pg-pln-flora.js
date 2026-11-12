@@ -463,4 +463,4 @@ function plnBodyTick(ms){
   }
   return true;
 }
-workAdd("plnbody",6,()=>G.mode==="system"||!!PLNBODY.target,ms=>plnBodyTick(ms));
+workAdd("plnbody",0,()=>G.mode==="system"||!!PLNBODY.target,ms=>plnBodyTick(ms));
