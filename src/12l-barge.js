@@ -121,9 +121,25 @@ function bargeBuyPrice(b,good){           // баржа покупает у ва
    Баржа живёт в местных координатах системы, как пират: летит по хорде мимо
    станции, медленно, без оружия. Присутствие и состав детерминированы от
    seed сектора и окна времени. */
+/* груз узла на эфемерной барже. Не забрали — возвращается на склад: иначе вход
+   в систему списывает запас, а прыжок или гибель сжигает его вместе с бортом */
+function bargePloadHome(b){
+  const N=G.pnode,L=b&&b.pload;if(!N||!L)return 0;
+  let n=0;const cap=(typeof PLANET_CAP==="number")?PLANET_CAP:260;
+  for(const k in L){
+    const t=L[k]|0;if(t<=0)continue;
+    const room=Math.max(0,cap-(N.stock[k]||0));
+    const put=Math.min(t,room);if(put<=0)continue;
+    N.stock[k]=(N.stock[k]||0)+put;n+=put;
+  }
+  b.pload=null;return n;
+}
 function spawnBarges(){
   /* ушли из системы с рейсом — рейс сорван (§12): вход в новую систему и есть уход */
-  for(const b of G.barges||[])if(b.escort)bargeEscortEnd(b,false,"ушли из системы — рейс сорван");
+  for(const b of G.barges||[]){
+    if(b.escort)bargeEscortEnd(b,false,"ушли из системы — рейс сорван");
+    bargePloadHome(b);
+  }
   /* и рейс, чья баржа не пережила загрузку (баржи — мир, в сейв не идут) */
   if(typeof questAll==="function"&&typeof questFail==="function")
     for(const q of questAll().slice())if(q.state==="active"&&String(q.key).indexOf("escort:")===0)questFail(q.key,"рейс сорван");
@@ -172,8 +188,8 @@ function spawnBarges(){
       x:Math.cos(a)*(distress?rad*.6:rad),y:Math.sin(a)*(distress?rad*.6:rad),
       vx:Math.cos(heading)*(distress?sp*.5:sp),vy:Math.sin(heading)*(distress?sp*.5:sp),a:heading
     });
-    /* зашла на ваш узел по дороге — значит, везёт и ваш товар (12n) */
-    if(typeof planetBargeLoad==="function")planetBargeLoad(G.barges[G.barges.length-1]);
+    /* груз узла берётся при встрече (openBarge), не при появлении: баржа в сейв
+       не идёт, а списанный запас — идёт. Забрали бы товар, которого уже нет */
     if(leg[2]&&typeof rivalEat==="function")rivalEat(to,good,cap);   /* соперник с проданной дороги (M297) */
     made++;
   }
@@ -254,6 +270,8 @@ function bargeRescued(b){
    добили ВЫ, фракция это запомнит (репутация вниз резко; полноценная месть — в
    M98), а груз ваш. Если добили пираты — вы просто опоздали. */
 function bargeSunk(b,cause){
+  const back=bargePloadHome(b);
+  if(back)logAdd("dim","Груз узла с баржи «"+b.capName+"» вернулся на склад · "+back+" ед");
   const i=G.barges.indexOf(b);if(i>=0)G.barges.splice(i,1);
   if(b.escort)bargeEscortEnd(b,false);
   const key=G.sx+","+G.sy;
@@ -277,8 +295,9 @@ function bargeSunk(b,cause){
     const want=Math.min(b.qty|0,4+Math.floor(rnd()*6));
     const got=want>0?addRes(b.good,want):0;
     b.qty-=got;
-    say("Баржа «"+b.capName+"» разбита вами\n"+(got?"+"+got+" "+RES[b.good].ru.toLowerCase()+" · ":"трюм не взял ничего · ")+"вас запомнят");
-    logAdd("warn","Вы разбили баржу «"+b.capName+"» · "+(got?"груз +"+got:"груз не влез")+", репутация упала");
+    const drained=!got&&want>0&&typeof natOreMul==="function"&&natOreMul(b.good)===0;
+    say("Баржа «"+b.capName+"» разбита вами\n"+(got?"+"+got+" "+RES[b.good].ru.toLowerCase()+" · ":(drained?"руды этой державы нет · ":"трюм не взял ничего · "))+"вас запомнят");
+    logAdd("warn","Вы разбили баржу «"+b.capName+"» · "+(got?"груз +"+got:(drained?"руды нет":"груз не влез"))+", репутация упала");
   }else{
     say("Баржу «"+b.capName+"» потопили пираты\nостался остов");
     logAdd("warn","Баржа «"+b.capName+"» погибла · остался остов");
@@ -340,7 +359,7 @@ function bargeEscortAccept(b){
   if(typeof questAdd==="function")questAdd("escort:"+b.seed,{
     ru:"Проводить баржу «"+b.capName+"»",kind:"job",from:"баржа",
     note:"довести до «"+((dst&&dst.station&&dst.station.name)||"назначения")+
-      "» живой. Половина выплачена, вторая — когда рейс дойдёт; уйдёте из системы — сорван",
+      "» живой. Половина выплачена, вторая — когда рейс дойдёт; уйдёте из системы — сорван; запись рейс не хранит",
     sx:dst?dst.sx:null,sy:dst?dst.sy:null,reward:"репутация у назначения"});
   say("Аванс охраны +"+adv+" кр\nдоведите баржу — вторая половина у назначения");
   logAdd("money","Наняты охраной баржи «"+b.capName+"» · аванс +"+adv+" кр");
@@ -622,18 +641,40 @@ function drawBarges(zx,zy,Z){
   }
   if(SH.length)gpuShapes(pass,SH);
 }
+/* какие плечи и правда родят баржу в этом окне — тот же бросок, что spawnBarges.
+   Своё зерно карты врало: точка была, а в системе никого, и наоборот. */
+function bargeLiveSet(legs){
+  const live={},bucket=Math.floor(now()/BARGE_PERIOD),rolled={};
+  const rollSys=(sx,sy)=>{
+    const k=sx+","+sy;if(rolled[k])return;rolled[k]=1;
+    const local=[];
+    for(let j=0;j<legs.length;j++)
+      if(legs[j][0].key===k||legs[j][1].key===k)local.push(j);
+    const r=rng(hashi(sx,sy,bucket*131+0x0BA6));
+    let made=0;
+    for(const j of local){
+      if(made>=2)break;
+      if(r()>=.6)continue;
+      made++;live[j]=1;
+    }
+  };
+  for(let i=0;i<legs.length;i++){
+    rollSys(legs[i][0].sx,legs[i][0].sy);
+    rollSys(legs[i][1].sx,legs[i][1].sy);
+  }
+  return live;
+}
 /* дот баржи на карте: медленная точка на плече маршрута фактора (18-mode-map) */
 function drawBargesMap(vis){
   const legs=bargeLegs();
   if(!legs.length)return;
   const at=key=>{const[sx,sy]=key.split(",").map(Number);
     return vis.find(v=>v.gx===sx&&v.gy===sy)||null;};
-  const bucket=Math.floor(now()/BARGE_PERIOD);
+  const bucket=Math.floor(now()/BARGE_PERIOD),live=bargeLiveSet(legs);
   for(let li=0;li<legs.length;li++){
     const a=at(legs[li][0].key),c=at(legs[li][1].key);
-    if(!a||!c)continue;
+    if(!a||!c||!live[li])continue;
     const r=rng(hashi(legs[li][0].sx+legs[li][1].sx,legs[li][0].sy+legs[li][1].sy,bucket*53));
-    if(r()>=.6)continue;
     /* точка ползёт туда-обратно по плечу — гружёная в одну сторону, порожняя в
        другую, видно без единой цифры */
     const ph=((G.t*.03+r()*7)%2);
@@ -655,6 +696,9 @@ function openBarge(b){
   document.getElementById("bgKind").textContent=
     "капитан "+T.ru+" · "+T.note+" · рейс: "+b.fac;
   logAdd("dim","Сблизились с баржой «"+b.capName+"»");
+  /* груз узла — в момент встречи, один раз за жизнь баржи: не забрали и ушли —
+     bargePloadHome вернёт на склад, прыжок не сжигает запас */
+  if(typeof planetBargeLoad==="function"&&!b.ploadTook){b.ploadTook=1;planetBargeLoad(b);}
   $bg.classList.add("open");renderBarge();
 }
 function closeBarge(){
@@ -694,7 +738,7 @@ function renderBarge(){
   if(!b.escort){
     const adv=bargeEscortHalf(b),rest=bargeEscortAdvance(b)-adv;
     $bgBody.appendChild(bargeElRow("НАНЯТЬСЯ ОХРАНОЙ",
-      "аванс +"+adv+" кр вперёд, ещё +"+rest+" когда рейс дойдёт · уйдёте из системы — сорван · провал бьёт по репутации",
+      "аванс +"+adv+" кр вперёд, ещё +"+rest+" когда рейс дойдёт · уйдёте из системы — сорван · запись рейс не хранит · провал бьёт по репутации",
       [{txt:"ВЗЯТЬ РЕЙС",gold:1,dis:false,on:()=>{bargeEscortAccept(b);renderBarge();}}]));
   }else{
     $bgBody.appendChild(el("div","sec","ВЫ ОХРАНА ЭТОГО РЕЙСА · ведите баржу до назначения"));
@@ -709,14 +753,14 @@ function renderBarge(){
       if(n<=0){say("Некуда или не на что");return;}
       /* трюм берёт по весу и ноль под истощением — платим за то, что легло */
       const got=addRes(b.good,n);
-      if(got<n)say(got?"Часть груза не влезла по весу":"Руда этой державы истощена — у баржи купить нечего");
+      if(got<n)say(got?"Часть груза не влезла по весу":"Руда этой державы истощена — у баржи груз на месте");
       if(!got)return;
       G.credits-=got*p;b.qty-=got;b.dealt+=got;bargeRepNudge(b);
       logAdd("money","Куплено у баржи: "+RES[b.good].ru.toLowerCase()+" ×"+got+" по "+p+" кр");
       renderBarge();
     };
     $bgBody.appendChild(bargeElRow("КУПИТЬ "+RES[b.good].ru,
-      p+" кр/ед · на станции назначения "+bargeDestPrice(b,b.good)+" кр · экономите перелёт",
+      p+" кр/ед · на станции назначения "+bargeStationAsk(b,b.good)+" кр · экономите перелёт",
       [{txt:"+1",dis:canN<1,on:()=>buy(1)},{txt:"+10",dis:canN<1,on:()=>buy(10)},
        {txt:"ВСЁ",gold:1,dis:canN<1,on:()=>buy(canN)}]));
   }
@@ -727,7 +771,7 @@ function renderBarge(){
   }
   const mine=TRADE_KEYS.filter(k=>G.cargo[k]>0);
   if(mine.length){
-    $bgBody.appendChild(el("div","sec","ПРОДАТЬ БАРЖЕ · платит меньше станции, зато прямо здесь"));
+    $bgBody.appendChild(el("div","sec","ПРОДАТЬ БАРЖЕ · платит не выгоднее станции, зато прямо здесь"));
     for(const k of mine){
       const p=bargeBuyPrice(b,k);
       const sell=n=>{

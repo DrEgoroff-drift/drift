@@ -25659,7 +25659,7 @@ bldAddFx("E","nakop",    "Накопитель",        {credits:2000,alloy:10,c
 bldAddFx("E","kontora",  "Контора",           {credits:1800,alloy:6,cable:4},            "any",        "при стыковке цены соседей в четырёх секторах ложатся на бумагу «со слуха»");
 bldAddFx("E","kassa",    "Касса",             {credits:1200,alloy:4,relay:2},            "any",        "ваучеры меняются здесь без спреда");
 bldAddFx("E","prichal",  "Причал",            {credits:3000,alloy:8,beam:1},             "any",        "баржа грузится здесь сама — с ваших промыслов, по 0.7 цены");
-bldAddFx("E","railpost", "Путевой пост",      {credits:3200,alloy:10,rebar:6},           "any",        "ГЛАВТРАССА тянет сюда ветку от ближайшей станции линии (до 8 секторов) — полустанок ваш");
+bldAddFx("E","railpost", "Путевой пост",      {credits:3200,alloy:10,rebar:6},           "any",        "ГЛАВТРАССА тянет сюда ветку от ближайшей станции линии (по прямой не дальше восьми секторов) — полустанок ваш");   /* радиус — гипотенуза, не квадрат секторов */
 bldAddFx("E","dispatch", "Диспетчерская",     {credits:2600,alloy:8,relay:4,tube:2},     "any",        "с фактором в кресле эфир докладывает о пустых бункерах и лежащем пае");
 /* F · флот */
 bldAddFx("F","dock",     "Ремонтный док",     {credits:2400,alloy:12,roll:8},            "any",        "ремонт здесь на 30% дешевле");
@@ -25675,16 +25675,16 @@ bldAddFx("G","artel",    "Артель",            {credits:2400,alloy:10,canne
 bldAddFx("G","redcorner","Красный уголок",    {credits:1600,alloy:4,phosphor:2},         "any",        "верность управляющих не падает, пока вы стоите здесь");
 bldAddFx("G","canteen",  "Столовая",          {credits:1400,alloy:4,canned:8},           "any",        "рейсы отсюда вдвое реже кончаются худом");
 /* H · оборона */
-bldAddFx("H","guns",     "Орудийная батарея", {credits:3600,alloy:16,refr:6,relay:2},    "any",        "блокада этой системы спадает сама, по уровню за проверку");
+bldAddFx("H","guns",     "Орудийная батарея", {credits:3600,alloy:16,refr:6,relay:2},    "any",        "блокада здесь тает, когда проверка доходит до системы — уровень за раз");   /* бросок один на все занятые, не каждый такт этой системы */
 bldAddFx("H","lookout",  "Дозор",             {credits:1800,alloy:6,optics:2},           "any",        "очаги пиратов в пяти секторах отсюда видны на карте");
 bldAddFx("H","druzhina", "Дружина",           {credits:2400,alloy:8,fabric:4},           "any",        "на абордаже в этом секторе гарнизон реже: дружина держит подходы");
 bldAddFx("H","barrier",  "Заграждение",       {credits:2800,alloy:12,mast:2},            "any",        "засада на подходе к системе вдвое реже");
 /* I · знание и жизнь */
-bldAddFx("I","observatory","Обсерватория",    {credits:3200,alloy:10,optics:4},          "any",        "доклад о небе, поданный здесь, платит вдвое");
+bldAddFx("I","observatory","Обсерватория",    {credits:3200,alloy:10,optics:4},          "stype:sci",  "доклад о небе, поданный здесь, платит вдвое");   /* сдать доклад можно только на научной, иначе крючок мёртв */
 bldAddFx("I","branch",   "Филиал",            {credits:4000,alloy:14,semi:4},            "stype:sci",  "техника здесь на 15% дешевле");
 bldAddFx("I","archive",  "Архив",             {credits:1600,alloy:4,film:4},             "any",        "на доске — летопись системы: всё, что здесь стояло");
 bldAddFx("I","ownpier",  "Личный причал",     {credits:2000,alloy:8,beam:1},             "any",        "часы износа сходят с корпуса, пока вы стоите здесь");
-bldAddFx("I","radiomast","Радиомачта",        {credits:2400,alloy:8,mast:1,cable:4},     "any",        "система слышна как ретранслятор — ваша мачта в эфире");
+bldAddFx("I","radiomast","Радиомачта",        {credits:2400,alloy:8,mast:1,cable:4},     "any",        "в эфире слышна ваша мачта — её ловят, как маяк");   /* крючок ставит маяк без чистки эфира, не ретранслятор */
 bldAddFx("I","meteo",    "Метеостанция",      {credits:1400,alloy:4,thermoc:4},          "any",        "погода на телах известна до посадки — на доске");
 const BLD_KEYS=Object.keys(BLD);
 /* кредитная часть — после всей таблицы: теневая цена выпуска ищет делателя в BLD */
@@ -25813,7 +25813,7 @@ function rungOf(sx,sy){
 function rungGateTxt(sx,sy){
   const key=sx+","+sy,P=G.place||{},H=G.hold&&G.hold[key],D=(H&&H.deeds)||{};
   const L=[];
-  if(!Object.keys(P).some(k=>k.indexOf(key+"/")===0))L.push("сесть на планету");
+  if(!Object.keys(P).some(k=>k.indexOf(key+"/")===0))L.push("сесть на грунт");   /* любая посадка, не только планета */
   if(!((D.drill|0)>0))L.push("пробурить залежь");
   if(!((G.drones||[]).some(d=>d.sx===sx&&d.sy===sy)||(D.drone|0)>0))L.push("оставить дрона");
   return L;
@@ -25835,8 +25835,10 @@ function bldTierOpenAt(sx,sy,def){
   return rungHas(sx,sy,"site");
 }
 function bldTierPlanTxt(def){
-  const i=rungIndex(def.fam==="D"?(def.id==="slipway"?"slipway":"lines"):(def.fam==="C"?"hub":"site"));
-  return rungRoman(rungPlanOf(i))+" пятилетке";
+  /* имя того, что должно встать: пятилетка к этому моменту уже может идти */
+  const id=def.fam==="D"?(def.id==="slipway"?"slipway":"lines"):(def.fam==="C"?"hub":"site");
+  const d=RUNGS[rungIndex(id)];
+  return d?"«"+d.ru.toLowerCase()+"»":"следующей отметке";
 }
 /* ── где можно ставить: тела системы и правило §10.1 ── */
 function sysHasFauna(sys){
@@ -25874,7 +25876,7 @@ function bldRuleWhy(sys,def){
 }
 function bldWhy(sys,def){
   if(!rungHas(sys.sx,sys.sy,"site"))return"площадка ещё не открыта";
-  if(!bldTierOpenAt(sys.sx,sys.sy,def))return"ярус откроется в "+bldTierPlanTxt(def);
+  if(!bldTierOpenAt(sys.sx,sys.sy,def))return"ярус откроется, когда здесь встанет "+bldTierPlanTxt(def);
   const H=G.hold&&G.hold[sys.key];
   if(H&&H.bld&&H.bld[def.id])return"уже стоит";
   const a=bldAtWhy(sys,def);if(a)return a;
@@ -26119,18 +26121,18 @@ const RUNGS=[null,
   {id:"dock",    ru:"Стыковочный узел",    note:"здесь стыкуются не только ваши"},
   {id:"terminal",ru:"Грузовой терминал",   note:"грузу есть где ждать"},
   {id:"town",    ru:"Городок",             note:"люди живут семьями"},
-  {id:"pier",    ru:"Причальная ферма",    note:"баржа может стоять и грузиться"},
+  {id:"pier",    ru:"Причальная ферма",    note:"у причала могут встать буксир и плавбаза"},   /* грузит постройка «причал», не эта строка */
   {id:"hub",     ru:"Промышленный узел",star:1,note:"второй ярус и третья площадка"},
   {id:"board",   ru:"Правление",           note:"своя сводка"},
   {id:"slipway", ru:"Стапельная",          note:"можно заложить стапель"},
   {id:"chair",   ru:"Кафедра",             note:"кафедра института учит здесь"},
-  {id:"frontier",ru:"Рубеж",               note:"пиратский очаг здесь не растёт"},
+  {id:"frontier",ru:"Рубеж",               note:"на кольце карты — зазубрина: рубеж отмечен"},   /* очаг в этом файле не гасится */
   {id:"lines",   ru:"Узел трасс",   star:1,note:"трассы сходятся: третий ярус"},
   {id:"district",ru:"Округ",               note:"окружная контора"},
-  {id:"line",    ru:"Трасса",              note:"регулярная линия к соседу"},
+  {id:"line",    ru:"Трасса",              note:"по трассе ходят рудовозы, рефрижераторы и лихтеровозы"},   /* ветки к соседу эта ступень не кладёт */
   {id:"belt",    ru:"Пояс огней",          note:"ночная сторона светится по кругу"},
   {id:"noon",    ru:"Полдень",             note:"система кормит себя сама"},
-  {id:"ring",    ru:"Кольцо",       star:1,note:"вошла в кольцо: здесь окликают первыми, по имени"}
+  {id:"ring",    ru:"Кольцо",       star:1,note:"система вошла в кольцо: здесь окликают первыми, по имени"}   /* «кольцо» среднего рода — подлежащее система */
 ];
 const RUNG_STARS=RUNGS.filter(x=>x&&x.star).map(x=>x.id);
 function rungPlanOf(r){return r>0?Math.min(6,Math.ceil(r/5)):0;}
@@ -26189,9 +26191,9 @@ function rungMoments(sys){
       tell("tech",nm+" · "+d.ru.toUpperCase()+" — "+d.note,d.ru+"\n"+d.note);n++;
     }
     if(i%5===0&&i<30){
-      const p=rungPlanOf(i+1);
-      tell("tech",nm+" · СИСТЕМА ПЕРЕШЛА В "+rungRoman(p)+" ПЯТИЛЕТКУ — "+RUNG_PLAN[p],
-           rungRoman(p)+" пятилетка\n"+RUNG_PLAN[p].toLowerCase());n++;
+      const p=rungPlanOf(i);   /* доска на этой ступени ещё зовёт эту пятилетку, не следующую */
+      tell("tech",nm+" · "+rungRoman(p)+" ПЯТИЛЕТКА ЗАКРЫТА — "+RUNG_PLAN[p],
+           rungRoman(p)+" пятилетка закрыта\n"+RUNG_PLAN[p].toLowerCase());n++;
     }
   }
   H.rung=r;
@@ -26294,22 +26296,24 @@ function bargeTick(c,now){
   if(s<=0)return 0;
   s=Math.min(s,72);
   c.cargo=c.cargo||{};
-  let fed=0,stood=0,extra=0;
+  let fed=0,stood=0,extra=0,saidBlk={};
   const Q=bargePilotQ(c),roll=k=>(hashi(c.seed|0,B.cursor,k)>>>0)/4294967296;
   for(let i=0;i<s;i++){
     const key=B.legs[B.cursor%B.legs.length];
     const[sx,sy]=key.split(",").map(Number);
     const sys=getSystem(sx,sy);
-    const stand=roll(0xB4A1)<.07*Q.brk,skip=extra<3&&roll(0xB4A2)<Q.rate-1;
+    /* лишнее плечо — за эту смену, не три на весь догон: иначе торопыга за 72 смены
+       проскакивает только трижды, хотя причуда обещает частоту на каждое плечо */
+    const stand=roll(0xB4A1)<.07*Q.brk,skip=roll(0xB4A2)<Math.max(0,Q.rate-1);
     B.cursor++;
     if(stand){stood++;continue;}   /* автопилот встал на этом плече (M485) */
-    if(skip){extra++;i--;}          /* торопыга: ещё одно плечо в ту же смену */
+    if(skip&&extra<s){extra++;i--;} /* торопыга: ещё одно плечо в ту же смену */
     if(!sys||!sys.station)continue;
     if(typeof occLvl==="function"&&occLvl(sx,sy)>=2){
-      if(!B.stopped){B.stopped=1;logAdd("warn","Баржа «"+bargeName(c)+"» обошла «"+sys.station.name+"»: система под пиратами");}
+      /* одна строка на станцию за догон, а не по строке на каждое пропущенное плечо */
+      if(!saidBlk[key]){saidBlk[key]=1;logAdd("warn","Баржа «"+bargeName(c)+"» обошла «"+sys.station.name+"»: система под пиратами");}
       continue;
     }
-    B.stopped=0;
     if(typeof bargeAutoLoad==="function")bargeAutoLoad(c,sys);   /* Причал (E4): грузится сама с промыслов */
     for(const k in c.cargo){
       const q=c.cargo[k]|0;if(q<=0)continue;
@@ -26319,10 +26323,10 @@ function bargeTick(c,now){
   }
   B.t0=(B.t0||now)+s*HOLD_SHIFT;
   B.fed=(B.fed|0)+fed;
-  if(stood>0)logAdd("dim","Баржа «"+bargeName(c)+"»: "+bargePilot(c)+" встал"+(stood>1?" "+stood+" раза":"")+". "+Q.say);
+  if(stood>0)logAdd("dim","Баржа «"+bargeName(c)+"»: "+bargePilot(c)+" встал"+(stood>1?" "+stood+" "+pl3(stood,"раз","раза","раз"):"")+". "+Q.say);
   if(fed>0)logAdd("money","Баржа «"+bargeName(c)+"» ссыпала "+fed+" ед в бункеры · пай растёт");
   const hold=crewHold(c);
-  if(hold<=0&&!B.empty){B.empty=1;logAdd("warn","Баржа «"+bargeName(c)+"» идёт пустой — погрузите её у стойки");}
+  if(hold<=0&&!B.empty){B.empty=1;logAdd("warn","Баржа «"+bargeName(c)+"» идёт пустая — погрузите её у стойки");}
   if(hold>0)B.empty=0;
   return fed;
 }
@@ -26347,7 +26351,13 @@ function bargeUnload(c){
   let moved=0;
   for(const k in c.cargo){
     const q=c.cargo[k]|0;if(q<=0)continue;
-    const t=addRes(k,q);c.cargo[k]=q-t;moved+=t;
+    /* свой груз, уже в трюме баржи: истощение пояса его не ест — иначе кнопка
+       молча не снимает железо, титан, лёд и кристалл */
+    const w=(typeof resW==="function")?resW(k):1;
+    const free=Math.max(0,stat().cargoMax-held());
+    const t=Math.min(q,Math.floor(free/Math.max(1,w)));
+    if(t<=0)continue;
+    G.cargo[k]=(G.cargo[k]|0)+t;c.cargo[k]=q-t;moved+=t;
   }
   return moved;
 }
@@ -26373,7 +26383,7 @@ function bargeDealList(){
     const key=c.barge.legs[c.barge.cursor%c.barge.legs.length]||"";
     const[sx,sy]=key.split(",").map(Number);
     out.push({nm:"Баржа «"+bargeName(c)+"» · "+c.name,
-      state:(hold?"везёт "+hold+" ед · ":"идёт пустой · ")+"к «"+bargeNextName(c)+"» · скормлено "+(c.barge.fed|0)+" · оклад минусом, пай растёт",
+      state:(hold?"везёт "+hold+" ед · ":"идёт пустая · ")+"к «"+bargeNextName(c)+"» · скормлено "+(c.barge.fed|0)+" · оклад минусом, пай растёт",
       sx,sy});
   }
   return out;
@@ -26396,7 +26406,7 @@ function bargeCrewRow(c){
   r.appendChild(b);
   if(crewHold(c)>0){
     const u=el("button","act sm","ВЫГРУЗИТЬ");
-    u.onclick=()=>{const n=bargeUnload(c);if(n)say("С баржи снято "+n+" ед");renderTab();};
+    u.onclick=()=>{const n=bargeUnload(c);say(n?"С баржи снято "+n+" ед":"В трюм не влезло");renderTab();};
     r.appendChild(u);
   }
   $body.appendChild(r);
@@ -27801,6 +27811,7 @@ function lockerHandOver(){
   else if(lost)tail.push("части на прилавок станции «Блошинец» не влезли");
   if(tools)tail.push("инструменты «Сороки» пропали");
   if(rawN)tail.push("сырьё пропало, не на склад");
+  if(!tail.length)tail.push("внутри ничего не осталось");
   tell("warn","Контора сдала ваш ящик: тридцать суток никто не приходил",
     "ЯЩИК СДАН\nтридцать суток без визита\n"+tail.join("\n"));
 }
@@ -36410,11 +36421,12 @@ const STORIES_B=[
  ],
  turns:[{after:"seen:t1",days:40,set:"free"}]},
 
-/* ── 55. Вода по расписанию ── место · комбинат */
+/* ── 55. Вода по расписанию ── место · комбинат.
+   После кражи рамки прежняя строка и бумага у двери из круга уходят. */
 {id:"water_schedule",form:"place",at:"stype:indust",cast:[],
  traces:[
   {id:"t1",via:"queue",when:{unseen:"t3"},text:"— У нас вода по расписанию. Расписание не соблюдается. Зато оно есть, и его повесили в рамке."},
-  {id:"t2",via:"cant",scene:{seat:"door",figure:0,props:["paper","cup"]}},
+  {id:"t2",via:"cant",when:{unseen:"t3"},scene:{seat:"door",figure:0,props:["paper","cup"]}},
   {id:"t3",via:"queue",when:{visits:3},text:"— Рамку с расписанием украли. Воду теперь дают когда попало. Никто не заметил разницы, кроме рамки."}
  ]},
 
@@ -36443,10 +36455,11 @@ const STORIES_B=[
   {id:"t3",via:"queue",when:{seenOf:"relay_kim.t2"},text:"— Долг без имени погашен. В книге пусто. Кто — не пишет."}
  ]},
 
-/* ── 59. Монета на стойке ── вещь · торговый узел */
+/* ── 59. Монета на стойке ── вещь · торговый узел.
+   После «взяли» монета и строка «лежит с открытия» из круга уходят. */
 {id:"coin_counter",form:"thing",at:"stype:trade",cast:[],
  traces:[
-  {id:"t1",via:"cant",scene:{seat:"corner",figure:0,props:["key"]}},
+  {id:"t1",via:"cant",when:{unseen:"t3"},scene:{seat:"corner",figure:0,props:["key"]}},
   {id:"t2",via:"queue",when:{unseen:"t3"},text:"— Монета на стойке лежит с открытия. Не наша, не здешняя. Её не берут. Примета: возьмёшь — станция закроется."},
   {id:"t3",via:"queue",when:{visits:5},text:"— Монету кто-то взял. Станция не закрылась. Теперь мы не знаем, во что верить, и это хуже."}
  ]},
@@ -37096,20 +37109,50 @@ function bargeMarkup(b){
   const r=rng(hashi(b.seed,0x8A2E,3));
   return clamp(.08+r()*.04-(BARGE_TEMPER[b.temper]||BARGE_TEMPER.bold).give,.03,.18);
 }
-function bargeSellPrice(b,good){          // баржа продаёт вам — дороже станции
-  return Math.max(2,Math.ceil(bargeDestPrice(b,good)*(1+bargeMarkup(b))));
+/* прилавок назначения берёт дороже, чем платит (buyPriceFor, +6%). Наценка от
+   закупочной у пугливого (5%) выходила НИЖЕ этой цены — баржа печатала арбитраж,
+   хотя комментарий выше обещает обратное. Показ игроку — та цена, что он
+   заплатил бы сам, довезя груз, а не закупочная. */
+function bargeStationAsk(b,good){
+  const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
+  const bid=bargeDestPrice(b,good);
+  if(!dst||!RES[good]||!RES[good].price)return Math.max(bid+1,Math.round(bid*1.06));
+  return buyPriceFor(dst,good);
+}
+function bargeSellPrice(b,good){          // баржа продаёт вам — дороже прилавка назначения
+  const ask=bargeStationAsk(b,good);
+  return Math.max(ask+1,Math.ceil(bargeDestPrice(b,good)*(1+bargeMarkup(b))),2);
 }
 function bargeBuyPrice(b,good){           // баржа покупает у вас — дешевле станции
-  return Math.max(1,Math.floor(bargeDestPrice(b,good)*(1-bargeMarkup(b))));
+  const d=bargeDestPrice(b,good);
+  const marked=Math.floor(d*(1-bargeMarkup(b)));
+  /* при цене 1 кредит скидка округляется в ноль: не платим 0 и не врём «дешевле» */
+  return Math.max(1,d>1?Math.min(d-1,marked):marked);
 }
 
 /* ── набор барж текущего сектора ──
    Баржа живёт в местных координатах системы, как пират: летит по хорде мимо
    станции, медленно, без оружия. Присутствие и состав детерминированы от
    seed сектора и окна времени. */
+/* груз узла на эфемерной барже. Не забрали — возвращается на склад: иначе вход
+   в систему списывает запас, а прыжок или гибель сжигает его вместе с бортом */
+function bargePloadHome(b){
+  const N=G.pnode,L=b&&b.pload;if(!N||!L)return 0;
+  let n=0;const cap=(typeof PLANET_CAP==="number")?PLANET_CAP:260;
+  for(const k in L){
+    const t=L[k]|0;if(t<=0)continue;
+    const room=Math.max(0,cap-(N.stock[k]||0));
+    const put=Math.min(t,room);if(put<=0)continue;
+    N.stock[k]=(N.stock[k]||0)+put;n+=put;
+  }
+  b.pload=null;return n;
+}
 function spawnBarges(){
   /* ушли из системы с рейсом — рейс сорван (§12): вход в новую систему и есть уход */
-  for(const b of G.barges||[])if(b.escort)bargeEscortEnd(b,false,"ушли из системы — рейс сорван");
+  for(const b of G.barges||[]){
+    if(b.escort)bargeEscortEnd(b,false,"ушли из системы — рейс сорван");
+    bargePloadHome(b);
+  }
   /* и рейс, чья баржа не пережила загрузку (баржи — мир, в сейв не идут) */
   if(typeof questAll==="function"&&typeof questFail==="function")
     for(const q of questAll().slice())if(q.state==="active"&&String(q.key).indexOf("escort:")===0)questFail(q.key,"рейс сорван");
@@ -37158,8 +37201,8 @@ function spawnBarges(){
       x:Math.cos(a)*(distress?rad*.6:rad),y:Math.sin(a)*(distress?rad*.6:rad),
       vx:Math.cos(heading)*(distress?sp*.5:sp),vy:Math.sin(heading)*(distress?sp*.5:sp),a:heading
     });
-    /* зашла на ваш узел по дороге — значит, везёт и ваш товар (12n) */
-    if(typeof planetBargeLoad==="function")planetBargeLoad(G.barges[G.barges.length-1]);
+    /* груз узла берётся при встрече (openBarge), не при появлении: баржа в сейв
+       не идёт, а списанный запас — идёт. Забрали бы товар, которого уже нет */
     if(leg[2]&&typeof rivalEat==="function")rivalEat(to,good,cap);   /* соперник с проданной дороги (M297) */
     made++;
   }
@@ -37240,6 +37283,8 @@ function bargeRescued(b){
    добили ВЫ, фракция это запомнит (репутация вниз резко; полноценная месть — в
    M98), а груз ваш. Если добили пираты — вы просто опоздали. */
 function bargeSunk(b,cause){
+  const back=bargePloadHome(b);
+  if(back)logAdd("dim","Груз узла с баржи «"+b.capName+"» вернулся на склад · "+back+" ед");
   const i=G.barges.indexOf(b);if(i>=0)G.barges.splice(i,1);
   if(b.escort)bargeEscortEnd(b,false);
   const key=G.sx+","+G.sy;
@@ -37263,8 +37308,9 @@ function bargeSunk(b,cause){
     const want=Math.min(b.qty|0,4+Math.floor(rnd()*6));
     const got=want>0?addRes(b.good,want):0;
     b.qty-=got;
-    say("Баржа «"+b.capName+"» разбита вами\n"+(got?"+"+got+" "+RES[b.good].ru.toLowerCase()+" · ":"трюм не взял ничего · ")+"вас запомнят");
-    logAdd("warn","Вы разбили баржу «"+b.capName+"» · "+(got?"груз +"+got:"груз не влез")+", репутация упала");
+    const drained=!got&&want>0&&typeof natOreMul==="function"&&natOreMul(b.good)===0;
+    say("Баржа «"+b.capName+"» разбита вами\n"+(got?"+"+got+" "+RES[b.good].ru.toLowerCase()+" · ":(drained?"руды этой державы нет · ":"трюм не взял ничего · "))+"вас запомнят");
+    logAdd("warn","Вы разбили баржу «"+b.capName+"» · "+(got?"груз +"+got:(drained?"руды нет":"груз не влез"))+", репутация упала");
   }else{
     say("Баржу «"+b.capName+"» потопили пираты\nостался остов");
     logAdd("warn","Баржа «"+b.capName+"» погибла · остался остов");
@@ -37326,7 +37372,7 @@ function bargeEscortAccept(b){
   if(typeof questAdd==="function")questAdd("escort:"+b.seed,{
     ru:"Проводить баржу «"+b.capName+"»",kind:"job",from:"баржа",
     note:"довести до «"+((dst&&dst.station&&dst.station.name)||"назначения")+
-      "» живой. Половина выплачена, вторая — когда рейс дойдёт; уйдёте из системы — сорван",
+      "» живой. Половина выплачена, вторая — когда рейс дойдёт; уйдёте из системы — сорван; запись рейс не хранит",
     sx:dst?dst.sx:null,sy:dst?dst.sy:null,reward:"репутация у назначения"});
   say("Аванс охраны +"+adv+" кр\nдоведите баржу — вторая половина у назначения");
   logAdd("money","Наняты охраной баржи «"+b.capName+"» · аванс +"+adv+" кр");
@@ -37680,7 +37726,7 @@ function renderBarge(){
   if(!b.escort){
     const adv=bargeEscortHalf(b),rest=bargeEscortAdvance(b)-adv;
     $bgBody.appendChild(bargeElRow("НАНЯТЬСЯ ОХРАНОЙ",
-      "аванс +"+adv+" кр вперёд, ещё +"+rest+" когда рейс дойдёт · уйдёте из системы — сорван · провал бьёт по репутации",
+      "аванс +"+adv+" кр вперёд, ещё +"+rest+" когда рейс дойдёт · уйдёте из системы — сорван · запись рейс не хранит · провал бьёт по репутации",
       [{txt:"ВЗЯТЬ РЕЙС",gold:1,dis:false,on:()=>{bargeEscortAccept(b);renderBarge();}}]));
   }else{
     $bgBody.appendChild(el("div","sec","ВЫ ОХРАНА ЭТОГО РЕЙСА · ведите баржу до назначения"));
@@ -37808,7 +37854,7 @@ const RARE_FX=[
   {tag:"fuel",  ru:"бак глубже",         base:7,  mul:false},
   {tag:"drill", ru:"добыча быстрее",     base:.05,mul:true},
   {tag:"dmg",   ru:"орудие злее",        base:.06,mul:true},
-  {tag:"thr",   ru:"тяга ровнее",        base:.04,mul:true},
+  {tag:"thr",   ru:"тяга сильнее",       base:.04,mul:true},   /* множитель тяги, не ровность хода */
   {tag:"turn",  ru:"поворот острее",     base:.05,mul:true},
   {tag:"shield",ru:"щит плотнее",        base:6,  mul:false},
   {tag:"jump",  ru:"прыжок дальше",      base:1,  mul:false},
@@ -37836,8 +37882,8 @@ const RARE_NOTE=["никто не помнит, кто его сделал","о�
   "на нём чужие буквы","за него убивали","он был чьим-то до вас","он не отбрасывает тени",
   "его искали дольше, чем помнят","он звенит без ветра","в нём заперт чей-то день",
   "он старше этой звезды","его считали выдумкой","он не тонет и не горит",
-  "от него отводят глаза","он помнит другую руку","его нельзя купить",
-  "он холоден даже на солнце"];
+  "от него отводят глаза","он помнит другую руку","на станции его не продают",
+  "он холоден даже на солнце"];   /* «нельзя купить» врало: барахолка берёт трюмную ветку за кредиты */
 const RARE=[];
 const RARE_BY_ID={};
 const RARE_BY_WHERE={};
@@ -41650,6 +41696,15 @@ function scripSell(n){
 /* ── вкладка на станции ──
    Живёт здесь, рядом со своей механикой: экран станции (26-ui-station) и так
    просится на распил. */
+/* «8000 мин назад» не читается: сутки и часы словами */
+function scripAgoRu(t){
+  const mins=Math.max(1,Math.round((now()-(t||0))/60000));
+  if(mins<60)return mins+" мин назад";
+  const h=Math.round(mins/60);
+  if(h<36)return h+" "+pl3(h,"час","часа","часов")+" назад";
+  const d=Math.round(h/24);
+  return d+" "+pl3(d,"день","дня","дней")+" назад";
+}
 function scripRender(){
   const H=houseOf();
   if(!H){$body.appendChild(el("div","sec","ЗДЕСЬ НЕТ ХОЗЯИНА"));return;}
@@ -41660,16 +41715,19 @@ function scripRender(){
     " · у вас "+scripHeld(H.id)+" "+pl3(scripHeld(H.id),"ваучер","ваучера","ваучеров")+" · за заход осталось "+scripLeft()+
     "<br>ваучер — расписка этого дома, а не деньги: берут её только на его станциях</s></div>"));
   const row=el("div","row");
-  for(const n of [1,10,SCRIP_VISIT]){
-    const b=el("button","act","КУПИТЬ "+n);
-    b.disabled=scripLeft()<=0||G.credits<scripBuyPrice(H.id);
-    b.onclick=()=>{scripBuy(n);renderTab();};
+  for(const n0 of [1,10,SCRIP_VISIT]){
+    /* подпись — сколько купится, а не номинал: «КУПИТЬ 40» при остатке 7 врала */
+    const n=Math.min(n0,scripLeft(),Math.floor(G.credits/scripBuyPrice(H.id)));
+    const b=el("button","act","КУПИТЬ "+(n||n0));
+    b.disabled=n<=0;
+    b.onclick=()=>{scripBuy(n0);renderTab();};
     row.appendChild(b);
   }
-  for(const n of [10,SCRIP_VISIT]){
-    const b=el("button","act gold","ПРОДАТЬ "+n);
-    b.disabled=scripLeft()<=0||scripHeld(H.id)<=0;
-    b.onclick=()=>{scripSell(n);renderTab();};
+  for(const n0 of [10,SCRIP_VISIT]){
+    const n=Math.min(n0,scripLeft(),scripHeld(H.id));
+    const b=el("button","act gold","ПРОДАТЬ "+(n||n0));
+    b.disabled=n<=0;
+    b.onclick=()=>{scripSell(n0);renderTab();};
     row.appendChild(b);
   }
   $body.appendChild(row);
@@ -41685,10 +41743,9 @@ function scripRender(){
   $body.appendChild(el("div","sec","ОТЧЕГО ДВИГАЛСЯ КУРС · СЛУЧАЙНО ОН НЕ ДВИГАЕТСЯ"));
   if(!L.length)$body.appendChild(el("div","row","<div class='nm'><s>пока ничего не случилось</s></div>"));
   for(const e of L){
-    const mins=Math.max(1,Math.round((now()-e.t)/60000));
     const Ho=HOUSE_BY_ID[e.id];
     $body.appendChild(el("div","row","<div class='nm'><b>"+(Ho?Ho.ru:e.id)+" "+
-      (e.d>0?"+":"")+e.d+"</b><s>"+e.why+" · "+mins+" мин назад</s></div>"));
+      (e.d>0?"+":"")+e.d+"</b><s>"+e.why+" · "+scripAgoRu(e.t)+"</s></div>"));
   }
 }
 
@@ -41822,6 +41879,10 @@ function fleaBuy(id,pay,sys){
   const lot=fleaLot(id,sys);if(!lot)return null;
   const R=fleaRec();
   const H=typeof houseOf==="function"?houseOf(sys):null;
+  /* отказ до оплаты: addPart иначе вытеснит чужую часть, а коробок молча не ляжет */
+  if(lot.kind==="part"&&(G.inv||[]).length>=PART_MAX){say("В описи нет места");return null;}
+  if(lot.kind==="box"&&typeof boxCount==="function"&&boxCount()>=BOXES.length){say("все двадцать коробков уже на полке");return null;}
+  if(lot.kind==="bird"&&typeof parrotHas==="function"&&parrotHas()){say("живое у вас уже есть");return null;}
   if(pay==="scrip"){
     if(!H)return null;
     const n=fleaScrip(lot);
@@ -41848,7 +41909,14 @@ function fleaBuy(id,pay,sys){
     parrotFind(lot.seed,lot.who);
   }else if(lot.kind==="box"&&typeof boxFind==="function"){
     const b=boxFind(lot.seed,"с блошинца, из вещей "+lot.who);
-    tell("good","С блошинца: коробок"+(b?" "+b.ru:""),"КОРОБОК\n"+(b?b.ru+"\n"+b.by:"пустой")+"\n\nна полку дома, к книгам");
+    if(!b){
+      const gi=R.got.lastIndexOf(lot.id);if(gi>=0)R.got.splice(gi,1);
+      if(pay==="scrip"&&H)G.scrip[H.id]=scripHeld(H.id)+fleaScrip(lot);
+      else G.credits+=fleaCredits(lot);
+      logAdd("money","Блошинец: коробок не лёг, оплата возвращена");
+      say("коробок не лёг: полка полна");return null;
+    }
+    tell("good","С блошинца: коробок "+b.ru,"КОРОБОК\n"+b.ru+"\n"+b.by+"\n\nна полку дома, к книгам");
   }else if(lot.kind==="you"){
     tell("good","Сведения о вас сняты с прилавка",
       "СВЕДЕНИЯ О ВАС\n"+lot.note+"\n\nбольше их тут никто не купит");
@@ -41871,8 +41939,13 @@ function fleaLeave(sys){
   if(typeof wanderHas==="function"&&wanderHas("sign")){logAdd("dim","Табличка «НЕ КУПЛЕНО» на трюме: сведения о вас никто не спросил");return false;}
   const left=fleaLots(sys).find(l=>l.kind==="you");
   if(!left)return false;
+  /* лот сгорает сразу: иначе он лежит дальше, а охотник растёт с каждого ухода */
+  const R=fleaRec();
+  R.got.push(left.id);
+  while(R.got.length>FLEA_GOT)R.got.shift();
   if(typeof huntMark==="function")huntMark({sx:left.at.sx,sy:left.at.sy},"лот с блошинца");
-  logAdd("warn","Сведения о вас остались на прилавке блошинца — их купили");
+  logAdd("warn","Сведения о вас остались на прилавке станции «Блошинец» — их купили");
+  if(typeof saveGame==="function")saveGame(true);
   return true;
 }
 /* ── вкладка ──
@@ -42948,7 +43021,7 @@ function wanderShowRare(id){
   if(typeof sfx==="function")sfx("ok");
   return true;
 }
-/* ── строки хранителя (§13, дословно) ── */
+/* ── строки хранителя (§13); курс летучих — как на прилавке, не «на двадцать» ── */
 const WANDER_LINES={
   hello:"Спички считаем целыми. Чиркнутая уже не спичка, а история.",
   idle:["Огня в космосе нет уже сто лет. Есть только то, что положили внутрь до нас.",
