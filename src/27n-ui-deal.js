@@ -97,7 +97,7 @@ function dealRender(){
     $dlBody.appendChild(el("div","sec","ДЕЛА С ДОСКИ · "+carried.length));
     for(const c of carried)
       dealRow(c.name,"на «"+c.dest+"» · "+(c.named?"вас назвали":"взято на доске")+(c.train?" · "+c.train:""),
-        [c.left+" мин","осталось"],c.left<5?"#f2b25c":"");
+        [c.left+" "+pl3(c.left,"день","дня","дней"),"осталось"],c.left<5?"#f2b25c":"");
   }
 
   /* ── люди ── */

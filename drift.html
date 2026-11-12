@@ -36067,7 +36067,7 @@ const STORIES=[
 /* ── 25. Позывной, который отвечает ── эфир · далёкие системы */
 {id:"answering_callsign",form:"ether",at:"danger:far",cast:[],
  traces:[
-  {id:"t1",via:"ether",text:"…здесь Крайняя. Слышу вас. Слышу вас хорошо. Вы первые за долго."},
+  {id:"t1",via:"ether",text:"…здесь Крайняя. Слышу вас. Слышу вас хорошо. Вы первые за долгое время."},
   {id:"t2",via:"ether",when:{seen:"t1"},text:"…здесь Крайняя. Не улетайте пока. Нет, ничего не нужно. Просто не улетайте пока."},
   {id:"t3",via:"queue",when:{visits:2},text:"— Крайняя? Нет тут такой. Позывной старый, кто-то пользуется. Кто — не знаем, мы не спрашиваем."}
  ]},
@@ -36462,7 +36462,7 @@ const STORIES_B=[
 /* ── 65. Совеня продал ── шестеро · дом Совени */
 {id:"sovenya_sold",form:"versions",at:"fixed:8",cast:["sovenya"],
  traces:[
-  {id:"t1",via:"news",text:"Совеня продал редкость. Впервые. Купивший не назван. Совеня не спит от горя — или от радости, по его лицу не понять."},
+  {id:"t1",via:"news",text:"Совеня продала редкость. Впервые. Купивший не назван. Совеня не спит от горя — или от радости, по её лицу не понять."},
   {id:"t2",via:"queue",when:{seen:"t1"},text:"— Продал, потому что долг. — Продал, потому что надоела. — Продал, потому что редкость сама попросила. Выбирайте."}
  ]},
 
@@ -38426,7 +38426,7 @@ function newsRender(){
   for(const n of list.slice(-6).reverse()){
     const mins=Math.max(1,Math.round((now()-n.t)/60000));
     $body.appendChild(el("div","row","<div class='nm'><b>"+n.ru+"</b><s>"+(n.id==="ds"?"сводка · слышно "+mins+" мин назад":"сектор "+
-      n.sx+":"+n.sy+" · слышно "+mins+" мин назад · на карте появилась метка")+"</s></div>"));
+      n.sx+":"+n.sy+" · слышно "+mins+" мин назад"+(typeof newsMarkAt==="function"&&newsMarkAt(n.sx,n.sy)?" · на карте появилась метка":""))+"</s></div>"));
   }
   /* соперники: у каждого унесённого предмета есть человек и место */
   const rv=Object.keys(G.rivals||{});
@@ -52082,7 +52082,7 @@ function runAutopilot(dt,st){
      направление скачет туда-сюда, и корабль начинал вертеться на месте */
   const face=Math.atan2(ldy,ldx);
   sh.a+=clamp(angDiff(face,sh.a),-.055,.055)*dt;
-  cue("АВТОПИЛОТ · "+Math.round(gap)+" ед · "+Math.hypot(rvx,rvy).toFixed(1),CUE_INFO);
+  cue("АВТОПИЛОТ · "+Math.round(gap)+" ед · "+decRu(Math.hypot(rvx,rvy),1),CUE_INFO);
   return true;
 }
 function arrive(){
@@ -55707,7 +55707,7 @@ function updateSystem(dt){
     cue((st.armed?how:"ОРУДИЯ НЕТ")+"\nПРЕСЛЕДУЮТ: "+hostile+" · МОЖНО УЙТИ ИЛИ ПРЫГНУТЬ",CUE_WARN);
   }else if(bystand>=4&&typeof chronFront==="function"&&chronFront(G.sx,G.sy)){
     /* чужой бой: подсказка говорит ровно то, что происходит */
-    cue("ЗДЕСЬ ИДЁТ ЧУЖОЙ БОЙ · "+bystand+" БОРТОВ"+"\nВАС НЕ ТРОГАЮТ, ПОКА ВЫ НЕ СТРЕЛЯЕТЕ",CUE_WARN);
+    cue("ЗДЕСЬ ИДЁТ ЧУЖОЙ БОЙ · "+bystand+" "+pl3(bystand,"БОРТ","БОРТА","БОРТОВ")+"\nВАС НЕ ТРОГАЮТ, ПОКА ВЫ НЕ СТРЕЛЯЕТЕ",CUE_WARN);
   }
   /* оклик пикета (M373, §6.1): пока на него не ответили, остальное ждёт — и
      ждёт по-настоящему, ДО причала, пояса и базы (R1, 12.09): прежде он стоял
@@ -118135,7 +118135,7 @@ function hqRender(){
       !G.crew.some(c=>c.shipId===id)&&!G.mgrs.some(o=>o.shipId===id));
     const r=el("div","row");
     r.appendChild(el("div","nm","<b>Флагман</b><s>"+
-      (S?"«"+S.ru+"» · звено вмещает "+Math.max(2,Math.floor(S.cargo/60))+" человек"
+      (S?"«"+S.ru+"» · мест в звене: "+G.crew.length+" / "+crewCap()
         :"без корабля он командует с чужой палубы — и на уходе ему нечего забрать")+
       "</s>"));
     for(const id of free.slice(0,3)){
@@ -129175,7 +129175,7 @@ function dealRender(){
     $dlBody.appendChild(el("div","sec","ДЕЛА С ДОСКИ · "+carried.length));
     for(const c of carried)
       dealRow(c.name,"на «"+c.dest+"» · "+(c.named?"вас назвали":"взято на доске")+(c.train?" · "+c.train:""),
-        [c.left+" мин","осталось"],c.left<5?"#f2b25c":"");
+        [c.left+" "+pl3(c.left,"день","дня","дней"),"осталось"],c.left<5?"#f2b25c":"");
   }
 
   /* ── люди ── */

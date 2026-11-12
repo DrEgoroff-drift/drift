@@ -341,7 +341,7 @@ function hqRender(){
       !G.crew.some(c=>c.shipId===id)&&!G.mgrs.some(o=>o.shipId===id));
     const r=el("div","row");
     r.appendChild(el("div","nm","<b>Флагман</b><s>"+
-      (S?"«"+S.ru+"» · звено вмещает "+Math.max(2,Math.floor(S.cargo/60))+" человек"
+      (S?"«"+S.ru+"» · мест в звене: "+G.crew.length+" / "+crewCap()
         :"без корабля он командует с чужой палубы — и на уходе ему нечего забрать")+
       "</s>"));
     for(const id of free.slice(0,3)){

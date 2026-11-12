@@ -104,7 +104,7 @@ function runAutopilot(dt,st){
      направление скачет туда-сюда, и корабль начинал вертеться на месте */
   const face=Math.atan2(ldy,ldx);
   sh.a+=clamp(angDiff(face,sh.a),-.055,.055)*dt;
-  cue("АВТОПИЛОТ · "+Math.round(gap)+" ед · "+Math.hypot(rvx,rvy).toFixed(1),CUE_INFO);
+  cue("АВТОПИЛОТ · "+Math.round(gap)+" ед · "+decRu(Math.hypot(rvx,rvy),1),CUE_INFO);
   return true;
 }
 function arrive(){
