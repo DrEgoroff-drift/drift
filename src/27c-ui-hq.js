@@ -361,8 +361,9 @@ function hqRender(){
       const B=BLUEPRINTS[k];
       const r=el("div","row");
       r.appendChild(el("div","nm","<b>"+B.ru+"</b><s>"+(s>0?B.note:"работает не так, как обещано")+"</s>"));
-      const b=el("button","act sm","ПЕРЕСБОРКА · 60 ДАННЫХ");
-      b.disabled=G.data<60||s>0;
+      const rp=mgrPerk(m,"redo")?30:60;   /* перк «чертёжник» снижает цену — экран показывал 60 и запирал кнопку */
+      const b=el("button","act sm","ПЕРЕСБОРКА · "+rp+" ДАННЫХ");
+      b.disabled=G.data<rp||s>0;
       b.onclick=()=>{if(bpRecheck(k))hqRender();};
       r.appendChild(b);
       $hqBody.appendChild(r);

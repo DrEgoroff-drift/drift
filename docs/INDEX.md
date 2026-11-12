@@ -4329,7 +4329,7 @@ exportCode                   src/14a-cloud.js:77
 f16                          src/08b-gpu.js:482
 faceEl                       src/27c-ui-hq.js:6-12
 faceRnd                      src/12d-mgr-face.js:19
-factPrices                   src/27c-ui-hq.js:493-510
+factPrices                   src/27c-ui-hq.js:494-511
 failRoll                     src/05b1-warranty.js:103
 failShift                    src/05b1-warranty.js:102
 failTick                     src/05b1-warranty.js:104-119
@@ -5313,7 +5313,7 @@ helmCamOff                   src/15b-helm-draw.js:130-143
 helmCanvasXY                 src/15a-helm.js:153
 helmDrag                     src/15a-helm.js:205-208
 helmDrawMarks                src/15b-helm-draw.js:8-23
-helmDrawSticks               src/15b-helm-draw.js:157-226
+helmDrawSticks               src/15b-helm-draw.js:157-227
 helmDry                      src/15b-helm-draw.js:150
 helmDryLabel                 src/15b-helm-draw.js:151-153
 helmEdgeInput                src/15a-helm.js:365-377
@@ -5554,12 +5554,12 @@ hq3Mesh                      src/29r-rooms-r3.js:46-136
 hq3Scene                     src/29r-rooms-r3.js:139-179
 hq3Stand                     src/29r-rooms-r3.js:28
 hq3Tags                      src/29r-rooms-r3.js:264
-hqAiOffer                    src/27c-ui-hq.js:390-410
+hqAiOffer                    src/27c-ui-hq.js:391-411
 hqBtnTick                    src/27c-ui-hq.js:221-227
-hqJobCard                    src/27c-ui-hq.js:450-488
+hqJobCard                    src/27c-ui-hq.js:451-489
 hqMgrAt                      src/27f-hq-room.js:8
-hqRelicSlot                  src/27c-ui-hq.js:416-446
-hqRender                     src/27c-ui-hq.js:228-385
+hqRelicSlot                  src/27c-ui-hq.js:417-447
+hqRender                     src/27c-ui-hq.js:228-386
 hqRentOffer                  src/12f1-mgr-rent.js:59-77
 hqScene                      src/29r-rooms-r3.js:307
 hqSel                        src/27c-ui-hq.js:5
@@ -6140,7 +6140,7 @@ mgrCrewYield                 src/12c-mgr-core.js:204-208
 mgrCut                       src/12c-mgr-core.js:174-182
 mgrDefect                    src/12c-mgr-core.js:349-356
 mgrDomain                    src/12c-mgr-core.js:533-543
-mgrDomainLine                src/27c-ui-hq.js:512-531
+mgrDomainLine                src/27c-ui-hq.js:513-532
 mgrDroneRate                 src/12c-mgr-core.js:220-223
 mgrFatBucket                 src/12c-mgr-core.js:382
 mgrFatOf                     src/12c-mgr-core.js:381
@@ -6465,7 +6465,7 @@ oldMasterSeam                src/05b1-warranty.js:131-136
 openBarge                    src/12l-barge.js:636-645
 openCrewView                 src/27b-ui-crew.js:230-236
 openDeal                     src/27n-ui-deal.js:199-204
-openHq                       src/27c-ui-hq.js:532-537
+openHq                       src/27c-ui-hq.js:533-538
 openStation                  src/26-ui-station.js:47
 openStationBody              src/26-ui-station.js:48-160
 openWanderer                 src/24c-mode-wanderer.js:22-41
@@ -8577,7 +8577,7 @@ sysWatchLabel                src/17-mode-system.js:538-546
 tab                          src/26-ui-station.js:3
 tabLive                      src/14a-cloud.js:52
 tableBake                    src/27i-ui-table.js:145-155
-tableBlock                   src/27c-ui-hq.js:552-640
+tableBlock                   src/27c-ui-hq.js:553-641
 tableHead                    src/27i-ui-table.js:193-200
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:111-118

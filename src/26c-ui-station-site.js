@@ -97,7 +97,7 @@ function renderSiteTab(){
   if(r>=11){
     const A=bldAvailable(sys),free=bldFreeSites(sys);
     if(A.ok.length){
-      $body.appendChild(el("div","sec",(free?"МОЖНО ЗАЛОЖИТЬ · ":"ПЛОЩАДКИ ЗАНЯТЫ · ")+"МОНТАЖ "+BLD_SHIFTS[1]+"–"+BLD_SHIFTS[3]+" СМЕНЫ ПО ЯРУСУ"));
+      $body.appendChild(el("div","sec",(free?"МОЖНО ЗАЛОЖИТЬ · ":"ПЛОЩАДКИ ЗАНЯТЫ · ")+"МОНТАЖ "+BLD_SHIFTS[1]+"–"+BLD_SHIFTS[3]+" СМЕН ПО ЯРУСУ"));
       for(const fam of BLD_FAM_KEYS){
         const L=A.ok.filter(x=>x.def.fam===fam);if(!L.length)continue;
         for(const x of L){
@@ -109,7 +109,7 @@ function renderSiteTab(){
           b.disabled=!can;
           b.onclick=()=>{const why=bldLay(sys,def.id);
             if(why)say(why);
-            else tell("tech","Заложен "+def.ru.toLowerCase()+" на «"+G.st.name+"» · монтаж "+BLD_SHIFTS[def.tier]+" смены",
+            else tell("tech","Заложен "+def.ru.toLowerCase()+" на «"+G.st.name+"» · монтаж "+BLD_SHIFTS[def.tier]+" "+pl3(BLD_SHIFTS[def.tier],"смена","смены","смен"),
                       def.ru+"\nзаложен · монтаж идёт");
             renderTab();};
           row.appendChild(b);$body.appendChild(row);

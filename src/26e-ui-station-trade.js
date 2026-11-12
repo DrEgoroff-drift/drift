@@ -185,7 +185,7 @@ function stTabMarket(st){
         Q=(typeof sellQuote==="function")?sellQuote(G.sys,k,q):{revenue:q*price,nA:0,priceA:price};
         tot+=Q.revenue;
         const tl=[];
-        if(Q.nA)tl.push("берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+(Q.nF?Q.priceF:price):""));
+        if(Q.nA)tl.push("берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное по "+(Q.nF?Q.priceF:price)+" кр":""));
         else if(Q.nF)tl.push("норму смены взяли · сверх по "+Q.priceF+" кр");
         if((mkt.pressure[k]||0)<-.05)tl.push("недавно продавали здесь");
         /* дальний товар: едок говорит сам (M469), без едока — приёмщик про весы (review §3) */
