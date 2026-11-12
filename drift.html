@@ -7903,21 +7903,21 @@ const NODE_FAMS=[
   {id:"pyre", ru:"Костёр",      col:"#ff9d7a",crown:"Сердце костра",
    crownNote:"+35% к урону орудия и вдвое быстрее остывает ствол"},
   {id:"moth", ru:"Мотылёк",     col:"#c58ae0",crown:"Крыло мотылька",
-   crownNote:"+25% к тяге и повороту, пираты замечают вдвое позже"},
+   crownNote:"+25% к тяге и повороту"},
   {id:"well", ru:"Колодец",     col:"#9fd8ff",crown:"Дно колодца",
-   crownNote:"бак +60, автопилот тратит вдвое меньше"},
+   crownNote:"бак +60"},
   {id:"loom", ru:"Ткацкий",     col:"#8fd08a",crown:"Основа ткацкого",
    crownNote:"дроны и базы работают на треть быстрее"},
   {id:"cair", ru:"Курган",      col:"#e0d28a",crown:"Камень кургана",
    crownNote:"+30% к добыче в шахте и в поясе"},
   {id:"echo", ru:"Эхо",         col:"#c9c9d4",crown:"Эхо-камера",
-   crownNote:"радар вдвое дальше, залежи видны сквозь породу"},
+   crownNote:"радар вдвое дальше"},
   {id:"veil", ru:"Полог",       col:"#b0a0ff",crown:"Складка полога",
-   crownNote:"щит +40 и восстанавливается даже под огнём"},
+   crownNote:"щит +40"},
   {id:"kiln", ru:"Печь",        col:"#f2b25c",crown:"Под печи",
-   crownNote:"переплавка даёт вдвое больше сплавов, ремонт вдвое дешевле"},
+   crownNote:"пока ничего не меняет — переплавка и ремонт как у всех"},
   {id:"tide", ru:"Прилив",      col:"#5fd0c8",crown:"Гребень прилива",
-   crownNote:"цены на ваших плечах маршрута держатся на 12% выше"}
+   crownNote:"пока ничего не меняет — цены плеч маршрута без надбавки"}
 ];
 const NODE_GRADES=[
   {id:"plain", ru:"рядовой",    w:44,col:"#9fb0bd",drop:1},
@@ -7993,7 +7993,7 @@ function nodeFound(node){
   const have=nodeCount(node.fam);
   tell("tech","Узел: «"+node.ru+"» · "+F.ru+" "+have+"/"+NODE_PER_FAM,
        "«"+node.ru+"»\n"+node.gradeRu+" узел набора «"+F.ru+"»\n"+
-       "собрано "+have+" из "+NODE_PER_FAM);
+       "собрано "+have+" из "+NODE_PER_FAM+"\nвесь набор — венец · ШТАБ → НАБОРЫ");
   return true;
 }
 /* ── что падает ──
@@ -8058,8 +8058,7 @@ function nodesRender(){
   $body.appendChild(el("div","sec","НАБОРЫ УЗЛОВ · "+nodeCount()+" / "+NODE_N+
     " · УЗЛЫ НЕ ПОКУПАЮТСЯ И НЕ СОБИРАЮТСЯ — ТОЛЬКО НАХОДЯТСЯ"));
   $body.appendChild(el("div","row","<div class='nm'><s>узел сам по себе не делает "+
-    "ничего: он буква. Слово получается из набора — соберите сто узлов одной "+
-    "семьи, и выйдет венец, которого нельзя получить никак иначе.</s></div>"));
+    "ничего: буква из слова. Соберите сто узлов одной семьи — выйдет венец.</s></div>"));
   for(const F of NODE_FAMS){
     const have=nodeCount(F.id),done=crownReady(F.id),owned=crownOwned(F.id);
     const pct=Math.round(have/NODE_PER_FAM*100);
@@ -8070,7 +8069,7 @@ function nodesRender(){
       "background:rgba(255,255,255,.12);vertical-align:middle'>"+
       "<i style='display:block;height:4px;width:"+pct+"%;background:"+F.col+"'></i></span>"+
       " "+pct+"%"+
-      (owned?" · <b style='color:#8fd08a'>венец собран и работает</b>":"")+
+      (owned?" · <b style='color:#8fd08a'>венец собран</b>":"")+
       "</s>"));
     if(done&&!owned){
       const b=el("button","act gold","СОБРАТЬ ВЕНЕЦ");
@@ -27660,7 +27659,7 @@ function coopCounterBlock(){
     const maxN=Math.min(left,free);
     const q0=coopBuyQuote(G.sys,k,10);
     const r=el("div","row");
-    r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+q0.ask0+" кр за первый десяток, дальше дороже"+(left<1e8?" · за заход ещё "+left:"")+(free?"":" · трюм полон")+"</s>"));
+    r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+q0.ask0+" кр за штуку, первый десяток по этой цене, дальше дороже"+(left<1e8?" · за заход ещё "+left:"")+(free?"":" · трюм полон")+"</s>"));
     const box=el("div","modbtns");
     for(const n of [10,50]){
       const nn=Math.min(n,maxN);
@@ -32897,7 +32896,7 @@ const MGR_TRAITS=[
    risk:.75,reserve:3000},
   {id:"xeno",  ru:"ксенофил",      note:"вдвое больше выхлопа с образцов и артефактов, людям неприятен",
    sample:2,loyDrop:1.3},
-  {id:"pirate",ru:"бывший пират",  note:"знает чёрный ассортимент, но станции берут пошлину",
+  {id:"pirate",ru:"бывший пират",  note:"доля выше на 2 пункта; если он фактор — маршрут приносит на 10% меньше",
    black:1,cut:.02},
   {id:"blank", ru:"чистый лист",   note:"других черт нет — растёт быстрее всех",
    xp:1.35,solo:1}
@@ -32938,7 +32937,7 @@ const MGR_PERKS={
       {id:"relay", ru:"перелёт",    note:"выработавший точку дрон сам ищет новую"},
       {id:"rate",  ru:"наладка",    note:"+25% к выработке дронов"},
       {id:"sell",  ru:"авто-сбыт",  note:"дроны сдают туда, где дороже — по ценам с вашего стола, до трёх секторов"},
-      {id:"swarm", ru:"рой",        note:"+40% на богатых точках, дроны работают парами"}]},
+      {id:"swarm", ru:"рой",        note:"+40% к выработке всех дронов"}]},
     {ru:"Стройка",list:[
       {id:"queue", ru:"очередь",    note:"база достраивает начатое сама"},
       {id:"cheap", ru:"смета",      note:"−20% к стоимости построек"},
@@ -32954,7 +32953,7 @@ const MGR_PERKS={
     {ru:"Рынок",list:[
       {id:"see",   ru:"сводка",     note:"цены маршрута видны из любой системы"},
       {id:"limit", ru:"пороги",     note:"открывает приказы по цене"},
-      {id:"duty",  ru:"пошлины",    note:"−25% к сборам на маршруте"},
+      {id:"duty",  ru:"пошлины",    note:"+10% к обороту маршрута"},
       {id:"spec",  ru:"спекуляция", note:"+30% к доходу маршрута"}]},
     {ru:"Связи",list:[
       {id:"stock", ru:"обновление", note:"ассортимент станций меняется чаще"},
@@ -33699,7 +33698,7 @@ const DRONE_QUIRKS=[
   {ru:"торопыга",   rate:1.15,brk:1.4, fix:1,   say:"Спешил."},
   {ru:"возит лишнее",rate:1.12,brk:1,  fix:1.35,say:"Перегрузился."},
   {ru:"осторожный", rate:.9,  brk:.5,  fix:1,   say:"Постоял, подумал."},
-  {ru:"поёт при бурении",rate:1.06,brk:1.15,fix:1,say:"Ругается."},
+  {ru:"быстрый, но хрупкий",rate:1.06,brk:1.15,fix:1,say:"Ругается."},
   {ru:"ленивый, но живучий",rate:.94,brk:.7,fix:.8,say:"Ворчит."},
   {ru:"норма",      rate:1,   brk:1,   fix:1,   say:"Чинится сам."}
 ];
@@ -34101,7 +34100,7 @@ const MGR_JOBS=[
    opts:[
      {ru:"ВЫКУПИТЬ · 4200 кр",said:"Выкуплен. Дорого и правильно.",
       cost:4200,give:[["merc",0],["loy",12]]},
-     {ru:"ВЫТАЩИТЬ",said:"Вытащили ночью. Станция теперь считает нас похитителями.",
+     {ru:"ВЫТАЩИТЬ",said:"Вытащили ночью. Человек в звене.",
       give:[["merc",0],["loy",6],["credits",-1500]],bad:1},
      {ru:"ЗАБЫТЬ",said:"Забыли. Я запомню, что мы умеем забывать.",
       give:[["loy",-14]],bad:1}]},
@@ -34118,7 +34117,7 @@ const MGR_JOBS=[
      ? (rng(hashi(m.seed,m.job.t0&0xffff,0x11D))()<.6?"win":"fail") : "win"),
    win:[["rare",1],["data",40]],
    win_ru:"Пробили. То, что там лежало, стоило риска",
-   fail_ru:"Обвал. Отсек засыпало, дрон потерян"},
+   fail_ru:"Обвал. Отсек засыпало, ничего не достали"},
   {id:"freeze",role:"keep",ru:"Замерзание",choice:1,loss:8,
    text:"Реактор не тянет. Отключать придётся что-то. Вот список. В списке — "+
         "жилой отсек, где сейчас люди. Решать вам, я исполню.",
@@ -34139,7 +34138,7 @@ const MGR_JOBS=[
       give:[["loy",6]]}],
    check:m=>jobLeft(m)>0?null:(m.job.pick===0?"fail":"win"),
    win:[["loy",4]],win_ru:"Тишина оказалась тишиной",
-   fail_ru:"Пришли за своим грузом. Пришлось отдать вдвое"},
+   fail_ru:"Пришли за своим грузом. Ушли недовольными"},
   /* ── фактор ── */
   {id:"bubble",role:"fact",ru:"Пузырь",mins:15,loss:14,
    text:"Я скупил всё и держу. Цена стоит на моей руке. У вас есть время сдать "+
@@ -34180,10 +34179,10 @@ const MGR_JOBS=[
    start:m=>{m.job.hold=1;},
    check:m=>jobLeft(m)<=0?"win":null},
   {id:"live",role:"sci",ru:"Живой образец",mins:26,loss:10,
-   text:"Мне нужна тварь живой, а не в виде органики на дне трюма. Двенадцать "+
-        "единиц органики — это её корм и её же вес. Гипер ей не понравится.",
+   text:"Держите в трюме двенадцать единиц органики до конца срока. "+
+        "Тварь везти некуда — зачёт по грузу, органика останется вашей.",
    win:[["perk",1],["data",60]],
-   win_ru:"Довезли. Теперь у нас есть источник образцов, который сам растёт",
+   win_ru:"Груз был. Очко перка наше",
    fail_ru:"Не довезли. Она уже не в трюме",
    check:m=>((G.cargo.organics|0)>=12)?"win":(jobLeft(m)<=0?"fail":null)},
   {id:"wrongcall",role:"sci",ru:"Ложный вывод",choice:1,loss:8,
@@ -34679,19 +34678,19 @@ function labWorking(){
    здесь только объявление, чтобы правки шли в одном месте. */
 const ARTIFACTS={
   seal:  {ru:"Печать конвоя", one:"наёмники не упрямятся с приказом",
-          two:"отзыв доходит мгновенно, на любой дистанции"},
+          two:"отзыв и так доходит сразу, на любой дистанции"},
   dice:  {ru:"Счётная кость", one:"удача нового наёмника не бывает ниже средней",
-          two:"удачу одного наёмника можно перебросить"},
-  chart: {ru:"Карта чужой руки", one:"на карте видно, где торгуют редким",
+          two:"переброса нет: удача как выпала при найме"},
+  chart: {ru:"Карта чужой руки", one:"на карте видна стоянка «Сороки»",
           two:"и то, чего там ещё нет"},
   blank: {ru:"Пустой контракт", one:"доля всех управляющих меньше на 3 пункта",
           two:"лояльность больше не падает от задержек жалованья"},
-  key:   {ru:"Ключ от верфи", one:"уникальный корпус встречается в любом доке",
+  key:   {ru:"Ключ от верфи", one:"единственный экземпляр встречается в любом доке",
           two:"и приходит уже с частями в слотах"},
   ledger:{ru:"Чёрный журнал", one:"скрытая удача наёмников видна числом",
           two:"и черты управляющих видны в кантине до найма"},
   quiet: {ru:"Тихий маяк", one:"ИИ-ядро набирает дрейф вдвое медленнее",
-          two:"разошедшееся ядро можно уговорить вернуться"}
+          two:"разошедшееся ядро не возвращается"}
 };
 const RELIC_KEYS=Object.keys(ARTIFACTS);
 
@@ -34764,7 +34763,7 @@ function relicHint(m){
       G.relicHint={sx,sy};
       mgrSay(m,"В записях есть координаты: "+sx+":"+sy,"good");
       tell("tech","След артефакта: сектор "+sx+":"+sy,
-        "Исследователь вычитал координаты\nсектор "+sx+":"+sy+"\nищите в глубине");
+        "Исследователь вычитал координаты\nсектор "+sx+":"+sy+"\nищите в шахте, в глубоком пласте");
       return true;
     }
   }
@@ -42723,7 +42722,7 @@ function wanderCant(lot){
   if(lot.pay.m&&matchesRec()<lot.pay.m)return "не хватает спичек: "+matchesRu(lot.pay.m)+", у вас "+matchesRec();
   if(lot.pay.cr&&G.credits<lot.pay.cr)return "не хватает кредитов";
   if(lot.pay.ask&&!wanderAskPart())return "нет части не ниже отменной среди снятых";
-  if(lot.id==="book"&&typeof bookCount==="function"&&bookCount()>=BOOKS.length)return "все сорок у вас уже есть";
+  if((lot.id==="book"||String(lot.id).indexOf("book")===0)&&typeof bookCount==="function"&&bookCount()>=BOOKS.length)return "все сорок у вас уже есть";
   if(lot.cat&&lot.cat.id==="matchbox"&&typeof boxCount==="function"&&boxCount()>=BOXES.length)return "все двадцать у вас уже есть";
   return null;
 }
@@ -78727,7 +78726,7 @@ function baseFixTick(B,min,sh){
   for(const cell of B.cells){
     if(cell&&cell.hp<1){
       cell.hp=Math.min(1,cell.hp+min*eng*near*.02);
-      if(cell.hp>=1){logAdd("dim","Инженер восстановил отсек на базе «"+B.name+"»");done=1;}
+      if(cell.hp>=1){logAdd("dim","Отсек на базе «"+B.name+"» снова цел");done=1;}
     }
   }
   if(done)baseLog(B,"fix",sh,{who:baseWho(B,"engineer")});

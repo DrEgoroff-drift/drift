@@ -346,7 +346,7 @@ function baseFixTick(B,min,sh){
   for(const cell of B.cells){
     if(cell&&cell.hp<1){
       cell.hp=Math.min(1,cell.hp+min*eng*near*.02);
-      if(cell.hp>=1){logAdd("dim","Инженер восстановил отсек на базе «"+B.name+"»");done=1;}
+      if(cell.hp>=1){logAdd("dim","Отсек на базе «"+B.name+"» снова цел");done=1;}
     }
   }
   if(done)baseLog(B,"fix",sh,{who:baseWho(B,"engineer")});

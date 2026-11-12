@@ -145,7 +145,7 @@ function wanderCant(lot){
   if(lot.pay.m&&matchesRec()<lot.pay.m)return "не хватает спичек: "+matchesRu(lot.pay.m)+", у вас "+matchesRec();
   if(lot.pay.cr&&G.credits<lot.pay.cr)return "не хватает кредитов";
   if(lot.pay.ask&&!wanderAskPart())return "нет части не ниже отменной среди снятых";
-  if(lot.id==="book"&&typeof bookCount==="function"&&bookCount()>=BOOKS.length)return "все сорок у вас уже есть";
+  if((lot.id==="book"||String(lot.id).indexOf("book")===0)&&typeof bookCount==="function"&&bookCount()>=BOOKS.length)return "все сорок у вас уже есть";
   if(lot.cat&&lot.cat.id==="matchbox"&&typeof boxCount==="function"&&boxCount()>=BOXES.length)return "все двадцать у вас уже есть";
   return null;
 }

@@ -4135,7 +4135,7 @@ drawMapIn                    src/18-mode-map.js:233-683
 drawMisFigure                src/11z-misclosure.js:63-87
 drawMonolith                 src/20aa-poi-shapes.js:189-206
 drawMooredBarge              src/17e-station-body.js:17-36
-drawNodeIcon                 src/05a-nodes.js:264-361
+drawNodeIcon                 src/05a-nodes.js:263-360
 drawObelisk                  src/20aa-poi-shapes.js:272-372
 drawObserv                   src/20aa-poi-shapes.js:485-506
 drawPOI                      src/20a-poi.js:195-198
@@ -6376,12 +6376,12 @@ nodeCount                    src/05a-nodes.js:104-108
 nodeDrop                     src/05a-nodes.js:149-154
 nodeFound                    src/05a-nodes.js:109-118
 nodeHas                      src/05a-nodes.js:103
-nodeHold                     src/05a-nodes.js:241-248
-nodeHolder                   src/05a-nodes.js:251-256
-nodeIconEl                   src/05a-nodes.js:363-373
+nodeHold                     src/05a-nodes.js:240-247
+nodeHolder                   src/05a-nodes.js:250-255
+nodeIconEl                   src/05a-nodes.js:362-372
 nodeRoll                     src/05a-nodes.js:123-148
 nodesHave                    src/05a-nodes.js:102
-nodesRender                  src/05a-nodes.js:177-230
+nodesRender                  src/05a-nodes.js:177-229
 noise                        src/09-audio.js:79-91
 noise1                       src/01-core.js:116
 noise2                       src/01-core.js:119-123
@@ -9135,7 +9135,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/05a-nodes.js · 24 KB
   · узлы: тысяча вещей, из которых собирают невозможное:1
-  · узел в руках:231
+  · узел в руках:230
 
 ## src/05b-guns.js · 16 KB
   · семейства орудий (M364, §2.1–§2.2):1

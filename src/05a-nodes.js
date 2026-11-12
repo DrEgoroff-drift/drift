@@ -23,21 +23,21 @@ const NODE_FAMS=[
   {id:"pyre", ru:"Костёр",      col:"#ff9d7a",crown:"Сердце костра",
    crownNote:"+35% к урону орудия и вдвое быстрее остывает ствол"},
   {id:"moth", ru:"Мотылёк",     col:"#c58ae0",crown:"Крыло мотылька",
-   crownNote:"+25% к тяге и повороту, пираты замечают вдвое позже"},
+   crownNote:"+25% к тяге и повороту"},
   {id:"well", ru:"Колодец",     col:"#9fd8ff",crown:"Дно колодца",
-   crownNote:"бак +60, автопилот тратит вдвое меньше"},
+   crownNote:"бак +60"},
   {id:"loom", ru:"Ткацкий",     col:"#8fd08a",crown:"Основа ткацкого",
    crownNote:"дроны и базы работают на треть быстрее"},
   {id:"cair", ru:"Курган",      col:"#e0d28a",crown:"Камень кургана",
    crownNote:"+30% к добыче в шахте и в поясе"},
   {id:"echo", ru:"Эхо",         col:"#c9c9d4",crown:"Эхо-камера",
-   crownNote:"радар вдвое дальше, залежи видны сквозь породу"},
+   crownNote:"радар вдвое дальше"},
   {id:"veil", ru:"Полог",       col:"#b0a0ff",crown:"Складка полога",
-   crownNote:"щит +40 и восстанавливается даже под огнём"},
+   crownNote:"щит +40"},
   {id:"kiln", ru:"Печь",        col:"#f2b25c",crown:"Под печи",
-   crownNote:"переплавка даёт вдвое больше сплавов, ремонт вдвое дешевле"},
+   crownNote:"пока ничего не меняет — переплавка и ремонт как у всех"},
   {id:"tide", ru:"Прилив",      col:"#5fd0c8",crown:"Гребень прилива",
-   crownNote:"цены на ваших плечах маршрута держатся на 12% выше"}
+   crownNote:"пока ничего не меняет — цены плеч маршрута без надбавки"}
 ];
 const NODE_GRADES=[
   {id:"plain", ru:"рядовой",    w:44,col:"#9fb0bd",drop:1},
@@ -113,7 +113,7 @@ function nodeFound(node){
   const have=nodeCount(node.fam);
   tell("tech","Узел: «"+node.ru+"» · "+F.ru+" "+have+"/"+NODE_PER_FAM,
        "«"+node.ru+"»\n"+node.gradeRu+" узел набора «"+F.ru+"»\n"+
-       "собрано "+have+" из "+NODE_PER_FAM);
+       "собрано "+have+" из "+NODE_PER_FAM+"\nвесь набор — венец · ШТАБ → НАБОРЫ");
   return true;
 }
 /* ── что падает ──
@@ -178,8 +178,7 @@ function nodesRender(){
   $body.appendChild(el("div","sec","НАБОРЫ УЗЛОВ · "+nodeCount()+" / "+NODE_N+
     " · УЗЛЫ НЕ ПОКУПАЮТСЯ И НЕ СОБИРАЮТСЯ — ТОЛЬКО НАХОДЯТСЯ"));
   $body.appendChild(el("div","row","<div class='nm'><s>узел сам по себе не делает "+
-    "ничего: он буква. Слово получается из набора — соберите сто узлов одной "+
-    "семьи, и выйдет венец, которого нельзя получить никак иначе.</s></div>"));
+    "ничего: буква из слова. Соберите сто узлов одной семьи — выйдет венец.</s></div>"));
   for(const F of NODE_FAMS){
     const have=nodeCount(F.id),done=crownReady(F.id),owned=crownOwned(F.id);
     const pct=Math.round(have/NODE_PER_FAM*100);
@@ -190,7 +189,7 @@ function nodesRender(){
       "background:rgba(255,255,255,.12);vertical-align:middle'>"+
       "<i style='display:block;height:4px;width:"+pct+"%;background:"+F.col+"'></i></span>"+
       " "+pct+"%"+
-      (owned?" · <b style='color:#8fd08a'>венец собран и работает</b>":"")+
+      (owned?" · <b style='color:#8fd08a'>венец собран</b>":"")+
       "</s>"));
     if(done&&!owned){
       const b=el("button","act gold","СОБРАТЬ ВЕНЕЦ");
