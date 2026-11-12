@@ -398,6 +398,7 @@ function plnBodyLandPrep(budget){
   if(PLNBODY.landP&&PLNBODY.landP!==near)plnBodyLandDrop(PLNBODY.landP);
   const lon=plnLonOf(near);
   /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
+  /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
   if(near.__tr&&near.__lon!=null&&lon!=null&&Math.abs(near.__lon-lon)>0.1){
     plnBodyDrop(near);return;
   }
@@ -431,6 +432,8 @@ function plnBodyLandPrep(budget){
   }
 }
 function plnBodyTick(ms){
+  /* лента захода в работе — чужую систему здесь не печь */
+  if(G.mode==="landing"||G.mode==="surface")return false;
   const budget=ms>0?ms:2,t0=wallMs();
   /* смена системы: подготовка прежней больше не нужна (память и видеокарта).
      В заходе и на поверхности лента в работе — дождёмся выхода в систему */

@@ -48,7 +48,7 @@ function plnDescent(){
     warm:1,lens:plnDescLens(L,gyw,near),near,
     /* опоры выходят с четырнадцати метров и стоят к пяти; жар сопел гаснет с отсчётом касания */
     ship:{x:L.x/PLN_M,alt,gear:Math.max(L.gear||0,plnSmooth(14,5,alt)),sq:L.sq||0,thr,
-      hot:(L.hot||0)*(touched?clamp(L.over/70,0,1):0),tilt:-(L.a||0),yaw:.2,down:true},
+      hot:(L.hot||0)*(touched?clamp(L.over/40,0,1):0),tilt:-(L.a||0),yaw:.2,down:true},
     /* с высоты зенит темнеет: сверху тёмный воздух, снизу светлый пол дымки (как у старого захода) */
     zen:.32*plnSmooth(10,70,alt),
     /* площадка — тело; волна захода по кромке гаснет с касанием */

@@ -1349,7 +1349,7 @@ LG_BAKE                      src/19g-landing-gpu.js:362
 LG_DUST                      src/19g-landing-gpu.js:193
 LG_E                         src/19g-landing-gpu.js:363
 LG_FIRE                      src/19g-landing-gpu.js:192
-LG_GLOW                      src/19-mode-landing.js:218
+LG_GLOW                      src/19-mode-landing.js:220
 LG_H                         src/19g-landing-gpu.js:24
 LG_ID                        src/20fa-life-gpu.js:90
 LG_LANDER_WGSL               src/19g-landing-gpu.js:249
@@ -2666,7 +2666,7 @@ assignToBase                 src/12a-crew.js:187-196
 audioHush                    src/09-audio.js:12-18
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
-autoLandInputs               src/19-mode-landing.js:79-102
+autoLandInputs               src/19-mode-landing.js:79-104
 autosave                     src/14a-cloud.js:68-71
 avrHands                     src/21a6-base-avral.js:59-73
 avrLose                      src/21a6-base-avral.js:112-131
@@ -4095,7 +4095,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:161-173
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
-drawDustMotes                src/19-mode-landing.js:211-214
+drawDustMotes                src/19-mode-landing.js:213-216
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:90-112
 drawFactRoute                src/13b-occupy.js:306-349
@@ -4125,7 +4125,7 @@ drawHullMarks                src/03b-hull-paint.js:124-431
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-50
 drawLander                   src/19f-lander.js:54-290
-drawLanding                  src/19-mode-landing.js:226-347
+drawLanding                  src/19-mode-landing.js:228-349
 drawLawRing                  src/12al2-laws.js:139-147
 drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
@@ -4161,7 +4161,7 @@ drawScoop                    src/19a-mode-scoop.js:185-232
 drawSeal                     src/03d-hull-marks.js:174-185
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:72-104
-drawSkyLayer                 src/19-mode-landing.js:206-209
+drawSkyLayer                 src/19-mode-landing.js:208-211
 drawSpa                      src/29rd-spa-r3.js:234-237
 drawStation                  src/17c-system-draw.js:192-209
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -4943,7 +4943,7 @@ groundChunkPaint             src/19-mode-landing-ground.js:251-269
 groundChunkStore             src/19-mode-landing-ground.js:238-249
 groundClip                   src/20ab-poi-gpu.js:85-90
 groundGrassGpu               src/21e3-surface-stand-gpu.js:12-36
-groundShadow                 src/19-mode-landing.js:183-203
+groundShadow                 src/19-mode-landing.js:185-205
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30-36
 groveDepthHere               src/11j-grove.js:37
@@ -5308,7 +5308,7 @@ heardYours                   src/12x-parrot.js:71-74
 heatAdd                      src/13a-guns.js:47-52
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:370
-helmApply                    src/15a-helm.js:458-556
+helmApply                    src/15a-helm.js:466-564
 helmBand                     src/15b-helm-draw.js:145-148
 helmCamOff                   src/15b-helm-draw.js:130-143
 helmCanvasXY                 src/15a-helm.js:153
@@ -5317,25 +5317,25 @@ helmDrawMarks                src/15b-helm-draw.js:8-23
 helmDrawSticks               src/15b-helm-draw.js:157-226
 helmDry                      src/15b-helm-draw.js:150
 helmDryLabel                 src/15b-helm-draw.js:151-153
-helmEdgeInput                src/15a-helm.js:357-369
+helmEdgeInput                src/15a-helm.js:365-377
 helmHome                     src/15b-helm-draw.js:54-67
 helmLift                     src/15b-helm-draw.js:71-116
-helmLock                     src/15a-helm.js:292-299
-helmLockNext                 src/15a-helm.js:301-317
+helmLock                     src/15a-helm.js:300-307
+helmLockNext                 src/15a-helm.js:309-325
 helmMarkTop                  src/15b-helm-draw.js:119-124
-helmMarksClean               src/15a-helm.js:281-291
-helmPinchBlocked             src/15a-helm.js:268
-helmPtrEnd                   src/15a-helm.js:250-255
-helmScreenOpen               src/15a-helm.js:265
-helmShotAt                   src/15a-helm.js:333-336
+helmMarksClean               src/15a-helm.js:289-299
+helmPinchBlocked             src/15a-helm.js:276
+helmPtrEnd                   src/15a-helm.js:258-263
+helmScreenOpen               src/15a-helm.js:273
+helmShotAt                   src/15a-helm.js:341-344
 helmStickFoot                src/15b-helm-draw.js:40-48
 helmStickShape               src/15b-helm-draw.js:31-37
 helmSyncPointer              src/15a-helm.js:179-199
 helmTake                     src/15a-helm.js:222-230
-helmTap                      src/15a-helm.js:319-331
-helmTargetable               src/15a-helm.js:275-279
-helmTargets                  src/15a-helm.js:280
-helmTick                     src/15a-helm.js:371-455
+helmTap                      src/15a-helm.js:327-339
+helmTargetable               src/15a-helm.js:283-287
+helmTargets                  src/15a-helm.js:288
+helmTick                     src/15a-helm.js:379-463
 helmTrail                    src/15a-helm.js:209-215
 helmTrailAge                 src/15a-helm.js:216-219
 hex2rgb                      src/01-core.js:221-224
@@ -5871,8 +5871,8 @@ letterState                  src/12k-letters.js:42
 letterTake                   src/12k-letters.js:70-76
 lettersAll                   src/12k-letters.js:41
 lettersBlock                 src/12k-letters.js:99-115
-lgGlowTex                    src/19-mode-landing.js:219-225
-lgGpu                        src/19-mode-landing.js:216
+lgGlowTex                    src/19-mode-landing.js:221-227
+lgGpu                        src/19-mode-landing.js:218
 lgHTex                       src/19g-landing-gpu.js:25-37
 lgLander                     src/19g-landing-gpu.js:390-448
 lgLanderBake                 src/19g-landing-gpu.js:367-387
@@ -6906,10 +6906,10 @@ plnBodyDist                  src/21pg-pln-flora.js:383
 plnBodyDrop                  src/21pg-pln-flora.js:304-308
 plnBodyGsKey                 src/21pg-pln-flora.js:344-349
 plnBodyLandDrop              src/21pg-pln-flora.js:295-302
-plnBodyLandPrep              src/21pg-pln-flora.js:384-432
+plnBodyLandPrep              src/21pg-pln-flora.js:384-433
 plnBodyNear                  src/21pg-pln-flora.js:372-381
 plnBodyOrder                 src/21pg-pln-flora.js:336-341
-plnBodyTick                  src/21pg-pln-flora.js:433-465
+plnBodyTick                  src/21pg-pln-flora.js:434-468
 plnBox                       src/21pf-pln-land.js:67-74
 plnBoxF                      src/21pf-pln-land.js:82-87
 plnCard                      src/21pa-pln-mesh.js:188-193
@@ -8733,7 +8733,7 @@ updateCaveDeco               src/22a-cave-deco.js:206-229
 updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
-updateLanding                src/19-mode-landing.js:103-175
+updateLanding                src/19-mode-landing.js:105-177
 updateMap                    src/18-mode-map.js:706-720
 updateRaid                   src/24a-mode-raid.js:276-408
 updateRail                   src/18g-rail-ride.js:53-105
@@ -9786,7 +9786,7 @@ zoomTo                       src/15-input.js:370
   · ввод:87
   · полоса вкладок шире экрана:230
 
-## src/15a-helm.js · 42 KB
+## src/15a-helm.js · 43 KB
   · штурвал (M360):1
 
 ## src/15b-helm-draw.js · 16 KB
@@ -10068,7 +10068,7 @@ zoomTo                       src/15-input.js:370
 ## src/19-mode-landing-ground.js · 27 KB
   · посадка: разрез грунта:1
 
-## src/19-mode-landing.js · 24 KB
+## src/19-mode-landing.js · 25 KB
   · посадка:1
 
 ## src/19a-mode-scoop.js · 16 KB

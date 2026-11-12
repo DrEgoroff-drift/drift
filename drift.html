@@ -3137,7 +3137,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags,#wan3Tags) .ht.sg s{font-size:10px;color:rgba(168,178,192,.42)}
 /* телефон: живая строка эфира не растягивается на обе зоны больших пальцев */
 @media (max-width:760px){
-  body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet){flex:0 1 auto;max-width:min(240px,52vw);margin-left:auto;margin-right:auto}
+  body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet){flex:0 1 auto;max-width:min(240px,calc(100vw - 112px));margin-left:auto;margin-right:auto}
 }
 
 /* дом: подпись комнаты — тёмные чернила по светлой штукатурке, а не серая
@@ -51282,7 +51282,15 @@ cvs.addEventListener("pointerdown",e=>{
   /* залипший стик не должен глотать следующее касание: если стик или ждущий
      палец принадлежат ДРУГОМУ указателю, это второй палец (тычок/щипок), и
      ждущий снимается; свой же указатель второй раз стика не рождает */
-  if((HELM.S&&HELM.S.id!==e.pointerId)||(HELM.P&&HELM.P.id!==e.pointerId)){HELM.P=null;return;}
+  /* свой id — залипший жест этого указателя, не второй палец. Снимаем его,
+     иначе helmTake откажется, а pointermove поведёт старый центр. Чужой id —
+     тычок или щипок: ждущего снимаем и не усыновляем. */
+  if(HELM.S&&HELM.S.id===e.pointerId){
+    const s=HELM.S;
+    HELM.fade={x0:s.x0,y0:s.y0,x:s.x,y:s.y,f:1};HELM.S=null;HELM.trail=[];
+  }
+  if(HELM.P&&HELM.P.id===e.pointerId)HELM.P=null;
+  if(HELM.S||HELM.P){HELM.P=null;return;}
   HELM.P={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1],t0:now()};
 });
 function helmPtrEnd(e){
@@ -72148,7 +72156,9 @@ function autoLandInputs(L,st){
      каменистый) заход сбоку со снижением .35 втыкался в склон за 300 м до
      площадки — slope 28…124 при vx 1.5. Пока далеко — держим ~70 над гребнем
      пути и можем набирать высоту; снижение по-настоящему — только над площадкой */
-  const far=Math.abs(dx)>140;
+  /* старт сам кладёт корабль не дальше 130 от площадки — порог 140 не давал
+     держанию гребня включиться ни разу */
+  const far=Math.abs(dx)>40;
   let ridge=groundAt(L.tr,L.x);
   if(far){
     const step=Math.sign(dx)*16;
@@ -75576,7 +75586,7 @@ function lgLander(L,tr,camx,camy,p){
   /* пыль: сила — от тяги у земли и от осевшего облака первых мгновений после
      касания; сглажена, как и тяга. На мире без воздуха ниже и резче */
   const thin=p.T.atm==="отсутствует",gy=groundAt(tr,L.x),alt=gy-L.y-LAND_GY;
-  const push=(L.thrOn&&L.over<=0?1:0)+(L.over>0&&L.ok?Math.max(0,1-(70-L.over)/40):0);
+  const push=(L.thrOn&&L.over<=0?1:0)+(L.over>0&&L.ok?Math.max(0,L.over/40):0);
   LG_DUST=lerp(LG_DUST,clamp(push,0,1)*clamp(1-alt/150,0,1),.2);
   U[48]=L.x-camx;U[49]=LG_DUST;U[50]=20+100*LG_DUST;U[51]=(thin?7:18)*(.6+LG_DUST);
   const base=p.T.pal?(p.T.pal[3]||p.T.pal[2]):[150,140,130],dc=mixc(base,[40,34,30],.35);
@@ -88751,6 +88761,7 @@ function plnBodyLandPrep(budget){
   if(PLNBODY.landP&&PLNBODY.landP!==near)plnBodyLandDrop(PLNBODY.landP);
   const lon=plnLonOf(near);
   /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
+  /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
   if(near.__tr&&near.__lon!=null&&lon!=null&&Math.abs(near.__lon-lon)>0.1){
     plnBodyDrop(near);return;
   }
@@ -88784,6 +88795,8 @@ function plnBodyLandPrep(budget){
   }
 }
 function plnBodyTick(ms){
+  /* лента захода в работе — чужую систему здесь не печь */
+  if(G.mode==="landing"||G.mode==="surface")return false;
   const budget=ms>0?ms:2,t0=wallMs();
   /* смена системы: подготовка прежней больше не нужна (память и видеокарта).
      В заходе и на поверхности лента в работе — дождёмся выхода в систему */
@@ -98398,7 +98411,7 @@ function plnDescent(){
     warm:1,lens:plnDescLens(L,gyw,near),near,
     /* опоры выходят с четырнадцати метров и стоят к пяти; жар сопел гаснет с отсчётом касания */
     ship:{x:L.x/PLN_M,alt,gear:Math.max(L.gear||0,plnSmooth(14,5,alt)),sq:L.sq||0,thr,
-      hot:(L.hot||0)*(touched?clamp(L.over/70,0,1):0),tilt:-(L.a||0),yaw:.2,down:true},
+      hot:(L.hot||0)*(touched?clamp(L.over/40,0,1):0),tilt:-(L.a||0),yaw:.2,down:true},
     /* с высоты зенит темнеет: сверху тёмный воздух, снизу светлый пол дымки (как у старого захода) */
     zen:.32*plnSmooth(10,70,alt),
     /* площадка — тело; волна захода по кромке гаснет с касанием */

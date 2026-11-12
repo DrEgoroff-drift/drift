@@ -434,7 +434,7 @@ function lgLander(L,tr,camx,camy,p){
   /* пыль: сила — от тяги у земли и от осевшего облака первых мгновений после
      касания; сглажена, как и тяга. На мире без воздуха ниже и резче */
   const thin=p.T.atm==="отсутствует",gy=groundAt(tr,L.x),alt=gy-L.y-LAND_GY;
-  const push=(L.thrOn&&L.over<=0?1:0)+(L.over>0&&L.ok?Math.max(0,1-(70-L.over)/40):0);
+  const push=(L.thrOn&&L.over<=0?1:0)+(L.over>0&&L.ok?Math.max(0,L.over/40):0);
   LG_DUST=lerp(LG_DUST,clamp(push,0,1)*clamp(1-alt/150,0,1),.2);
   U[48]=L.x-camx;U[49]=LG_DUST;U[50]=20+100*LG_DUST;U[51]=(thin?7:18)*(.6+LG_DUST);
   const base=p.T.pal?(p.T.pal[3]||p.T.pal[2]):[150,140,130],dc=mixc(base,[40,34,30],.35);

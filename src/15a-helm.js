@@ -244,7 +244,15 @@ cvs.addEventListener("pointerdown",e=>{
   /* залипший стик не должен глотать следующее касание: если стик или ждущий
      палец принадлежат ДРУГОМУ указателю, это второй палец (тычок/щипок), и
      ждущий снимается; свой же указатель второй раз стика не рождает */
-  if((HELM.S&&HELM.S.id!==e.pointerId)||(HELM.P&&HELM.P.id!==e.pointerId)){HELM.P=null;return;}
+  /* свой id — залипший жест этого указателя, не второй палец. Снимаем его,
+     иначе helmTake откажется, а pointermove поведёт старый центр. Чужой id —
+     тычок или щипок: ждущего снимаем и не усыновляем. */
+  if(HELM.S&&HELM.S.id===e.pointerId){
+    const s=HELM.S;
+    HELM.fade={x0:s.x0,y0:s.y0,x:s.x,y:s.y,f:1};HELM.S=null;HELM.trail=[];
+  }
+  if(HELM.P&&HELM.P.id===e.pointerId)HELM.P=null;
+  if(HELM.S||HELM.P){HELM.P=null;return;}
   HELM.P={id:e.pointerId,x0:xy[0],y0:xy[1],x:xy[0],y:xy[1],t0:now()};
 });
 function helmPtrEnd(e){
