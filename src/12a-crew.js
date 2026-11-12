@@ -210,7 +210,7 @@ function crewCap(){
    тот и пришёл. Если мест нет — он не пропадает молча, а говорит об этом. */
 function crewGift(seed){
   if(G.crew.length>=crewCap()){
-    say("Человек пришёл, а места нет\nнужна лицензия на флот");
+    say("Человек пришёл, а места нет\n"+(typeof coopHas==="function"&&!coopHas()?"сперва кооператив — места даёт он":"лицензия на флот или разряд дают места"));
     return false;
   }
   const m=genMerc(seed||hashi(now()&0xffffff,G.crew.length*7717,0xC1F),null);
