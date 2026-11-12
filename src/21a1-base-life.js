@@ -64,7 +64,9 @@ const BLOG={
   melt:    (B,a)=>"плавильня дала "+a.q+" сплав"+pl3(a.q,"","а","ов"),
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
-  worn:    (B,a)=>a.what+" отработал своё. Ничто не доделано навсегда",
+  /* род у отсеков разный («панель» — она, «склад» — он), и глагол мужского
+     рода врал бы на каждой оранжерее: пишем без него, как и у бури */
+  worn:    (B,a)=>a.what+" — всё. Ничто не доделано навсегда",
   ruin:    ()=>"базу бросили. Людей нет, запаса нет, свет погашен",
   tenant:  (B,a)=>"в развалину въехали: "+a.who,
   back:    ()=>"база снова наша. Чинить придётся от нуля",
@@ -446,8 +448,12 @@ function baseSupply(B,k,q){
   else L[S.k]=Math.min(LIFE_CAP,L[S.k]+S.q*q);
   const n=(typeof baseShift==="function")?baseShift():0;
   if(B.park>0)baseWake(B,n);
+  /* лёд лёг на склад, а не в бак (см. выше), и строка обязана говорить то же:
+     иначе она обещает воду, которой не прибавилось ни на единицу */
   tell("good","На базу «"+B.name+"» сдано "+q+" "+RES[k].ru.toLowerCase(),
-    "СНАБЖЕНИЕ\n"+RES[k].ru+" "+q+" → "+(S.k==="air"?"воздух":"вода")+" "+L[S.k]+"/"+LIFE_CAP);
+    "СНАБЖЕНИЕ\n"+RES[k].ru+" "+q+" → "+
+    (k==="ice"?"на склад "+(B.pool.ice|0)+" ед.":
+     (S.k==="air"?"воздух":"вода")+" "+L[S.k]+"/"+LIFE_CAP));
   return q;
 }
 /* строка для стола: чем база дышит и сколько ей осталось */
@@ -482,17 +488,20 @@ function baseResolve(B,now){
   if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
     const nn=baseSince(B,now);
     if(nn>0){
-      const t0=baseT0(B);
+      const cur=baseShift(now),t0=cur-nn;
       for(let i=1;i<=nn;i++)if(typeof palStep==="function")palStep(B,t0+i);
-      B.t0=t0+nn;B.tMs=now;
+      B.t0=cur;B.tMs=now;
       if(typeof baseTenant==="function")baseTenant(B,B.t0);
     }
     return 0;
   }
   const n=baseSince(B,now);
   if(n<=0){baseT0(B);B.tMs=now;return 0;}
-  const t0=baseT0(B);
-  B.t0=t0+n;B.tMs=now;
+  /* часы встают на ТЕКУЩУЮ смену, а не «догоняют» её: раньше `B.t0` каждый раз
+     отставал на отброшенный хвост, и база после недели отсутствия догоняла
+     по 72 смены за заход — то есть суточный предел не значил ничего */
+  const cur=baseShift(now),t0=cur-n;
+  B.t0=cur;B.tMs=now;
   baseGrowCheck(B);
   /* глубже суток не помним. Всё, что старше 24 смен, сводится одной строкой и
      считается ровно так же, но без бросков: подробности позавчерашней бури

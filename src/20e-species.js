@@ -195,6 +195,9 @@ const BEAST_ALIEN_WORD={jelly:"медузоид",strider:"ходун",crystal:"�
                         manta:"мантовый",shell:"панцирник"};
 function beastFormWord(sp){
   if(sp.alien)return BEAST_ALIEN_WORD[sp.alien]||"чужак";
+  /* членистый вид идёт и на шести, и на восьми ногах (21piba: np=legs/2 — рисуется
+     ровно столько): имя считает нарисованное, а не «много» */
+  if(sp.legs>=8)return "восьминог";
   if(sp.legs>=6)return "шестиног";
   if(sp.hop)return "прыгун";
   if(sp.shape===1)return "ползун";
@@ -277,6 +280,8 @@ function specimenBeast(r,sp,x,gy){
     headSize:sp.headSize*(young?1.28:1),headX:sp.headX,furTufts:sp.furTufts,
     body:sp.body,eye:sp.eye,
     hop:sp.hop,phase:r()*TAU,spd:sp.spd*(young?1.2:(age>.84?.85:1)),
+    /* повадка вида не остаётся словом в имени: «пугливый» подаётся раньше (21-mode-surface) */
+    timid:sp.timid,
     alien:sp.alien,tent:sp.tent,facets:sp.facets,span:sp.span,
     hover:sp.hover?sp.hover*(young?.8:1):0,
     age,sp,name:sp.name,scanned:false,shy:0};

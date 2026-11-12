@@ -328,7 +328,7 @@ function updateSurface(dt){
   /* зверьё бродит и слегка сторонится игрока, но не убегает насовсем */
   for(const b of S.fauna||[]){
     const away=S.x-b.x;
-    if(Math.abs(away)<70*kitStat().noise*(typeof vegaAboard==="function"&&vegaAboard()?1.3:1)){if(typeof vegaBeastShout==="function"&&Math.abs(away)<50)vegaBeastShout();b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
+    if(Math.abs(away)<70*(b.timid?1.4:.7)*kitStat().noise*(typeof vegaAboard==="function"&&vegaAboard()?1.3:1)){if(typeof vegaBeastShout==="function"&&Math.abs(away)<50)vegaBeastShout();b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
     else{b.shy=Math.max(0,b.shy-.01*dt);
       if(rnd()<.004*dt)b.vx=(rnd()<.5?-1:1)*(.06+rnd()*.12);}
     b.x=clamp(b.x+b.vx*dt,40,tr.W-40);
@@ -505,7 +505,9 @@ function updateSurface(dt){
         return;
       }
     }else{
-      G.prompt="НАРЯД НЕ ЗАКРЫТ · НУЖЕН "+RES[A.k].ru.toUpperCase()+"\n"+tinLine(T);
+      /* наряд просит то лёд, то органику, то изотопы (12ta TIN_FEED): «нужен» не
+         согласуется ни с одним родом — подпись называет нужное без прилагательного */
+      G.prompt="НАРЯД НЕ ЗАКРЫТ · НУЖНО: "+RES[A.k].ru.toUpperCase()+"\n"+tinLine(T);
     }
   }
   /* стена посёлка (M210): у дальнего конца полки, отдельным шагом от кормёжки.
@@ -588,16 +590,17 @@ function updateSurface(dt){
         " · ТРЮМ "+held()+"/"+st.cargoMax;
       if(keys.act){
         S.mining=dep;dep.prog+=.026*st.drill*dt;
-        while(dep.prog>=1&&dep.left>0&&held()<st.cargoMax){
-          dep.prog-=1;dep.left--;minedUnit(dep.res);
-          if(dep.i!=null){const dk=(G.sx|0)+","+(G.sy|0)+":"+(S.p.idx|0);(G.mined||(G.mined={}))[dk]=G.mined[dk]||{};G.mined[dk][dep.i]=dep.left;}
-        }
         /* что взял своими руками — то и можно разболтать у стойки (11aj) */
         if(!G.lastDig||G.lastDig.sx!==G.sx||G.lastDig.sy!==G.sy||
            G.lastDig.pi!==S.p.idx||G.lastDig.res!==dep.res)
           {G.lastDig={sx:G.sx,sy:G.sy,pi:S.p.idx,res:dep.res,n:0};
            if(typeof holdDeed==="function")holdDeed(G.sx,G.sy,"drill");}   /* дело системы (M291) */
-        G.lastDig.n++;
+        while(dep.prog>=1&&dep.left>0&&held()<st.cargoMax){
+          dep.prog-=1;dep.left--;minedUnit(dep.res);
+          if(dep.i!=null){const dk=(G.sx|0)+","+(G.sy|0)+":"+(S.p.idx|0);(G.mined||(G.mined={}))[dk]=G.mined[dk]||{};G.mined[dk][dep.i]=dep.left;}
+          /* n — штуки руды, а не кадры: у стойки «заметно» это шесть штук (11aj toldWorth) */
+          G.lastDig.n++;
+        }
         if(dep.left<=0)say("Залежь выработана\n"+RES[dep.res].ru);
       }
     }
@@ -637,11 +640,16 @@ function updateSurface(dt){
        сказал прямо: непонятно, где копал. Устье стоит на месте: рядом с ним —
        спуск, вдали — расстояние до него, и второй ствол не закладывается. */
     const mx=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
+    /* мерка игры одна: 13.1 её единицы в метре (PLN_M, 21p), а глубина ствола
+       считается рядами по три метра (23-mode-dig: depth=D.row*3). На поверхности
+       называем те же метры, что и в шахте: прежде расстояние шло в единицах игры
+       (в 13 раз больше), а глубина — сырыми рядами (втрое меньше) */
+    const shaftM=mineDeep(S.p)*3;
     if(mx!=null&&Math.abs(mx-S.x)>=MINE_MOUTH_R){
-      G.prompt="ШАХТА ЭТОЙ ПЛАНЕТЫ — "+Math.round(Math.abs(mx-S.x))+" м "+(mx>S.x?"▶":"◀")+
-        "\nГЛУБИНА "+mineDeep(S.p)+" · ВТОРОЙ СТВОЛ НЕ ЗАКЛАДЫВАЮТ";
+      G.prompt="ШАХТА ЭТОЙ ПЛАНЕТЫ — "+Math.round(Math.abs(mx-S.x)/PLN_M)+" м "+(mx>S.x?"▶":"◀")+
+        "\nГЛУБИНА "+shaftM+" м · ВТОРОЙ СТВОЛ НЕ ЗАКЛАДЫВАЮТ";
     }else{
-      G.prompt=(mx!=null?("ДЕЙСТВИЕ — СПУСТИТЬСЯ В ШАХТУ · ГЛУБИНА "+mineDeep(S.p)):
+      G.prompt=(mx!=null?("ДЕЙСТВИЕ — СПУСТИТЬСЯ В ШАХТУ · ГЛУБИНА "+shaftM+" м"):
                          "ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ")+
         "\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
       if(actEdge){enterDig();return;}

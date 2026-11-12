@@ -101,7 +101,9 @@ function baseFoodStep(B,P,n){
   if(typeof gribEat==="function")gribEat(B,n);            /* а потом он ест органику */
   if(good)L.q="good";
   else if(poor)L.q=(typeof baseFoodKeepsGood==="function"&&baseFoodKeepsGood(B))?"good":"poor";
-  return (good||poor)?1:0;
+  /* урожай — рутина, а не строка журнала: вернуть 1 значило бы «сказано», и
+     тихая смена (раз в четыре) не наступала бы на базе с оранжереей вовсе */
+  return 0;
 }
 /* ── дух за смену: терпят, терпят и уходят ── */
 function baseSpiritStep(B,n){
@@ -140,17 +142,49 @@ function baseLifeBulk(B,P,shifts,n){
       L.water=Math.min(LIFE_CAP,L.water+Math.round(canMelt*LIFE_MELT.water*k));
     }
   }
+  /* оранжерея и бак за те же смены: подробный проход их считает, а этот — нет,
+     и харч таял без выработки, хотя вода и воздух в нём прибавлялись. Порядок
+     тот же, что в смене: сперва произвели, потом едят. */
+  let grown=0;
+  for(const cell of B.cells){
+    if(!cell||cell.hp<=0)continue;
+    if(cell.k==="garden"){
+      if(!cell.sown){
+        if((B.pool.organics|0)<LIFE_GARDEN.seed)continue;
+        B.pool.organics-=LIFE_GARDEN.seed;cell.sown=1;
+      }
+      const can=Math.min(shifts,Math.floor(L.water/LIFE_GARDEN.water));
+      if(can<=0)continue;
+      L.water-=can*LIFE_GARDEN.water;
+      grown+=Math.round(can*LIFE_GARDEN.food*k);
+      L.air=Math.min(LIFE_CAP,L.air+Math.round(can*LIFE_GARDEN.air*k));
+    }else if(cell.k==="vat"){
+      const can=Math.min(shifts,Math.floor((B.pool.organics|0)/LIFE_VAT.organics));
+      if(can<=0)continue;
+      B.pool.organics-=can*LIFE_VAT.organics;
+      grown+=Math.round(can*LIFE_VAT.food*k);
+    }
+  }
+  if(grown)L.food=Math.min(LIFE_CAP,(L.food|0)+grown);
   /* расход людьми — за все смены сразу */
   const need=baseLifeNeed(B);
   if(need.air||need.water||need.food){
+    /* запас ДО расхода: по нему видно, на какой смене он кончился */
+    const stockAir=L.air,stockWater=L.water;
     const outAir=L.air-need.air*shifts,outWater=L.water-need.water*shifts;
     L.air=Math.max(0,outAir);L.water=Math.max(0,outWater);
     L.food=Math.max(0,(L.food|0)-need.food*shifts);
     if((outAir<0||outWater<0)&&!B.park){
-      /* встала на той смене, на которой запас и кончился */
-      const per=Math.max(1,need.air||need.water);
-      const when=n-shifts+Math.max(0,Math.floor(Math.min(L.air,L.water)/per));
-      basePark(B,"empty",when,outAir<0?"воздух":"вода");
+      /* встала на той смене, на которой запас и кончился. Остаток берём ДО
+         расхода: после него он уже ноль, и смена всегда выходила первая, а
+         норма — всегда воздушная, даже когда кончилась вода */
+      const airSh=need.air?stockAir/need.air:Infinity;
+      const waterSh=need.water?stockWater/need.water:Infinity;
+      const dry=outAir<0&&airSh<=waterSh?"воздух":"вода";
+      const at=Math.max(0,Math.floor(Math.min(airSh,waterSh)));
+      /* не меньше единицы: `B.park<0` — это «стоит по приказу», и ноль/минус
+         здесь превратил бы кончившийся запас в приказ игрока */
+      basePark(B,"empty",Math.max(1,(n-shifts)+1+at),dry);
     }
   }
   /* и износ за эти смены — по той же мерке, что в подробной части */

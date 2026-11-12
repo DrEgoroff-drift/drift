@@ -77431,6 +77431,9 @@ const BEAST_ALIEN_WORD={jelly:"медузоид",strider:"ходун",crystal:"�
                         manta:"мантовый",shell:"панцирник"};
 function beastFormWord(sp){
   if(sp.alien)return BEAST_ALIEN_WORD[sp.alien]||"чужак";
+  /* членистый вид идёт и на шести, и на восьми ногах (21piba: np=legs/2 — рисуется
+     ровно столько): имя считает нарисованное, а не «много» */
+  if(sp.legs>=8)return "восьминог";
   if(sp.legs>=6)return "шестиног";
   if(sp.hop)return "прыгун";
   if(sp.shape===1)return "ползун";
@@ -77513,6 +77516,8 @@ function specimenBeast(r,sp,x,gy){
     headSize:sp.headSize*(young?1.28:1),headX:sp.headX,furTufts:sp.furTufts,
     body:sp.body,eye:sp.eye,
     hop:sp.hop,phase:r()*TAU,spd:sp.spd*(young?1.2:(age>.84?.85:1)),
+    /* повадка вида не остаётся словом в имени: «пугливый» подаётся раньше (21-mode-surface) */
+    timid:sp.timid,
     alien:sp.alien,tent:sp.tent,facets:sp.facets,span:sp.span,
     hover:sp.hover?sp.hover*(young?.8:1):0,
     age,sp,name:sp.name,scanned:false,shy:0};
@@ -78250,7 +78255,7 @@ function updateSurface(dt){
   /* зверьё бродит и слегка сторонится игрока, но не убегает насовсем */
   for(const b of S.fauna||[]){
     const away=S.x-b.x;
-    if(Math.abs(away)<70*kitStat().noise*(typeof vegaAboard==="function"&&vegaAboard()?1.3:1)){if(typeof vegaBeastShout==="function"&&Math.abs(away)<50)vegaBeastShout();b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
+    if(Math.abs(away)<70*(b.timid?1.4:.7)*kitStat().noise*(typeof vegaAboard==="function"&&vegaAboard()?1.3:1)){if(typeof vegaBeastShout==="function"&&Math.abs(away)<50)vegaBeastShout();b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
     else{b.shy=Math.max(0,b.shy-.01*dt);
       if(rnd()<.004*dt)b.vx=(rnd()<.5?-1:1)*(.06+rnd()*.12);}
     b.x=clamp(b.x+b.vx*dt,40,tr.W-40);
@@ -78427,7 +78432,9 @@ function updateSurface(dt){
         return;
       }
     }else{
-      G.prompt="НАРЯД НЕ ЗАКРЫТ · НУЖЕН "+RES[A.k].ru.toUpperCase()+"\n"+tinLine(T);
+      /* наряд просит то лёд, то органику, то изотопы (12ta TIN_FEED): «нужен» не
+         согласуется ни с одним родом — подпись называет нужное без прилагательного */
+      G.prompt="НАРЯД НЕ ЗАКРЫТ · НУЖНО: "+RES[A.k].ru.toUpperCase()+"\n"+tinLine(T);
     }
   }
   /* стена посёлка (M210): у дальнего конца полки, отдельным шагом от кормёжки.
@@ -78510,16 +78517,17 @@ function updateSurface(dt){
         " · ТРЮМ "+held()+"/"+st.cargoMax;
       if(keys.act){
         S.mining=dep;dep.prog+=.026*st.drill*dt;
-        while(dep.prog>=1&&dep.left>0&&held()<st.cargoMax){
-          dep.prog-=1;dep.left--;minedUnit(dep.res);
-          if(dep.i!=null){const dk=(G.sx|0)+","+(G.sy|0)+":"+(S.p.idx|0);(G.mined||(G.mined={}))[dk]=G.mined[dk]||{};G.mined[dk][dep.i]=dep.left;}
-        }
         /* что взял своими руками — то и можно разболтать у стойки (11aj) */
         if(!G.lastDig||G.lastDig.sx!==G.sx||G.lastDig.sy!==G.sy||
            G.lastDig.pi!==S.p.idx||G.lastDig.res!==dep.res)
           {G.lastDig={sx:G.sx,sy:G.sy,pi:S.p.idx,res:dep.res,n:0};
            if(typeof holdDeed==="function")holdDeed(G.sx,G.sy,"drill");}   /* дело системы (M291) */
-        G.lastDig.n++;
+        while(dep.prog>=1&&dep.left>0&&held()<st.cargoMax){
+          dep.prog-=1;dep.left--;minedUnit(dep.res);
+          if(dep.i!=null){const dk=(G.sx|0)+","+(G.sy|0)+":"+(S.p.idx|0);(G.mined||(G.mined={}))[dk]=G.mined[dk]||{};G.mined[dk][dep.i]=dep.left;}
+          /* n — штуки руды, а не кадры: у стойки «заметно» это шесть штук (11aj toldWorth) */
+          G.lastDig.n++;
+        }
         if(dep.left<=0)say("Залежь выработана\n"+RES[dep.res].ru);
       }
     }
@@ -78559,11 +78567,16 @@ function updateSurface(dt){
        сказал прямо: непонятно, где копал. Устье стоит на месте: рядом с ним —
        спуск, вдали — расстояние до него, и второй ствол не закладывается. */
     const mx=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
+    /* мерка игры одна: 13.1 её единицы в метре (PLN_M, 21p), а глубина ствола
+       считается рядами по три метра (23-mode-dig: depth=D.row*3). На поверхности
+       называем те же метры, что и в шахте: прежде расстояние шло в единицах игры
+       (в 13 раз больше), а глубина — сырыми рядами (втрое меньше) */
+    const shaftM=mineDeep(S.p)*3;
     if(mx!=null&&Math.abs(mx-S.x)>=MINE_MOUTH_R){
-      G.prompt="ШАХТА ЭТОЙ ПЛАНЕТЫ — "+Math.round(Math.abs(mx-S.x))+" м "+(mx>S.x?"▶":"◀")+
-        "\nГЛУБИНА "+mineDeep(S.p)+" · ВТОРОЙ СТВОЛ НЕ ЗАКЛАДЫВАЮТ";
+      G.prompt="ШАХТА ЭТОЙ ПЛАНЕТЫ — "+Math.round(Math.abs(mx-S.x)/PLN_M)+" м "+(mx>S.x?"▶":"◀")+
+        "\nГЛУБИНА "+shaftM+" м · ВТОРОЙ СТВОЛ НЕ ЗАКЛАДЫВАЮТ";
     }else{
-      G.prompt=(mx!=null?("ДЕЙСТВИЕ — СПУСТИТЬСЯ В ШАХТУ · ГЛУБИНА "+mineDeep(S.p)):
+      G.prompt=(mx!=null?("ДЕЙСТВИЕ — СПУСТИТЬСЯ В ШАХТУ · ГЛУБИНА "+shaftM+" м"):
                          "ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ")+
         "\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
       if(actEdge){enterDig();return;}
@@ -79293,7 +79306,9 @@ const BLOG={
   melt:    (B,a)=>"плавильня дала "+a.q+" сплав"+pl3(a.q,"","а","ов"),
   deep:    ()=>"смотритель вскрыл нижний ярус",
   wear:    (B,a)=>"жара доконала: "+a.what,
-  worn:    (B,a)=>a.what+" отработал своё. Ничто не доделано навсегда",
+  /* род у отсеков разный («панель» — она, «склад» — он), и глагол мужского
+     рода врал бы на каждой оранжерее: пишем без него, как и у бури */
+  worn:    (B,a)=>a.what+" — всё. Ничто не доделано навсегда",
   ruin:    ()=>"базу бросили. Людей нет, запаса нет, свет погашен",
   tenant:  (B,a)=>"в развалину въехали: "+a.who,
   back:    ()=>"база снова наша. Чинить придётся от нуля",
@@ -79675,8 +79690,12 @@ function baseSupply(B,k,q){
   else L[S.k]=Math.min(LIFE_CAP,L[S.k]+S.q*q);
   const n=(typeof baseShift==="function")?baseShift():0;
   if(B.park>0)baseWake(B,n);
+  /* лёд лёг на склад, а не в бак (см. выше), и строка обязана говорить то же:
+     иначе она обещает воду, которой не прибавилось ни на единицу */
   tell("good","На базу «"+B.name+"» сдано "+q+" "+RES[k].ru.toLowerCase(),
-    "СНАБЖЕНИЕ\n"+RES[k].ru+" "+q+" → "+(S.k==="air"?"воздух":"вода")+" "+L[S.k]+"/"+LIFE_CAP);
+    "СНАБЖЕНИЕ\n"+RES[k].ru+" "+q+" → "+
+    (k==="ice"?"на склад "+(B.pool.ice|0)+" ед.":
+     (S.k==="air"?"воздух":"вода")+" "+L[S.k]+"/"+LIFE_CAP));
   return q;
 }
 /* строка для стола: чем база дышит и сколько ей осталось */
@@ -79711,17 +79730,20 @@ function baseResolve(B,now){
   if(typeof baseIsRuin==="function"&&baseIsRuin(B)){
     const nn=baseSince(B,now);
     if(nn>0){
-      const t0=baseT0(B);
+      const cur=baseShift(now),t0=cur-nn;
       for(let i=1;i<=nn;i++)if(typeof palStep==="function")palStep(B,t0+i);
-      B.t0=t0+nn;B.tMs=now;
+      B.t0=cur;B.tMs=now;
       if(typeof baseTenant==="function")baseTenant(B,B.t0);
     }
     return 0;
   }
   const n=baseSince(B,now);
   if(n<=0){baseT0(B);B.tMs=now;return 0;}
-  const t0=baseT0(B);
-  B.t0=t0+n;B.tMs=now;
+  /* часы встают на ТЕКУЩУЮ смену, а не «догоняют» её: раньше `B.t0` каждый раз
+     отставал на отброшенный хвост, и база после недели отсутствия догоняла
+     по 72 смены за заход — то есть суточный предел не значил ничего */
+  const cur=baseShift(now),t0=cur-n;
+  B.t0=cur;B.tMs=now;
   baseGrowCheck(B);
   /* глубже суток не помним. Всё, что старше 24 смен, сводится одной строкой и
      считается ровно так же, но без бросков: подробности позавчерашней бури
@@ -80005,7 +80027,9 @@ function baseFoodStep(B,P,n){
   if(typeof gribEat==="function")gribEat(B,n);            /* а потом он ест органику */
   if(good)L.q="good";
   else if(poor)L.q=(typeof baseFoodKeepsGood==="function"&&baseFoodKeepsGood(B))?"good":"poor";
-  return (good||poor)?1:0;
+  /* урожай — рутина, а не строка журнала: вернуть 1 значило бы «сказано», и
+     тихая смена (раз в четыре) не наступала бы на базе с оранжереей вовсе */
+  return 0;
 }
 /* ── дух за смену: терпят, терпят и уходят ── */
 function baseSpiritStep(B,n){
@@ -80044,17 +80068,49 @@ function baseLifeBulk(B,P,shifts,n){
       L.water=Math.min(LIFE_CAP,L.water+Math.round(canMelt*LIFE_MELT.water*k));
     }
   }
+  /* оранжерея и бак за те же смены: подробный проход их считает, а этот — нет,
+     и харч таял без выработки, хотя вода и воздух в нём прибавлялись. Порядок
+     тот же, что в смене: сперва произвели, потом едят. */
+  let grown=0;
+  for(const cell of B.cells){
+    if(!cell||cell.hp<=0)continue;
+    if(cell.k==="garden"){
+      if(!cell.sown){
+        if((B.pool.organics|0)<LIFE_GARDEN.seed)continue;
+        B.pool.organics-=LIFE_GARDEN.seed;cell.sown=1;
+      }
+      const can=Math.min(shifts,Math.floor(L.water/LIFE_GARDEN.water));
+      if(can<=0)continue;
+      L.water-=can*LIFE_GARDEN.water;
+      grown+=Math.round(can*LIFE_GARDEN.food*k);
+      L.air=Math.min(LIFE_CAP,L.air+Math.round(can*LIFE_GARDEN.air*k));
+    }else if(cell.k==="vat"){
+      const can=Math.min(shifts,Math.floor((B.pool.organics|0)/LIFE_VAT.organics));
+      if(can<=0)continue;
+      B.pool.organics-=can*LIFE_VAT.organics;
+      grown+=Math.round(can*LIFE_VAT.food*k);
+    }
+  }
+  if(grown)L.food=Math.min(LIFE_CAP,(L.food|0)+grown);
   /* расход людьми — за все смены сразу */
   const need=baseLifeNeed(B);
   if(need.air||need.water||need.food){
+    /* запас ДО расхода: по нему видно, на какой смене он кончился */
+    const stockAir=L.air,stockWater=L.water;
     const outAir=L.air-need.air*shifts,outWater=L.water-need.water*shifts;
     L.air=Math.max(0,outAir);L.water=Math.max(0,outWater);
     L.food=Math.max(0,(L.food|0)-need.food*shifts);
     if((outAir<0||outWater<0)&&!B.park){
-      /* встала на той смене, на которой запас и кончился */
-      const per=Math.max(1,need.air||need.water);
-      const when=n-shifts+Math.max(0,Math.floor(Math.min(L.air,L.water)/per));
-      basePark(B,"empty",when,outAir<0?"воздух":"вода");
+      /* встала на той смене, на которой запас и кончился. Остаток берём ДО
+         расхода: после него он уже ноль, и смена всегда выходила первая, а
+         норма — всегда воздушная, даже когда кончилась вода */
+      const airSh=need.air?stockAir/need.air:Infinity;
+      const waterSh=need.water?stockWater/need.water:Infinity;
+      const dry=outAir<0&&airSh<=waterSh?"воздух":"вода";
+      const at=Math.max(0,Math.floor(Math.min(airSh,waterSh)));
+      /* не меньше единицы: `B.park<0` — это «стоит по приказу», и ноль/минус
+         здесь превратил бы кончившийся запас в приказ игрока */
+      basePark(B,"empty",Math.max(1,(n-shifts)+1+at),dry);
     }
   }
   /* и износ за эти смены — по той же мерке, что в подробной части */
