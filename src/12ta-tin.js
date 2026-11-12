@@ -58,20 +58,39 @@ function tinMap(){return (G.tin||(G.tin={}));}
 function tinAt(sx,sy){return tinMap()[tinKeyOf(sx,sy)]||null;}
 function tinHereRec(){return tinAt(G.sx,G.sy);}
 /* ── есть ли она на этом мире ──
-   Примерно каждый седьмой мир из выбранных типов, и никогда там, где может
-   стоять деревня */
-function tinCanLive(p){
+   Жребий — каждый седьмой из выбранных типов, и никогда там, где может
+   стоять деревня. Стоит железо на ОДНОМ теле системы: иначе журнал просит
+   одно, а машина на земле — другое, и два бункера делят одну запись. */
+function tinLiveRoll(p,sys){
   if(!p||!p.type||TIN_ON.indexOf(p.type)<0)return false;
   if(typeof settleCanLive==="function"&&settleCanLive(p))return false;
-  if(typeof planIsCore==="function"&&planIsCore(p))return true;   /* комбинат (11r) */
-  return hashi(hashi(G.sx,G.sy,(p.idx|0)+0x71D),p.seed|0,11)%7===0;
+  sys=sys||G.sys;
+  const sx=sys?sys.sx:G.sx,sy=sys?sys.sy:G.sy;
+  /* комбинат — планета ядра, не спутник с тем же idx */
+  if(p.parentIdx==null&&typeof planCorePlanet==="function"){
+    const c=planCorePlanet(sys);
+    if(c&&c.idx===p.idx)return true;
+  }
+  return hashi(hashi(sx,sy,(p.idx|0)+0x71D),p.seed|0,11)%7===0;
 }
-/* планета системы, на которой стоит железо (одна на систему) */
-function tinPlanet(sys){
+function tinHost(sys){
   const ps=(sys&&sys.planets)||[];
-  for(const p of ps)if(tinCanLive(p))return p;
+  if(typeof planCorePlanet==="function"){
+    const c=planCorePlanet(sys);
+    if(c&&tinLiveRoll(c,sys))return c;
+  }
+  for(const q of ps){
+    if(tinLiveRoll(q,sys))return q;
+    for(const m of q.moons||[])if(tinLiveRoll(m,sys))return m;
+  }
   return null;
 }
+function tinCanLive(p){
+  if(!tinLiveRoll(p,G.sys))return false;
+  return tinHost(G.sys)===p;
+}
+/* тело системы, на котором стоит железо (одно на систему) */
+function tinPlanet(sys){return tinHost(sys);}
 /* ── место ──
    Завод ставят на ровном: из восьми проб берём самую пологую площадку. Первый
    счёт брал точку как попало, и на склоне машина рассыпалась по рельефу —
@@ -117,6 +136,12 @@ function tinMake(p){
    Работает, пока в бункере есть сырьё. Кончилось — встала и снова просит. */
 function tinTick(T){
   if(!T)return null;
+  /* старая запись могла запомниться с другого тела: слот один, idx — хозяйский,
+     иначе комбинат не узнаёт свою смену (planIsCoreT смотрит idx) */
+  if(T.sx===G.sx&&T.sy===G.sy){
+    const h=tinHost(G.sys);
+    if(h&&(T.idx|0)!==(h.idx|0))T.idx=h.idx|0;
+  }
   /* закрыта (M158): смена, которую некому снять, больше не идёт. Комбинат — отдельно (11r) */
   if(typeof tinClosed==="function"&&tinClosed()&&!(typeof planIsCoreT==="function"&&planIsCoreT(T))){
     if(T.run){T.run=0;T.fed=0;}
@@ -200,6 +225,9 @@ function tinSkyOf(day){
 function tinStrip(T){
   T=tinTick(T);
   if(!T)return null;
+  /* якорь суток ленты — в seen: поле уже едет в сейве и больше ничем не занято.
+     Ноль значит «ещё не снимали»: день 0 пишем как 1, чтобы якорь не стёрся */
+  if(!(T.seen|0))T.seen=Math.max(1,celDay());
   const list=tinEntries(T);
   if(T.read>=list.length)return null;
   const e=list[T.read];
@@ -209,33 +237,41 @@ function tinStrip(T){
   const R=(typeof loreTake==="function")?loreTake("tin:"+T.sx+":"+T.sy+":"+e.i):null;
   const sky=tinSkyOf(e.day);
   tell("tech","Лента Жестянки · запись "+(e.i+1)+" из "+list.length,
-    "ЗАПИСЬ "+(e.i+1)+"\nСУТКИ "+e.day+" · ПЕЛЕНГ "+e.hdg+"°"+
+    "ЗАПИСЬ "+(e.i+1)+"\nСУТКИ "+e.day+" · ПЕЛЕНГ "+e.hdg+"° · СОБЫТИЕ "+e.code+
     (sky?"\n\nнебо тех суток: "+sky:"")+
     (M?"\n\nпеленг упирается в сектор "+M.sx+":"+M.sy+" — метка на карте":"")+
     (R?"":"\n\nбольше эта лента ничего не помнит"));
-  logAdd("tech","Лента: сутки "+e.day+" · пеленг "+e.hdg+"°");
+  logAdd("tech","Лента: сутки "+e.day+" · пеленг "+e.hdg+"° · событие "+e.code);
   if(typeof saveGame==="function")saveGame(true);
   return e;
 }
-/* записи ленты: чистая функция зерна и ничего больше */
+/* записи ленты: зерно плюс якорь суток (T.seen). Без якоря день ехал бы
+   за календарём, и одна запись называла бы разные сутки */
 function tinEntries(T){
+  const anchor=T.seen|0;
   const out=[];
   for(let i=0;i<TIN_LOG;i++){
     const r=rng(hashi(T.seed,i*13+0x1EA,9));
     const back=40+Math.floor(r()*900);
-    out.push({i,day:Math.max(0,celDay()-back),hdg:Math.floor(r()*360),
+    out.push({i,day:Math.max(0,anchor-back),hdg:Math.floor(r()*360),
               code:(1000+Math.floor(r()*8999))+""});
   }
   return out;
 }
 /* ── строка о состоянии ── одна, короткая, без уговоров */
 function tinLine(T){
-  if(typeof tinClosed==="function"&&tinClosed())return "ЗАКРЫТА · ПОСЛЕДНИЙ РЕЙС УШЁЛ · ЖЕЛЕЗО ВСТАЛО";
+  /* комбинат не встаёт с последним рейсом: tinTick его не глушит, строка не должна врать */
+  if(typeof tinClosed==="function"&&tinClosed()&&!(typeof planIsCoreT==="function"&&planIsCoreT(T)))
+    return "ЗАКРЫТА · ПОСЛЕДНИЙ РЕЙС УШЁЛ · ЖЕЛЕЗО ВСТАЛО";
   const A=tinAskOf(T.seed);
-  if(T.run>0)return "СМЕНА ИДЁТ · В БУНКЕРЕ "+Math.floor(T.bin)+" "+RES[A.made].ru.toUpperCase();
-  const got=Math.floor((T.fed||0)/A.per);
+  if(T.run>0)return "СМЕНА ИДЁТ · В БУНКЕРЕ "+RES[A.made].ru.toUpperCase()+" ×"+Math.floor(T.bin);
+  const fed=T.fed||0,got=Math.floor(fed/A.per),rest=fed-got*A.per;
+  /* недосыпанное видно, иначе отдал — а «ПРИНЯТО» стоит на нуле.
+     «=», не «ЗА БОЧКА»: за требует винительный, его в таблице мер нет */
   return "НАРЯД: "+RES[A.k].ru.toUpperCase()+" · "+A.count+" "+tinPl(A.count,A.ru).toUpperCase()+
-         " · ПРИНЯТО "+got+(got>0?(" ("+A.per+" ЗА "+tinPl(1,A.ru).toUpperCase()+")"):"");
+    " · ПРИНЯТО "+got+
+    (rest>0?" · В ПРИЁМНИКЕ "+rest:"")+
+    (got>0?(" · "+tinPl(1,A.ru).toUpperCase()+" = "+A.per):"");
 }
 /* ── передача ──
    Слышно с прибытия: та же просьба, тем же голосом, в пустоту. Это единственное,
@@ -246,7 +282,8 @@ function tinSignal(){
   if(typeof tinClosed==="function"&&tinClosed())return;   /* закрыта (M158): железо молчит */
   const T=tinAt(G.sx,G.sy);
   if(T&&T.run>0)return;                  // работающая смена не просит
-  const A=tinAskOf(hashi(G.sx,G.sy,(p.idx|0)+0x71DE));
+  /* уже заведённая машина просит свой наряд, не наряд первого тела в списке */
+  const A=tinAskOf(T?T.seed:hashi(G.sx,G.sy,(p.idx|0)+0x71DE));
   logAdd("dim","Передача с "+p.name+": «"+RES[A.k].ru.toUpperCase()+" · "+A.count+" "+
     tinPl(A.count,A.ru).toUpperCase()+" · СМЕНА ПРОДОЛЖАЕТСЯ»");
 }

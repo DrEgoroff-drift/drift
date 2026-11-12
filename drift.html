@@ -27721,8 +27721,8 @@ function coopRegBlock(){
    снимается лениво при каждом подходе (модель tickDrones): сколько суток прошло,
    столько и списано; денег не хватило — списали, сколько было, и на этом всё:
    книги долга нет (решение CRITIQUE-holding, «без расписки»). Тридцать суток без
-   визита — контора сдаёт содержимое на блошинец, и оно всплывает там лотами
-   «залог, за которым не пришли» (12ua), уже чужим.
+   визита: части сдаются на блошинец лотами «залог, за которым не пришли»
+   (12ua), уже чужими; инструменты «Сороки» и сырьё пропадают, не на склад.
 
    Одна мягкая развилка на игрока — «что взять в этот рейс»: инструменты «Сороки»
    работают только с полки кабины (12v-wander-shop), и ящик — место для остальных.
@@ -27773,21 +27773,36 @@ function lockerTick(now){
   L.t+=days*LOCKER_DAY;
   return {fee,days};
 }
-/* контора сдала всё на блошинец: части и инструменты — лотами, кучи уходят вовсе */
+/* сдача: части лотами (не больше двенадцати), инструменты и сырьё пропадают — тост говорит это */
 function lockerHandOver(){
   const L=lockerRec();
+  let tools=0,kept=0,lost=0;
+  for(const it of L.items)if(it.tool)tools++;
+  const rawN=Object.keys(L.res).filter(k=>(L.res[k]|0)>0).length;
   if(typeof fleaRec==="function"){
     const F=fleaRec();if(!Array.isArray(F.pawn))F.pawn=[];
-    for(const it of L.items){
-      if(it.p)F.pawn.push({k:hashi(it.p.s|0,it.p.t|0,0x9A4E),p:it.p});
-      /* инструменты «Сороки» блошинец не понимает — они пропадают вместе с кучами */
+    const mine=[];
+    for(let i=0;i<L.items.length;i++){
+      const it=L.items[i];if(!it.p)continue;
+      /* индекс в ключе: две части одного зерна не сливаются в один лот */
+      const k=hashi((it.p.s|0)+i*17,it.p.t|0,0x9A4E);
+      F.pawn.push({k,p:it.p});mine.push(k);
     }
     while(F.pawn.length>12)F.pawn.shift();
-  }
+    const left={};for(const pw of F.pawn)left[pw.k]=1;
+    kept=mine.filter(k=>left[k]).length;
+    lost=mine.length-kept;
+  }else lost=L.items.filter(it=>it.p).length;
   const n=L.items.length+Object.keys(L.res).length;
   L.items=[];L.res={};
-  if(n)tell("warn","Контора сдала ваш ящик на блошинец: месяц никто не приходил",
-    "ЯЩИК СДАН\nтридцать суток без визита\nчасти всплывут на блошинце лотами\nсырьё ушло на склад конторы");
+  if(!n)return;
+  const tail=[];
+  if(kept)tail.push(lost?"части — лотами на станции «Блошинец», не больше двенадцати":"части — лотами на станции «Блошинец»");
+  else if(lost)tail.push("части на прилавок станции «Блошинец» не влезли");
+  if(tools)tail.push("инструменты «Сороки» пропали");
+  if(rawN)tail.push("сырьё пропало, не на склад");
+  tell("warn","Контора сдала ваш ящик: тридцать суток никто не приходил",
+    "ЯЩИК СДАН\nтридцать суток без визита\n"+tail.join("\n"));
 }
 /* ── положить и забрать ── */
 function lockerPutPart(id){
@@ -35827,7 +35842,8 @@ const STORIES=[
   {id:"t5",via:"cant",when:{visits:2},scene:{seat:"far",figure:0,props:["cup","cup","cup"]}}
  ]},
 
-/* ── 4. Пекарь не печёт ── соперник · дом Пекаря */
+/* ── 4. Пекарь не печёт ── соперник · дом Пекаря.
+   Сдал дверцу в институт — дома её больше не ищут. */
 /* Развилка С1 (не показывается): если игрок хоть раз выкладывал груз на его
    стол (seen:t5 — поступок, который игра уже помнит), дверца нашлась в
    принесённом; если нет — на барахолке, где всё находится. Никто не говорит
@@ -35918,7 +35934,8 @@ const STORIES=[
   {id:"t4",via:"queue",when:{doomNear:true,visits:3},text:"— Спутали просто. Картограф перепутал, а потом поздно стало. Вся история."}
  ]},
 
-/* ── 12. Долгий Ким должен ── деньги · дом Кима */
+/* ── 12. Долгий Ким должен ── деньги · дом Кима.
+   Эстафета закрыла долг чемоданом: «отдаст» после этого не ходит. */
 {id:"kim_debt",form:"thing",at:"fixed:10",cast:["kim"],
  traces:[
   {id:"t1",via:"queue",when:{noflag:"paid",unseenOf:"relay_kim.t1"},text:"— Ким? Отдаст. Он всегда отдаёт. Долго, но всегда."},
@@ -36003,7 +36020,8 @@ const STORIES=[
 /* ── 20. Нуль-кабина ── верфь, фиксированная.
    Монтажник Гедеван собирает в углу верфи кабину для мгновенного переноса.
    Из чего — из того, что дают. */
-/* ОТКАЗ развилки (С2): Гедеван зарезервирован планом P7 — он становится
+/* Стол не забирает груз: «возьмёт» было обещанием без кода.
+   ОТКАЗ развилки (С2): Гедеван зарезервирован планом P7 — он становится
    платным шорткатом к глифам; вязать его уход к поступку сейчас значило бы
    разбирать это при постройке блокнота. Календарь до P7. */
 {id:"null_cabin",form:"thing",at:"fixed:13",cast:["nt"],
@@ -36049,7 +36067,7 @@ const STORIES=[
   {id:"t4",via:"news",when:{any:["left","copied"]},text:"Комиссия, направленная на комбинат, к месту назначения не прибыла. Комбинат отвечает, что комиссия была и уехала."},
   {id:"t5",via:"cant",when:{any:["left","copied"]},scene:{seat:"far",figure:0,props:["paper"]}},
   {id:"t6",via:"queue",when:{flag:"left"},text:"— Уехали. Бумагу оставили. В бумаге — ничего, одни линии. Ровные такие. Мы её не выбрасываем."},
-  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне внизу. Мы её точно не выбрасываем."}
+  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне. Мы её точно не выбрасываем."}
  ],
  turns:[{after:"seen:t1",days:7,set:"left",unless:{wall:true},else:"copied"}]},
 
@@ -36156,12 +36174,13 @@ const STORIES_B=[
  ],
  turns:[{after:"seen:t3",days:12,set:"missed",unless:{card:true},else:"hunted"}]},
 
-/* ── 29. Ракушка ── вещь · барахолка, потом океанический мир */
+/* ── 29. Ракушка ── вещь · океанический мир.
+   Находка в пустоте сюда не доходит: якорь — "sx,sy/pi", контейнер ищется по системе. */
 {id:"shell",form:"thing",at:"world:ocean",cast:["shellman"],
  traces:[
-  {id:"t1",via:"find",when:{item:"cont"},text:"Среди груза — ракушка. На ней процарапан знак, похожий на те, что рисуют у посёлков."},
-  {id:"t2",via:"settle",when:{seen:"t1"},text:"тот же знак, что на ракушке. Они видят её у вас и замолкают."},
-  {id:"t3",via:"settle",when:{seen:"t2",visits:2},text:"они положили что-то рядом с вами и отошли. Обмен состоялся, хотя вы ничего не отдавали."}
+  {id:"t1",via:"land",text:"У берега лежит ракушка. На ней процарапан знак, похожий на те, что рисуют у посёлков."},
+  {id:"t2",via:"settle",when:{seen:"t1"},text:"тот же знак, что на ракушке у берега. Увидели, что вы его узнали, и замолчали."},
+  {id:"t3",via:"settle",when:{seen:"t2",visits:2},text:"тот же знак. Смотрят и не подходят. Класть им нечего — и они ничего не кладут."}
  ]},
 
 /* ── 30. Кто выключает свет ── необъяснимое · мир с посёлком и пещерой */
@@ -36197,12 +36216,13 @@ const STORIES_B=[
   {id:"t3",via:"land",when:{visits:2},text:"На одной грядке что-то взошло. Сухое, но взошло."}
  ]},
 
-/* ── 34. Плита с именами ── после · руинный мир */
+/* ── 34. Плита с именами ── после · руинный мир.
+   Очередь станции на якорь мира не садится: версии приходят слухом. */
 {id:"ruin_plate",form:"versions",at:"world:ruin",cast:[],
  traces:[
   {id:"t1",via:"land",text:"У входа в руины — плита. На ней семь строк. Шесть стёрты, седьмая нет."},
-  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Плита? Это список смены. Шесть ушли, седьмой остался сторожить. Так говорят."},
-  {id:"t3",via:"queue",when:{seen:"t1",visits:2},text:"— Список? Да это меню было. Столовая там стояла. Стёрли, потому что не завезли."},
+  {id:"t2",via:"news",when:{seen:"t1"},text:"Про плиту в руинах говорят: список смены. Шесть ушли, седьмой остался сторожить."},
+  {id:"t3",via:"news",when:{seen:"t1",visits:2},text:"Про ту же плиту говорят другое: меню столовой. Стёрли, потому что не завезли."},
   {id:"t4",via:"cave",when:{seen:"t1"},text:"Та же седьмая строка, нацарапана здесь, глубоко внутри. Тем же почерком."}
  ]},
 
@@ -36212,7 +36232,7 @@ const STORIES_B=[
   {id:"t1",via:"land",text:"За площадкой гудит. Не машина. Улей, обложенный камнями, и рядом табурет."},
   {id:"t2",via:"land",when:{visits:2},text:"На табурете сидят. Не оборачиваются. Гудит ровнее, чем в прошлый раз."},
   {id:"t3",via:"settle",text:"на гудящее они показывают с уважением и держатся поодаль"},
-  {id:"t4",via:"queue",when:{seen:"t1"},text:"— Сильва? Она с ульем живёт. Мы её не трогаем, она нас тоже. Мёд не продаёт. Мёд — это не для продажи, говорит."}
+  {id:"t4",via:"news",when:{seen:"t1"},text:"Сильва живёт с ульем. Её не трогают, она тоже. Мёд не продаёт: не для продажи, говорит."}
  ]},
 
 /* ── 36. Ржавый колокол ── место · металлический мир */
@@ -36220,14 +36240,14 @@ const STORIES_B=[
  traces:[
   {id:"t1",via:"land",text:"На гребне висит лист металла, и к нему привязана кость. Ветер бьёт костью в лист. Звенит."},
   {id:"t2",via:"cave",text:"В пещере тот же звон, только глуше. Кто-то провёл сюда трубу, чтобы слышать."},
-  {id:"t3",via:"settle",text:"когда звенит, они замирают. Потом продолжают."}
+  {id:"t3",via:"land",when:{seen:"t1"},text:"На каждый удар звона на гребне кто-то останавливался: следы, и дальше снова шаг."}
  ]},
 
 /* ── 37. Кристалл с именем ── вещь · кристаллический мир */
 {id:"named_crystal",form:"thing",at:"world:crystal",cast:[],
  traces:[
   {id:"t1",via:"land",text:"Один кристалл у площадки обточен. На грани — имя. Не здешнее, буквы ваши."},
-  {id:"t2",via:"table",item:"cargo",when:{item:"cargo",seen:"t1"},text:"— Кристалл? С именем? Не показывайте никому. Нет, не опасно. Просто не показывайте."},
+  {id:"t2",via:"news",when:{seen:"t1"},text:"Кристалл с именем просят не показывать. Не опасно. Просто не показывать."},
   {id:"t3",via:"news",when:{seen:"t1"},text:"Кто-то спрашивает в эфире, не видел ли кто кристалл с именем. Называет имя. Имя то же."}
  ]},
 
@@ -36246,7 +36266,7 @@ const STORIES_B=[
  traces:[
   {id:"t1",via:"cant",scene:{seat:"far",figure:1,col:[84,92,104],props:["paper","paper","paper","glass_empty"]}},
   {id:"t2",via:"queue",text:"— Нюра чертит. Карту. Сектора, которого нет. Говорит: будет — пригодится."},
-  {id:"t3",via:"table",item:"strip",when:{item:"strip"},text:"— Ленту? Мне? …Это отсюда на полтора сектора. У меня там белое пятно. Было."},
+  {id:"t3",via:"table",item:"strip",when:{item:"strip"},text:"— Ленту? Мне? Сектор на ней читается. У меня там белое пятно. Было."},
   {id:"t4",via:"queue",when:{visits:4},text:"— Нюра говорит, у неё осталось одно белое пятно. И что она его не закроет. Нарочно."}
  ]},
 
@@ -36285,8 +36305,8 @@ const STORIES_B=[
 /* ── 43. Чайник ── вещь · любая станция */
 {id:"kettle",form:"thing",at:"any",cast:["kettle"],
  traces:[
-  {id:"t1",via:"cant",scene:{seat:"end",figure:0,props:["cup","key"]}},
-  {id:"t2",via:"queue",text:"— Чайник не трогайте. Он не наш. Его оставили, чтобы вернуться. Мы его не убираем, чтобы было куда."},
+  {id:"t1",via:"cant",scene:{seat:"end",figure:0,props:[]}},
+  {id:"t2",via:"queue",text:"— Чайник не наш. На стойке его нет — не выставляем. Оставили, чтобы вернуться."},
   {id:"t3",via:"queue",when:{visits:3},text:"— Чайник? Он кипит сам. Нет, не подключён. Мы проверяли. Кипит."}
  ]},
 
@@ -36298,12 +36318,13 @@ const STORIES_B=[
   {id:"t3",via:"ether",when:{seen:"t2"},text:"…маяк Семнадцатый. Если кто-то это слушает — спасибо. Если никто — тоже ничего, я привык."}
  ]},
 
-/* ── 45. Шкипер Ороз не заходит ── дорога · форпост, плавающая */
+/* ── 45. Шкипер Ороз не заходит ── дорога · аванпост, плавающая.
+   После «зашёл» прежние «никогда не заходит» из круга уходят. Тип станции — аванпост. */
 {id:"skipper",form:"habit",at:"stype:outpost",cast:["bargeman"],
  traces:[
-  {id:"t1",via:"ether",text:"…баржа Ороза проходит мимо. Ороз, зайдёшь? …Нет. Ороз никогда не заходит, но мы спрашиваем."},
-  {id:"t2",via:"queue",text:"— Ороз? Ходит мимо тридцать лет. Ни разу не зашёл. Мы ему каждый раз машем. Он отвечает."},
-  {id:"t3",via:"news",when:{visits:2},text:"Шкипер Ороз впервые зашёл на форпост. Пробыл час. Что делал — не знает никто, он ни с кем не говорил."},
+  {id:"t1",via:"ether",when:{unseen:"t3"},text:"…баржа Ороза проходит мимо. Ороз, зайдёшь? …Нет. Ороз никогда не заходит, но мы спрашиваем."},
+  {id:"t2",via:"queue",when:{unseen:"t3"},text:"— Ороз? Ходит мимо тридцать лет. Ни разу не зашёл. Мы ему каждый раз машем. Он отвечает."},
+  {id:"t3",via:"news",when:{visits:2},text:"Шкипер Ороз впервые зашёл на аванпост. Пробыл час. Что делал — не знает никто, он ни с кем не говорил."},
   {id:"t4",via:"queue",when:{seen:"t3"},text:"— Заходил. Сел, посидел, ушёл. Мы не спрашивали. Тридцать лет не спрашивали, чего сейчас начинать."}
  ]},
 
@@ -36335,12 +36356,13 @@ const STORIES_B=[
   {id:"t3",via:"queue",when:{visits:5},text:"— Он сказал, что вы — сороковой. Не знаю, что это значит. Он выглядел довольным."}
  ]},
 
-/* ── 49. Повар Балаш ── место · комбинат, фиксированная */
+/* ── 49. Повар Балаш ── место · комбинат, фиксированная.
+   Стол не забирает груз и не кормит: смотрит, готовит из своего. К стойке — вы. */
 {id:"cook",form:"place",at:"fixed:20",cast:["cook"],
  traces:[
   {id:"t1",via:"cant",scene:{seat:"end",figure:1,col:[110,90,70],props:["bread","cup","cup"]}},
   {id:"t2",via:"queue",text:"— Балаш кормит всех. Кто заплатил, кто нет — всех. Комбинат платит ему за смену, он кормит всех. Арифметика не сходится, он знает."},
-  {id:"t3",via:"table",item:"cargo",when:{item:"cargo"},text:"— Это? Это я возьму. Нет, не куплю. Возьму и приготовлю, а ты поешь."},
+  {id:"t3",via:"table",item:"cargo",when:{item:"cargo"},text:"— Это? Не куплю. Смотрю. Готовить буду из своего."},
   {id:"t4",via:"news",when:{visits:2},text:"На комбинате третью неделю не платят, а столовая работает. Балаш говорит: столовая — не комбинат."}
  ]},
 
@@ -36391,7 +36413,7 @@ const STORIES_B=[
 /* ── 55. Вода по расписанию ── место · комбинат */
 {id:"water_schedule",form:"place",at:"stype:indust",cast:[],
  traces:[
-  {id:"t1",via:"queue",text:"— У нас вода по расписанию. Расписание не соблюдается. Зато оно есть, и его повесили в рамке."},
+  {id:"t1",via:"queue",when:{unseen:"t3"},text:"— У нас вода по расписанию. Расписание не соблюдается. Зато оно есть, и его повесили в рамке."},
   {id:"t2",via:"cant",scene:{seat:"door",figure:0,props:["paper","cup"]}},
   {id:"t3",via:"queue",when:{visits:3},text:"— Рамку с расписанием украли. Воду теперь дают когда попало. Никто не заметил разницы, кроме рамки."}
  ]},
@@ -36407,14 +36429,15 @@ const STORIES_B=[
 {id:"half_dock",form:"after",at:"stype:yard",cast:[],
  traces:[
   {id:"t1",via:"queue",text:"— Тут раньше два дока было. Теперь полтора. Половину увезли. Кто увозит половину дока?"},
-  {id:"t2",via:"news",when:{visits:2},text:"В соседнем секторе видели половину дока. Летит сама. Медленно, но в одну сторону."},
+  {id:"t2",via:"news",when:{visits:2},text:"Половину дока видели в пути. Летит сама. Медленно, но в одну сторону."},
   {id:"t3",via:"queue",when:{seen:"t2"},text:"— Летит, говорите? Ну пусть летит. Она всегда хотела."}
  ]},
 
-/* ── 58. Долг без имени ── деньги · любая станция с бонами */
+/* ── 58. Долг без имени ── деньги · любая станция с бонами.
+   «Ещё гасят» не крутится вместе с «погашен», и не крутится после эстафеты. */
 {id:"nameless_debt",form:"thing",at:"any",cast:[],
  traces:[
-  {id:"t1",via:"queue",when:{unseenOf:"relay_kim.t2"},text:"— В книге долг без имени. Большой. Кто-то его гасит. Понемногу, каждый месяц. Кто — не пишет."},
+  {id:"t1",via:"queue",when:{unseen:"t2",unseenOf:"relay_kim.t2"},text:"— В книге долг без имени. Большой. Кто-то его гасит. Понемногу, каждый месяц. Кто — не пишет."},
   {id:"t2",via:"queue",when:{visits:4,unseenOf:"relay_kim.t2"},text:"— Долг без имени погашен. В книге пусто. Мы не знаем, кого благодарить, и благодарим всех."},
   /* после эстафеты долг погашен чемоданом: «ещё гасят» больше не ходит */
   {id:"t3",via:"queue",when:{seenOf:"relay_kim.t2"},text:"— Долг без имени погашен. В книге пусто. Кто — не пишет."}
@@ -36424,7 +36447,7 @@ const STORIES_B=[
 {id:"coin_counter",form:"thing",at:"stype:trade",cast:[],
  traces:[
   {id:"t1",via:"cant",scene:{seat:"corner",figure:0,props:["key"]}},
-  {id:"t2",via:"queue",text:"— Монета на стойке лежит с открытия. Не наша, не здешняя. Её не берут. Примета: возьмёшь — станция закроется."},
+  {id:"t2",via:"queue",when:{unseen:"t3"},text:"— Монета на стойке лежит с открытия. Не наша, не здешняя. Её не берут. Примета: возьмёшь — станция закроется."},
   {id:"t3",via:"queue",when:{visits:5},text:"— Монету кто-то взял. Станция не закрылась. Теперь мы не знаем, во что верить, и это хуже."}
  ]},
 
@@ -36467,15 +36490,15 @@ const STORIES_B=[
   {id:"t1",via:"queue",when:{seen:"t0",unseenOf:"relay_baker.t1"},text:"— Пахнет. Слышите? Пекарь печёт. Первый раз за всё время. Мы не заходим, боимся спугнуть."},
   {id:"t2",via:"cant",when:{seen:"t0",unseenOf:"relay_baker.t1"},scene:{seat:"end",figure:1,col:[110,90,70],props:["bread","bread","bread"]}},
   {id:"t0",via:"news",when:{anyOf:["baker_oven.door","baker_oven.brought"],unseenOf:"relay_baker.t1"},text:"Пекарь нашёл дверцу. Или дверца нашла его. Печь собрана."},
-  {id:"t3",via:"queue",when:{seenOf:"relay_baker.t1"},text:"— Печь? Не собрана. Дверцу увёз. Сказал: испечёт, когда она вернётся. Сам не пёк никогда."}
+  {id:"t3",via:"queue",when:{seenOf:"relay_baker.t1"},text:"— Печь? Не собрана. Дверцу увёз. Сказал: испечёт, когда она вернётся."}
  ],
  links:["baker_oven"]},
 
-/* ── 65. Совеня продал ── шестеро · дом Совени */
+/* ── 65. Совеня продала ── шестеро · дом Совени */
 {id:"sovenya_sold",form:"versions",at:"fixed:8",cast:["sovenya"],
  traces:[
   {id:"t1",via:"news",text:"Совеня продала редкость. Впервые. Купивший не назван. Совеня не спит от горя — или от радости, по её лицу не понять."},
-  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Продал, потому что долг. — Продал, потому что надоела. — Продал, потому что редкость сама попросила. Выбирайте."}
+  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Продала, потому что долг. — Продала, потому что надоела. — Продала, потому что редкость сама попросила. Выбирайте."}
  ]},
 
 /* ── 66. Ефим оставил записку ── шестеро · далёкие системы */
@@ -36500,7 +36523,7 @@ const STORIES_B=[
 {id:"fog_barge",form:"witness",at:"planet",cast:[],
  traces:[
   {id:"t1",via:"land",text:"Над хребтом прошла баржа. Низко. Без огней. На посадку не пошла."},
-  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Баржа низко над планетой? Это Ороз. Он так здоровается с теми, кто внизу."}
+  {id:"t2",via:"land",when:{seen:"t1",visits:2},text:"Над хребтом снова баржа. Низко, без огней. Так здоровается Ороз — с теми, кто внизу."}
  ],
  links:["skipper"]},
 
@@ -36515,8 +36538,11 @@ const STORIES_B=[
 /* ── 70. Пустая площадка ── после · любой мир */
 {id:"empty_pad",form:"after",at:"planet",cast:[],
  traces:[
-  {id:"t1",via:"land",text:"Рядом с вашей площадкой — вторая. Старая, ровная, никем не занятая. Её расчистили для кого-то."},
-  {id:"t2",via:"land",when:{visits:3},text:"Вторая площадка расчищена снова. Кто-то всё ещё ждёт, что сюда сядут."}
+  {id:"t1",via:"land",when:{unseen:"t3"},text:"Рядом с вашей площадкой — вторая. Старая, ровная, никем не занятая. Её расчистили для кого-то."},
+  {id:"t2",via:"land",when:{visits:3,unseen:"t3"},text:"Вторая площадка расчищена снова. Кто-то всё ещё ждёт, что сюда сядут."},
+   /* занятие — след этой площадки: отдельный якорь врал бы про чужой мир */
+   {id:"t3",via:"land",when:{seen:"t2",visits:4},text:"Вторая площадка занята. Чужой борт, без огней. Дождались."},
+   {id:"t4",via:"cave",when:{seen:"t2",visits:4},text:"В пещере двое спали. Недавно. Два места, примято одинаково."}
  ]},
 
 /* ── 71. Голос из шахты ── необъяснимое · комбинат + мир */
@@ -36561,7 +36587,8 @@ for(const k in CAST_C)CAST[k]=CAST_C[k];
 
 const STORIES_C=[
 
-/* ── 73. Птица принесла позывной ── переносчик · из «Второго стакана» */
+/* ── 73. Птица принесла позывной ── переносчик · из «Второго стакана».
+   Птица запоминает только след с carry; у второго стакана его нет. */
 {id:"carried_callsign",form:"pair",at:"stype:trade",cast:["zero7"],
  traces:[
   {id:"t1",via:"queue",when:{parrot:true,seenOf:"second_glass.t1"},text:"— Ноль-семь. Вы это уже слышали. Птице не повторяйте: она запоминает."},
@@ -36607,7 +36634,7 @@ const STORIES_C=[
 {id:"accountant",form:"place",at:"fixed:22",cast:["accountant"],
  traces:[
   {id:"t1",via:"cant",scene:{seat:"far",figure:1,col:[88,84,78],props:["paper","paper","tally","glass_empty"]}},
-  {id:"t2",via:"queue",text:"— Гурам Ильич сводит. Баланс станции. Он не сходится двадцать лет, и Гурам Ильич каждый вечер находит, где."},
+  {id:"t2",via:"queue",text:"— Гурам Ильич сводит. Баланс станции. Сошёлся он или нет — к утру Гурам Ильич уже снова над книгой."},
   {id:"t3",via:"queue",when:{visits:3},text:"— Баланс сошёлся. Гурам Ильич не рад. Он говорит, что теперь не знает, что делать по вечерам."},
   {id:"t4",via:"queue",when:{visits:5},text:"— Баланс снова не сходится. Гурам Ильич спокоен. Мы подозреваем, что это он сам, но не спрашиваем."}
  ]},
@@ -36625,7 +36652,7 @@ const STORIES_C=[
  traces:[
   {id:"t1",via:"land",text:"На краю площадки сидит человек с удочкой. Леска уходит в песок."},
   {id:"t2",via:"land",when:{visits:2},text:"Удочка на месте. Рядом ведро. В ведре — песок. Он доволен."},
-  {id:"t3",via:"queue",when:{seen:"t1"},text:"— С удочкой? Он ловит. Что — не говорит. Один раз вытащил что-то, мы не видели что, а он с тех пор спокойный."}
+  {id:"t3",via:"land",when:{seen:"t1",visits:3},text:"Он ловит. Один раз вытащил что-то и не показывает. С тех пор спокоен."}
  ]},
 
 /* ── 81. Смотритель руин ── привычка · руинный мир */
@@ -36639,8 +36666,8 @@ const STORIES_C=[
 /* ── 82. Тот, кто красит ── привычка · комбинат, связано с комиссией */
 {id:"painter",form:"habit",at:"stype:indust",cast:["painter"],
  traces:[
-  {id:"t1",via:"queue",text:"— Красит. Всё. Стены, трубы, людей, если стоят. Комиссия уехала, а он не остановился."},
-  {id:"t2",via:"queue",when:{seenOf:"commission.t6",visits:2},text:"— Бумагу с линиями тоже покрасил. Теперь там ровные линии поверх ровных линий. Комиссия бы одобрила."},
+  {id:"t1",via:"queue",text:"— Красит. Всё. Стены, трубы, людей, если стоят. Остановиться не может."},
+  {id:"t2",via:"queue",when:{seenOf:"commission.t6",visits:2},text:"— Бумагу с линиями, говорят, тоже покрасил. Ровные поверх ровных. Комиссия бы одобрила."},
   {id:"t3",via:"cant",scene:{seat:"door",figure:1,col:[120,100,80],props:["jar","jar"]}}
  ],
  links:["commission"]},
@@ -36681,15 +36708,15 @@ const STORIES_C=[
 {id:"edge_glass",form:"after",at:"danger:far",cast:[],
  traces:[
   {id:"t1",via:"cant",when:{seenOf:"answering_callsign.t1"},scene:{seat:"corner",figure:0,props:["glass","paper"]}},
-  {id:"t2",via:"queue",when:{seenOf:"answering_callsign.t1"},text:"— Угловой стол? Там сидят, когда кто-то отвечает на старый позывной. Вы отвечали? Тогда сядьте."}
+  {id:"t2",via:"queue",when:{seenOf:"answering_callsign.t1"},text:"— Угловой стол? Там сидят, когда кто-то отвечает на старый позывной. Вы его слышали. Этого довольно."}
  ],
  links:["answering_callsign"]},
 
 /* ── 87. Дверца нашлась ── вещь · связка Пекаря, переносчик */
 {id:"door_found",form:"thing",at:"stype:yard",cast:["baker"],
  traces:[
-  {id:"t1",via:"queue",when:{seenOf:"baker_oven.t4"},carry:true,text:"— Дверца от печи? Обожжённая? Была. Увезли на прошлой неделе. Куда — в сторону Пекаря, кажется."},
-  {id:"t2",via:"queue",when:{seenOf:"baker_oven.t4",visits:2},text:"— Вы про дверцу спрашивали. Ещё одна нашлась. Не та. Но обожжённая. Возьмёте?"}
+  {id:"t1",via:"queue",when:{seenOf:"baker_oven.t4",unseenOf:"relay_baker.t1"},carry:true,text:"— Дверца от печи? Обожжённая? Была. Увезли на прошлой неделе. Куда — в сторону Пекаря, кажется."},
+  {id:"t2",via:"queue",when:{seenOf:"baker_oven.t4",unseenOf:"relay_baker.t1",visits:2},text:"— Дверцу Пекарь ищет — вы слышали. Ещё одна нашлась. Не та. Обожжённая. Увезли дальше."}
  ],
  links:["baker_oven"]},
 
@@ -36746,7 +36773,7 @@ const STORIES_C=[
 {id:"half_dock_arrived",form:"after",at:"stype:yard",cast:[],
  traces:[
   {id:"t1",via:"queue",when:{seenOf:"half_dock.t2"},text:"— Половина дока? Прилетела. Встала рядом с нашим. Мы не спрашивали, чья. Теперь у нас полтора."},
-  {id:"t2",via:"news",when:{seenOf:"half_dock.t2"},text:"Половина дока пристыковалась к чужой верфи. Верфь не возражает. Докам виднее."}
+  {id:"t2",via:"news",when:{seenOf:"half_dock.t2"},text:"Половина дока пристыковалась. Верфь не возражает. Докам виднее."}
  ],
  links:["half_dock"]},
 
@@ -36762,7 +36789,7 @@ const STORIES_C=[
 {id:"candle_everywhere",form:"place",at:"stype:sci",cast:[],
  traces:[
   {id:"t1",via:"cant",when:{seenOf:"candle_middle.t1"},scene:{seat:"far",figure:0,props:["candle"]}},
-  {id:"t2",via:"queue",when:{seenOf:"candle_middle.t2"},text:"— Свеча? Да, и у нас. Мы думали, только у нас. Вы третий, кто спрашивает. Значит, не только."}
+  {id:"t2",via:"queue",when:{seenOf:"candle_middle.t2"},text:"— Свеча? Да, и у нас. Мы думали, только у нас. Вы третий, кто её узнал. Значит, не только."}
  ],
  links:["candle_middle"]},
 
@@ -36777,7 +36804,7 @@ const STORIES_C=[
 /* ── 98. Собака узнала Ороза ── зверь · связка */
 {id:"dog_oroz",form:"beast",at:"stype:outpost",cast:["dog","bargeman"],
  traces:[
-  {id:"t1",via:"queue",when:{seenOf:"skipper.t3"},text:"— Когда Ороз заходил, собака его узнала. Она никого не узнаёт. Его — узнала. Мы не спрашиваем, откуда."}
+  {id:"t1",via:"queue",when:{seenOf:"skipper.t3"},text:"— Про Ороза говорят: зашёл, и собака его узнала. Она никого не узнаёт. Откуда — не спрашивают."}
  ,{id:"t2",via:"cant",when:{seenOf:"skipper.t3"},scene:{seat:"door",figure:0,props:["cup","cap"]}}
  ],
  links:["skipper","not_dog"]},
@@ -36798,11 +36825,12 @@ const STORIES_C=[
  ],
  links:["second_glass"]},
 
-/* ── 101. Чужая площадка занята ── после · связка */
-{id:"pad_taken",form:"after",at:"planet",cast:[],
+/* ── 101. Чужая площадка занята ── слух, не эта планета.
+   Занятие живёт в empty_pad: свой якорь сказал бы «занята» на мире, где площадки не ждали. */
+{id:"pad_taken",form:"after",at:"stype:trade",cast:[],
  traces:[
-  {id:"t1",via:"land",when:{seenOf:"empty_pad.t2"},text:"Вторая площадка занята. Чужой борт, без огней. Дождались."},
-  {id:"t2",via:"cave",when:{seenOf:"empty_pad.t2"},text:"В пещере двое спали. Недавно. Два места, примято одинаково."}
+  {id:"t1",via:"queue",when:{seenOf:"empty_pad.t3"},text:"— Вторая площадка. Та, что расчистили и ждали. Занята. Борт без огней. Где — не сказали."},
+  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Дождались, говорят. Двое. В пещере два места, одинаково примятых. Сами мы не проверяли."}
  ],
  links:["empty_pad"]},
 
@@ -39767,7 +39795,8 @@ const SETTLE_STEP=120;                 // сколько принятого ну
 const SETTLE_STOCK=900;                // больше он просто не принимает: амбар не бездонный
 const SETTLE_GIVE=.34;                 // доля запаса, которую отдают в хорошем настроении
 const SETTLE_WAIT=8*60000;             // как часто у них вообще есть что отдать
-/* где вообще есть кому жить: на голом камне и в кислоте посёлка не будет */
+/* где вообще есть кому жить. Голый камень, лава, металл, кристалл, руины и газ —
+   нет. Токсичный мир в списке нарочно: там купола, не «кислота без людей» */
 const SETTLE_ON=["terran","ocean","jungle","desert","ice","toxic"];
 /* что посёлок способен поднять. `diet` — чем его надо кормить, чтобы склонность
    повернулась сюда; `give` — чем он потом платит. Ни одна постройка не выбирается
@@ -40002,6 +40031,8 @@ function settleMakes(S){
 const SETTLE_WORD={"вода":"ice","камень":"silicon","огонь":"carbon",
   "земля":"organics","дом":"iron","небо":"titan"};
 function settleWords(S){
+  /* под рукой словарь больше не рычаг: кнопка не должна звать «просить: вода» */
+  if(typeof settleMine==="function"&&settleMine(S))return [];
   const vocab=(typeof loreVocab==="function")?loreVocab():[];
   const makes=settleMakes(S);
   return vocab.filter(w=>SETTLE_WORD[w]&&makes.indexOf(SETTLE_WORD[w])>=0);
@@ -40020,7 +40051,7 @@ function settleAsk(S,word){
     const k=SETTLE_WORD[word];
     makes=[k].concat(makes.filter(x=>x!==k));
   }
-  S.asked=now;
+  /* замок не ставим заранее: пустой ответ не должен сжигать восемь минут */
   const st=stat();
   let room=Math.max(0,st.cargoMax-held()),got=0;
   const share=SETTLE_GIVE*(S.mood/100);
@@ -40067,14 +40098,14 @@ function settleLine(S,topic){
 /* ══ M110: они стоят между вами и фауной — и платят за это ══
    Не бонус игроку, а свойство земли: со второй ступени у посёлка есть дозорные,
    и кусачая тварь в его биоме держится поодаль. Работает это только на своей
-   планете (не «во всей системе») и только пока их кормят: голодной деревне не до
-   дозора. И работает в обе стороны — пират, которого игрок притащил себе на
-   хвосте, садится не на него, а на них. */
+   планете (не «во всей системе») и только пока настроение держится: голод
+   и налёт снимают дозор одинаково. И работает в обе стороны — пират, которого
+   игрок притащил себе на хвосте, садится не на него, а на них. */
 function settleWatch(p){
   const S=settleTick(settleHere());
   if(!S||S.stage<2)return 0;
   if(p&&(p.idx|0)!==(S.idx|0))return 0;
-  if(S.mood<30)return 0;                      // голод снимает дозор раньше всего
+  if(S.mood<30)return 0;                      // низкое настроение снимает дозор раньше всего
   return clamp((S.stage>=3?1:.65)*(.3+S.mood/100),0,1);
 }
 /* ── расплата за налёт ──
@@ -40184,20 +40215,39 @@ function tinMap(){return (G.tin||(G.tin={}));}
 function tinAt(sx,sy){return tinMap()[tinKeyOf(sx,sy)]||null;}
 function tinHereRec(){return tinAt(G.sx,G.sy);}
 /* ── есть ли она на этом мире ──
-   Примерно каждый седьмой мир из выбранных типов, и никогда там, где может
-   стоять деревня */
-function tinCanLive(p){
+   Жребий — каждый седьмой из выбранных типов, и никогда там, где может
+   стоять деревня. Стоит железо на ОДНОМ теле системы: иначе журнал просит
+   одно, а машина на земле — другое, и два бункера делят одну запись. */
+function tinLiveRoll(p,sys){
   if(!p||!p.type||TIN_ON.indexOf(p.type)<0)return false;
   if(typeof settleCanLive==="function"&&settleCanLive(p))return false;
-  if(typeof planIsCore==="function"&&planIsCore(p))return true;   /* комбинат (11r) */
-  return hashi(hashi(G.sx,G.sy,(p.idx|0)+0x71D),p.seed|0,11)%7===0;
+  sys=sys||G.sys;
+  const sx=sys?sys.sx:G.sx,sy=sys?sys.sy:G.sy;
+  /* комбинат — планета ядра, не спутник с тем же idx */
+  if(p.parentIdx==null&&typeof planCorePlanet==="function"){
+    const c=planCorePlanet(sys);
+    if(c&&c.idx===p.idx)return true;
+  }
+  return hashi(hashi(sx,sy,(p.idx|0)+0x71D),p.seed|0,11)%7===0;
 }
-/* планета системы, на которой стоит железо (одна на систему) */
-function tinPlanet(sys){
+function tinHost(sys){
   const ps=(sys&&sys.planets)||[];
-  for(const p of ps)if(tinCanLive(p))return p;
+  if(typeof planCorePlanet==="function"){
+    const c=planCorePlanet(sys);
+    if(c&&tinLiveRoll(c,sys))return c;
+  }
+  for(const q of ps){
+    if(tinLiveRoll(q,sys))return q;
+    for(const m of q.moons||[])if(tinLiveRoll(m,sys))return m;
+  }
   return null;
 }
+function tinCanLive(p){
+  if(!tinLiveRoll(p,G.sys))return false;
+  return tinHost(G.sys)===p;
+}
+/* тело системы, на котором стоит железо (одно на систему) */
+function tinPlanet(sys){return tinHost(sys);}
 /* ── место ──
    Завод ставят на ровном: из восьми проб берём самую пологую площадку. Первый
    счёт брал точку как попало, и на склоне машина рассыпалась по рельефу —
@@ -40243,6 +40293,12 @@ function tinMake(p){
    Работает, пока в бункере есть сырьё. Кончилось — встала и снова просит. */
 function tinTick(T){
   if(!T)return null;
+  /* старая запись могла запомниться с другого тела: слот один, idx — хозяйский,
+     иначе комбинат не узнаёт свою смену (planIsCoreT смотрит idx) */
+  if(T.sx===G.sx&&T.sy===G.sy){
+    const h=tinHost(G.sys);
+    if(h&&(T.idx|0)!==(h.idx|0))T.idx=h.idx|0;
+  }
   /* закрыта (M158): смена, которую некому снять, больше не идёт. Комбинат — отдельно (11r) */
   if(typeof tinClosed==="function"&&tinClosed()&&!(typeof planIsCoreT==="function"&&planIsCoreT(T))){
     if(T.run){T.run=0;T.fed=0;}
@@ -40326,6 +40382,9 @@ function tinSkyOf(day){
 function tinStrip(T){
   T=tinTick(T);
   if(!T)return null;
+  /* якорь суток ленты — в seen: поле уже едет в сейве и больше ничем не занято.
+     Ноль значит «ещё не снимали»: день 0 пишем как 1, чтобы якорь не стёрся */
+  if(!(T.seen|0))T.seen=Math.max(1,celDay());
   const list=tinEntries(T);
   if(T.read>=list.length)return null;
   const e=list[T.read];
@@ -40335,33 +40394,41 @@ function tinStrip(T){
   const R=(typeof loreTake==="function")?loreTake("tin:"+T.sx+":"+T.sy+":"+e.i):null;
   const sky=tinSkyOf(e.day);
   tell("tech","Лента Жестянки · запись "+(e.i+1)+" из "+list.length,
-    "ЗАПИСЬ "+(e.i+1)+"\nСУТКИ "+e.day+" · ПЕЛЕНГ "+e.hdg+"°"+
+    "ЗАПИСЬ "+(e.i+1)+"\nСУТКИ "+e.day+" · ПЕЛЕНГ "+e.hdg+"° · СОБЫТИЕ "+e.code+
     (sky?"\n\nнебо тех суток: "+sky:"")+
     (M?"\n\nпеленг упирается в сектор "+M.sx+":"+M.sy+" — метка на карте":"")+
     (R?"":"\n\nбольше эта лента ничего не помнит"));
-  logAdd("tech","Лента: сутки "+e.day+" · пеленг "+e.hdg+"°");
+  logAdd("tech","Лента: сутки "+e.day+" · пеленг "+e.hdg+"° · событие "+e.code);
   if(typeof saveGame==="function")saveGame(true);
   return e;
 }
-/* записи ленты: чистая функция зерна и ничего больше */
+/* записи ленты: зерно плюс якорь суток (T.seen). Без якоря день ехал бы
+   за календарём, и одна запись называла бы разные сутки */
 function tinEntries(T){
+  const anchor=T.seen|0;
   const out=[];
   for(let i=0;i<TIN_LOG;i++){
     const r=rng(hashi(T.seed,i*13+0x1EA,9));
     const back=40+Math.floor(r()*900);
-    out.push({i,day:Math.max(0,celDay()-back),hdg:Math.floor(r()*360),
+    out.push({i,day:Math.max(0,anchor-back),hdg:Math.floor(r()*360),
               code:(1000+Math.floor(r()*8999))+""});
   }
   return out;
 }
 /* ── строка о состоянии ── одна, короткая, без уговоров */
 function tinLine(T){
-  if(typeof tinClosed==="function"&&tinClosed())return "ЗАКРЫТА · ПОСЛЕДНИЙ РЕЙС УШЁЛ · ЖЕЛЕЗО ВСТАЛО";
+  /* комбинат не встаёт с последним рейсом: tinTick его не глушит, строка не должна врать */
+  if(typeof tinClosed==="function"&&tinClosed()&&!(typeof planIsCoreT==="function"&&planIsCoreT(T)))
+    return "ЗАКРЫТА · ПОСЛЕДНИЙ РЕЙС УШЁЛ · ЖЕЛЕЗО ВСТАЛО";
   const A=tinAskOf(T.seed);
-  if(T.run>0)return "СМЕНА ИДЁТ · В БУНКЕРЕ "+Math.floor(T.bin)+" "+RES[A.made].ru.toUpperCase();
-  const got=Math.floor((T.fed||0)/A.per);
+  if(T.run>0)return "СМЕНА ИДЁТ · В БУНКЕРЕ "+RES[A.made].ru.toUpperCase()+" ×"+Math.floor(T.bin);
+  const fed=T.fed||0,got=Math.floor(fed/A.per),rest=fed-got*A.per;
+  /* недосыпанное видно, иначе отдал — а «ПРИНЯТО» стоит на нуле.
+     «=», не «ЗА БОЧКА»: за требует винительный, его в таблице мер нет */
   return "НАРЯД: "+RES[A.k].ru.toUpperCase()+" · "+A.count+" "+tinPl(A.count,A.ru).toUpperCase()+
-         " · ПРИНЯТО "+got+(got>0?(" ("+A.per+" ЗА "+tinPl(1,A.ru).toUpperCase()+")"):"");
+    " · ПРИНЯТО "+got+
+    (rest>0?" · В ПРИЁМНИКЕ "+rest:"")+
+    (got>0?(" · "+tinPl(1,A.ru).toUpperCase()+" = "+A.per):"");
 }
 /* ── передача ──
    Слышно с прибытия: та же просьба, тем же голосом, в пустоту. Это единственное,
@@ -40372,7 +40439,8 @@ function tinSignal(){
   if(typeof tinClosed==="function"&&tinClosed())return;   /* закрыта (M158): железо молчит */
   const T=tinAt(G.sx,G.sy);
   if(T&&T.run>0)return;                  // работающая смена не просит
-  const A=tinAskOf(hashi(G.sx,G.sy,(p.idx|0)+0x71DE));
+  /* уже заведённая машина просит свой наряд, не наряд первого тела в списке */
+  const A=tinAskOf(T?T.seed:hashi(G.sx,G.sy,(p.idx|0)+0x71DE));
   logAdd("dim","Передача с "+p.name+": «"+RES[A.k].ru.toUpperCase()+" · "+A.count+" "+
     tinPl(A.count,A.ru).toUpperCase()+" · СМЕНА ПРОДОЛЖАЕТСЯ»");
 }
@@ -41528,11 +41596,9 @@ function scripOnNews(kind,sys){
   if(!H)return;
   const nm="«"+(sys&&sys.station?sys.station.name:"станция")+"»";
   if(kind==="owner"){
-    /* станция сменила хозяина: этот дом её потерял, а достаётся она соседу —
-       выбор соседа тоже детерминирован, чтобы слух и курс не разошлись */
-    scripMove(H.id,-7-Math.abs(hashi(sys.seed,3,3))%5,"станцию "+nm+" забрали у дома");
-    const other=HOUSES[Math.abs(hashi(sys.seed,0x0FF,5))%HOUSES.length];
-    if(other.id!==H.id)scripMove(other.id,4,"к дому отошла станция "+nm);
+    /* новость только мешает цены: дом станции от семени не меняется.
+       «забрали у дома» и приход чужому дому были бы курсом без причины */
+    scripMove(H.id,-4,"на станции "+nm+" сменились люди, цены чужие");
   }
   else if(kind==="barge")scripMove(H.id,-4,"баржа не дошла до "+nm);
   else if(kind==="captain")scripMove(H.id,3,"в секторе "+sys.sx+","+sys.sy+" стало тише");
@@ -42637,7 +42703,7 @@ const WANDER_RAW={volatiles:40,icecrys:40,alloy:40,techcomp:20};
 const WANDER_CAT=[
   /* — инструменты (спички): работают с полки, читаются через wanderHas(id) — */
   {id:"sextant", fam:"tool",ru:"Секстант Долгого Хода",   note:"с борта, который дошёл; второго такого не было",
-   fx:"прыжок +1 пк в опасных системах", pay:{m:30}, hook:"08-state"},
+   fx:"прыжок +1 парсек в опасных системах", pay:{m:30}, hook:"08-state"},
   {id:"pencil",  fam:"tool",ru:"Штурманский карандаш",    note:"стёрт до половины; хозяйка мерила им слухи",
    fx:"разброс слухов на сектор уже", pay:{m:14}, hook:"11t-rumours"},
   {id:"gyro",    fam:"tool",ru:"Гирокомпас без номера",   note:"снят с гондолы при ремонте; номер стёрли мы",
@@ -42659,7 +42725,7 @@ const WANDER_CAT=[
   {id:"trumpet", fam:"tool",ru:"Слуховая трубка",         note:"через неё слушали стойку, не подходя",
    fx:"приёмник в полёте чаще ловит слухи", pay:{m:18}, hook:"11t-rumours"},
   {id:"key",     fam:"tool",ru:"Ключ причала",            note:"диспетчер отдал, когда закрывали причал",
-   fx:"стыковка с любой точки системы", pay:{m:34}, hook:"17-mode-system"},
+   fx:"стыковка ближе 2600 ед. от станции, не со всей системы", pay:{m:34}, hook:"17-mode-system"},
   {id:"pricelist",fam:"tool",ru:"Список цен",             note:"переписан с трёх бирж за одну ночь",
    fx:"на карте — цены станций в трёх прыжках, даже не виденных", pay:{m:26}, hook:"12aa-need"},
   {id:"shelfwide",fam:"tool",ru:"Полка шире",             note:"снята с нашей же стенки; нам она узка не была",
@@ -42755,11 +42821,26 @@ function wanderCant(lot){
   if(lot.pay.m&&matchesRec()<lot.pay.m)return "не хватает спичек: "+matchesRu(lot.pay.m)+", у вас "+matchesRec();
   if(lot.pay.cr&&G.credits<lot.pay.cr)return "не хватает кредитов";
   if(lot.pay.ask&&!wanderAskPart())return "нет части не ниже отменной среди снятых";
+  /* отказ до оплаты: иначе часть уходит, а свёрток пуст */
+  if(lot.fam==="wild"&&!wanderWildCan())return "свёрток пуст: у вас уже всё, что он мог отдать";
   if((lot.id==="book"||String(lot.id).indexOf("book")===0)&&typeof bookCount==="function"&&bookCount()>=BOOKS.length)return "все сорок у вас уже есть";
   if(lot.cat&&lot.cat.id==="matchbox"&&typeof boxCount==="function"&&boxCount()>=BOXES.length)return "все двадцать у вас уже есть";
   return null;
 }
 function wanderAskPart(){return (G.inv||[]).find(p=>!isFitted(p.id)&&(p.tier|0)>=4)||null;}
+/* есть ли чем наполнить свёрток: артефакт, пока их меньше трёх, иначе редкость */
+function wanderWildCan(){
+  const owned=(typeof relicOwned==="function")?relicOwned():[];
+  if(owned.length<3&&typeof RELIC_KEYS!=="undefined"&&RELIC_KEYS.some(k=>typeof relicHave==="function"&&!relicHave(k)))return true;
+  return typeof RARE!=="undefined"&&typeof rareHas==="function"&&RARE.some(R=>!rareHas(R.id));
+}
+/* оплата снята, а вещи нет — вернуть и не жечь лот */
+function wanderUnpay(lot,R){
+  const cat=lot.cat;
+  if(cat.pay&&cat.pay.m)matchesAdd(cat.pay.m);
+  else if(cat.pay&&cat.pay.cr)G.credits+=cat.pay.cr;
+  const i=R.got.lastIndexOf(lot.id);if(i>=0)R.got.splice(i,1);
+}
 /* купить: спички, кредиты или обмен; вещь ложится куда ей положено */
 function wanderBuy(lot){
   const why=wanderCant(lot);if(why){say(why);return false;}
@@ -42780,11 +42861,14 @@ function wanderBuy(lot){
       (cosmOn(cat.slot)===cat.id?"\n\nнадето":"\n\nв шкатулке на ОПИСИ: надеть — там"));
   }else if(cat.id==="matchbox"){
     const b=(typeof boxFind==="function")?boxFind(hashi(lot.id.length,R.got.length,0xB0CE),"с борта «Сороки»"):null;
-    tell("good","С «Сороки»: коробок"+(b?" "+b.ru:""),"КОРОБОК\n"+(b?b.ru+"\n"+b.by:"пустой")+"\n\nна полку дома, к книгам");
-  }else if(cat.id==="area")wanderAreaChart(lot);
-  else if(cat.id==="book"){
+    if(!b){wanderUnpay(lot,R);say("коробок не лёг: на полке уже все");return false;}
+    tell("good","С «Сороки»: коробок "+b.ru,"КОРОБОК\n"+b.ru+"\n"+b.by+"\n\nна полку дома, к книгам");
+  }else if(cat.id==="area"){
+    if(!wanderAreaChart(lot)){wanderUnpay(lot,R);say("карта не легла: рядом не нашлось станции");return false;}
+  }else if(cat.id==="book"){
     const b=(typeof bookFind==="function")?bookFind(hashi(lot.id.length,R.got.length,0xB00C),"куплена на «Сороке»"):null;
-    tell("good","С «Сороки»: книга"+(b?" «"+b.ru+"»":""),"КНИГА\n"+(b?b.ru+"\n":"")+"на полку дома");
+    if(!b){wanderUnpay(lot,R);say("книга не легла: на полке уже все");return false;}
+    tell("good","С «Сороки»: книга «"+b.ru+"»","КНИГА\n"+b.ru+"\nна полку дома");
   }else wanderWildGrant(lot);
   if(typeof sfx==="function")sfx("ok");
   if(typeof saveGame==="function")saveGame(true);
@@ -42798,12 +42882,15 @@ function wanderAreaChart(lot){
     const a=r()*TAU,d=6+r()*8,sx=Math.round(G.sx+Math.cos(a)*d),sy=Math.round(G.sy+Math.sin(a)*d);
     if(starAt(sx,sy)&&getSystem(sx,sy).station)best={sx,sy};
   }
-  if(!best)best={sx:G.sx+7,sy:G.sy};
+  if(!best)return false;
+  let n=0;
   if(typeof loreMarks==="function")for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)
-    if(starAt(best.sx+dx,best.sy+dy))loreMarks().push({sx:best.sx+dx,sy:best.sy+dy,id:"wander:"+lot.id+":"+dx+":"+dy});
-  const nm=getSystem(best.sx,best.sy).name;
+    if(starAt(best.sx+dx,best.sy+dy)){loreMarks().push({sx:best.sx+dx,sy:best.sy+dy,id:"wander:"+lot.id+":"+dx+":"+dy});n++;}
+  if(!n)return false;
+  const sys=getSystem(best.sx,best.sy),nm=sys.station?sys.station.name:sys.name;
   tell("tech","С «Сороки»: карта области у «"+nm+"» · сектор "+best.sx+":"+best.sy,
-    "КАРТА ОБЛАСТИ\nдевять секторов вокруг «"+nm+"»\nсектор "+best.sx+":"+best.sy+"\n\nзасечки легли на карту");
+    "КАРТА ОБЛАСТИ\n"+n+" "+pl3(n,"засечка","засечки","засечек")+" вокруг «"+nm+"»\nсектор "+best.sx+":"+best.sy+"\n\nзасечки легли на карту");
+  return true;
 }
 /* свёрток под сукном: артефакт, которого нет, пока их меньше трёх; иначе редкость из сотни */
 function wanderWildGrant(lot){
@@ -42867,16 +42954,19 @@ const WANDER_LINES={
   idle:["Огня в космосе нет уже сто лет. Есть только то, что положили внутрь до нас.",
         "Полный коробок — пятьдесят целых — я видел один раз. Не продам, и не просите.",
         "За гондолу шестьдесят. Не торгуюсь, у меня их тоже не делают.",
-        "Летучих на двадцать спичек. Кладу из своего коробка, помните это."],
+        /* прилавок берёт сорок за спичку и не больше двухсот: «на двадцать» врало бы в ту же минуту */
+        "Летучие — сорок единиц за спичку, и не больше двухсот за стоянку. Кладу из своего коробка, помните это."],
   leave1:"Сейчас узнаем, куда ветер.",leave2:"Туда."
 };
 /* «уходит через …» — для тетради ветра и шапки комнаты */
 function wanderLeftRu(w){
   w=w||wanderAt();
   const ms=w.tLeft,h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60000);
-  if(w.phase!=="stop")return "в пути · придёт через "+(h?h+" ч ":"")+m+" мин";
+  /* «0 мин» врало: секунды ещё были, а строка говорила, что срок вышел */
+  const bit=!h&&!m?"меньше минуты":(h?h+" ч"+(m?" "+m+" мин":""):m+" мин");
+  if(w.phase!=="stop")return "в пути · придёт через "+bit;
   if(h>=24){const d=Math.floor(h/24);return "уходит через "+d+" "+pl3(d,"день","дня","дней")+" "+(h%24)+" ч";}
-  return "уходит через "+(h?h+" ч ":"")+m+" мин";
+  return "уходит через "+bit;
 }
 
 /* ══════════════ «Сорока»: странствующий парусник (M342) ══════════════
@@ -43007,11 +43097,12 @@ function wanderDock(){
   return false;
 }
 /* ── три канала ── */
-/* слух: пока борт стоит и стоянка в ~6 прыжках (18 секторов); разброс 2–3, 15 % вранья */
+/* слух: пока борт стоит и стоянка в шести прыжках — не в зашитых 18 секторах, прыжок растёт; разброс 2–3, 15 % вранья */
 function wanderRumour(r){
   const w=wanderAt();
   if(w.phase!=="stop"||!G.sys)return null;
-  if(Math.max(Math.abs(w.sx-G.sx),Math.abs(w.sy-G.sy))>18)return null;
+  const jump=Math.max(.5,(typeof stat==="function")?stat().jump:3);
+  if(Math.ceil(Math.max(Math.abs(w.sx-G.sx),Math.abs(w.sy-G.sy))/jump)>6)return null;
   const wrong=r()<.15,rad=2+Math.floor(r()*2);
   let cx=w.sx+Math.round((r()-.5)*2),cy=w.sy+Math.round((r()-.5)*2);
   if(wrong){cx=Math.round((r()-.5)*60);cy=Math.round((r()-.5)*60);}
@@ -43019,7 +43110,8 @@ function wanderRumour(r){
   const det=pick(RUMOUR_DETAIL.any.concat(S.f?RUMOUR_DETAIL.f:RUMOUR_DETAIL.m),r);
   const q={id:"wander",sx:cx,sy:cy,rad,wrong,img:RUMOUR_IMG.wander,src:S.ru,det};
   q.where=rumourWhere(q);
-  q.text=capRu(S.ru)+" рассказывал про место: "+q.img+". "+capRu(q.where)+". "+capRu(det)+".";
+  /* пол глагола как у прочих слухов: иначе «буфетчица рассказывал» */
+  q.text=capRu(S.ru)+" "+(S.f?"рассказывала":"рассказывал")+" про место: "+q.img+". "+capRu(q.where)+". "+capRu(det)+".";
   q.lines=[capRu(q.img),capRu(q.where),"со слов: "+S.ru+" — "+det];
   q.short=q.img+" — где-то у сектора "+cx+":"+cy;
   return q;
@@ -43220,12 +43312,11 @@ function wanderGpu(pass,sys,pos,x,y,L,ang,now){
 function drawWanderer(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
   const w=wanderAt(),now=clockNow();
-  /* уходит: первые шесть часов перехода из покинутой системы виден блик, который уменьшается по прямой */
-  if(w.phase==="hop"&&sys.sx===w.prev.sx&&sys.sy===w.prev.sy){
+  /* уходит: первые шесть часов из покинутой системы виден блик. Покинутая — стоянка этой эпохи, не прошлая: три дня он стоял здесь */
+  if(w.phase==="hop"&&sys.sx===w.sx&&sys.sy===w.sy){
     const th=w.tIn-WANDER_STOP;if(th>6*3600e3)return;
-    const ix=wanderPlanetIx(sys.sx,sys.sy,w.epoch-1),pos=wanderWorldPos(sys,ix);
-    const pw={sx:w.prev.sx,sy:w.prev.sy,next:{sx:w.sx,sy:w.sy}};
-    const a=wanderHeading(pw),u=th/(6*3600e3);
+    const pos=wanderWorldPos(sys,w.planetIx);
+    const a=wanderHeading(w),u=th/(6*3600e3);
     const x=zx(pos.x+Math.cos(a)*u*9000),y=zy(pos.y+Math.sin(a)*u*9000);
     if(x<-20||x>W+20||y<-20||y>H+20)return;
     const rr=Math.max(1.2,(1-u)*4*clamp(Z,.4,1.5));
@@ -49361,9 +49452,9 @@ function applySave(s){
     who:String(s.parrot.who||"").slice(0,48),
     since:+s.parrot.since||now(),said:Math.max(0,s.parrot.said|0)}:null;
   G.heard=(Array.isArray(s.heard)?s.heard:[])
-    .filter(h=>h&&(h.kind==="price"||h.kind==="pidgin"||h.kind==="yours"))
+    .filter(h=>h&&(h.kind==="price"||h.kind==="pidgin"||h.kind==="yours"||h.kind==="story"||h.kind==="ground"||h.kind==="ether"))   /* подслушанное, земля и эфир: птица их пишет, доска их читает */
     .map(h=>({t:+h.t||now(),kind:h.kind,sx:h.sx|0,sy:h.sy|0,
-      note:String(h.note||"").slice(0,64),
+      note:String(h.note||"").slice(0,200),   /* дословно, не 64: строка истории длиннее позывного */
       words:Array.isArray(h.words)?h.words.map(x=>x|0):null,
       read:!!h.read,used:!!h.used}))
     .filter(h=>h.kind!=="pidgin"||(h.words&&h.words.length))
@@ -49474,7 +49565,7 @@ function applySave(s){
         t0:+c.barge.t0||now(),fed:c.barge.fed|0,name:String(c.barge.name||"")}
       :null,
     tMs:now(),paidMs:now()
-  })).slice(0,8);
+  })).slice(0,9);   /* потолок звена: разряд 5 + лицензия 3 + слот командира; восьмой резал девятого */
   G.allies=[];
   /* управляющие: новое поле с безопасным дефолтом, формат записи прежний.
      Портрет не сохраняется — он выводится из seed и всегда тот же самый. */
@@ -49483,7 +49574,7 @@ function applySave(s){
     role:m.role,
     traits:(Array.isArray(m.traits)?m.traits:[]).filter(t=>MGR_TRAITS.some(x=>x.id===t)).slice(0,3),
     xp:Math.max(0,+m.xp||0),lv0:clamp(m.lv0|0||1,1,6),
-    perks:(Array.isArray(m.perks)?m.perks:[]).filter(p=>mgrPerkList(m.role).some(x=>x.id===p)).slice(0,6),
+    perks:(Array.isArray(m.perks)?m.perks:[]).filter(p=>mgrPerkList(m.role).some(x=>x.id===p)).slice(0,mgrPerkList(m.role).length),   /* учёный: 5 уровней + два дара = 7; срез на 6 забывал последнее */
     rules:(Array.isArray(m.rules)?m.rules:[]).filter(x=>MGR_RULES[m.role].some(r=>r.id===x)).slice(0,6),
     loy:clamp(+m.loy||0,0,100),fee:Math.max(0,m.fee|0),
     /* ядро: у него вместо лояльности дрейф, и он тоже переживает загрузку */
@@ -49503,11 +49594,12 @@ function applySave(s){
     cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),pool:Math.max(0,+m.pool||0),
     fat:clamp(+m.fat||0,0,1),   /* усталость (M461): ось тела, не число в UI */
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
-    /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
-       (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
+    /* поручение переживает загрузку, срок идёт заново — закрытая игра не штраф.
+       Метку счётчика обнулять нельзя: kills, orderStamp и soldTotal уже в сейве,
+       и ноль сразу проваливает «тишину в эфире», а бой и пузырь закрывает победой */
     job:(m.job&&jobDef(m.job.id))?{id:m.job.id,t0:now(),
       mins:Math.max(0,+m.job.mins||0),offer:m.job.offer?1:0,
-      pick:m.job.pick|0,hold:m.job.hold?1:0,mark:0}:null,
+      pick:m.job.pick|0,hold:m.job.hold?1:0,mark:Math.max(0,m.job.mark|0)}:null,
     log:Array.isArray(m.log)?m.log.slice(0,8).map(e=>({t:+e.t||0,k:String(e.k||""),s:String(e.s||"")})):[],
     tMs:now()
   })).slice(0,MGR_CAP);
@@ -49814,7 +49906,8 @@ function applySaveRest(s){
         low:b.low|0,
         /* гость у затвора (M395): он ждёт и между сеансами — уходить ему некуда */
         guest:(b.guest&&typeof b.guest==="object")?{name:String(b.guest.name||"").slice(0,24),
-          role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
+          role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0,
+          bad:b.guest.bad?1:0}:null,   /* открытая дверь: один из шести уже вор; без поля после загрузки он чистый */
         /* погода директора (M397): у неё есть сроки, и они переживают выход */
         dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,thief:b.thief|0,dead:b.dead|0,
         /* баня и гриб (M497): смена банного вечера и с какой смены гриб растёт */
@@ -49828,7 +49921,7 @@ function applySaveRest(s){
         /* развалина (M402, §39): из аккаунта ничего не удаляется — база живёт
            в записи и разбитой, вместе с тем, кто в неё въехал */
         ruin:(b.ruin&&typeof b.ruin==="object")?{n:b.ruin.n|0,
-          who:(b.ruin.who==="pirate"||b.ruin.who==="squat")?b.ruin.who:null}:null,
+          who:(b.ruin.who==="pirate"||b.ruin.who==="squat"||b.ruin.who==="pal")?b.ruin.who:null}:null,   /* «pal» — изъятие ПАЛАТЫ; без него участок после загрузки отдавался даром */
         /* устав (M399): законы берутся навсегда, значит они в записи */
         charter:Array.isArray(b.charter)?b.charter.filter(x=>typeof CHARTER_BY!=="undefined"&&CHARTER_BY[x]):[],
         /* договор с управляющим (M405): в записи только НОМЕР — сам он
@@ -49846,7 +49939,7 @@ function applySaveRest(s){
           debt:Math.max(0,b.pal.debt|0),closed:b.pal.closed?1:0,switched:b.pal.switched|0}:null,
         fire:(b.fire&&typeof b.fire==="object")?{c:b.fire.c|0,r:b.fire.r|0,
           k:String(b.fire.k||"fire"),n:b.fire.n|0}:null,
-        park:b.park|0,
+        park:b.park|0,wake:b.wake?1:0,   /* раскочегарка: смена без добычи; без поля загрузка её пропускает и база сразу кормит */
         /* срок криогена (M392): это не запас, а до какой смены держит холод */
         cryo:(b.cryo&&typeof b.cryo==="object")?{until:b.cryo.until|0,q:b.cryo.q|0}:null,
         log:Array.isArray(b.log)?b.log.slice(-24).map(x=>({n:x.n|0,k:String(x.k||""),
@@ -49917,7 +50010,7 @@ function applySaveRest(s){
   G.seenPrices=asMap(s.seenPrices);
   /* комплект (M152): шесть мест, каждая вещь проверяется по месту и классу */
   G.kit=null;if(s.kit&&typeof s.kit==="object"){G.kit={};for(const p of KIT_PLACES){const x=s.kit[p];G.kit[p]=(x&&x.p===p)?kitPiece(p,x.cls,x.wear,x.seed):kitPiece(p,1,0,0);if(x&&Array.isArray(x.mods))G.kit[p].mods=x.mods.filter(id=>KIT_MODS[id]).slice(0,2);if(x)G.kit[p].model=clamp(x.model|0,0,2);}}
-  G.kitShelf=Array.isArray(s.kitShelf)?s.kitShelf.filter(x=>x&&KIT_PLACES.indexOf(x.p)>=0).map(x=>{const y=kitPiece(x.p,x.cls,x.wear,x.seed);y.model=clamp(x.model|0,0,2);y.mods=Array.isArray(x.mods)?x.mods.filter(id=>KIT_MODS[id]).slice(0,2):[];return y;}).slice(0,12):[];
+  G.kitShelf=Array.isArray(s.kitShelf)?s.kitShelf.filter(x=>x&&KIT_PLACES.indexOf(x.p)>=0).map(x=>{const y=kitPiece(x.p,x.cls,x.wear,x.seed);y.model=clamp(x.model|0,0,2);y.mods=Array.isArray(x.mods)?x.mods.filter(id=>KIT_MODS[id]).slice(0,2):[];return y;}).slice(0,kitShelfMax()):[];   /* «Полка шире» — 18 мест; срез до 12 выбрасывал новые вещи */
   G.kitDepot=asMap(s.kitDepot);
   /* Вега (M153, чинено M329): набор полей живёт у неё (VEGA_DEF в 11w-vega),
      здесь он только применяется. Чего в записи нет — то по умолчанию, что
@@ -50104,12 +50197,13 @@ function applySaveRest(s){
      возвращаем числом, чужое — к умолчанию */
   if(["auto","always","hide"].indexOf(G.opts.pads)<0)G.opts.pads="auto";
   {const ps=+G.opts.padSize;G.opts.padSize=[.8,1,1.25].indexOf(ps)>=0?ps:1;}
-  if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1,fps:0};
+  if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1,fps:0,res:0,resByMode:0};   /* как в начальном G: чужой сейв не должен ронять правило чёткости */
   for(const k of["draw","detail","particles","plants"])if(!G.opts.gfx[k])G.opts.gfx[k]=1;
   /* потолок кадров: 0 — без потолка. Ноль тут законное значение, поэтому
      проверка на «пусто» ему не годится, нужна проверка на «не из списка». */
   if(![0,30,60].includes(G.opts.gfx.fps))G.opts.gfx.fps=0;
   if(![0,1,1.5,2].includes(G.opts.gfx.res))G.opts.gfx.res=0;
+  if(G.opts.gfx.resByMode==null)G.opts.gfx.resByMode=0;   /* Object.assign затирает gfx целиком: у старого сейва поля нет, и это «выключено», не undefined */
   resize();
   if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.2,sfx:.6,engine:.4};
   if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.2;   /* 20 %: радио — фон, не концерт */
@@ -113284,7 +113378,7 @@ function renderCardBack(host,s,onChange,ro){
   /* ── сторона адреса ──
      На всякой почтовой карточке правая половина оборота — «кому» и «куда», и
      здесь она пуста НЕ по недосмотру. Пустое место читалось бы браком вёрстки,
-     поэтому пустота названа вслух печатной строкой: карточка уходит в общую
+     поэтому пустота названа вслух печатной строкой: карточка с грунта и с захода уходит в общую
      почту, адресата у неё нет. Одна строка объясняет правило, на котором стоит
      вся затея, — и объясняет её как часть мира, а не как справку интерфейса. */
   const ad=el("div","addr");

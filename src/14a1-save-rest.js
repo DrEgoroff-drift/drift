@@ -82,7 +82,8 @@ function applySaveRest(s){
         low:b.low|0,
         /* гость у затвора (M395): он ждёт и между сеансами — уходить ему некуда */
         guest:(b.guest&&typeof b.guest==="object")?{name:String(b.guest.name||"").slice(0,24),
-          role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0}:null,
+          role:String(b.guest.role||"driller"),seed:b.guest.seed|0,n:b.guest.n|0,
+          bad:b.guest.bad?1:0}:null,   /* открытая дверь: один из шести уже вор; без поля после загрузки он чистый */
         /* погода директора (M397): у неё есть сроки, и они переживают выход */
         dust:b.dust|0,cold:b.cold|0,vein:b.vein|0,thief:b.thief|0,dead:b.dead|0,
         /* баня и гриб (M497): смена банного вечера и с какой смены гриб растёт */
@@ -96,7 +97,7 @@ function applySaveRest(s){
         /* развалина (M402, §39): из аккаунта ничего не удаляется — база живёт
            в записи и разбитой, вместе с тем, кто в неё въехал */
         ruin:(b.ruin&&typeof b.ruin==="object")?{n:b.ruin.n|0,
-          who:(b.ruin.who==="pirate"||b.ruin.who==="squat")?b.ruin.who:null}:null,
+          who:(b.ruin.who==="pirate"||b.ruin.who==="squat"||b.ruin.who==="pal")?b.ruin.who:null}:null,   /* «pal» — изъятие ПАЛАТЫ; без него участок после загрузки отдавался даром */
         /* устав (M399): законы берутся навсегда, значит они в записи */
         charter:Array.isArray(b.charter)?b.charter.filter(x=>typeof CHARTER_BY!=="undefined"&&CHARTER_BY[x]):[],
         /* договор с управляющим (M405): в записи только НОМЕР — сам он
@@ -114,7 +115,7 @@ function applySaveRest(s){
           debt:Math.max(0,b.pal.debt|0),closed:b.pal.closed?1:0,switched:b.pal.switched|0}:null,
         fire:(b.fire&&typeof b.fire==="object")?{c:b.fire.c|0,r:b.fire.r|0,
           k:String(b.fire.k||"fire"),n:b.fire.n|0}:null,
-        park:b.park|0,
+        park:b.park|0,wake:b.wake?1:0,   /* раскочегарка: смена без добычи; без поля загрузка её пропускает и база сразу кормит */
         /* срок криогена (M392): это не запас, а до какой смены держит холод */
         cryo:(b.cryo&&typeof b.cryo==="object")?{until:b.cryo.until|0,q:b.cryo.q|0}:null,
         log:Array.isArray(b.log)?b.log.slice(-24).map(x=>({n:x.n|0,k:String(x.k||""),
@@ -185,7 +186,7 @@ function applySaveRest(s){
   G.seenPrices=asMap(s.seenPrices);
   /* комплект (M152): шесть мест, каждая вещь проверяется по месту и классу */
   G.kit=null;if(s.kit&&typeof s.kit==="object"){G.kit={};for(const p of KIT_PLACES){const x=s.kit[p];G.kit[p]=(x&&x.p===p)?kitPiece(p,x.cls,x.wear,x.seed):kitPiece(p,1,0,0);if(x&&Array.isArray(x.mods))G.kit[p].mods=x.mods.filter(id=>KIT_MODS[id]).slice(0,2);if(x)G.kit[p].model=clamp(x.model|0,0,2);}}
-  G.kitShelf=Array.isArray(s.kitShelf)?s.kitShelf.filter(x=>x&&KIT_PLACES.indexOf(x.p)>=0).map(x=>{const y=kitPiece(x.p,x.cls,x.wear,x.seed);y.model=clamp(x.model|0,0,2);y.mods=Array.isArray(x.mods)?x.mods.filter(id=>KIT_MODS[id]).slice(0,2):[];return y;}).slice(0,12):[];
+  G.kitShelf=Array.isArray(s.kitShelf)?s.kitShelf.filter(x=>x&&KIT_PLACES.indexOf(x.p)>=0).map(x=>{const y=kitPiece(x.p,x.cls,x.wear,x.seed);y.model=clamp(x.model|0,0,2);y.mods=Array.isArray(x.mods)?x.mods.filter(id=>KIT_MODS[id]).slice(0,2):[];return y;}).slice(0,kitShelfMax()):[];   /* «Полка шире» — 18 мест; срез до 12 выбрасывал новые вещи */
   G.kitDepot=asMap(s.kitDepot);
   /* Вега (M153, чинено M329): набор полей живёт у неё (VEGA_DEF в 11w-vega),
      здесь он только применяется. Чего в записи нет — то по умолчанию, что
@@ -372,12 +373,13 @@ function applySaveRest(s){
      возвращаем числом, чужое — к умолчанию */
   if(["auto","always","hide"].indexOf(G.opts.pads)<0)G.opts.pads="auto";
   {const ps=+G.opts.padSize;G.opts.padSize=[.8,1,1.25].indexOf(ps)>=0?ps:1;}
-  if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1,fps:0};
+  if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1,fps:0,res:0,resByMode:0};   /* как в начальном G: чужой сейв не должен ронять правило чёткости */
   for(const k of["draw","detail","particles","plants"])if(!G.opts.gfx[k])G.opts.gfx[k]=1;
   /* потолок кадров: 0 — без потолка. Ноль тут законное значение, поэтому
      проверка на «пусто» ему не годится, нужна проверка на «не из списка». */
   if(![0,30,60].includes(G.opts.gfx.fps))G.opts.gfx.fps=0;
   if(![0,1,1.5,2].includes(G.opts.gfx.res))G.opts.gfx.res=0;
+  if(G.opts.gfx.resByMode==null)G.opts.gfx.resByMode=0;   /* Object.assign затирает gfx целиком: у старого сейва поля нет, и это «выключено», не undefined */
   resize();
   if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.2,sfx:.6,engine:.4};
   if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.2;   /* 20 %: радио — фон, не концерт */

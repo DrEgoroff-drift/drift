@@ -66,22 +66,24 @@ function bargeTick(c,now){
   if(s<=0)return 0;
   s=Math.min(s,72);
   c.cargo=c.cargo||{};
-  let fed=0,stood=0,extra=0;
+  let fed=0,stood=0,extra=0,saidBlk={};
   const Q=bargePilotQ(c),roll=k=>(hashi(c.seed|0,B.cursor,k)>>>0)/4294967296;
   for(let i=0;i<s;i++){
     const key=B.legs[B.cursor%B.legs.length];
     const[sx,sy]=key.split(",").map(Number);
     const sys=getSystem(sx,sy);
-    const stand=roll(0xB4A1)<.07*Q.brk,skip=extra<3&&roll(0xB4A2)<Q.rate-1;
+    /* лишнее плечо — за эту смену, не три на весь догон: иначе торопыга за 72 смены
+       проскакивает только трижды, хотя причуда обещает частоту на каждое плечо */
+    const stand=roll(0xB4A1)<.07*Q.brk,skip=roll(0xB4A2)<Math.max(0,Q.rate-1);
     B.cursor++;
     if(stand){stood++;continue;}   /* автопилот встал на этом плече (M485) */
-    if(skip){extra++;i--;}          /* торопыга: ещё одно плечо в ту же смену */
+    if(skip&&extra<s){extra++;i--;} /* торопыга: ещё одно плечо в ту же смену */
     if(!sys||!sys.station)continue;
     if(typeof occLvl==="function"&&occLvl(sx,sy)>=2){
-      if(!B.stopped){B.stopped=1;logAdd("warn","Баржа «"+bargeName(c)+"» обошла «"+sys.station.name+"»: система под пиратами");}
+      /* одна строка на станцию за догон, а не по строке на каждое пропущенное плечо */
+      if(!saidBlk[key]){saidBlk[key]=1;logAdd("warn","Баржа «"+bargeName(c)+"» обошла «"+sys.station.name+"»: система под пиратами");}
       continue;
     }
-    B.stopped=0;
     if(typeof bargeAutoLoad==="function")bargeAutoLoad(c,sys);   /* Причал (E4): грузится сама с промыслов */
     for(const k in c.cargo){
       const q=c.cargo[k]|0;if(q<=0)continue;
@@ -91,10 +93,10 @@ function bargeTick(c,now){
   }
   B.t0=(B.t0||now)+s*HOLD_SHIFT;
   B.fed=(B.fed|0)+fed;
-  if(stood>0)logAdd("dim","Баржа «"+bargeName(c)+"»: "+bargePilot(c)+" встал"+(stood>1?" "+stood+" раза":"")+". "+Q.say);
+  if(stood>0)logAdd("dim","Баржа «"+bargeName(c)+"»: "+bargePilot(c)+" встал"+(stood>1?" "+stood+" "+pl3(stood,"раз","раза","раз"):"")+". "+Q.say);
   if(fed>0)logAdd("money","Баржа «"+bargeName(c)+"» ссыпала "+fed+" ед в бункеры · пай растёт");
   const hold=crewHold(c);
-  if(hold<=0&&!B.empty){B.empty=1;logAdd("warn","Баржа «"+bargeName(c)+"» идёт пустой — погрузите её у стойки");}
+  if(hold<=0&&!B.empty){B.empty=1;logAdd("warn","Баржа «"+bargeName(c)+"» идёт пустая — погрузите её у стойки");}
   if(hold>0)B.empty=0;
   return fed;
 }
@@ -119,7 +121,13 @@ function bargeUnload(c){
   let moved=0;
   for(const k in c.cargo){
     const q=c.cargo[k]|0;if(q<=0)continue;
-    const t=addRes(k,q);c.cargo[k]=q-t;moved+=t;
+    /* свой груз, уже в трюме баржи: истощение пояса его не ест — иначе кнопка
+       молча не снимает железо, титан, лёд и кристалл */
+    const w=(typeof resW==="function")?resW(k):1;
+    const free=Math.max(0,stat().cargoMax-held());
+    const t=Math.min(q,Math.floor(free/Math.max(1,w)));
+    if(t<=0)continue;
+    G.cargo[k]=(G.cargo[k]|0)+t;c.cargo[k]=q-t;moved+=t;
   }
   return moved;
 }
@@ -145,7 +153,7 @@ function bargeDealList(){
     const key=c.barge.legs[c.barge.cursor%c.barge.legs.length]||"";
     const[sx,sy]=key.split(",").map(Number);
     out.push({nm:"Баржа «"+bargeName(c)+"» · "+c.name,
-      state:(hold?"везёт "+hold+" ед · ":"идёт пустой · ")+"к «"+bargeNextName(c)+"» · скормлено "+(c.barge.fed|0)+" · оклад минусом, пай растёт",
+      state:(hold?"везёт "+hold+" ед · ":"идёт пустая · ")+"к «"+bargeNextName(c)+"» · скормлено "+(c.barge.fed|0)+" · оклад минусом, пай растёт",
       sx,sy});
   }
   return out;
@@ -168,7 +176,7 @@ function bargeCrewRow(c){
   r.appendChild(b);
   if(crewHold(c)>0){
     const u=el("button","act sm","ВЫГРУЗИТЬ");
-    u.onclick=()=>{const n=bargeUnload(c);if(n)say("С баржи снято "+n+" ед");renderTab();};
+    u.onclick=()=>{const n=bargeUnload(c);say(n?"С баржи снято "+n+" ед":"В трюм не влезло");renderTab();};
     r.appendChild(u);
   }
   $body.appendChild(r);

@@ -128,6 +128,10 @@ function fleaBuy(id,pay,sys){
   const lot=fleaLot(id,sys);if(!lot)return null;
   const R=fleaRec();
   const H=typeof houseOf==="function"?houseOf(sys):null;
+  /* отказ до оплаты: addPart иначе вытеснит чужую часть, а коробок молча не ляжет */
+  if(lot.kind==="part"&&(G.inv||[]).length>=PART_MAX){say("В описи нет места");return null;}
+  if(lot.kind==="box"&&typeof boxCount==="function"&&boxCount()>=BOXES.length){say("все двадцать коробков уже на полке");return null;}
+  if(lot.kind==="bird"&&typeof parrotHas==="function"&&parrotHas()){say("живое у вас уже есть");return null;}
   if(pay==="scrip"){
     if(!H)return null;
     const n=fleaScrip(lot);
@@ -154,7 +158,14 @@ function fleaBuy(id,pay,sys){
     parrotFind(lot.seed,lot.who);
   }else if(lot.kind==="box"&&typeof boxFind==="function"){
     const b=boxFind(lot.seed,"с блошинца, из вещей "+lot.who);
-    tell("good","С блошинца: коробок"+(b?" "+b.ru:""),"КОРОБОК\n"+(b?b.ru+"\n"+b.by:"пустой")+"\n\nна полку дома, к книгам");
+    if(!b){
+      const gi=R.got.lastIndexOf(lot.id);if(gi>=0)R.got.splice(gi,1);
+      if(pay==="scrip"&&H)G.scrip[H.id]=scripHeld(H.id)+fleaScrip(lot);
+      else G.credits+=fleaCredits(lot);
+      logAdd("money","Блошинец: коробок не лёг, оплата возвращена");
+      say("коробок не лёг: полка полна");return null;
+    }
+    tell("good","С блошинца: коробок "+b.ru,"КОРОБОК\n"+b.ru+"\n"+b.by+"\n\nна полку дома, к книгам");
   }else if(lot.kind==="you"){
     tell("good","Сведения о вас сняты с прилавка",
       "СВЕДЕНИЯ О ВАС\n"+lot.note+"\n\nбольше их тут никто не купит");
@@ -177,8 +188,13 @@ function fleaLeave(sys){
   if(typeof wanderHas==="function"&&wanderHas("sign")){logAdd("dim","Табличка «НЕ КУПЛЕНО» на трюме: сведения о вас никто не спросил");return false;}
   const left=fleaLots(sys).find(l=>l.kind==="you");
   if(!left)return false;
+  /* лот сгорает сразу: иначе он лежит дальше, а охотник растёт с каждого ухода */
+  const R=fleaRec();
+  R.got.push(left.id);
+  while(R.got.length>FLEA_GOT)R.got.shift();
   if(typeof huntMark==="function")huntMark({sx:left.at.sx,sy:left.at.sy},"лот с блошинца");
-  logAdd("warn","Сведения о вас остались на прилавке блошинца — их купили");
+  logAdd("warn","Сведения о вас остались на прилавке станции «Блошинец» — их купили");
+  if(typeof saveGame==="function")saveGame(true);
   return true;
 }
 /* ── вкладка ──

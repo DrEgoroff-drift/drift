@@ -126,11 +126,12 @@ function wanderDock(){
   return false;
 }
 /* ── три канала ── */
-/* слух: пока борт стоит и стоянка в ~6 прыжках (18 секторов); разброс 2–3, 15 % вранья */
+/* слух: пока борт стоит и стоянка в шести прыжках — не в зашитых 18 секторах, прыжок растёт; разброс 2–3, 15 % вранья */
 function wanderRumour(r){
   const w=wanderAt();
   if(w.phase!=="stop"||!G.sys)return null;
-  if(Math.max(Math.abs(w.sx-G.sx),Math.abs(w.sy-G.sy))>18)return null;
+  const jump=Math.max(.5,(typeof stat==="function")?stat().jump:3);
+  if(Math.ceil(Math.max(Math.abs(w.sx-G.sx),Math.abs(w.sy-G.sy))/jump)>6)return null;
   const wrong=r()<.15,rad=2+Math.floor(r()*2);
   let cx=w.sx+Math.round((r()-.5)*2),cy=w.sy+Math.round((r()-.5)*2);
   if(wrong){cx=Math.round((r()-.5)*60);cy=Math.round((r()-.5)*60);}
@@ -138,7 +139,8 @@ function wanderRumour(r){
   const det=pick(RUMOUR_DETAIL.any.concat(S.f?RUMOUR_DETAIL.f:RUMOUR_DETAIL.m),r);
   const q={id:"wander",sx:cx,sy:cy,rad,wrong,img:RUMOUR_IMG.wander,src:S.ru,det};
   q.where=rumourWhere(q);
-  q.text=capRu(S.ru)+" рассказывал про место: "+q.img+". "+capRu(q.where)+". "+capRu(det)+".";
+  /* пол глагола как у прочих слухов: иначе «буфетчица рассказывал» */
+  q.text=capRu(S.ru)+" "+(S.f?"рассказывала":"рассказывал")+" про место: "+q.img+". "+capRu(q.where)+". "+capRu(det)+".";
   q.lines=[capRu(q.img),capRu(q.where),"со слов: "+S.ru+" — "+det];
   q.short=q.img+" — где-то у сектора "+cx+":"+cy;
   return q;
@@ -339,12 +341,11 @@ function wanderGpu(pass,sys,pos,x,y,L,ang,now){
 function drawWanderer(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
   const w=wanderAt(),now=clockNow();
-  /* уходит: первые шесть часов перехода из покинутой системы виден блик, который уменьшается по прямой */
-  if(w.phase==="hop"&&sys.sx===w.prev.sx&&sys.sy===w.prev.sy){
+  /* уходит: первые шесть часов из покинутой системы виден блик. Покинутая — стоянка этой эпохи, не прошлая: три дня он стоял здесь */
+  if(w.phase==="hop"&&sys.sx===w.sx&&sys.sy===w.sy){
     const th=w.tIn-WANDER_STOP;if(th>6*3600e3)return;
-    const ix=wanderPlanetIx(sys.sx,sys.sy,w.epoch-1),pos=wanderWorldPos(sys,ix);
-    const pw={sx:w.prev.sx,sy:w.prev.sy,next:{sx:w.sx,sy:w.sy}};
-    const a=wanderHeading(pw),u=th/(6*3600e3);
+    const pos=wanderWorldPos(sys,w.planetIx);
+    const a=wanderHeading(w),u=th/(6*3600e3);
     const x=zx(pos.x+Math.cos(a)*u*9000),y=zy(pos.y+Math.sin(a)*u*9000);
     if(x<-20||x>W+20||y<-20||y>H+20)return;
     const rr=Math.max(1.2,(1-u)*4*clamp(Z,.4,1.5));

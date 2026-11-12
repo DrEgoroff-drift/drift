@@ -27,7 +27,7 @@ const WANDER_RAW={volatiles:40,icecrys:40,alloy:40,techcomp:20};
 const WANDER_CAT=[
   /* — инструменты (спички): работают с полки, читаются через wanderHas(id) — */
   {id:"sextant", fam:"tool",ru:"Секстант Долгого Хода",   note:"с борта, который дошёл; второго такого не было",
-   fx:"прыжок +1 пк в опасных системах", pay:{m:30}, hook:"08-state"},
+   fx:"прыжок +1 парсек в опасных системах", pay:{m:30}, hook:"08-state"},
   {id:"pencil",  fam:"tool",ru:"Штурманский карандаш",    note:"стёрт до половины; хозяйка мерила им слухи",
    fx:"разброс слухов на сектор уже", pay:{m:14}, hook:"11t-rumours"},
   {id:"gyro",    fam:"tool",ru:"Гирокомпас без номера",   note:"снят с гондолы при ремонте; номер стёрли мы",
@@ -49,7 +49,7 @@ const WANDER_CAT=[
   {id:"trumpet", fam:"tool",ru:"Слуховая трубка",         note:"через неё слушали стойку, не подходя",
    fx:"приёмник в полёте чаще ловит слухи", pay:{m:18}, hook:"11t-rumours"},
   {id:"key",     fam:"tool",ru:"Ключ причала",            note:"диспетчер отдал, когда закрывали причал",
-   fx:"стыковка с любой точки системы", pay:{m:34}, hook:"17-mode-system"},
+   fx:"стыковка ближе 2600 ед. от станции, не со всей системы", pay:{m:34}, hook:"17-mode-system"},
   {id:"pricelist",fam:"tool",ru:"Список цен",             note:"переписан с трёх бирж за одну ночь",
    fx:"на карте — цены станций в трёх прыжках, даже не виденных", pay:{m:26}, hook:"12aa-need"},
   {id:"shelfwide",fam:"tool",ru:"Полка шире",             note:"снята с нашей же стенки; нам она узка не была",
@@ -145,11 +145,26 @@ function wanderCant(lot){
   if(lot.pay.m&&matchesRec()<lot.pay.m)return "не хватает спичек: "+matchesRu(lot.pay.m)+", у вас "+matchesRec();
   if(lot.pay.cr&&G.credits<lot.pay.cr)return "не хватает кредитов";
   if(lot.pay.ask&&!wanderAskPart())return "нет части не ниже отменной среди снятых";
+  /* отказ до оплаты: иначе часть уходит, а свёрток пуст */
+  if(lot.fam==="wild"&&!wanderWildCan())return "свёрток пуст: у вас уже всё, что он мог отдать";
   if((lot.id==="book"||String(lot.id).indexOf("book")===0)&&typeof bookCount==="function"&&bookCount()>=BOOKS.length)return "все сорок у вас уже есть";
   if(lot.cat&&lot.cat.id==="matchbox"&&typeof boxCount==="function"&&boxCount()>=BOXES.length)return "все двадцать у вас уже есть";
   return null;
 }
 function wanderAskPart(){return (G.inv||[]).find(p=>!isFitted(p.id)&&(p.tier|0)>=4)||null;}
+/* есть ли чем наполнить свёрток: артефакт, пока их меньше трёх, иначе редкость */
+function wanderWildCan(){
+  const owned=(typeof relicOwned==="function")?relicOwned():[];
+  if(owned.length<3&&typeof RELIC_KEYS!=="undefined"&&RELIC_KEYS.some(k=>typeof relicHave==="function"&&!relicHave(k)))return true;
+  return typeof RARE!=="undefined"&&typeof rareHas==="function"&&RARE.some(R=>!rareHas(R.id));
+}
+/* оплата снята, а вещи нет — вернуть и не жечь лот */
+function wanderUnpay(lot,R){
+  const cat=lot.cat;
+  if(cat.pay&&cat.pay.m)matchesAdd(cat.pay.m);
+  else if(cat.pay&&cat.pay.cr)G.credits+=cat.pay.cr;
+  const i=R.got.lastIndexOf(lot.id);if(i>=0)R.got.splice(i,1);
+}
 /* купить: спички, кредиты или обмен; вещь ложится куда ей положено */
 function wanderBuy(lot){
   const why=wanderCant(lot);if(why){say(why);return false;}
@@ -170,11 +185,14 @@ function wanderBuy(lot){
       (cosmOn(cat.slot)===cat.id?"\n\nнадето":"\n\nв шкатулке на ОПИСИ: надеть — там"));
   }else if(cat.id==="matchbox"){
     const b=(typeof boxFind==="function")?boxFind(hashi(lot.id.length,R.got.length,0xB0CE),"с борта «Сороки»"):null;
-    tell("good","С «Сороки»: коробок"+(b?" "+b.ru:""),"КОРОБОК\n"+(b?b.ru+"\n"+b.by:"пустой")+"\n\nна полку дома, к книгам");
-  }else if(cat.id==="area")wanderAreaChart(lot);
-  else if(cat.id==="book"){
+    if(!b){wanderUnpay(lot,R);say("коробок не лёг: на полке уже все");return false;}
+    tell("good","С «Сороки»: коробок "+b.ru,"КОРОБОК\n"+b.ru+"\n"+b.by+"\n\nна полку дома, к книгам");
+  }else if(cat.id==="area"){
+    if(!wanderAreaChart(lot)){wanderUnpay(lot,R);say("карта не легла: рядом не нашлось станции");return false;}
+  }else if(cat.id==="book"){
     const b=(typeof bookFind==="function")?bookFind(hashi(lot.id.length,R.got.length,0xB00C),"куплена на «Сороке»"):null;
-    tell("good","С «Сороки»: книга"+(b?" «"+b.ru+"»":""),"КНИГА\n"+(b?b.ru+"\n":"")+"на полку дома");
+    if(!b){wanderUnpay(lot,R);say("книга не легла: на полке уже все");return false;}
+    tell("good","С «Сороки»: книга «"+b.ru+"»","КНИГА\n"+b.ru+"\nна полку дома");
   }else wanderWildGrant(lot);
   if(typeof sfx==="function")sfx("ok");
   if(typeof saveGame==="function")saveGame(true);
@@ -188,12 +206,15 @@ function wanderAreaChart(lot){
     const a=r()*TAU,d=6+r()*8,sx=Math.round(G.sx+Math.cos(a)*d),sy=Math.round(G.sy+Math.sin(a)*d);
     if(starAt(sx,sy)&&getSystem(sx,sy).station)best={sx,sy};
   }
-  if(!best)best={sx:G.sx+7,sy:G.sy};
+  if(!best)return false;
+  let n=0;
   if(typeof loreMarks==="function")for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)
-    if(starAt(best.sx+dx,best.sy+dy))loreMarks().push({sx:best.sx+dx,sy:best.sy+dy,id:"wander:"+lot.id+":"+dx+":"+dy});
-  const nm=getSystem(best.sx,best.sy).name;
+    if(starAt(best.sx+dx,best.sy+dy)){loreMarks().push({sx:best.sx+dx,sy:best.sy+dy,id:"wander:"+lot.id+":"+dx+":"+dy});n++;}
+  if(!n)return false;
+  const sys=getSystem(best.sx,best.sy),nm=sys.station?sys.station.name:sys.name;
   tell("tech","С «Сороки»: карта области у «"+nm+"» · сектор "+best.sx+":"+best.sy,
-    "КАРТА ОБЛАСТИ\nдевять секторов вокруг «"+nm+"»\nсектор "+best.sx+":"+best.sy+"\n\nзасечки легли на карту");
+    "КАРТА ОБЛАСТИ\n"+n+" "+pl3(n,"засечка","засечки","засечек")+" вокруг «"+nm+"»\nсектор "+best.sx+":"+best.sy+"\n\nзасечки легли на карту");
+  return true;
 }
 /* свёрток под сукном: артефакт, которого нет, пока их меньше трёх; иначе редкость из сотни */
 function wanderWildGrant(lot){
@@ -251,20 +272,23 @@ function wanderShowRare(id){
   if(typeof sfx==="function")sfx("ok");
   return true;
 }
-/* ── строки хранителя (§13, дословно) ── */
+/* ── строки хранителя (§13); курс летучих — как на прилавке, не «на двадцать» ── */
 const WANDER_LINES={
   hello:"Спички считаем целыми. Чиркнутая уже не спичка, а история.",
   idle:["Огня в космосе нет уже сто лет. Есть только то, что положили внутрь до нас.",
         "Полный коробок — пятьдесят целых — я видел один раз. Не продам, и не просите.",
         "За гондолу шестьдесят. Не торгуюсь, у меня их тоже не делают.",
-        "Летучих на двадцать спичек. Кладу из своего коробка, помните это."],
+        /* прилавок берёт сорок за спичку и не больше двухсот: «на двадцать» врало бы в ту же минуту */
+        "Летучие — сорок единиц за спичку, и не больше двухсот за стоянку. Кладу из своего коробка, помните это."],
   leave1:"Сейчас узнаем, куда ветер.",leave2:"Туда."
 };
 /* «уходит через …» — для тетради ветра и шапки комнаты */
 function wanderLeftRu(w){
   w=w||wanderAt();
   const ms=w.tLeft,h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60000);
-  if(w.phase!=="stop")return "в пути · придёт через "+(h?h+" ч ":"")+m+" мин";
+  /* «0 мин» врало: секунды ещё были, а строка говорила, что срок вышел */
+  const bit=!h&&!m?"меньше минуты":(h?h+" ч"+(m?" "+m+" мин":""):m+" мин");
+  if(w.phase!=="stop")return "в пути · придёт через "+bit;
   if(h>=24){const d=Math.floor(h/24);return "уходит через "+d+" "+pl3(d,"день","дня","дней")+" "+(h%24)+" ч";}
-  return "уходит через "+(h?h+" ч ":"")+m+" мин";
+  return "уходит через "+bit;
 }

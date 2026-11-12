@@ -22,11 +22,12 @@ for(const k in CAST_C)CAST[k]=CAST_C[k];
 
 const STORIES_C=[
 
-/* ── 73. Птица принесла позывной ── переносчик · из «Второго стакана» */
+/* ── 73. Птица принесла позывной ── переносчик · из «Второго стакана».
+   Птица запоминает только след с carry; у второго стакана его нет. */
 {id:"carried_callsign",form:"pair",at:"stype:trade",cast:["zero7"],
  traces:[
-  {id:"t1",via:"queue",when:{parrot:true,seenOf:"second_glass.t1"},text:"— Ваша птица сказала «Ноль-семь». Где вы это слышали? …Понятно. Не говорите ей больше ничего."},
-  {id:"t2",via:"queue",when:{parrot:true,seenOf:"second_glass.t5"},text:"— «Дождался». Это птица сказала. Она не знает, что это значит. Вы, кажется, знаете."}
+  {id:"t1",via:"queue",when:{parrot:true,seenOf:"second_glass.t1"},text:"— Ноль-семь. Вы это уже слышали. Птице не повторяйте: она запоминает."},
+  {id:"t2",via:"queue",when:{parrot:true,seenOf:"second_glass.t5"},text:"— «Дождался, наверное». Это вы слышали, не птица. Она так не скажет."}
  ],
  links:["second_glass"]},
 
@@ -68,7 +69,7 @@ const STORIES_C=[
 {id:"accountant",form:"place",at:"fixed:22",cast:["accountant"],
  traces:[
   {id:"t1",via:"cant",scene:{seat:"far",figure:1,col:[88,84,78],props:["paper","paper","tally","glass_empty"]}},
-  {id:"t2",via:"queue",text:"— Гурам Ильич сводит. Баланс станции. Он не сходится двадцать лет, и Гурам Ильич каждый вечер находит, где."},
+  {id:"t2",via:"queue",text:"— Гурам Ильич сводит. Баланс станции. Сошёлся он или нет — к утру Гурам Ильич уже снова над книгой."},
   {id:"t3",via:"queue",when:{visits:3},text:"— Баланс сошёлся. Гурам Ильич не рад. Он говорит, что теперь не знает, что делать по вечерам."},
   {id:"t4",via:"queue",when:{visits:5},text:"— Баланс снова не сходится. Гурам Ильич спокоен. Мы подозреваем, что это он сам, но не спрашиваем."}
  ]},
@@ -86,7 +87,7 @@ const STORIES_C=[
  traces:[
   {id:"t1",via:"land",text:"На краю площадки сидит человек с удочкой. Леска уходит в песок."},
   {id:"t2",via:"land",when:{visits:2},text:"Удочка на месте. Рядом ведро. В ведре — песок. Он доволен."},
-  {id:"t3",via:"queue",when:{seen:"t1"},text:"— С удочкой? Он ловит. Что — не говорит. Один раз вытащил что-то, мы не видели что, а он с тех пор спокойный."}
+  {id:"t3",via:"land",when:{seen:"t1",visits:3},text:"Он ловит. Один раз вытащил что-то и не показывает. С тех пор спокоен."}
  ]},
 
 /* ── 81. Смотритель руин ── привычка · руинный мир */
@@ -100,8 +101,8 @@ const STORIES_C=[
 /* ── 82. Тот, кто красит ── привычка · комбинат, связано с комиссией */
 {id:"painter",form:"habit",at:"stype:indust",cast:["painter"],
  traces:[
-  {id:"t1",via:"queue",text:"— Красит. Всё. Стены, трубы, людей, если стоят. Комиссия уехала, а он не остановился."},
-  {id:"t2",via:"queue",when:{seenOf:"commission.t6",visits:2},text:"— Бумагу с линиями тоже покрасил. Теперь там ровные линии поверх ровных линий. Комиссия бы одобрила."},
+  {id:"t1",via:"queue",text:"— Красит. Всё. Стены, трубы, людей, если стоят. Остановиться не может."},
+  {id:"t2",via:"queue",when:{seenOf:"commission.t6",visits:2},text:"— Бумагу с линиями, говорят, тоже покрасил. Ровные поверх ровных. Комиссия бы одобрила."},
   {id:"t3",via:"cant",scene:{seat:"door",figure:1,col:[120,100,80],props:["jar","jar"]}}
  ],
  links:["commission"]},
@@ -142,15 +143,15 @@ const STORIES_C=[
 {id:"edge_glass",form:"after",at:"danger:far",cast:[],
  traces:[
   {id:"t1",via:"cant",when:{seenOf:"answering_callsign.t1"},scene:{seat:"corner",figure:0,props:["glass","paper"]}},
-  {id:"t2",via:"queue",when:{seenOf:"answering_callsign.t1"},text:"— Угловой стол? Там сидят, когда кто-то отвечает на старый позывной. Вы отвечали? Тогда сядьте."}
+  {id:"t2",via:"queue",when:{seenOf:"answering_callsign.t1"},text:"— Угловой стол? Там сидят, когда кто-то отвечает на старый позывной. Вы его слышали. Этого довольно."}
  ],
  links:["answering_callsign"]},
 
 /* ── 87. Дверца нашлась ── вещь · связка Пекаря, переносчик */
 {id:"door_found",form:"thing",at:"stype:yard",cast:["baker"],
  traces:[
-  {id:"t1",via:"queue",when:{seenOf:"baker_oven.t4"},carry:true,text:"— Дверца от печи? Обожжённая? Была. Увезли на прошлой неделе. Куда — в сторону Пекаря, кажется."},
-  {id:"t2",via:"queue",when:{seenOf:"baker_oven.t4",visits:2},text:"— Вы про дверцу спрашивали. Ещё одна нашлась. Не та. Но обожжённая. Возьмёте?"}
+  {id:"t1",via:"queue",when:{seenOf:"baker_oven.t4",unseenOf:"relay_baker.t1"},carry:true,text:"— Дверца от печи? Обожжённая? Была. Увезли на прошлой неделе. Куда — в сторону Пекаря, кажется."},
+  {id:"t2",via:"queue",when:{seenOf:"baker_oven.t4",unseenOf:"relay_baker.t1",visits:2},text:"— Дверцу Пекарь ищет — вы слышали. Ещё одна нашлась. Не та. Обожжённая. Увезли дальше."}
  ],
  links:["baker_oven"]},
 
@@ -207,7 +208,7 @@ const STORIES_C=[
 {id:"half_dock_arrived",form:"after",at:"stype:yard",cast:[],
  traces:[
   {id:"t1",via:"queue",when:{seenOf:"half_dock.t2"},text:"— Половина дока? Прилетела. Встала рядом с нашим. Мы не спрашивали, чья. Теперь у нас полтора."},
-  {id:"t2",via:"news",when:{seenOf:"half_dock.t2"},text:"Половина дока пристыковалась к чужой верфи. Верфь не возражает. Докам виднее."}
+  {id:"t2",via:"news",when:{seenOf:"half_dock.t2"},text:"Половина дока пристыковалась. Верфь не возражает. Докам виднее."}
  ],
  links:["half_dock"]},
 
@@ -223,7 +224,7 @@ const STORIES_C=[
 {id:"candle_everywhere",form:"place",at:"stype:sci",cast:[],
  traces:[
   {id:"t1",via:"cant",when:{seenOf:"candle_middle.t1"},scene:{seat:"far",figure:0,props:["candle"]}},
-  {id:"t2",via:"queue",when:{seenOf:"candle_middle.t2"},text:"— Свеча? Да, и у нас. Мы думали, только у нас. Вы третий, кто спрашивает. Значит, не только."}
+  {id:"t2",via:"queue",when:{seenOf:"candle_middle.t2"},text:"— Свеча? Да, и у нас. Мы думали, только у нас. Вы третий, кто её узнал. Значит, не только."}
  ],
  links:["candle_middle"]},
 
@@ -238,7 +239,7 @@ const STORIES_C=[
 /* ── 98. Собака узнала Ороза ── зверь · связка */
 {id:"dog_oroz",form:"beast",at:"stype:outpost",cast:["dog","bargeman"],
  traces:[
-  {id:"t1",via:"queue",when:{seenOf:"skipper.t3"},text:"— Когда Ороз заходил, собака его узнала. Она никого не узнаёт. Его — узнала. Мы не спрашиваем, откуда."}
+  {id:"t1",via:"queue",when:{seenOf:"skipper.t3"},text:"— Про Ороза говорят: зашёл, и собака его узнала. Она никого не узнаёт. Откуда — не спрашивают."}
  ,{id:"t2",via:"cant",when:{seenOf:"skipper.t3"},scene:{seat:"door",figure:0,props:["cup","cap"]}}
  ],
  links:["skipper","not_dog"]},
@@ -259,11 +260,12 @@ const STORIES_C=[
  ],
  links:["second_glass"]},
 
-/* ── 101. Чужая площадка занята ── после · связка */
-{id:"pad_taken",form:"after",at:"planet",cast:[],
+/* ── 101. Чужая площадка занята ── слух, не эта планета.
+   Занятие живёт в empty_pad: свой якорь сказал бы «занята» на мире, где площадки не ждали. */
+{id:"pad_taken",form:"after",at:"stype:trade",cast:[],
  traces:[
-  {id:"t1",via:"land",when:{seenOf:"empty_pad.t2"},text:"Вторая площадка занята. Чужой борт, без огней. Дождались."},
-  {id:"t2",via:"cave",when:{seenOf:"empty_pad.t2"},text:"В пещере двое спали. Недавно. Два места, примято одинаково."}
+  {id:"t1",via:"queue",when:{seenOf:"empty_pad.t3"},text:"— Вторая площадка. Та, что расчистили и ждали. Занята. Борт без огней. Где — не сказали."},
+  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Дождались, говорят. Двое. В пещере два места, одинаково примятых. Сами мы не проверяли."}
  ],
  links:["empty_pad"]},
 

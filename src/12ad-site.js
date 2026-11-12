@@ -85,7 +85,7 @@ function rungOf(sx,sy){
 function rungGateTxt(sx,sy){
   const key=sx+","+sy,P=G.place||{},H=G.hold&&G.hold[key],D=(H&&H.deeds)||{};
   const L=[];
-  if(!Object.keys(P).some(k=>k.indexOf(key+"/")===0))L.push("сесть на планету");
+  if(!Object.keys(P).some(k=>k.indexOf(key+"/")===0))L.push("сесть на грунт");   /* любая посадка, не только планета */
   if(!((D.drill|0)>0))L.push("пробурить залежь");
   if(!((G.drones||[]).some(d=>d.sx===sx&&d.sy===sy)||(D.drone|0)>0))L.push("оставить дрона");
   return L;
@@ -107,8 +107,10 @@ function bldTierOpenAt(sx,sy,def){
   return rungHas(sx,sy,"site");
 }
 function bldTierPlanTxt(def){
-  const i=rungIndex(def.fam==="D"?(def.id==="slipway"?"slipway":"lines"):(def.fam==="C"?"hub":"site"));
-  return rungRoman(rungPlanOf(i))+" пятилетке";
+  /* имя того, что должно встать: пятилетка к этому моменту уже может идти */
+  const id=def.fam==="D"?(def.id==="slipway"?"slipway":"lines"):(def.fam==="C"?"hub":"site");
+  const d=RUNGS[rungIndex(id)];
+  return d?"«"+d.ru.toLowerCase()+"»":"следующей отметке";
 }
 /* ── где можно ставить: тела системы и правило §10.1 ── */
 function sysHasFauna(sys){
@@ -146,7 +148,7 @@ function bldRuleWhy(sys,def){
 }
 function bldWhy(sys,def){
   if(!rungHas(sys.sx,sys.sy,"site"))return"площадка ещё не открыта";
-  if(!bldTierOpenAt(sys.sx,sys.sy,def))return"ярус откроется в "+bldTierPlanTxt(def);
+  if(!bldTierOpenAt(sys.sx,sys.sy,def))return"ярус откроется, когда здесь встанет "+bldTierPlanTxt(def);
   const H=G.hold&&G.hold[sys.key];
   if(H&&H.bld&&H.bld[def.id])return"уже стоит";
   const a=bldAtWhy(sys,def);if(a)return a;

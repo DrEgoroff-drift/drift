@@ -463,9 +463,9 @@ function applySave(s){
     who:String(s.parrot.who||"").slice(0,48),
     since:+s.parrot.since||now(),said:Math.max(0,s.parrot.said|0)}:null;
   G.heard=(Array.isArray(s.heard)?s.heard:[])
-    .filter(h=>h&&(h.kind==="price"||h.kind==="pidgin"||h.kind==="yours"))
+    .filter(h=>h&&(h.kind==="price"||h.kind==="pidgin"||h.kind==="yours"||h.kind==="story"||h.kind==="ground"||h.kind==="ether"))   /* подслушанное, земля и эфир: птица их пишет, доска их читает */
     .map(h=>({t:+h.t||now(),kind:h.kind,sx:h.sx|0,sy:h.sy|0,
-      note:String(h.note||"").slice(0,64),
+      note:String(h.note||"").slice(0,200),   /* дословно, не 64: строка истории длиннее позывного */
       words:Array.isArray(h.words)?h.words.map(x=>x|0):null,
       read:!!h.read,used:!!h.used}))
     .filter(h=>h.kind!=="pidgin"||(h.words&&h.words.length))
@@ -576,7 +576,7 @@ function applySave(s){
         t0:+c.barge.t0||now(),fed:c.barge.fed|0,name:String(c.barge.name||"")}
       :null,
     tMs:now(),paidMs:now()
-  })).slice(0,8);
+  })).slice(0,9);   /* потолок звена: разряд 5 + лицензия 3 + слот командира; восьмой резал девятого */
   G.allies=[];
   /* управляющие: новое поле с безопасным дефолтом, формат записи прежний.
      Портрет не сохраняется — он выводится из seed и всегда тот же самый. */
@@ -585,7 +585,7 @@ function applySave(s){
     role:m.role,
     traits:(Array.isArray(m.traits)?m.traits:[]).filter(t=>MGR_TRAITS.some(x=>x.id===t)).slice(0,3),
     xp:Math.max(0,+m.xp||0),lv0:clamp(m.lv0|0||1,1,6),
-    perks:(Array.isArray(m.perks)?m.perks:[]).filter(p=>mgrPerkList(m.role).some(x=>x.id===p)).slice(0,6),
+    perks:(Array.isArray(m.perks)?m.perks:[]).filter(p=>mgrPerkList(m.role).some(x=>x.id===p)).slice(0,mgrPerkList(m.role).length),   /* учёный: 5 уровней + два дара = 7; срез на 6 забывал последнее */
     rules:(Array.isArray(m.rules)?m.rules:[]).filter(x=>MGR_RULES[m.role].some(r=>r.id===x)).slice(0,6),
     loy:clamp(+m.loy||0,0,100),fee:Math.max(0,m.fee|0),
     /* ядро: у него вместо лояльности дрейф, и он тоже переживает загрузку */
@@ -605,11 +605,12 @@ function applySave(s){
     cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),pool:Math.max(0,+m.pool||0),
     fat:clamp(+m.fat||0,0,1),   /* усталость (M461): ось тела, не число в UI */
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
-    /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
-       (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
+    /* поручение переживает загрузку, срок идёт заново — закрытая игра не штраф.
+       Метку счётчика обнулять нельзя: kills, orderStamp и soldTotal уже в сейве,
+       и ноль сразу проваливает «тишину в эфире», а бой и пузырь закрывает победой */
     job:(m.job&&jobDef(m.job.id))?{id:m.job.id,t0:now(),
       mins:Math.max(0,+m.job.mins||0),offer:m.job.offer?1:0,
-      pick:m.job.pick|0,hold:m.job.hold?1:0,mark:0}:null,
+      pick:m.job.pick|0,hold:m.job.hold?1:0,mark:Math.max(0,m.job.mark|0)}:null,
     log:Array.isArray(m.log)?m.log.slice(0,8).map(e=>({t:+e.t||0,k:String(e.k||""),s:String(e.s||"")})):[],
     tMs:now()
   })).slice(0,MGR_CAP);

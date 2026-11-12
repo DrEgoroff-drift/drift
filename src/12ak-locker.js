@@ -8,8 +8,8 @@
    снимается лениво при каждом подходе (модель tickDrones): сколько суток прошло,
    столько и списано; денег не хватило — списали, сколько было, и на этом всё:
    книги долга нет (решение CRITIQUE-holding, «без расписки»). Тридцать суток без
-   визита — контора сдаёт содержимое на блошинец, и оно всплывает там лотами
-   «залог, за которым не пришли» (12ua), уже чужим.
+   визита: части сдаются на блошинец лотами «залог, за которым не пришли»
+   (12ua), уже чужими; инструменты «Сороки» и сырьё пропадают, не на склад.
 
    Одна мягкая развилка на игрока — «что взять в этот рейс»: инструменты «Сороки»
    работают только с полки кабины (12v-wander-shop), и ящик — место для остальных.
@@ -60,21 +60,36 @@ function lockerTick(now){
   L.t+=days*LOCKER_DAY;
   return {fee,days};
 }
-/* контора сдала всё на блошинец: части и инструменты — лотами, кучи уходят вовсе */
+/* сдача: части лотами (не больше двенадцати), инструменты и сырьё пропадают — тост говорит это */
 function lockerHandOver(){
   const L=lockerRec();
+  let tools=0,kept=0,lost=0;
+  for(const it of L.items)if(it.tool)tools++;
+  const rawN=Object.keys(L.res).filter(k=>(L.res[k]|0)>0).length;
   if(typeof fleaRec==="function"){
     const F=fleaRec();if(!Array.isArray(F.pawn))F.pawn=[];
-    for(const it of L.items){
-      if(it.p)F.pawn.push({k:hashi(it.p.s|0,it.p.t|0,0x9A4E),p:it.p});
-      /* инструменты «Сороки» блошинец не понимает — они пропадают вместе с кучами */
+    const mine=[];
+    for(let i=0;i<L.items.length;i++){
+      const it=L.items[i];if(!it.p)continue;
+      /* индекс в ключе: две части одного зерна не сливаются в один лот */
+      const k=hashi((it.p.s|0)+i*17,it.p.t|0,0x9A4E);
+      F.pawn.push({k,p:it.p});mine.push(k);
     }
     while(F.pawn.length>12)F.pawn.shift();
-  }
+    const left={};for(const pw of F.pawn)left[pw.k]=1;
+    kept=mine.filter(k=>left[k]).length;
+    lost=mine.length-kept;
+  }else lost=L.items.filter(it=>it.p).length;
   const n=L.items.length+Object.keys(L.res).length;
   L.items=[];L.res={};
-  if(n)tell("warn","Контора сдала ваш ящик на блошинец: месяц никто не приходил",
-    "ЯЩИК СДАН\nтридцать суток без визита\nчасти всплывут на блошинце лотами\nсырьё ушло на склад конторы");
+  if(!n)return;
+  const tail=[];
+  if(kept)tail.push(lost?"части — лотами на станции «Блошинец», не больше двенадцати":"части — лотами на станции «Блошинец»");
+  else if(lost)tail.push("части на прилавок станции «Блошинец» не влезли");
+  if(tools)tail.push("инструменты «Сороки» пропали");
+  if(rawN)tail.push("сырьё пропало, не на склад");
+  tell("warn","Контора сдала ваш ящик: тридцать суток никто не приходил",
+    "ЯЩИК СДАН\nтридцать суток без визита\n"+tail.join("\n"));
 }
 /* ── положить и забрать ── */
 function lockerPutPart(id){

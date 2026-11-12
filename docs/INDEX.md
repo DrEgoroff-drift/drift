@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 711 · top-level symbols: 9064
+Files: 711 · top-level symbols: 9068
 
 ## SYMBOLS
 
@@ -1250,7 +1250,7 @@ HUNT_N                       tests/91zzzzzzzzb-hunt.js:14
 HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
 HUNT_TIERS                   src/12o-hunter.js:19-23
-HX                           src/12v-wander.js:186
+HX                           src/12v-wander.js:188
 ICO_F                        src/24-mode-belt.js:10
 ICO_V                        src/24-mode-belt.js:4-9
 IND_FEE                      src/12ac-bld.js:111
@@ -2184,17 +2184,17 @@ SEC_SPY_CACHE                src/12b2-fx-sec.js:88
 SEC_SPY_MAX                  src/12b2-fx-sec.js:26
 SEED_KNOWN                   tests/91qm-seeds.js:13
 SET                          src/21pii-pln-settle.js:26
-SETTLE_BUILD                 src/12t-settle.js:31-38
-SETTLE_BY_K                  src/12t-settle.js:39
+SETTLE_BUILD                 src/12t-settle.js:32-39
+SETTLE_BY_K                  src/12t-settle.js:40
 SETTLE_CAP                   src/12t-settle.js:20
 SETTLE_EAT                   src/12t-settle.js:21
 SETTLE_GIVE                  src/12t-settle.js:24
-SETTLE_GLYPH                 src/12t-settle.js:51
-SETTLE_ON                    src/12t-settle.js:27
+SETTLE_GLYPH                 src/12t-settle.js:52
+SETTLE_ON                    src/12t-settle.js:28
 SETTLE_STEP                  src/12t-settle.js:22
 SETTLE_STOCK                 src/12t-settle.js:23
 SETTLE_WAIT                  src/12t-settle.js:25
-SETTLE_WORD                  src/12t-settle.js:258
+SETTLE_WORD                  src/12t-settle.js:259
 SET_SPILL                    src/21pii-pln-settle.js:24
 SET_V                        src/21pii-pln-settle.js:23
 SET_WIN                      src/21pii-pln-settle.js:25
@@ -2292,9 +2292,9 @@ STATE_HASH_SKIP              src/08a-statehash.js:25-34
 STAT_SHOW                    src/05-parts.js:426-438
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
-STORIES                      src/12k-stories-a.js:45-350
-STORIES_B                    src/12k-stories-b.js:27-445
-STORIES_C                    src/12k-stories-c.js:23-292
+STORIES                      src/12k-stories-a.js:45-353
+STORIES_B                    src/12k-stories-b.js:27-453
+STORIES_C                    src/12k-stories-c.js:23-294
 STORIES_D                    src/12k-stories-d.js:17-78
 STORM_WORLDS                 src/21a-mode-base.js:300
 STORY_DAY                    src/11c-stories.js:24
@@ -2475,7 +2475,7 @@ WAN3_TURN                    src/29re-wander-r3.js:37
 WAN3_WIN                     src/29re-wander-r3.js:26
 WANDER_BY_ID                 src/12v-wander-shop.js:70
 WANDER_CAT                   src/12v-wander-shop.js:27-69
-WANDER_LINES                 src/12v-wander-shop.js:255-262
+WANDER_LINES                 src/12v-wander-shop.js:276-284
 WANDER_LOOP                  src/12v-wander.js:30
 WANDER_N                     src/12v-wander.js:29
 WANDER_RAW                   src/12v-wander-shop.js:26
@@ -2483,8 +2483,8 @@ WANDER_RAW_CAP               src/12v-wander-shop.js:25
 WANDER_SHELF                 src/12v-wander-shop.js:24
 WANDER_STOP                  src/12v-wander.js:28
 WANDER_T0                    src/12v-wander.js:27
-WAND_BAKE                    src/12v-wander.js:287
-WAND_SAIL_WGSL               src/12v-wander.js:183
+WAND_BAKE                    src/12v-wander.js:289
+WAND_SAIL_WGSL               src/12v-wander.js:185
 WARM_GLOW_WGSL               src/22c-cave-gpu.js:47
 WARRANTY_SHIFTS              src/05b1-warranty.js:12
 WAR_API                      src/14b-war-net.js:19
@@ -2640,8 +2640,8 @@ appetitePrice                src/12ab-hold.js:117
 applyCrewEvent               src/12b-crew-events.js:227-236
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:216-628
-applySaveRest                src/14a1-save-rest.js:15-393
+applySave                    src/14-save.js:216-629
+applySaveRest                src/14a1-save-rest.js:15-395
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
@@ -4111,7 +4111,7 @@ drawGesture                  src/17h-sys-gesture.js:136-188
 drawGestureTop               src/17h-sys-gesture.js:192-221
 drawGiant                    src/17o-giants.js:197-210
 drawGiantsMap                src/17o-giants.js:82-93
-drawGlyph                    src/12t-settle.js:59-77
+drawGlyph                    src/12t-settle.js:60-78
 drawGround                   src/19-mode-landing-ground.js:11-232
 drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
 drawGroundGrass              src/19-mode-landing-ground.js:284-321
@@ -4181,9 +4181,9 @@ drawTierTrim                 src/03b-hull-paint.js:13-106
 drawTrail                    src/16-flight.js:399-402
 drawTransitPlate             src/03d-hull-marks.js:186-196
 drawWallPaper                src/11ae-concert.js:39-71
-drawWanderMap                src/12v-wander.js:159-175
+drawWanderMap                src/12v-wander.js:161-177
 drawWanderRoom               src/29re-wander-r3.js:364-367
-drawWanderer                 src/12v-wander.js:339-366
+drawWanderer                 src/12v-wander.js:341-367
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-193
 drawWinter                   src/29rc-winter-r3.js:277-280
@@ -4746,9 +4746,9 @@ glowIsCore                   src/11i-glow.js:39
 glowPatches                  src/11i-glow.js:60-69
 glowScan                     src/11i-glow.js:51-55
 glowTier                     src/11i-glow.js:82-93
-glyphEl                      src/12t-settle.js:79-91
-glyphHasRunes                src/12t-settle.js:52-56
-glyphNodes                   src/12t-settle.js:93-103
+glyphEl                      src/12t-settle.js:80-92
+glyphHasRunes                src/12t-settle.js:53-57
+glyphNodes                   src/12t-settle.js:94-104
 gnbCamVel                    src/16gc-gpu-nebfade.js:65-71
 gnbDeep                      src/16gay-gpu-nebula-look.js:44
 gnbEmiHalf                   src/16gba-gpu-nebula-comp.js:179-186
@@ -5914,16 +5914,16 @@ litRGB                       src/19c-light.js:125-135
 lkNodes                      tests/91zzzzzh-leak.js:14
 loadGame                     src/14a-cloud.js:72-75
 lockerFree                   src/12ak-locker.js:39
-lockerHandOver               src/12ak-locker.js:64-78
+lockerHandOver               src/12ak-locker.js:64-93
 lockerHere                   src/12ak-locker.js:33-36
-lockerLine                   src/12ak-locker.js:125-128
-lockerPutPart                src/12ak-locker.js:80-86
-lockerPutRes                 src/12ak-locker.js:95-101
-lockerPutTool                src/12ak-locker.js:87-94
+lockerLine                   src/12ak-locker.js:140-143
+lockerPutPart                src/12ak-locker.js:95-101
+lockerPutRes                 src/12ak-locker.js:110-116
+lockerPutTool                src/12ak-locker.js:102-109
 lockerRec                    src/12ak-locker.js:24-30
 lockerSlots                  src/12ak-locker.js:31
-lockerTake                   src/12ak-locker.js:102-114
-lockerTakeRes                src/12ak-locker.js:115-123
+lockerTake                   src/12ak-locker.js:117-129
+lockerTakeRes                src/12ak-locker.js:130-138
 lockerTick                   src/12ak-locker.js:51-62
 lockerUsed                   src/12ak-locker.js:38
 lockerValue                  src/12ak-locker.js:41-49
@@ -8115,22 +8115,22 @@ scrOpen                      src/08-state.js:161
 scrapPart                    src/05-parts.js:451-461
 scrapYield                   src/05-parts.js:441-450
 screenLayer                  src/18c-chunks.js:77
-scripBuy                     src/12u-scrip.js:99-111
+scripBuy                     src/12u-scrip.js:97-109
 scripBuyPrice                src/12u-scrip.js:47
-scripDone                    src/12u-scrip.js:98
+scripDone                    src/12u-scrip.js:96
 scripHeld                    src/12u-scrip.js:45
-scripLeft                    src/12u-scrip.js:97
+scripLeft                    src/12u-scrip.js:95
 scripMove                    src/12u-scrip.js:51-61
-scripOnFreed                 src/12u-scrip.js:88-91
-scripOnNews                  src/12u-scrip.js:65-79
-scripOnSettle                src/12u-scrip.js:82-86
+scripOnFreed                 src/12u-scrip.js:86-89
+scripOnNews                  src/12u-scrip.js:65-77
+scripOnSettle                src/12u-scrip.js:80-84
 scripRate                    src/12u-scrip.js:40-44
-scripRender                  src/12u-scrip.js:126-166
-scripSell                    src/12u-scrip.js:112-122
+scripRender                  src/12u-scrip.js:124-164
+scripSell                    src/12u-scrip.js:110-120
 scripSellPrice               src/12u-scrip.js:48
 scripSpread                  src/12u-scrip.js:46
-scripVisit                   src/12u-scrip.js:95
-scripVisitReset              src/12u-scrip.js:96
+scripVisit                   src/12u-scrip.js:93
+scripVisitReset              src/12u-scrip.js:94
 scrollCue                    src/27m-scroll-cue.js:26-30
 scrollCueAll                 src/27m-scroll-cue.js:31-33
 sdBody                       src/12tb-settle-draw.js:218-229
@@ -8226,34 +8226,34 @@ setSt                        src/27z-telemetry.js:130
 setTx                        src/27z-telemetry.js:120-129
 setZoom                      src/15-input.js:360
 settle                       tests/90-harness.js:448-459
-settleAsk                    src/12t-settle.js:265-300
-settleAt                     src/12t-settle.js:107
+settleAsk                    src/12t-settle.js:268-303
+settleAt                     src/12t-settle.js:108
 settleCanHand                src/12td-settle-hand.js:36-39
-settleCanLive                src/12t-settle.js:111-113
-settleGive                   src/12t-settle.js:222-238
+settleCanLive                src/12t-settle.js:112-114
+settleGive                   src/12t-settle.js:223-239
 settleHandLine               src/12td-settle-hand.js:66-69
 settleHandPick               src/12td-settle-hand.js:57-64
 settleHandPlan               src/12td-settle-hand.js:74-95
-settleHere                   src/12t-settle.js:108
-settleKeyOf                  src/12t-settle.js:105
-settleLeftBehind             src/12t-settle.js:357-367
-settleLine                   src/12t-settle.js:304-322
-settleMake                   src/12t-settle.js:138-149
-settleMakes                  src/12t-settle.js:245-249
-settleMap                    src/12t-settle.js:106
+settleHere                   src/12t-settle.js:109
+settleKeyOf                  src/12t-settle.js:106
+settleLeftBehind             src/12t-settle.js:360-370
+settleLine                   src/12t-settle.js:307-325
+settleMake                   src/12t-settle.js:139-150
+settleMakes                  src/12t-settle.js:246-250
+settleMap                    src/12t-settle.js:107
 settleMine                   src/12td-settle-hand.js:35
 settlePlan                   src/12tb-settle-draw.js:94-141
-settleRaid                   src/12t-settle.js:340-354
-settleRaise                  src/12t-settle.js:180-218
-settleSpotX                  src/12t-settle.js:132-137
-settleStockSum               src/12t-settle.js:239-242
-settleStop                   src/12t-settle.js:371-381
+settleRaid                   src/12t-settle.js:343-357
+settleRaise                  src/12t-settle.js:181-219
+settleSpotX                  src/12t-settle.js:133-138
+settleStockSum               src/12t-settle.js:240-243
+settleStop                   src/12t-settle.js:374-384
 settleTakeHand               src/12td-settle-hand.js:40-54
-settleTick                   src/12t-settle.js:154-177
-settleWallHereX              src/12t-settle.js:125-131
-settleWallX                  src/12t-settle.js:120
-settleWatch                  src/12t-settle.js:329-335
-settleWords                  src/12t-settle.js:260-264
+settleTick                   src/12t-settle.js:155-178
+settleWallHereX              src/12t-settle.js:126-132
+settleWallX                  src/12t-settle.js:121
+settleWatch                  src/12t-settle.js:332-338
+settleWords                  src/12t-settle.js:261-267
 sfx                          src/09-audio.js:334-340
 sgArr                        src/27f2-room3d.js:87
 sgTake                       src/27f2-room3d.js:86
@@ -8640,26 +8640,28 @@ tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
 tierOf                       src/04b-fleet.js:157
 timeBucket                   src/03-ships.js:128-131
-tinAskOf                     src/12ta-tin.js:97-106
+tinAskOf                     src/12ta-tin.js:116-125
 tinAt                        src/12ta-tin.js:58
-tinCanLive                   src/12ta-tin.js:63-68
+tinCanLive                   src/12ta-tin.js:88-91
 tinClosed                    src/12k-letters.js:45
-tinEntries                   src/12ta-tin.js:221-230
-tinFeed                      src/12ta-tin.js:140-158
+tinEntries                   src/12ta-tin.js:250-260
+tinFeed                      src/12ta-tin.js:165-183
 tinHereRec                   src/12ta-tin.js:59
+tinHost                      src/12ta-tin.js:76-87
 tinKeyOf                     src/12ta-tin.js:56
-tinLine                      src/12ta-tin.js:232-239
-tinMake                      src/12ta-tin.js:107-115
+tinLine                      src/12ta-tin.js:262-275
+tinLiveRoll                  src/12ta-tin.js:64-75
+tinMake                      src/12ta-tin.js:126-134
 tinMap                       src/12ta-tin.js:57
-tinMarkOf                    src/12ta-tin.js:178-185
+tinMarkOf                    src/12ta-tin.js:203-210
 tinPl                        src/12ta-tin.js:49-55
-tinPlanet                    src/12ta-tin.js:70-74
-tinSignal                    src/12ta-tin.js:243-252
-tinSkyOf                     src/12ta-tin.js:189-196
-tinSpotX                     src/12ta-tin.js:80-93
-tinStrip                     src/12ta-tin.js:200-219
-tinTakeOut                   src/12ta-tin.js:161-174
-tinTick                      src/12ta-tin.js:118-136
+tinPlanet                    src/12ta-tin.js:93
+tinSignal                    src/12ta-tin.js:279-289
+tinSkyOf                     src/12ta-tin.js:214-221
+tinSpotX                     src/12ta-tin.js:99-112
+tinStrip                     src/12ta-tin.js:225-247
+tinTakeOut                   src/12ta-tin.js:186-199
+tinTick                      src/12ta-tin.js:137-161
 tmCount                      tests/91zzzzy-time.js:26-34
 tmShift                      tests/91zzzzy-time.js:17-24
 toggleLog                    src/11-log.js:152-156
@@ -8886,19 +8888,19 @@ wanPrevL                     src/24c-mode-wanderer.js:20
 wanSig                       src/26d-ui-wanderer.js:11
 wanStep                      src/24c-mode-wanderer.js:51-57
 wanderAngle                  src/12v-wander.js:107-114
-wanderAreaChart              src/12v-wander-shop.js:184-197
-wanderAskPart                src/12v-wander-shop.js:152
+wanderAreaChart              src/12v-wander-shop.js:202-218
+wanderAskPart                src/12v-wander-shop.js:154
 wanderAt                     src/12v-wander.js:68-80
-wanderBuy                    src/12v-wander-shop.js:154-182
-wanderCant                   src/12v-wander-shop.js:143-151
+wanderBuy                    src/12v-wander-shop.js:169-200
+wanderCant                   src/12v-wander-shop.js:143-153
 wanderDock                   src/12v-wander.js:123-127
-wanderGpu                    src/12v-wander.js:297-337
+wanderGpu                    src/12v-wander.js:299-339
 wanderHas                    src/12v-wander-shop.js:79
 wanderHeading                src/12v-wander.js:105
 wanderHere                   src/12v-wander.js:90-93
-wanderHullGpu                src/12v-wander.js:288-295
-wanderHullPaint              src/12v-wander.js:236-283
-wanderLeftRu                 src/12v-wander-shop.js:264-270
+wanderHullGpu                src/12v-wander.js:290-297
+wanderHullPaint              src/12v-wander.js:238-285
+wanderLeftRu                 src/12v-wander-shop.js:286-294
 wanderLen                    src/12v-wander.js:95
 wanderLoop                   src/12v-wander.js:44-66
 wanderLots                   src/12v-wander-shop.js:112-136
@@ -8908,21 +8910,23 @@ wanderOk                     src/12v-wander.js:37-41
 wanderOwns                   src/12v-wander-shop.js:80
 wanderPlanetIx               src/12v-wander.js:82-89
 wanderPriceRu                src/12v-wander-shop.js:137-141
-wanderRawLeft                src/12v-wander-shop.js:216-220
-wanderRawQuote               src/12v-wander-shop.js:222-225
+wanderRawLeft                src/12v-wander-shop.js:237-241
+wanderRawQuote               src/12v-wander-shop.js:243-246
 wanderRec                    src/12v-wander.js:31-35
-wanderRumour                 src/12v-wander.js:130-145
-wanderSails                  src/12v-wander.js:227-232
-wanderSellRaw                src/12v-wander-shop.js:226-239
-wanderShowRare               src/12v-wander-shop.js:244-253
-wanderShowables              src/12v-wander-shop.js:240-243
-wanderSkyLine                src/12v-wander.js:147-157
+wanderRumour                 src/12v-wander.js:130-147
+wanderSails                  src/12v-wander.js:229-234
+wanderSellRaw                src/12v-wander-shop.js:247-260
+wanderShowRare               src/12v-wander-shop.js:265-274
+wanderShowables              src/12v-wander-shop.js:261-264
+wanderSkyLine                src/12v-wander.js:149-159
 wanderStat                   src/12v-wander-shop.js:92-100
 wanderStore                  src/12v-wander-shop.js:71-77
 wanderTick                   src/12v-wander-shop.js:103-110
 wanderToHold                 src/12v-wander-shop.js:87-90
 wanderToShelf                src/12v-wander-shop.js:81-86
-wanderWildGrant              src/12v-wander-shop.js:199-214
+wanderUnpay                  src/12v-wander-shop.js:162-167
+wanderWildCan                src/12v-wander-shop.js:156-160
+wanderWildGrant              src/12v-wander-shop.js:220-235
 wanderWorldPos               src/12v-wander.js:97-103
 warBoot                      src/14b-war-net.js:187-192
 warCall                      src/14b-war-net.js:100-104
@@ -9466,7 +9470,7 @@ zoomTo                       src/15-input.js:370
 ## src/12aj-coop.js · 19 KB
   · кооператив: покупать для себя, и люди, которые делают это с вами (M351):1
 
-## src/12ak-locker.js · 7 KB
+## src/12ak-locker.js · 8 KB
   · ящик: камера хранения транспортной конторы домов (M345):1
 
 ## src/12al-powers.js · 11 KB
@@ -9593,12 +9597,12 @@ zoomTo                       src/15-input.js:370
 
 ## src/12k-stories-a.js · 33 KB
   · истории, часть первая:1
-  · длинные — в духе институтской фантастики:246
+  · длинные — в духе институтской фантастики:248
 
-## src/12k-stories-b.js · 38 KB
+## src/12k-stories-b.js · 39 KB
   · истории, часть вторая:1
 
-## src/12k-stories-c.js · 23 KB
+## src/12k-stories-c.js · 24 KB
   · истории, часть третья:1
 
 ## src/12k-stories-d.js · 8 KB
@@ -9644,10 +9648,10 @@ zoomTo                       src/15-input.js:370
 ## src/12s1-tape.js · 5 KB
   · изолента (M486, DESIGN-birchpunk §2):1
 
-## src/12t-settle.js · 23 KB
+## src/12t-settle.js · 24 KB
   · посёлок: вы даёте, решают они:1
 
-## src/12ta-tin.js · 15 KB
+## src/12ta-tin.js · 17 KB
   · Жестянка: смена, которую некому снять:1
 
 ## src/12tb-grok.js · 22 KB
@@ -9692,7 +9696,7 @@ zoomTo                       src/15-input.js:370
 ## src/12v-doom.js · 11 KB
   · срок: мир, который кончается по расписанию:1
 
-## src/12v-wander-shop.js · 20 KB
+## src/12v-wander-shop.js · 22 KB
   · лавка «Сороки»: три прилавка и полка инструментов (M343):1
 
 ## src/12v-wander.js · 24 KB
@@ -9763,7 +9767,7 @@ zoomTo                       src/15-input.js:370
 ## src/13z-gpu-combat.js · 20 KB
   · болты и лучи боя на видеокарте (G4, docs/DESIGN-gpu.md):1
 
-## src/14-save.js · 48 KB
+## src/14-save.js · 49 KB
   · сохранение:1
   · запись не имеет права убить полёт:110
   · пустая карта возвращается из облака СПИСКОМ:187
@@ -9774,7 +9778,7 @@ zoomTo                       src/15-input.js:370
   · облако:81
   · видимое состояние обмена:96
 
-## src/14a1-save-rest.js · 31 KB
+## src/14a1-save-rest.js · 32 KB
   · загрузка: вторая половина (выделено из 14, M415):1
 
 ## src/14a2-save-ephemeral.js · 7 KB

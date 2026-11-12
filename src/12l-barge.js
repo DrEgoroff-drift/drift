@@ -96,11 +96,25 @@ function bargeMarkup(b){
   const r=rng(hashi(b.seed,0x8A2E,3));
   return clamp(.08+r()*.04-(BARGE_TEMPER[b.temper]||BARGE_TEMPER.bold).give,.03,.18);
 }
-function bargeSellPrice(b,good){          // баржа продаёт вам — дороже станции
-  return Math.max(2,Math.ceil(bargeDestPrice(b,good)*(1+bargeMarkup(b))));
+/* прилавок назначения берёт дороже, чем платит (buyPriceFor, +6%). Наценка от
+   закупочной у пугливого (5%) выходила НИЖЕ этой цены — баржа печатала арбитраж,
+   хотя комментарий выше обещает обратное. Показ игроку — та цена, что он
+   заплатил бы сам, довезя груз, а не закупочная. */
+function bargeStationAsk(b,good){
+  const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
+  const bid=bargeDestPrice(b,good);
+  if(!dst||!RES[good]||!RES[good].price)return Math.max(bid+1,Math.round(bid*1.06));
+  return buyPriceFor(dst,good);
+}
+function bargeSellPrice(b,good){          // баржа продаёт вам — дороже прилавка назначения
+  const ask=bargeStationAsk(b,good);
+  return Math.max(ask+1,Math.ceil(bargeDestPrice(b,good)*(1+bargeMarkup(b))),2);
 }
 function bargeBuyPrice(b,good){           // баржа покупает у вас — дешевле станции
-  return Math.max(1,Math.floor(bargeDestPrice(b,good)*(1-bargeMarkup(b))));
+  const d=bargeDestPrice(b,good);
+  const marked=Math.floor(d*(1-bargeMarkup(b)));
+  /* при цене 1 кредит скидка округляется в ноль: не платим 0 и не врём «дешевле» */
+  return Math.max(1,d>1?Math.min(d-1,marked):marked);
 }
 
 /* ── набор барж текущего сектора ──

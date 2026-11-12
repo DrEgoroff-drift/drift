@@ -86,18 +86,19 @@ const STORIES=[
   {id:"t5",via:"cant",when:{visits:2},scene:{seat:"far",figure:0,props:["cup","cup","cup"]}}
  ]},
 
-/* ── 4. Пекарь не печёт ── соперник · дом Пекаря */
+/* ── 4. Пекарь не печёт ── соперник · дом Пекаря.
+   Сдал дверцу в институт — дома её больше не ищут. */
 /* Развилка С1 (не показывается): если игрок хоть раз выкладывал груз на его
    стол (seen:t5 — поступок, который игра уже помнит), дверца нашлась в
    принесённом; если нет — на барахолке, где всё находится. Никто не говорит
    игроку, из чьих рук она пришла. */
 {id:"baker_oven",form:"thing",at:"fixed:7",cast:["baker"],
  traces:[
-  {id:"t1",via:"cant",when:{none:["door","brought"]},scene:{seat:"end",figure:0,props:["bread","bread"]}},
+  {id:"t1",via:"cant",when:{none:["door","brought"],unseenOf:"relay_baker.t1"},scene:{seat:"end",figure:0,props:["bread","bread"]}},
   {id:"t2",via:"queue",text:"— Пекарь? Он не пёк никогда. Прозвище — за то, что встаёт рано. Всё остальное люди выдумали."},
   {id:"t3",via:"queue",when:{visits:2},text:"— Пёк. Ещё как пёк. Потом печь увезли, а он остался. Теперь собирает что попало."},
-  {id:"t4",via:"news",when:{visits:2,none:["door","brought"]},text:"Пекарь ищет дверцу от печи. Обожжённую. Платит как за редкость."},
-  {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3,none:["door","brought"]},text:"— Не то. Я узнаю, когда будет то."},
+  {id:"t4",via:"news",when:{visits:2,none:["door","brought"],unseenOf:"relay_baker.t1"},text:"Пекарь ищет дверцу от печи. Обожжённую. Платит как за редкость."},
+  {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3,none:["door","brought"],unseenOf:"relay_baker.t1"},text:"— Не то. Я узнаю, когда будет то."},
   {id:"t6",via:"cant",when:{any:["door","brought"]},scene:{seat:"end",figure:1,props:[]}},
   {id:"t7",via:"queue",when:{flag:"brought"},text:"— Нашёл. В грузе, что выкладывали ему на стол. Говорит, узнал по ожогу, сразу."}
  ],
@@ -114,9 +115,9 @@ const STORIES=[
 /* ── 6. Мадам Крапива не летает ── привычка · дом Крапивы */
 {id:"krapiva_suitcase",form:"habit",at:"fixed:9",cast:["krapiva"],
  traces:[
-  {id:"t1",via:"cant",when:{none:["ship","rode"]},scene:{seat:"door",figure:1,col:[92,70,96],props:["paper"]}},
-  {id:"t2",via:"queue",when:{none:["ship","rode"]},text:"— Это Крапива. Она не летает. Она сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
-  {id:"t3",via:"queue",when:{visits:3,none:["ship","rode"]},text:"— Говорит: я не летаю, я еду. Разницу не объясняет."},
+  {id:"t1",via:"cant",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},scene:{seat:"door",figure:1,col:[92,70,96],props:["paper"]}},
+  {id:"t2",via:"queue",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Это Крапива. Она не летает. Она сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
+  {id:"t3",via:"queue",when:{visits:3,none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Говорит: я не летаю, я еду. Разницу не объясняет."},
   {id:"t4",via:"news",when:{flag:"ship"},text:"Мадам Крапива купила корабль. Целиком, с экипажем. Куда — не сказала."},
   {id:"t5",via:"cant",when:{flag:"ship"},scene:{seat:"door",figure:0,props:["paper"]}},
   /* развилка (M259/M260): она сидит У ДВЕРИ и смотрит на пилотов. Корпус в
@@ -126,7 +127,8 @@ const STORIES=[
   {id:"t6",via:"news",when:{flag:"rode"},text:"Мадам Крапива уехала. Баржей, палубной. Говорят, сама подошла и попросилась."},
   {id:"t7",via:"cant",when:{flag:"rode"},scene:{seat:"door",figure:0,props:["paper"]}}
  ],
- turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode"}]},
+ /* эстафета уже видела её в пути — второй отъезд дома не заводится */
+  turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode",when:{unseenOf:"relay_krapiva.t1"}}]},
 
 /* ── 7. Ефимово место ── место · везде, где есть стойка */
 {id:"efim_stool",form:"place",at:"any",cast:["efim"],
@@ -176,12 +178,13 @@ const STORIES=[
   {id:"t4",via:"queue",when:{doomNear:true,visits:3},text:"— Спутали просто. Картограф перепутал, а потом поздно стало. Вся история."}
  ]},
 
-/* ── 12. Долгий Ким должен ── деньги · дом Кима */
+/* ── 12. Долгий Ким должен ── деньги · дом Кима.
+   Эстафета закрыла долг чемоданом: «отдаст» после этого не ходит. */
 {id:"kim_debt",form:"thing",at:"fixed:10",cast:["kim"],
  traces:[
-  {id:"t1",via:"queue",when:{noflag:"paid"},text:"— Ким? Отдаст. Он всегда отдаёт. Долго, но всегда."},
-  {id:"t2",via:"cant",when:{noflag:"paid"},scene:{seat:"far",figure:0,props:["key","paper"]}},
-  {id:"t3",via:"news",when:{visits:2,noflag:"paid"},text:"Вещи Долгого Кима продаются с барахолки. Сам Ким не против. Сам Ким не здесь."},
+  {id:"t1",via:"queue",when:{noflag:"paid",unseenOf:"relay_kim.t1"},text:"— Ким? Отдаст. Он всегда отдаёт. Долго, но всегда."},
+  {id:"t2",via:"cant",when:{noflag:"paid",unseenOf:"relay_kim.t1"},scene:{seat:"far",figure:0,props:["key","paper"]}},
+  {id:"t3",via:"news",when:{visits:2,noflag:"paid",unseenOf:"relay_kim.t1"},text:"Вещи Долгого Кима продаются с барахолки. Сам Ким не против. Сам Ким не здесь."},
   {id:"t4",via:"queue",when:{flag:"paid"},text:"— Отдал. Говорил же. Ключ только не забрал."},
   {id:"t5",via:"cant",when:{flag:"paid"},scene:{seat:"far",figure:0,props:["key"]}}
  ],
@@ -229,7 +232,7 @@ const STORIES=[
  traces:[
   {id:"t1",via:"cant",when:{late:true},scene:{seat:"corner",figure:1,col:[86,92,70],props:["glass_empty","paper"]}},
   {id:"t2",via:"queue",when:{late:true},text:"— Совеня ночью покупает. Днём спит. Редкости любят ночь, говорит. Не знаю, что любят редкости."},
-  {id:"t3",via:"queue",when:{late:false},text:"— Совеня? Спит. Приходите ночью, если хотите с ней говорить. Он не захочет."},
+  {id:"t3",via:"queue",when:{late:false},text:"— Совеня? Спит. Приходите ночью, если хотите с ней говорить. Она не захочет."},
   {id:"t4",via:"news",text:"Совеня приобрела нечто и не спит третьи сутки. Связь между этим не установлена."}
  ]},
 
@@ -261,7 +264,8 @@ const STORIES=[
 /* ── 20. Нуль-кабина ── верфь, фиксированная.
    Монтажник Гедеван собирает в углу верфи кабину для мгновенного переноса.
    Из чего — из того, что дают. */
-/* ОТКАЗ развилки (С2): Гедеван зарезервирован планом P7 — он становится
+/* Стол не забирает груз: «возьмёт» было обещанием без кода.
+   ОТКАЗ развилки (С2): Гедеван зарезервирован планом P7 — он становится
    платным шорткатом к глифам; вязать его уход к поступку сейчас значило бы
    разбирать это при постройке блокнота. Календарь до P7. */
 {id:"null_cabin",form:"thing",at:"fixed:13",cast:["nt"],
@@ -269,7 +273,7 @@ const STORIES=[
   {id:"t1",via:"queue",when:{noflag:"gone"},text:"— В углу? Это Гедеван. Кабину собирает. Для переноса. Куда — туда, говорит, где нас нет. Не мешайте, он после смены."},
   {id:"t2",via:"cant",when:{noflag:"gone"},scene:{seat:"corner",figure:1,col:[96,84,70],props:["key","jar"]}},
   {id:"t3",via:"find",when:{item:"cont"},text:"Контейнер. Прибор без маркировки, три лампы, рукописная бирка: «НТ-3, не трясти». Кому-то это нужно."},
-  {id:"t4",via:"table",item:"cargo",when:{item:"cargo",noflag:"gone"},text:"— Это он возьмёт. Он всё берёт. Вы не думайте, он отдаёт потом. Говорит, отдам оттуда."},
+  {id:"t4",via:"table",item:"cargo",when:{item:"cargo",noflag:"gone"},text:"— Это? Он смотрит. Всё разбирает. Отдаёт, говорит, оттуда."},
   {id:"t5",via:"queue",when:{visits:3,noflag:"gone"},text:"— Спросили его: а вернуться? Он говорит: а зачем. Вот и весь разговор, мы больше не спрашивали."},
   {id:"t6",via:"news",when:{flag:"gone"},text:"На верфи ночью был свет. Утром угол пуст, кабины нет, Гедевана нет. Сварка в углу тёплая."},
   {id:"t7",via:"cant",when:{flag:"gone"},scene:{seat:"corner",figure:0,props:["key"]}}
@@ -307,7 +311,7 @@ const STORIES=[
   {id:"t4",via:"news",when:{any:["left","copied"]},text:"Комиссия, направленная на комбинат, к месту назначения не прибыла. Комбинат отвечает, что комиссия была и уехала."},
   {id:"t5",via:"cant",when:{any:["left","copied"]},scene:{seat:"far",figure:0,props:["paper"]}},
   {id:"t6",via:"queue",when:{flag:"left"},text:"— Уехали. Бумагу оставили. В бумаге — ничего, одни линии. Ровные такие. Мы её не выбрасываем."},
-  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне у стойки. Мы её точно не выбрасываем."}
+  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне. Мы её точно не выбрасываем."}
  ],
  turns:[{after:"seen:t1",days:7,set:"left",unless:{wall:true},else:"copied"}]},
 

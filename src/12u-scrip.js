@@ -67,11 +67,9 @@ function scripOnNews(kind,sys){
   if(!H)return;
   const nm="«"+(sys&&sys.station?sys.station.name:"станция")+"»";
   if(kind==="owner"){
-    /* станция сменила хозяина: этот дом её потерял, а достаётся она соседу —
-       выбор соседа тоже детерминирован, чтобы слух и курс не разошлись */
-    scripMove(H.id,-7-Math.abs(hashi(sys.seed,3,3))%5,"станцию "+nm+" забрали у дома");
-    const other=HOUSES[Math.abs(hashi(sys.seed,0x0FF,5))%HOUSES.length];
-    if(other.id!==H.id)scripMove(other.id,4,"к дому отошла станция "+nm);
+    /* новость только мешает цены: дом станции от семени не меняется.
+       «забрали у дома» и приход чужому дому были бы курсом без причины */
+    scripMove(H.id,-4,"на станции "+nm+" сменились люди, цены чужие");
   }
   else if(kind==="barge")scripMove(H.id,-4,"баржа не дошла до "+nm);
   else if(kind==="captain")scripMove(H.id,3,"в секторе "+sys.sx+","+sys.sy+" стало тише");
@@ -123,6 +121,15 @@ function scripSell(n){
 /* ── вкладка на станции ──
    Живёт здесь, рядом со своей механикой: экран станции (26-ui-station) и так
    просится на распил. */
+/* «8000 мин назад» не читается: сутки и часы словами */
+function scripAgoRu(t){
+  const mins=Math.max(1,Math.round((now()-(t||0))/60000));
+  if(mins<60)return mins+" мин назад";
+  const h=Math.round(mins/60);
+  if(h<36)return h+" "+pl3(h,"час","часа","часов")+" назад";
+  const d=Math.round(h/24);
+  return d+" "+pl3(d,"день","дня","дней")+" назад";
+}
 function scripRender(){
   const H=houseOf();
   if(!H){$body.appendChild(el("div","sec","ЗДЕСЬ НЕТ ХОЗЯИНА"));return;}
@@ -133,16 +140,19 @@ function scripRender(){
     " · у вас "+scripHeld(H.id)+" "+pl3(scripHeld(H.id),"ваучер","ваучера","ваучеров")+" · за заход осталось "+scripLeft()+
     "<br>ваучер — расписка этого дома, а не деньги: берут её только на его станциях</s></div>"));
   const row=el("div","row");
-  for(const n of [1,10,SCRIP_VISIT]){
-    const b=el("button","act","КУПИТЬ "+n);
-    b.disabled=scripLeft()<=0||G.credits<scripBuyPrice(H.id);
-    b.onclick=()=>{scripBuy(n);renderTab();};
+  for(const n0 of [1,10,SCRIP_VISIT]){
+    /* подпись — сколько купится, а не номинал: «КУПИТЬ 40» при остатке 7 врала */
+    const n=Math.min(n0,scripLeft(),Math.floor(G.credits/scripBuyPrice(H.id)));
+    const b=el("button","act","КУПИТЬ "+(n||n0));
+    b.disabled=n<=0;
+    b.onclick=()=>{scripBuy(n0);renderTab();};
     row.appendChild(b);
   }
-  for(const n of [10,SCRIP_VISIT]){
-    const b=el("button","act gold","ПРОДАТЬ "+n);
-    b.disabled=scripLeft()<=0||scripHeld(H.id)<=0;
-    b.onclick=()=>{scripSell(n);renderTab();};
+  for(const n0 of [10,SCRIP_VISIT]){
+    const n=Math.min(n0,scripLeft(),scripHeld(H.id));
+    const b=el("button","act gold","ПРОДАТЬ "+(n||n0));
+    b.disabled=n<=0;
+    b.onclick=()=>{scripSell(n0);renderTab();};
     row.appendChild(b);
   }
   $body.appendChild(row);
@@ -158,9 +168,8 @@ function scripRender(){
   $body.appendChild(el("div","sec","ОТЧЕГО ДВИГАЛСЯ КУРС · СЛУЧАЙНО ОН НЕ ДВИГАЕТСЯ"));
   if(!L.length)$body.appendChild(el("div","row","<div class='nm'><s>пока ничего не случилось</s></div>"));
   for(const e of L){
-    const mins=Math.max(1,Math.round((now()-e.t)/60000));
     const Ho=HOUSE_BY_ID[e.id];
     $body.appendChild(el("div","row","<div class='nm'><b>"+(Ho?Ho.ru:e.id)+" "+
-      (e.d>0?"+":"")+e.d+"</b><s>"+e.why+" · "+mins+" мин назад</s></div>"));
+      (e.d>0?"+":"")+e.d+"</b><s>"+e.why+" · "+scripAgoRu(e.t)+"</s></div>"));
   }
 }
