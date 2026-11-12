@@ -617,7 +617,7 @@ setTimeout(function(){
         var h=hullOf(id);
         var z=Math.min(cw,ch)*.82/Math.max(10,h.len+h.halfW);
         c.scale(z,z);c.rotate(-Math.PI/2);
-        try{drawHull(id,false,false,0,0);}catch(e){}
+        try{var hh=hullOf(id);hullPart1(hh,id,0);hullPart2(hh);hullPart3(hh,id);}catch(e){}
         c.restore();
         c.strokeStyle="rgba(120,150,175,.10)";
         c.strokeRect(ci*cw+.5,ri*ch+.5,cw-1,ch-1);

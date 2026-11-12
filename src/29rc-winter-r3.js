@@ -241,7 +241,9 @@ function win3Frame(){
 }
 /* слова на вещах (правило 4) */
 function win3Tags(W,sz){const B=WIN3_B,out=[],F=W.faults||[];
-  if(sz.wide)WIN3_LEV.forEach((k,i)=>out.push({p:[win3LeverX(i)-.14,WIN3_PY-.5,B+.16],t:WIN_RU[k],s:"",c:"sg"}));
+  /* подписи рычагов в две строки: на 0.325 м шага «ВОЗДУХ» шире шага и
+     слипался со «СВЕТ» в одно слово, а «АНТЕННА» уходила под рукав (аудит 12.11) */
+  if(sz.wide)WIN3_LEV.forEach((k,i)=>out.push({p:[win3LeverX(i)-.06,WIN3_PY-.38-(i%2)*.2,B+.16],t:WIN_RU[k],s:"",c:"sg"}));
   if(F.length){const f=WIN_FAULT_BY[F[0].k];out.push({p:[WIN3_FX,WIN3_FY+.06,B+.1],t:"ТРОНЬТЕ",s:f?f.ru:"",c:""});}
   out.push({p:[WIN3_BX-.3,.6,WIN3_BZ+.3],t:"СДАТЬ СМЕНУ",s:"",c:F.length?"sg":""});
   return out;}
