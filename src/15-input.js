@@ -102,11 +102,17 @@ addEventListener("click",e=>{
 },true);
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;
+  /* Палец «проваливался» (автор 12.11.2026): на кнопке не было ни захвата
+     указателя, ни touch-action — браузер мог забрать первое касание под жест
+     прокрутки (pointercancel ставил ключ и тут же снимал), а сползание пальца
+     на пару точек за круг снимало нажатие pointerleave. Теперь кнопка держит
+     указатель до отпускания: тягу можно вести, не целясь заново. */
   const on=e=>{e.preventDefault();keys[k]=true;if(k==="act")actPressT=now();b.classList.add("on");padsFadeIn();
-    if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;};
+    if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;
+    try{if(e.pointerId!=null&&b.setPointerCapture)b.setPointerCapture(e.pointerId);}catch(_){}};
   const off=e=>{e.preventDefault();keys[k]=false;b.classList.remove("on");};
   b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);
-  b.addEventListener("pointercancel",off);b.addEventListener("pointerleave",off);
+  b.addEventListener("pointercancel",off);b.addEventListener("lostpointercapture",off);
   b.addEventListener("contextmenu",e=>e.preventDefault());
 });
 const KMAP={KeyA:"left",ArrowLeft:"left",KeyD:"right",ArrowRight:"right",KeyW:"thrust",

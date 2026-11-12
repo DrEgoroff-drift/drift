@@ -25,7 +25,7 @@ $hudp                        src/27z-telemetry.js:95
 $ipod                        src/25c-instr-hud.js:20
 $jn                          src/27z-telemetry.js:77
 $launch                      src/27z-telemetry.js:84
-$menu                        src/15-input.js:257
+$menu                        src/15-input.js:263
 $msg                         src/27z-telemetry.js:79
 $msl                         src/27z-telemetry.js:83
 $nav                         src/27z-telemetry.js:81
@@ -57,7 +57,7 @@ ACC_NEVER_TIERS              src/28n-access.js:21
 ACC_RUNG                     src/28n-access.js:23-46
 ACC_SPREAD                   src/28n-access.js:106
 ACC_TIER2                    src/28n-access.js:120
-ACTION_RU                    src/15-input.js:144
+ACTION_RU                    src/15-input.js:150
 ACT_WEEK_MS                  src/05e-clearance.js:36
 ADJ                          src/21a4-base-adj.js:17-27
 AFFIX                        src/05-parts.js:32-47
@@ -1307,8 +1307,8 @@ KIT_MODS                     src/12x-suit.js:34-42
 KIT_PLACES                   src/12x-suit.js:21
 KIT_RU                       src/12x-suit.js:22
 KIT_WEAR                     src/12x-suit.js:32
-KMAP                         src/15-input.js:112
-KMAP_BELT                    src/15-input.js:116
+KMAP                         src/15-input.js:118
+KMAP_BELT                    src/15-input.js:122
 KP_DAY                       src/26e2-post.js:11
 KP_PK_MAX                    src/26e2-post.js:103
 LAMP_BOX                     src/20fa-life-gpu.js:238
@@ -2553,11 +2553,11 @@ YARD_CHANCE                  src/04b-fleet.js:162
 YARD_DEBRIS                  src/26e1-stapel.js:125
 ZAP_COOL                     src/23-mode-dig.js:258
 ZOOM_MIN                     src/01-core.js:21
-ZOOM_RATE                    src/15-input.js:363
+ZOOM_RATE                    src/15-input.js:369
 ZOO_PEN_CAP                  src/11ad-zoo.js:14
 _file                        tests/90-harness.js:22
 _indPrice                    src/12ac-bld.js:112
-_mapDirty                    src/15-input.js:124
+_mapDirty                    src/15-input.js:130
 _suite                       tests/90-harness.js:11
 abilCardLine                 src/16c-abil.js:25-28
 abilFire                     src/16c-abil.js:65-110
@@ -2584,7 +2584,7 @@ accTestStation               tests/91zzzw9f-access.js:4-7
 actCouponUse                 src/05e-clearance.js:38
 actCoupons                   src/05e-clearance.js:37
 actPressT                    src/15-input.js:94
-actionKey                    src/15-input.js:159-164
+actionKey                    src/15-input.js:165-170
 addPart                      src/05-parts.js:365-380
 addPath                      src/25-cockpit.js:154-158
 addRes                       src/11-log.js:161-168
@@ -3686,7 +3686,7 @@ crownForge                   src/05a-nodes.js:160-169
 crownHas                     src/05a-nodes.js:171
 crownOwned                   src/05a-nodes.js:159
 crownReady                   src/05a-nodes.js:158
-ctlHint                      src/15-input.js:171-175
+ctlHint                      src/15-input.js:177-181
 ctlReset                     src/15a-helm.js:127-132
 ctx                          src/08-state.js:5
 cue                          src/08-state.js:420-425
@@ -4256,7 +4256,7 @@ econPriceMul                 src/12ax-fx-econ.js:66-73
 econTierBonus                src/12ax-fx-econ.js:44
 econVeinHere                 src/12ax-fx-econ.js:38-43
 el                           src/26-ui-station.js:343
-endPtr                       src/15-input.js:442-447
+endPtr                       src/15-input.js:448-453
 energyCap                    src/05c-arms.js:173
 energyRegen                  src/05c-arms.js:174
 engineLoop                   src/09-audio.js:342-368
@@ -5665,7 +5665,7 @@ instrTraits                  src/05b-instr-kit.js:56-61
 instrUnit                    src/05b-instr-kit.js:47-51
 instrWearRu                  src/05b-instr-kit.js:97-99
 instrWorks                   src/05b-instr-kit.js:52
-invalidateKeyMap             src/15-input.js:125
+invalidateKeyMap             src/15-input.js:131
 invalidateParts              src/05-parts.js:310
 isFitted                     src/05-parts.js:381-384
 islandAll                    src/11y-island.js:23
@@ -5731,8 +5731,8 @@ keepersJumpK                 src/11k-keepers.js:75
 keepersRhymeHere             src/11k-keepers.js:58-63
 keepersSign                  src/11k-keepers.js:114-120
 keplerPos                    src/06-galaxy.js:81-87
-keyLabel                     src/15-input.js:147-158
-keyMap                       src/15-input.js:136-143
+keyLabel                     src/15-input.js:153-164
+keyMap                       src/15-input.js:142-149
 keyRow                       src/27-ui-ship.js:9-20
 keyStateOK                   tests/90a-tools.js:718-724
 keys                         src/08-state.js:203
@@ -6126,7 +6126,7 @@ mechManColour                src/21phb-mech-man.js:7-28
 mechManData                  src/21phb-mech-man.js:6
 mechManSkin                  src/21phb-mech-man.js:116-126
 mercFee                      src/12a-crew.js:224
-mergeKeyMap                  src/15-input.js:126-135
+mergeKeyMap                  src/15-input.js:132-141
 meshBox                      src/12y2b-site-bird.js:12-21
 meshJoin                     src/12y2b-site-bird.js:23-32
 mgrBearLine                  src/21b3-base-hunt.js:89-94
@@ -6250,7 +6250,7 @@ mountAt                      src/05d-mounts.js:46-54
 mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
 mountsOf                     src/05d-mounts.js:29-45
-mouseWalkAt                  src/15-input.js:453-482
+mouseWalkAt                  src/15-input.js:459-488
 mpAlpha                      src/17z4-map-pen.js:25
 mpArc                        src/17z4-map-pen.js:64-70
 mpBegin                      src/17z4-map-pen.js:20
@@ -6320,7 +6320,7 @@ natStormHere                 src/12az-fx-nat.js:27
 natStormTick                 src/12az-fx-nat.js:28-33
 natSwarmHere                 src/12az-fx-nat.js:39
 natSwarmTick                 src/12az-fx-nat.js:50-65
-navAction                    src/15-input.js:292-309
+navAction                    src/15-input.js:298-315
 near                         tests/90-harness.js:197
 nearBake                     src/28zn-near.js:27
 nearBlock                    src/28zn-near.js:15-22
@@ -6740,7 +6740,7 @@ pick                         src/01-core.js:31
 pickKindByBias               src/20-life.js:156-160
 pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
-pinch0                       src/15-input.js:410
+pinch0                       src/15-input.js:416
 pipeWho                      tests/91zzzzzzy4-pipes.js:62-67
 pirateArmTick                src/13d-loadout.js:184-202
 pirateArtOf                  src/12i-pirate-hull.js:247-423
@@ -7439,7 +7439,7 @@ promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
 promptSet                    src/27z-telemetry.js:264-273
 prunePartsBought             src/14-save.js:33-41
-ptr                          src/15-input.js:409
+ptr                          src/15-input.js:415
 puFinger                     tests/91zzzzzd-pure.js:19-27
 putOnTable                   src/11b-speech.js:220-230
 qslAll                       src/11an-qsl.js:47-52
@@ -7709,7 +7709,7 @@ rareTake                     src/12m-rare.js:118-141
 rayDamage                    src/13a-guns.js:93-96
 rayHits                      src/13a-guns.js:66-78
 rcRaid                       tests/91qb-rig-card.js:6-13
-rebinding                    src/15-input.js:176
+rebinding                    src/15-input.js:182
 recApEv                      src/15c-rec.js:33-37
 recDump                      src/15c-rec.js:52-54
 recHead                      src/15c-rec.js:20-26
@@ -7771,7 +7771,7 @@ relaySpeak                   src/11ap-relay.js:166-173
 relaySpot                    src/11ap-relay.js:314-327
 relayWrite                   src/11ap-relay.js:156-163
 relaysNear                   src/11ap-relay.js:108-122
-releaseAllKeys               src/15-input.js:216-219
+releaseAllKeys               src/15-input.js:222-225
 relicDeep                    src/12h-relic.js:76
 relicEquip                   src/12h-relic.js:78-86
 relicFind                    src/12h-relic.js:91-102
@@ -8222,7 +8222,7 @@ setPair                      src/27z-telemetry.js:168-173
 setPct                       src/27z-telemetry.js:138-144
 setSt                        src/27z-telemetry.js:130
 setTx                        src/27z-telemetry.js:120-129
-setZoom                      src/15-input.js:354
+setZoom                      src/15-input.js:360
 settle                       tests/90-harness.js:448-459
 settleAsk                    src/12t-settle.js:265-300
 settleAt                     src/12t-settle.js:107
@@ -8468,7 +8468,7 @@ stapelYardBy                 src/26e1-stapel.js:41-45
 starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:25-34
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:643-651
+start                        src/15-input.js:649-657
 startLanding                 src/19-mode-landing.js:13-68
 startScoop                   src/19a-mode-scoop.js:51-64
 stat                         src/08-state.js:297-369
@@ -8594,12 +8594,12 @@ tableShowsRecord             src/27i-ui-table.js:58
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:119-140
 tableWasNew                  src/27i-ui-table.js:110
-tabsSync                     src/15-input.js:230-251
+tabsSync                     src/15-input.js:236-257
 tactHz                       src/28-loop.js:378
 tactTick                     src/28-loop.js:388-401
 tactWork                     src/28-loop.js:381
 tailWhisk                    src/12y2d-site-bird.js:274-279
-tap                          src/15-input.js:484-614
+tap                          src/15-input.js:490-620
 tapeBuy                      src/12s1-tape.js:37-42
 tapeCan                      src/12s1-tape.js:22
 tapeFree                     src/12s1-tape.js:20
@@ -8662,7 +8662,7 @@ tmCount                      tests/91zzzzy-time.js:26-34
 tmShift                      tests/91zzzzy-time.js:17-24
 toggleLog                    src/11-log.js:152-156
 toggleLoreBoard              src/27h-ui-lore.js:81-84
-toggleMenu                   src/15-input.js:258-265
+toggleMenu                   src/15-input.js:264-271
 toggleParrotWin              src/12y-parrot-face.js:249-265
 toggleSos                    src/16c-rescue.js:651-660
 toldAll                      src/11aj-told.js:34
@@ -8942,7 +8942,7 @@ warrantyGive                 src/05b1-warranty.js:17
 warrantyOn                   src/05b1-warranty.js:14
 warrantyRegVoid              src/05b1-warranty.js:16
 warrantyShift                src/05b1-warranty.js:13
-wasBlurred                   src/15-input.js:215
+wasBlurred                   src/15-input.js:221
 watchAllot                   src/28j-watch.js:139-169
 watchBack                    src/28j-watch.js:181-195
 watchCrew                    src/27b-ui-crew.js:34-44
@@ -9067,11 +9067,11 @@ zooSell                      src/11ad-zoo.js:61-70
 zooSettle                    src/11ad-zoo.js:33-39
 zooStationHere               src/11ad-zoo.js:56-60
 zooTick                      src/11ad-zoo.js:41-54
-zoomEase                     src/15-input.js:373-379
-zoomModeHas                  src/15-input.js:322
-zoomRest                     src/15-input.js:365-370
-zoomStep                     src/15-input.js:317-320
-zoomTo                       src/15-input.js:364
+zoomEase                     src/15-input.js:379-385
+zoomModeHas                  src/15-input.js:328
+zoomRest                     src/15-input.js:371-376
+zoomStep                     src/15-input.js:323-326
+zoomTo                       src/15-input.js:370
 
 ## FILES AND SECTIONS
 
@@ -9781,10 +9781,10 @@ zoomTo                       src/15-input.js:364
 ## src/14b-war-net.js · 12 KB
   · провод войны (M376, §13, §16.4):1
 
-## src/15-input.js · 42 KB
+## src/15-input.js · 43 KB
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:87
-  · полоса вкладок шире экрана:224
+  · полоса вкладок шире экрана:230
 
 ## src/15a-helm.js · 41 KB
   · штурвал (M360):1

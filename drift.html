@@ -278,12 +278,10 @@ body.minewords #prompt{visibility:hidden}
 .pads.faded{opacity:.14}
 body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],body.tankdry .pads button[data-k=right]{opacity:.3}   /* пустой бак: ими не сдвинуться (R2) */
 .pads>div>button,.pads>div{transform:scale(var(--padscale,1));transform-origin:bottom}
-.pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:auto}
-/* Пэд — не круг с обводкой, а шайба под стеклом: внутрь уходит мягкий свет,
-   по верхней кромке идёт блик, нажатие собирает свет в кольцо. Ободок
-   рисуется отдельным слоем (::before), чтобы нажатие меняло его отдельно
-   от тела кнопки — от этого и берётся ощущение хода, а не мигания цвета. */
-.pads button{-webkit-appearance:none;position:relative;isolation:isolate;
+.pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:auto;touch-action:none}
+/* касание на пэде — не жест страницы: иначе первое движение пальца браузер
+   забирает как прокрутку и гасит нажатие (палец «проваливается») */
+.pads button{-webkit-appearance:none;position:relative;isolation:isolate;touch-action:none;
   background:radial-gradient(120% 120% at 50% 12%,rgba(var(--c-phos),.10),rgba(8,14,23,.60) 62%);
   border:0;color:var(--phos);font-family:inherit;font-size:15px;width:var(--padw,56px);height:var(--padw,56px);
   border-radius:50%;display:grid;place-items:center;backdrop-filter:var(--pl-blur);flex:0 0 auto;
@@ -50455,11 +50453,17 @@ addEventListener("click",e=>{
 },true);
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;
+  /* Палец «проваливался» (автор 12.11.2026): на кнопке не было ни захвата
+     указателя, ни touch-action — браузер мог забрать первое касание под жест
+     прокрутки (pointercancel ставил ключ и тут же снимал), а сползание пальца
+     на пару точек за круг снимало нажатие pointerleave. Теперь кнопка держит
+     указатель до отпускания: тягу можно вести, не целясь заново. */
   const on=e=>{e.preventDefault();keys[k]=true;if(k==="act")actPressT=now();b.classList.add("on");padsFadeIn();
-    if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;};
+    if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;
+    try{if(e.pointerId!=null&&b.setPointerCapture)b.setPointerCapture(e.pointerId);}catch(_){}};
   const off=e=>{e.preventDefault();keys[k]=false;b.classList.remove("on");};
   b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);
-  b.addEventListener("pointercancel",off);b.addEventListener("pointerleave",off);
+  b.addEventListener("pointercancel",off);b.addEventListener("lostpointercapture",off);
   b.addEventListener("contextmenu",e=>e.preventDefault());
 });
 const KMAP={KeyA:"left",ArrowLeft:"left",KeyD:"right",ArrowRight:"right",KeyW:"thrust",

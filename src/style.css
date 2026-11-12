@@ -264,12 +264,10 @@ body.minewords #prompt{visibility:hidden}
 .pads.faded{opacity:.14}
 body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],body.tankdry .pads button[data-k=right]{opacity:.3}   /* пустой бак: ими не сдвинуться (R2) */
 .pads>div>button,.pads>div{transform:scale(var(--padscale,1));transform-origin:bottom}
-.pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:auto}
-/* Пэд — не круг с обводкой, а шайба под стеклом: внутрь уходит мягкий свет,
-   по верхней кромке идёт блик, нажатие собирает свет в кольцо. Ободок
-   рисуется отдельным слоем (::before), чтобы нажатие меняло его отдельно
-   от тела кнопки — от этого и берётся ощущение хода, а не мигания цвета. */
-.pads button{-webkit-appearance:none;position:relative;isolation:isolate;
+.pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:auto;touch-action:none}
+/* касание на пэде — не жест страницы: иначе первое движение пальца браузер
+   забирает как прокрутку и гасит нажатие (палец «проваливается») */
+.pads button{-webkit-appearance:none;position:relative;isolation:isolate;touch-action:none;
   background:radial-gradient(120% 120% at 50% 12%,rgba(var(--c-phos),.10),rgba(8,14,23,.60) 62%);
   border:0;color:var(--phos);font-family:inherit;font-size:15px;width:var(--padw,56px);height:var(--padw,56px);
   border-radius:50%;display:grid;place-items:center;backdrop-filter:var(--pl-blur);flex:0 0 auto;
