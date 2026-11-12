@@ -25,7 +25,7 @@ $hudp                        src/27z-telemetry.js:95
 $ipod                        src/25c-instr-hud.js:20
 $jn                          src/27z-telemetry.js:77
 $launch                      src/27z-telemetry.js:84
-$menu                        src/15-input.js:251
+$menu                        src/15-input.js:257
 $msg                         src/27z-telemetry.js:79
 $msl                         src/27z-telemetry.js:83
 $nav                         src/27z-telemetry.js:81
@@ -2553,7 +2553,7 @@ YARD_CHANCE                  src/04b-fleet.js:162
 YARD_DEBRIS                  src/26e1-stapel.js:125
 ZAP_COOL                     src/23-mode-dig.js:258
 ZOOM_MIN                     src/01-core.js:21
-ZOOM_RATE                    src/15-input.js:357
+ZOOM_RATE                    src/15-input.js:363
 ZOO_PEN_CAP                  src/11ad-zoo.js:14
 _file                        tests/90-harness.js:22
 _indPrice                    src/12ac-bld.js:112
@@ -4256,7 +4256,7 @@ econPriceMul                 src/12ax-fx-econ.js:66-73
 econTierBonus                src/12ax-fx-econ.js:44
 econVeinHere                 src/12ax-fx-econ.js:38-43
 el                           src/26-ui-station.js:343
-endPtr                       src/15-input.js:436-441
+endPtr                       src/15-input.js:442-447
 energyCap                    src/05c-arms.js:173
 energyRegen                  src/05c-arms.js:174
 engineLoop                   src/09-audio.js:342-368
@@ -6250,7 +6250,7 @@ mountAt                      src/05d-mounts.js:46-54
 mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
 mountsOf                     src/05d-mounts.js:29-45
-mouseWalkAt                  src/15-input.js:447-476
+mouseWalkAt                  src/15-input.js:453-482
 mpAlpha                      src/17z4-map-pen.js:25
 mpArc                        src/17z4-map-pen.js:64-70
 mpBegin                      src/17z4-map-pen.js:20
@@ -6320,7 +6320,7 @@ natStormHere                 src/12az-fx-nat.js:27
 natStormTick                 src/12az-fx-nat.js:28-33
 natSwarmHere                 src/12az-fx-nat.js:39
 natSwarmTick                 src/12az-fx-nat.js:50-65
-navAction                    src/15-input.js:286-303
+navAction                    src/15-input.js:292-309
 near                         tests/90-harness.js:197
 nearBake                     src/28zn-near.js:27
 nearBlock                    src/28zn-near.js:15-22
@@ -6740,7 +6740,7 @@ pick                         src/01-core.js:31
 pickKindByBias               src/20-life.js:156-160
 pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
-pinch0                       src/15-input.js:404
+pinch0                       src/15-input.js:410
 pipeWho                      tests/91zzzzzzy4-pipes.js:62-67
 pirateArmTick                src/13d-loadout.js:184-202
 pirateArtOf                  src/12i-pirate-hull.js:247-423
@@ -7439,7 +7439,7 @@ promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
 promptSet                    src/27z-telemetry.js:264-273
 prunePartsBought             src/14-save.js:33-41
-ptr                          src/15-input.js:403
+ptr                          src/15-input.js:409
 puFinger                     tests/91zzzzzd-pure.js:19-27
 putOnTable                   src/11b-speech.js:220-230
 qslAll                       src/11an-qsl.js:47-52
@@ -8222,7 +8222,7 @@ setPair                      src/27z-telemetry.js:168-173
 setPct                       src/27z-telemetry.js:138-144
 setSt                        src/27z-telemetry.js:130
 setTx                        src/27z-telemetry.js:120-129
-setZoom                      src/15-input.js:348
+setZoom                      src/15-input.js:354
 settle                       tests/90-harness.js:448-459
 settleAsk                    src/12t-settle.js:265-300
 settleAt                     src/12t-settle.js:107
@@ -8468,7 +8468,7 @@ stapelYardBy                 src/26e1-stapel.js:41-45
 starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:25-34
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:637-645
+start                        src/15-input.js:643-651
 startLanding                 src/19-mode-landing.js:13-68
 startScoop                   src/19a-mode-scoop.js:51-64
 stat                         src/08-state.js:297-369
@@ -8594,12 +8594,12 @@ tableShowsRecord             src/27i-ui-table.js:58
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:119-140
 tableWasNew                  src/27i-ui-table.js:110
-tabsSync                     src/15-input.js:230-245
+tabsSync                     src/15-input.js:230-251
 tactHz                       src/28-loop.js:378
 tactTick                     src/28-loop.js:388-401
 tactWork                     src/28-loop.js:381
 tailWhisk                    src/12y2d-site-bird.js:274-279
-tap                          src/15-input.js:478-608
+tap                          src/15-input.js:484-614
 tapeBuy                      src/12s1-tape.js:37-42
 tapeCan                      src/12s1-tape.js:22
 tapeFree                     src/12s1-tape.js:20
@@ -8662,7 +8662,7 @@ tmCount                      tests/91zzzzy-time.js:26-34
 tmShift                      tests/91zzzzy-time.js:17-24
 toggleLog                    src/11-log.js:152-156
 toggleLoreBoard              src/27h-ui-lore.js:81-84
-toggleMenu                   src/15-input.js:252-259
+toggleMenu                   src/15-input.js:258-265
 toggleParrotWin              src/12y-parrot-face.js:249-265
 toggleSos                    src/16c-rescue.js:651-660
 toldAll                      src/11aj-told.js:34
@@ -9067,11 +9067,11 @@ zooSell                      src/11ad-zoo.js:61-70
 zooSettle                    src/11ad-zoo.js:33-39
 zooStationHere               src/11ad-zoo.js:56-60
 zooTick                      src/11ad-zoo.js:41-54
-zoomEase                     src/15-input.js:367-373
-zoomModeHas                  src/15-input.js:316
-zoomRest                     src/15-input.js:359-364
-zoomStep                     src/15-input.js:311-314
-zoomTo                       src/15-input.js:358
+zoomEase                     src/15-input.js:373-379
+zoomModeHas                  src/15-input.js:322
+zoomRest                     src/15-input.js:365-370
+zoomStep                     src/15-input.js:317-320
+zoomTo                       src/15-input.js:364
 
 ## FILES AND SECTIONS
 
@@ -9781,7 +9781,7 @@ zoomTo                       src/15-input.js:358
 ## src/14b-war-net.js · 12 KB
   · провод войны (M376, §13, §16.4):1
 
-## src/15-input.js · 41 KB
+## src/15-input.js · 42 KB
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:87
   · полоса вкладок шире экрана:224

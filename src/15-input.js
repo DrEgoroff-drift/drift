@@ -235,6 +235,12 @@ function tabsSync(strip){
     if(r.left<s.left+8)strip.scrollLeft+=r.left-s.left-16;
     else if(r.right>s.right-8)strip.scrollLeft+=r.right-s.right+16;
   }
+  /* скрытая полоса не «докручена до конца»: у неё и scrollWidth, и clientWidth
+     нулевые, и 0>=0-0-2 — истина. Метка «хвост» вставала до первой отрисовки и
+     больше не снималась, а вместе с ней гасло затенение правого края — игрок не
+     видел, что за кромкой есть ещё разделы. Мерки нет — решать нечего: пусть
+     метку решает первый настоящий вызов. */
+  if(!strip.clientWidth)return;
   strip.classList.toggle("tail",strip.scrollLeft>=strip.scrollWidth-strip.clientWidth-2);
   if(!strip.dataset.tail){
     strip.dataset.tail="1";
