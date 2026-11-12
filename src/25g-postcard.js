@@ -95,10 +95,18 @@ function postSnap(){
       const d=Math.hypot((q.x||0)-sh.x,(q.y||0)-sh.y);
       if(d<bd){bd=d;best=q;}
     }
+    /* луна ближе планеты-хозяйки: иначе подпись сажает кадр на чужое тело */
+    for(const q of (sys.planets||[]))for(const moon of (q.moons||[])){
+      const d=Math.hypot((moon.x||0)-sh.x,(moon.y||0)-sh.y);
+      if(d<bd){bd=d;best=moon;}
+    }
     if(!best)return null;
+    /* у тела есть radius, не r: прежний делитель всегда был 1, и любой кадр
+       системы уезжал «на 100 радиусов» — подпись врала «на орбите» */
+    const R=best.radius||best.r||1;
     return Object.assign(B,{m:"y"},idx(best),
       {cx:Math.round(Math.atan2(sh.y-(best.y||0),sh.x-(best.x||0))*180/Math.PI),
-       cy:Math.round(Math.min(999,bd/Math.max(1,best.r||1)*10)),lon:null});
+       cy:Math.round(Math.min(999,bd/Math.max(1,R)*10)),lon:null});
   }
   const surf=G.surf&&G.surf.p?G.surf:null, land=!surf&&G.land&&G.land.p?G.land:null;
   const st=surf||land;
@@ -110,17 +118,41 @@ function postSnap(){
    Место — это не только имя планеты: снимок из шахты и снимок с гребня над
    ней приходят с одним именем и разными кадрами, и подпись обязана их
    различать, иначе альбом из восьми мест читается как восемь видов одного */
-const POST_WHERE={c:"пещера",d:"шахта",b:"пояс",g:"атмосфера",y:"на орбите"};
+const POST_WHERE={c:"пещера",d:"шахта",b:"пояс",g:"атмосфера",s:"грунт",l:"заход"};
+/* карта зовёт сектор именем игрока; подпись карточки — тем же, иначе альбом
+   и карта спорят об одном месте. Римская цифра планеты остаётся. */
+function postMapName(sys,p){
+  const map=(sys&&typeof nameOf==="function")?nameOf(sys):(sys&&sys.name)||"";
+  if(!p)return map;
+  const raw=p.name||"";
+  if(map&&sys&&sys.name&&raw.indexOf(sys.name)===0)return map+raw.slice(sys.name.length);
+  return raw||map;
+}
+function postHour(p,t){
+  const sun=celSun(p,t);
+  return sun.alt>.45?"полдень":(sun.alt>.08?"день":
+    (sun.alt>-.08?(sun.az>0?"закат":"рассвет"):(sun.alt>-.5?"сумерки":"ночь")));
+}
+/* «ближе 250» — та же орбита, что у кадра системы, не любой перелёт */
+function postOnOrbit(s,p){
+  if(!p)return false;
+  const R=p.radius||p.r||1,far=Math.max(0,(s.cy|0)/10);
+  return (far-1)*R<250;
+}
 function postCaption(s){
   const W0=postWorld(s);
+  if(!W0.sys)return "";
+  /* пояс — у системы, не у первой планеты; часа в вакууме кадр не показывает */
+  if(s.m==="b"){
+    const nm=postMapName(W0.sys,null);
+    return (nm?nm+" · ":"")+(POST_WHERE.b||"пояс");
+  }
   if(!W0.p)return "";
-  const sun=celSun(W0.p,s.t);
-  const hour=sun.alt>.45?"полдень":(sun.alt>.08?"день":
-    (sun.alt>-.08?(sun.az>0?"закат":"рассвет"):(sun.alt>-.5?"сумерки":"ночь")));
-  const wh=POST_WHERE[s.m];
+  const nm=postMapName(W0.sys,W0.p);
   /* под землёй часа не видно, и врать про полдень нельзя */
-  if(s.m==="c"||s.m==="d")return W0.p.name+" · "+wh;
-  return W0.p.name+" · "+(wh?wh+", ":"")+hour;
+  if(s.m==="c"||s.m==="d")return nm+" · "+(POST_WHERE[s.m]||"");
+  const wh=s.m==="y"?(postOnOrbit(s,W0.p)?"на орбите":"в системе"):(POST_WHERE[s.m]||"");
+  return nm+" · "+(wh?wh+", ":"")+postHour(W0.p,s.t);
 }
 /* ── печать ──
    Виньетка и зерно — ровно столько, чтобы кадр читался напечатанным, а не
@@ -698,7 +730,8 @@ function renderAlbum(box){
   const A=albumAll();
   box.innerHTML="";
   if(!A.length){
-    tableRow(box,"dim","","альбом пуст: кнопка ФОТО на пульте — на грунте, на заходе, в пещере, шахте, поясе, атмосфере и в системе");
+    /* ФОТО с M826 живёт в меню, не на пульте: пустой альбом не шлёт искать кнопку там, где её нет */
+    tableRow(box,"dim","","альбом пуст: кнопка ФОТО в меню — на грунте, на заходе, в пещере, шахте, поясе, атмосфере и в системе");
     return;
   }
   const wrap=document.createElement("div");

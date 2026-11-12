@@ -70,6 +70,8 @@ function ethTick(q){
     if(now-ethAsk<12000)return "…";
     ethAsk=now;
     mailCall("ask").then(j=>{
+      /* «на сегодня хватит» сервер отдаёт без карточки: иначе эфир вечно крутит «…» */
+      if(j&&j.ok&&!j.card&&j.reason){const M=mailAll();M.caught=ETH_CATCH;return;}
       if(!j||!j.ok||!j.card||!j.ch)return;
       ethCard={ch:String(j.ch),card:j.card,mv:j.mv||null,lines:postLines(j.card)};
       ethLine=0;ethHold=0;

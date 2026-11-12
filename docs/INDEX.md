@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 711 · top-level symbols: 9061
+Files: 711 · top-level symbols: 9064
 
 ## SYMBOLS
 
@@ -71,7 +71,7 @@ AI_COST                      src/12f-mgr-ai.js:8
 AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12-18
 ALBUM_FX                     src/25g1-album-fx.js:14-21
-ALBUM_MAX                    src/25g-postcard.js:646
+ALBUM_MAX                    src/25g-postcard.js:678
 ALBUM_PAPER                  src/25g1-album-fx.js:31
 ALBUM_VIG                    src/25g1-album-fx.js:28
 ALLY_THR                     src/12a-crew.js:706
@@ -1841,7 +1841,7 @@ POST_TR                      src/25g-postcard.js:39
 POST_TR_MAX                  src/25g-postcard.js:40
 POST_V                       src/25g-postcard.js:32
 POST_WHAT                    src/11e-post.js:19
-POST_WHERE                   src/25g-postcard.js:113
+POST_WHERE                   src/25g-postcard.js:121
 POWERS                       src/12al-powers.js:18-85
 POWER_GLYPH                  src/12al-powers.js:105
 POWER_KEYS                   src/12al-powers.js:86
@@ -2292,8 +2292,8 @@ STATE_HASH_SKIP              src/08a-statehash.js:25-34
 STAT_SHOW                    src/05-parts.js:426-438
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
-STORIES                      src/12k-stories-a.js:45-349
-STORIES_B                    src/12k-stories-b.js:27-442
+STORIES                      src/12k-stories-a.js:45-350
+STORIES_B                    src/12k-stories-b.js:27-445
 STORIES_C                    src/12k-stories-c.js:23-292
 STORIES_D                    src/12k-stories-d.js:17-78
 STORM_WORLDS                 src/21a-mode-base.js:300
@@ -2301,8 +2301,8 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:328
-STORY_WHEN                   src/11c-stories.js:148-212
+STORY_SEAT                   src/11c-stories.js:336
+STORY_WHEN                   src/11c-stories.js:148-219
 STP_FADE                     src/26e2-stapel-draw.js:293
 STP_G                        src/26e2-stapel-draw.js:292
 STP_INK                      src/26e2-stapel-draw.js:191
@@ -2599,7 +2599,7 @@ aiDrift                      src/12f-mgr-ai.js:52-105
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
-albumAll                     src/25g-postcard.js:647
+albumAll                     src/25g-postcard.js:679
 albumBake                    src/25g1-album-fx.js:81
 albumCanvas                  src/25g1-album-fx.js:104-111
 albumClose                   src/25g1-album-fx.js:113
@@ -2607,7 +2607,7 @@ albumDpr                     src/25g1-album-fx.js:112
 albumL                       src/25g1-album-fx.js:23
 albumLightbox                src/25g1-album-fx.js:115-160
 albumM                       src/25g1-album-fx.js:25
-albumOpen                    src/25g-postcard.js:696
+albumOpen                    src/25g-postcard.js:728
 albumPaper                   src/25g1-album-fx.js:32-52
 albumPut                     src/25g1-album-fx.js:96-102
 albumRig                     src/25g1-album-fx.js:87-94
@@ -3109,7 +3109,7 @@ c3SignTex                    src/27f4-cant3d.js:236-245
 c3Stool                      src/27f4-cant3d.js:90-99
 c3StoryProp                  src/27f4-cant3d.js:222-234
 camBody                      src/17-mode-system.js:82-91
-camBtnTick                   src/25g-postcard.js:685-689
+camBtnTick                   src/25g-postcard.js:717-721
 camFree                      src/17p-cam-frame.js:11-23
 camOffset                    src/19c-light.js:155-162
 camReach                     src/17p-cam-frame.js:25-30
@@ -4144,7 +4144,7 @@ drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:148-184
 drawPlanetWorks              src/17e-station-body.js:71-116
 drawPortal                   src/20aa-poi-shapes.js:459-483
-drawPostcard                 src/25g-postcard.js:170-630
+drawPostcard                 src/25g-postcard.js:202-662
 drawRaid                     src/24aa-raid-draw.js:14-609
 drawRail                     src/18g-rail-ride.js:120-154
 drawRailArrive               src/18g-rail-ride.js:18-21
@@ -4285,7 +4285,7 @@ eq                           tests/90-harness.js:196
 ethBandAt                    src/25l-post-ether.js:53
 ethCard                      src/25l-post-ether.js:30
 ethOn                        src/25l-post-ether.js:52
-ethTick                      src/25l-post-ether.js:59-104
+ethTick                      src/25l-post-ether.js:59-106
 etherLine                    src/11-log.js:42-53
 etherTick                    src/11b-speech.js:39-82
 etherWho                     src/11-log.js:38-41
@@ -5977,23 +5977,23 @@ maLive                       tests/91qa-marks-act.js:7-10
 maPrep                       tests/91qa-marks-act.js:166-170
 maShape                      tests/91qa-marks-act.js:11-18
 mailAll                      src/25j-post-wire.js:31-35
-mailBusy                     src/25j-post-wire.js:46
-mailCall                     src/25j-post-wire.js:47-52
+mailBusy                     src/25j-post-wire.js:47
+mailCall                     src/25j-post-wire.js:48-53
 mailCard                     src/25k-post-mail.js:19-31
-mailDock                     src/25j-post-wire.js:124-141
+mailDock                     src/25j-post-wire.js:134-157
 mailEve                      src/25l-post-ether.js:41-45
-mailFresh                    src/25j-post-wire.js:151
-mailLeft                     src/25j-post-wire.js:41-45
-mailMute                     src/25j-post-wire.js:144-150
+mailFresh                    src/25j-post-wire.js:167
+mailLeft                     src/25j-post-wire.js:42-46
+mailMute                     src/25j-post-wire.js:160-166
 mailNight                    src/25l-post-ether.js:34-37
 mailNightLeft                src/25l-post-ether.js:46-50
 mailOn                       src/25j-post-wire.js:36-39
 mailOpen                     src/25k-post-mail.js:18
-mailPush                     src/25j-post-wire.js:78-86
-mailSend                     src/25j-post-wire.js:90-119
-mailStack                    src/25j-post-wire.js:68-77
-mailToday                    src/25j-post-wire.js:40
-mailWire                     src/25j-post-wire.js:55-63
+mailPush                     src/25j-post-wire.js:80-88
+mailSend                     src/25j-post-wire.js:92-129
+mailStack                    src/25j-post-wire.js:70-79
+mailToday                    src/25j-post-wire.js:41
+mailWire                     src/25j-post-wire.js:56-65
 makeIR                       src/10-music.js:109-121
 makePhrase                   src/10-music.js:381-404
 makeRock                     src/24-mode-belt.js:35-62
@@ -6680,24 +6680,24 @@ passportIssue                src/17i1-passport.js:12-19
 passportOn                   src/17i1-passport.js:11
 payCost                      src/21a-mode-base.js:100
 pbOnScreen                   src/17a0-prebake.js:42
-pcA                          src/25g-postcard.js:149
+pcA                          src/25g-postcard.js:181
 pcBelt                       src/25g-post-void.js:58-221
-pcC                          src/25g-postcard.js:146
+pcC                          src/25g-postcard.js:178
 pcCave                       src/25g-post-under.js:131-234
 pcDeform                     src/25g-post-craft.js:20-32
 pcGrainBake                  src/25g-post-craft.js:8-12
 pcMan                        src/25g-post-under.js:33-63
 pcMine                       src/25g-post-under.js:251-400
-pcMix                        src/25g-postcard.js:148
+pcMix                        src/25g-postcard.js:180
 pcNebula                     src/25g-post-craft.js:54-66
 pcOre                        src/25g-post-under.js:104-114
-pcPrint                      src/25g-postcard.js:130-144
+pcPrint                      src/25g-postcard.js:162-176
 pcRigAt                      src/25g1-album-fx.js:65-68
 pcRigSky                     src/25g1-album-fx.js:70-74
 pcRigUnder                   src/25g1-album-fx.js:76-79
 pcScoop                      src/25g-post-void.js:399-526
 pcShip                       src/25g-post-void.js:23-47
-pcStar                       src/25g-postcard.js:151-154
+pcStar                       src/25g-postcard.js:183-186
 pcStrata                     src/25g-post-under.js:70-101
 pcSystem                     src/25g-post-void.js:231-389
 pcTestPlanet                 tests/90a-tools.js:757-764
@@ -7365,8 +7365,8 @@ poiTone                      src/20a-poi.js:176-180
 postAddrs                    src/11e-post.js:47-71
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113-142
-postCanShoot                 src/25g-postcard.js:651-668
-postCaption                  src/25g-postcard.js:114-124
+postCanShoot                 src/25g-postcard.js:683-700
+postCaption                  src/25g-postcard.js:142-156
 postChoose                   src/25i-post-back.js:48-51
 postDock                     src/11e-post.js:80-97
 postForm                     src/25h-post-forms.js:201
@@ -7374,16 +7374,19 @@ postFormFor                  src/25h-post-forms.js:221-228
 postFormNext                 src/25h-post-forms.js:230-234
 postGlyph                    src/25i-post-back.js:54-61
 postHolding                  src/11e-post.js:107
+postHour                     src/25g-postcard.js:131-135
 postItem                     src/11e-post.js:42
 postLines                    src/25i-post-back.js:73-82
 postLinkHere                 src/11e-post.js:73-76
+postMapName                  src/25g-postcard.js:124-130
+postOnOrbit                  src/25g-postcard.js:137-141
 postOpen                     src/11e-post.js:99-106
 postRead                     src/25i-post-back.js:64-68
 postSetForm                  src/25i-post-back.js:44-47
 postSign                     src/25i-post-back.js:35-41
 postSigned                   src/25i-post-back.js:32
-postSnap                     src/25g-postcard.js:65-108
-postTake                     src/25g-postcard.js:669-683
+postSnap                     src/25g-postcard.js:65-116
+postTake                     src/25g-postcard.js:701-715
 postTerrain                  src/25g-postcard.js:41-47
 postWorld                    src/25g-postcard.js:49-54
 powCoupOn                    src/12b0-fx-pow.js:26-29
@@ -7575,7 +7578,7 @@ radioSweep                   src/10a-radio.js:861-873
 radioTabla                   src/10a-radio.js:740-745
 radioTick                    src/10a-radio.js:287-303
 radioTimp                    src/10a-radio.js:746-754
-radioTune                    src/25e-receiver.js:29-85
+radioTune                    src/25e-receiver.js:29-95
 radioWave                    src/10a-radio.js:850-857
 radioWhere                   src/10a-radio.js:304-308
 raidFloorAt                  src/24a-mode-raid.js:77
@@ -7783,13 +7786,13 @@ relicRoll                    src/12h-relic.js:104-110
 relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113-121
 relicUnequip                 src/12h-relic.js:87
-renderAlbum                  src/25g-postcard.js:697-721
+renderAlbum                  src/25g-postcard.js:729-754
 renderBarge                  src/12l-barge.js:671-766
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-325
 renderBooks                  src/12ub-books.js:157-186
 renderCantina                src/27c-ui-hq.js:68-118
-renderCardBack               src/25i-post-back.js:88-178
+renderCardBack               src/25i-post-back.js:88-182
 renderChess                  src/25n-chess.js:319-366
 renderDeeds                  src/11-log.js:119-149
 renderDeskTop                src/27ia-desk-top.js:343-364
@@ -7797,7 +7800,7 @@ renderDiary                  src/29f-winter.js:221-249
 renderHold                   src/27j-ui-hold.js:252
 renderLog                    src/11-log.js:94-117
 renderLoreBoard              src/27h-ui-lore.js:26-79
-renderMail                   src/25k-post-mail.js:32-105
+renderMail                   src/25k-post-mail.js:32-110
 renderOpts                   src/27-ui-ship.js:21-329
 renderPrices                 src/12aa-need.js:265-292
 renderQsl                    src/11an-qsl.js:147-189
@@ -8492,31 +8495,31 @@ storyAddrMatch               src/11c-stories.js:69-83
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:88-93
 storyById                    src/11c-stories.js:33
-storyCantScene               src/11c-stories.js:329-334
-storyCheckWhen               src/11c-stories.js:218-223
+storyCantScene               src/11c-stories.js:337-342
+storyCheckWhen               src/11c-stories.js:225-230
 storyCtx                     src/11c-stories.js:39-48
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:269-275
-storyFindLine                src/11c-stories.js:297-302
+storyEtherLine               src/11c-stories.js:276-282
+storyFindLine                src/11c-stories.js:304-309
 storyFixedAddr               src/11c-stories.js:55-67
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:381-389
+storyGroundLine              src/11c-stories.js:389-397
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:338-375
-storyNewsItem                src/11c-stories.js:304-321
-storyNote                    src/11c-stories.js:393-396
-storyPickOne                 src/11c-stories.js:260-265
+storyLint                    src/11c-stories.js:346-383
+storyNewsItem                src/11c-stories.js:311-329
+storyNote                    src/11c-stories.js:401-404
+storyPickOne                 src/11c-stories.js:267-272
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:94-107
-storyQueueLine               src/11c-stories.js:277-287
+storyQueueLine               src/11c-stories.js:284-294
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:246-258
-storyTableLine               src/11c-stories.js:289-295
-storyTraces                  src/11c-stories.js:227-244
+storyShow                    src/11c-stories.js:253-265
+storyTableLine               src/11c-stories.js:296-302
+storyTraces                  src/11c-stories.js:234-251
 storyTurns                   src/11c-stories.js:122-143
-storyWhen                    src/11c-stories.js:213-217
+storyWhen                    src/11c-stories.js:220-224
 stripPaint                   src/27i-ui-table.js:370-378
 stripSell                    src/11b-speech.js:231-242
 stripValue                   src/11b-speech.js:193-195
@@ -9334,9 +9337,9 @@ zoomTo                       src/15-input.js:370
 ## src/11b-speech.js · 17 KB
   · речь: очередь реплик и вещь на столе:1
 
-## src/11c-stories.js · 23 KB
+## src/11c-stories.js · 24 KB
   · истории: следы, а не задания:1
-  · каналы:267
+  · каналы:274
 
 ## src/11d-clocks.js · 7 KB
   · часы над концами: сторож темпа (P8, M416):1
@@ -9590,12 +9593,12 @@ zoomTo                       src/15-input.js:370
 
 ## src/12k-stories-a.js · 33 KB
   · истории, часть первая:1
-  · длинные — в духе институтской фантастики:245
+  · длинные — в духе институтской фантастики:246
 
 ## src/12k-stories-b.js · 38 KB
   · истории, часть вторая:1
 
-## src/12k-stories-c.js · 24 KB
+## src/12k-stories-c.js · 23 KB
   · истории, часть третья:1
 
 ## src/12k-stories-d.js · 8 KB
@@ -10601,9 +10604,9 @@ zoomTo                       src/15-input.js:370
   · орбита:223
   · атмосфера газового гиганта:391
 
-## src/25g-postcard.js · 45 KB
+## src/25g-postcard.js · 46 KB
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:632
+  · камера и альбом:664
 
 ## src/25g1-album-fx.js · 14 KB
   · альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3):1
@@ -10614,10 +10617,10 @@ zoomTo                       src/15-input.js:370
 ## src/25h-post-forms2.js · 36 KB
   · бланки открытки: остальные семьдесят:1
 
-## src/25i-post-back.js · 10 KB
+## src/25i-post-back.js · 11 KB
   · оборот карточки:1
 
-## src/25j-post-wire.js · 9 KB
+## src/25j-post-wire.js · 10 KB
   · почта: провод:1
 
 ## src/25k-post-mail.js · 6 KB

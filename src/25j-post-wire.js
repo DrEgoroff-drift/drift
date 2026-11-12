@@ -37,7 +37,8 @@ function mailOn(){
   return typeof location!=="undefined"&&location.protocol.indexOf("http")===0&&
          typeof traceId==="function"&&!!traceId();
 }
-function mailToday(){const d=new Date(now());return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+/* сутки почты — по UTC, как у сервера: местная полночь отпускала четвёртую карточку, провод её не брал */
+function mailToday(){const d=new Date(now());return d.getUTCFullYear()+"-"+(d.getUTCMonth()+1)+"-"+d.getUTCDate();}
 function mailLeft(){
   const M=mailAll(),t=mailToday();
   if(M.day!==t){M.day=t;M.sent=0;}
@@ -57,7 +58,8 @@ function mailWire(s){
      первой же строкой (`!s.v` — «снимок не читается»), и своя отправленная
      карточка ложилась в стопку чёрным прямоугольником. Сервер эту единицу
      всё равно ставит сам, но карточка живёт и до сервера, и после него */
-  return {v:POST_V,m:s.m,sx:s.sx|0,sy:s.sy|0,pi:s.pi==null?-1:s.pi|0,mi:s.mi==null?-1:s.mi|0,
+  /* без буквы места старый снимок — грунт: иначе провод опускает m, и сервер карточку не читает */
+  return {v:POST_V,m:s.m||"s",sx:s.sx|0,sy:s.sy|0,pi:s.pi==null?-1:s.pi|0,mi:s.mi==null?-1:s.mi|0,
     lon:(s.lon==null?null:+s.lon),cx:s.cx|0,t:s.t|0,ver:String(s.ver||VER),
     f:String(s.f||""),c:(s.c||[]).map(x=>x|0),g:(s.g||[]).map(x=>x|0)};
 }
@@ -90,13 +92,21 @@ function mailPush(ch,card,mine){
 function mailSend(s,ch,mv){
   if(!mailOn()||!postSigned(s))return Promise.resolve(false);
   if(mailLeft()<=0){tell("dim","Три карточки в сутки — и хватит","ТРИ КАРТОЧКИ В СУТКИ");return Promise.resolve(false);}
+  /* сервер читает только «s» и «l»; остальные кадры он отвергает молча (error, не reason) */
+  if(s.m&&s.m!=="s"&&s.m!=="l"){
+    logAdd("dim","Почта не берёт этот кадр: только грунт и заход");
+    tell("dim","Почта берёт снимок с грунта и с захода","ПОЧТА\nэтот кадр она не везёт");
+    return Promise.resolve(false);
+  }
   const M=mailAll();
   /* ход в партии (M192) едет ТОЙ ЖЕ посылкой, что и карточка: партия — это
      та же переписка, и заводить ей второй провод незачем */
   return mailCall(ch?"reply":"put",
     {card:mailWire(s),ch:ch||undefined,mv:mv||undefined}).then(j=>{
     if(!j||!j.ok){
-      if(j&&j.reason)logAdd("dim","Почта: "+j.reason);
+      /* fail() сервера кладёт текст в error, не в reason — отказ без строки читался как «ушло» */
+      const why=j&&(j.reason||j.error);
+      if(why)logAdd("dim","Почта: "+why);
       return false;
     }
     M.sent=(M.sent|0)+1;
@@ -128,13 +138,19 @@ function mailDock(){
   mailBusy=now;
   mailCall("in").then(j=>{
     if(j&&j.ok&&j.in&&j.in.length){
+      let n=0;
       for(const r of j.in)if(r&&r.card&&r.ch){
-        mailPush(String(r.ch),r.card,false);
+        const ch=String(r.ch);
+        /* «не принимать» уже сказано: с этого конца ничего не кладём, даже если ящик не успел опустеть */
+        const held=mailAll().st.find(x=>x.ch===ch);
+        if(held&&held.mute)continue;
+        mailPush(ch,r.card,false);
         /* пришёл ход — кладём его в партию этой же цепочки (M192) */
-        if(r.mv&&typeof chessTake==="function")chessTake(String(r.ch),r.mv);
+        if(r.mv&&typeof chessTake==="function")chessTake(ch,r.mv);
+        n++;
       }
       /* одна строка на событие: раньше tell писал вторую (плейтест 02.09) */
-      tell("good","Пришёл ответ на карточку"+(j.in.length>1?" ×"+j.in.length:""),"ПРИШЁЛ ОТВЕТ\nстопка на столе");
+      if(n)tell("good","Пришёл ответ на карточку"+(n>1?" ×"+n:""),"ПРИШЁЛ ОТВЕТ\nстопка на столе");
       if(tableOpenNow)tableRender();
     }
   });

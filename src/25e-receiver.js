@@ -50,18 +50,28 @@ function radioTune(f){
   if(B.k==="rumour"){const L=(typeof rumoursHere==="function")?rumoursHere():[];text=L.length?"…говорят, "+L[Math.floor(r()*L.length)].text:"…тихо";}
   else if(B.k==="price"){
     const st=(typeof nearestStation==="function")?nearestStation(G.sx,G.sy):null;
-    const S=st?getSystem(st.sx,st.sy):(G.sys&&G.sys.station?G.sys:null);
-    if(S&&S.station){const P=marketFor(S);let best=null;for(const k of TRADE_KEYS)if(!best||P[k]>P[best])best=k;text="…"+S.station.name+": "+RES[best].ru.toLowerCase()+" берут по "+P[best]+", топливо "+S.station.fuelPrice+".";
+    /* дальше 24 секторов nearestStation отдаёт 0:0 — там станция есть всегда,
+       и эфир называл бы родной прилавок чужим адресом на карте */
+    const hops=st?Math.max(Math.abs((st.sx|0)-(G.sx|0)),Math.abs((st.sy|0)-(G.sy|0))):99;
+    const S=(st&&hops<=24)?getSystem(st.sx,st.sy):(st?null:(G.sys&&G.sys.station?G.sys:null));
+    if(S&&S.station){const P=marketFor(S);let best=null;for(const k of TRADE_KEYS)if(!best||P[k]>P[best])best=k;text="…"+S.station.name+": "+RES[best].ru.toLowerCase()+" берут по "+P[best]+". Заправка — "+S.station.fuelPrice+" кр/ед.";
       /* услышал — записал (плейтест, пункт 5). Биржа названа вслух, и с этого
          мгновения она есть на бумаге: по ней можно проложить курс, не запоминая
          координат ушами. Только при разборчивом приёме — на краю диапазона
          слова и так выпадают, и записывать шум было бы враньём */
       if(q>.55&&typeof pricesHeard==="function")pricesHeard(S,best,P[best],S.station.fuelPrice);
     }
-    else text="…биржа молчит: станций в радиусе нет";
+    else text="…биржа молчит: в 24 секторах станций нет";
   }else if(B.k==="weather"){
     const ps=((G.sys&&G.sys.planets)||[]).filter(p=>p.type!=="gas");
-    if(ps.length){const p=ps[Math.floor(r()*ps.length)],w=weatherPower(p),wk=weatherOf(p).kind;text="…"+p.name+": "+(wk?(w>.6?"штормит, "+wk:(w>.25?wk+", умеренно":"тихо, "+wk)):"без атмосферы, без погоды")+".";}
+    if(ps.length){
+      const p=ps[Math.floor(r()*ps.length)];
+      /* вид погоды — русское имя, не ключ «dust»; «без атмосферы» только если воздуха нет */
+      const wk=weatherOf(p).kind,wn=(typeof weatherName==="function")?weatherName(p):null;
+      const air=!(p.T&&p.T.atm==="отсутствует");
+      const nm=(typeof postMapName==="function")?postMapName(G.sys,p):p.name;
+      text="…"+nm+": "+(wn?wn+".":(wk?"тихо.":(air?"погоды нет.":"без атмосферы.")));
+    }
     else text="…погоды нет: твёрдых миров в системе нет";
   }else if(B.k==="night"){
     /* ночная почта читается по строке за раз, и ход передачи ведёт 25l */

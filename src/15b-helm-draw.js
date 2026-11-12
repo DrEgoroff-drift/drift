@@ -152,7 +152,7 @@ function helmDryLabel(x,y,a){
   ovText(OVL.uq,x,y-HELM_ARC0-8,"БАК ПУСТ","10px ui-monospace,monospace","rgb(255,178,122)","center","alphabetic",.9*a,1);
 }
 /* стики — на слое #ovl (08bi) каждый кадр, без 2D: лента — четырёхугольник с градиентом, края,
-   шеврон и след — капсулы, «СТОП» — кольцо и дуга, слова — маски атласа. Круглые концы и стыки —
+   шеврон и след — капсулы, «НАКАТ» — кольцо и дуга, слова — маски атласа. Круглые концы и стыки —
    как lineCap/lineJoin round прежнего пути */
 function helmDrawSticks(){
   const dry=helmDry(),Q=OVL.uq;
@@ -186,14 +186,15 @@ function helmDrawSticks(){
       const tx=hx+Math.cos(q.ang)*6,ty=hy+Math.sin(q.ang)*6,A=q.ang-.7,B=q.ang+.7,o=w1*.5+5;
       ovCap3(hx+Math.cos(A)*o,hy+Math.sin(A)*o,tx,ty,hx+Math.cos(B)*o,hy+Math.sin(B)*o,1.8,col,.62*a);
     }else{
-      /* мёртвая зона — «СТОП»: кольцо и слово, и кольцо тает вместе с ходом */
-      ovEll(q.x0,q.y0,HELM_ARC0,HELM_ARC0,1.4,"rgb(255,178,122)",.26*a);
+      /* мёртвая зона — накат, не тормоз: янтарь «СТОП» врал, покоем корабль не встаёт (бой 12.11) */
+      const col="rgb(127,230,216)";
+      ovEll(q.x0,q.y0,HELM_ARC0,HELM_ARC0,1.4,col,.26*a);
       const vk=G.ctl?clamp(G.ctl.vk,0,1):0;
       if(vk>.02){
-        if(vk<1)ovArc(q.x0,q.y0,HELM_ARC0,-Math.PI/2,TAU*vk,1.4,"rgb(255,178,122)",.4*a);
-        else ovEll(q.x0,q.y0,HELM_ARC0,HELM_ARC0,1.4,"rgb(255,178,122)",.4*a);
+        if(vk<1)ovArc(q.x0,q.y0,HELM_ARC0,-Math.PI/2,TAU*vk,1.4,col,.4*a);
+        else ovEll(q.x0,q.y0,HELM_ARC0,HELM_ARC0,1.4,col,.4*a);
       }
-      if(!dry)ovText(Q,q.x0,q.y0-HELM_ARC0-6,"СТОП","9px ui-monospace,monospace","rgb(255,178,122)","center","alphabetic",.5*a,1);
+      if(!dry)ovText(Q,q.x0,q.y0-HELM_ARC0-6,"НАКАТ","9px ui-monospace,monospace",col,"center","alphabetic",.5*a,1);
     }
     /* тот же вектор — у самого корабля (M422): связь «палец → корабль» должна
        быть видна там, куда игрок смотрит, а не только под большим пальцем */

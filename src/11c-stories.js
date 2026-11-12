@@ -185,9 +185,16 @@ const STORY_WHEN={
     return !!(G.mailed&&k&&G.mailed[k])===!!v;},
   /* игрок расписался на камне ЭТОГО места (11ah → G.walled: журнал поступка,
      хранится с сейвом). Ключ места — из якоря истории, не из положения игрока */
+  /* станция прибита к "sx,sy", камень посёлка и устье — к "sx,sy/pi" (11ah).
+     Без этого commission.copied не наступает: подпись пишется не в ключ станции. */
   wall:(v,S,c)=>{
     const k=(storyPins()[S.id])||c.key;
-    return !!(G.walled&&k&&G.walled[k])===!!v;},
+    if(!k||!G.walled)return !v;
+    if(G.walled[k])return !!v;
+    const sys=String(k).split("/")[0];
+    let hit=false;
+    for(const w in G.walled)if(G.walled[w]&&(w===sys||String(w).indexOf(sys+"/")===0)){hit=true;break;}
+    return hit===!!v;},
   /* Жестянку ЭТОГО места игрок хоть раз ставил на смену: T.last пишется
      только полным нарядом из рук игрока (12ta). Координаты — из ключа места,
      по той же причине, что у hand: через news c.sx/c.sy — это игрок */
@@ -304,13 +311,14 @@ function storyFindLine(kind){
 function storyNewsItem(r){
   const L=storyTraces("news",storyCtx());
   if(!L.length||r()>.5){
-    /* слух указывает на звено почтового круга (хвост M133): пока свёрток у
-       вас, треть пустых слухов — о том, кто его ждёт и где */
+    /* слух указывает на звено почтового круга (хвост M133): пока посылка у
+       вас, треть пустых слухов — о том, кто её ждёт и где. «Свёрток» — один
+       из трёх предметов (11e); цепочка и шапка кантины говорят «посылка» / «её». */
     if(typeof postHolding==="function"&&postHolding()&&r()<.35){
       const P=postAll(),A=postAddrs(),k=A[P.stage];
       if(k&&P.stage<POST_LINKS.length){
         const q=k.split(",");
-        return {id:"post",ru:"Говорят, свёрток опять пошёл по рукам. Ждёт его "+POST_LINKS[P.stage].who+".",sx:parseInt(q[0]),sy:parseInt(q[1])};
+        return {id:"post",ru:"Говорят, посылка опять идёт по рукам. Ждёт её "+POST_LINKS[P.stage].who+".",sx:parseInt(q[0]),sy:parseInt(q[1])};
       }
     }
     return null;

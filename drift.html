@@ -20679,9 +20679,16 @@ const STORY_WHEN={
     return !!(G.mailed&&k&&G.mailed[k])===!!v;},
   /* игрок расписался на камне ЭТОГО места (11ah → G.walled: журнал поступка,
      хранится с сейвом). Ключ места — из якоря истории, не из положения игрока */
+  /* станция прибита к "sx,sy", камень посёлка и устье — к "sx,sy/pi" (11ah).
+     Без этого commission.copied не наступает: подпись пишется не в ключ станции. */
   wall:(v,S,c)=>{
     const k=(storyPins()[S.id])||c.key;
-    return !!(G.walled&&k&&G.walled[k])===!!v;},
+    if(!k||!G.walled)return !v;
+    if(G.walled[k])return !!v;
+    const sys=String(k).split("/")[0];
+    let hit=false;
+    for(const w in G.walled)if(G.walled[w]&&(w===sys||String(w).indexOf(sys+"/")===0)){hit=true;break;}
+    return hit===!!v;},
   /* Жестянку ЭТОГО места игрок хоть раз ставил на смену: T.last пишется
      только полным нарядом из рук игрока (12ta). Координаты — из ключа места,
      по той же причине, что у hand: через news c.sx/c.sy — это игрок */
@@ -20798,13 +20805,14 @@ function storyFindLine(kind){
 function storyNewsItem(r){
   const L=storyTraces("news",storyCtx());
   if(!L.length||r()>.5){
-    /* слух указывает на звено почтового круга (хвост M133): пока свёрток у
-       вас, треть пустых слухов — о том, кто его ждёт и где */
+    /* слух указывает на звено почтового круга (хвост M133): пока посылка у
+       вас, треть пустых слухов — о том, кто её ждёт и где. «Свёрток» — один
+       из трёх предметов (11e); цепочка и шапка кантины говорят «посылка» / «её». */
     if(typeof postHolding==="function"&&postHolding()&&r()<.35){
       const P=postAll(),A=postAddrs(),k=A[P.stage];
       if(k&&P.stage<POST_LINKS.length){
         const q=k.split(",");
-        return {id:"post",ru:"Говорят, свёрток опять пошёл по рукам. Ждёт его "+POST_LINKS[P.stage].who+".",sx:parseInt(q[0]),sy:parseInt(q[1])};
+        return {id:"post",ru:"Говорят, посылка опять идёт по рукам. Ждёт её "+POST_LINKS[P.stage].who+".",sx:parseInt(q[0]),sy:parseInt(q[1])};
       }
     }
     return null;
@@ -35826,11 +35834,11 @@ const STORIES=[
    игроку, из чьих рук она пришла. */
 {id:"baker_oven",form:"thing",at:"fixed:7",cast:["baker"],
  traces:[
-  {id:"t1",via:"cant",when:{none:["door","brought"]},scene:{seat:"end",figure:0,props:["bread","bread"]}},
+  {id:"t1",via:"cant",when:{none:["door","brought"],unseenOf:"relay_baker.t1"},scene:{seat:"end",figure:0,props:["bread","bread"]}},
   {id:"t2",via:"queue",text:"— Пекарь? Он не пёк никогда. Прозвище — за то, что встаёт рано. Всё остальное люди выдумали."},
   {id:"t3",via:"queue",when:{visits:2},text:"— Пёк. Ещё как пёк. Потом печь увезли, а он остался. Теперь собирает что попало."},
-  {id:"t4",via:"news",when:{visits:2,none:["door","brought"]},text:"Пекарь ищет дверцу от печи. Обожжённую. Платит как за редкость."},
-  {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3,none:["door","brought"]},text:"— Не то. Я узнаю, когда будет то."},
+  {id:"t4",via:"news",when:{visits:2,none:["door","brought"],unseenOf:"relay_baker.t1"},text:"Пекарь ищет дверцу от печи. Обожжённую. Платит как за редкость."},
+  {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3,none:["door","brought"],unseenOf:"relay_baker.t1"},text:"— Не то. Я узнаю, когда будет то."},
   {id:"t6",via:"cant",when:{any:["door","brought"]},scene:{seat:"end",figure:1,props:[]}},
   {id:"t7",via:"queue",when:{flag:"brought"},text:"— Нашёл. В грузе, что выкладывали ему на стол. Говорит, узнал по ожогу, сразу."}
  ],
@@ -35847,9 +35855,9 @@ const STORIES=[
 /* ── 6. Мадам Крапива не летает ── привычка · дом Крапивы */
 {id:"krapiva_suitcase",form:"habit",at:"fixed:9",cast:["krapiva"],
  traces:[
-  {id:"t1",via:"cant",when:{none:["ship","rode"]},scene:{seat:"door",figure:1,col:[92,70,96],props:["paper"]}},
-  {id:"t2",via:"queue",when:{none:["ship","rode"]},text:"— Это Крапива. Она не летает. Она сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
-  {id:"t3",via:"queue",when:{visits:3,none:["ship","rode"]},text:"— Говорит: я не летаю, я еду. Разницу не объясняет."},
+  {id:"t1",via:"cant",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},scene:{seat:"door",figure:1,col:[92,70,96],props:["paper"]}},
+  {id:"t2",via:"queue",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Это Крапива. Она не летает. Она сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
+  {id:"t3",via:"queue",when:{visits:3,none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Говорит: я не летаю, я еду. Разницу не объясняет."},
   {id:"t4",via:"news",when:{flag:"ship"},text:"Мадам Крапива купила корабль. Целиком, с экипажем. Куда — не сказала."},
   {id:"t5",via:"cant",when:{flag:"ship"},scene:{seat:"door",figure:0,props:["paper"]}},
   /* развилка (M259/M260): она сидит У ДВЕРИ и смотрит на пилотов. Корпус в
@@ -35859,7 +35867,8 @@ const STORIES=[
   {id:"t6",via:"news",when:{flag:"rode"},text:"Мадам Крапива уехала. Баржей, палубной. Говорят, сама подошла и попросилась."},
   {id:"t7",via:"cant",when:{flag:"rode"},scene:{seat:"door",figure:0,props:["paper"]}}
  ],
- turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode"}]},
+ /* эстафета уже видела её в пути — второй отъезд дома не заводится */
+  turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode",when:{unseenOf:"relay_krapiva.t1"}}]},
 
 /* ── 7. Ефимово место ── место · везде, где есть стойка */
 {id:"efim_stool",form:"place",at:"any",cast:["efim"],
@@ -35912,9 +35921,9 @@ const STORIES=[
 /* ── 12. Долгий Ким должен ── деньги · дом Кима */
 {id:"kim_debt",form:"thing",at:"fixed:10",cast:["kim"],
  traces:[
-  {id:"t1",via:"queue",when:{noflag:"paid"},text:"— Ким? Отдаст. Он всегда отдаёт. Долго, но всегда."},
-  {id:"t2",via:"cant",when:{noflag:"paid"},scene:{seat:"far",figure:0,props:["key","paper"]}},
-  {id:"t3",via:"news",when:{visits:2,noflag:"paid"},text:"Вещи Долгого Кима продаются с барахолки. Сам Ким не против. Сам Ким не здесь."},
+  {id:"t1",via:"queue",when:{noflag:"paid",unseenOf:"relay_kim.t1"},text:"— Ким? Отдаст. Он всегда отдаёт. Долго, но всегда."},
+  {id:"t2",via:"cant",when:{noflag:"paid",unseenOf:"relay_kim.t1"},scene:{seat:"far",figure:0,props:["key","paper"]}},
+  {id:"t3",via:"news",when:{visits:2,noflag:"paid",unseenOf:"relay_kim.t1"},text:"Вещи Долгого Кима продаются с барахолки. Сам Ким не против. Сам Ким не здесь."},
   {id:"t4",via:"queue",when:{flag:"paid"},text:"— Отдал. Говорил же. Ключ только не забрал."},
   {id:"t5",via:"cant",when:{flag:"paid"},scene:{seat:"far",figure:0,props:["key"]}}
  ],
@@ -35962,7 +35971,7 @@ const STORIES=[
  traces:[
   {id:"t1",via:"cant",when:{late:true},scene:{seat:"corner",figure:1,col:[86,92,70],props:["glass_empty","paper"]}},
   {id:"t2",via:"queue",when:{late:true},text:"— Совеня ночью покупает. Днём спит. Редкости любят ночь, говорит. Не знаю, что любят редкости."},
-  {id:"t3",via:"queue",when:{late:false},text:"— Совеня? Спит. Приходите ночью, если хотите с ней говорить. Он не захочет."},
+  {id:"t3",via:"queue",when:{late:false},text:"— Совеня? Спит. Приходите ночью, если хотите с ней говорить. Она не захочет."},
   {id:"t4",via:"news",text:"Совеня приобрела нечто и не спит третьи сутки. Связь между этим не установлена."}
  ]},
 
@@ -36002,7 +36011,7 @@ const STORIES=[
   {id:"t1",via:"queue",when:{noflag:"gone"},text:"— В углу? Это Гедеван. Кабину собирает. Для переноса. Куда — туда, говорит, где нас нет. Не мешайте, он после смены."},
   {id:"t2",via:"cant",when:{noflag:"gone"},scene:{seat:"corner",figure:1,col:[96,84,70],props:["key","jar"]}},
   {id:"t3",via:"find",when:{item:"cont"},text:"Контейнер. Прибор без маркировки, три лампы, рукописная бирка: «НТ-3, не трясти». Кому-то это нужно."},
-  {id:"t4",via:"table",item:"cargo",when:{item:"cargo",noflag:"gone"},text:"— Это он возьмёт. Он всё берёт. Вы не думайте, он отдаёт потом. Говорит, отдам оттуда."},
+  {id:"t4",via:"table",item:"cargo",when:{item:"cargo",noflag:"gone"},text:"— Это? Он смотрит. Всё разбирает. Отдаёт, говорит, оттуда."},
   {id:"t5",via:"queue",when:{visits:3,noflag:"gone"},text:"— Спросили его: а вернуться? Он говорит: а зачем. Вот и весь разговор, мы больше не спрашивали."},
   {id:"t6",via:"news",when:{flag:"gone"},text:"На верфи ночью был свет. Утром угол пуст, кабины нет, Гедевана нет. Сварка в углу тёплая."},
   {id:"t7",via:"cant",when:{flag:"gone"},scene:{seat:"corner",figure:0,props:["key"]}}
@@ -36040,7 +36049,7 @@ const STORIES=[
   {id:"t4",via:"news",when:{any:["left","copied"]},text:"Комиссия, направленная на комбинат, к месту назначения не прибыла. Комбинат отвечает, что комиссия была и уехала."},
   {id:"t5",via:"cant",when:{any:["left","copied"]},scene:{seat:"far",figure:0,props:["paper"]}},
   {id:"t6",via:"queue",when:{flag:"left"},text:"— Уехали. Бумагу оставили. В бумаге — ничего, одни линии. Ровные такие. Мы её не выбрасываем."},
-  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне у стойки. Мы её точно не выбрасываем."}
+  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне внизу. Мы её точно не выбрасываем."}
  ],
  turns:[{after:"seen:t1",days:7,set:"left",unless:{wall:true},else:"copied"}]},
 
@@ -36111,26 +36120,28 @@ const STORIES_B=[
 
 /* ══ земля ══ */
 
-/* ── 27. Кто кормит Жестянку ── зверь · мир с машиной и посёлком */
+/* ── 27. Кто кормит Жестянку ── зверь · мир с машиной.
+   Посёлок здесь не встаёт: tinCanLive и settleCanLive не делят типы (12ta, 12t).
+   Хвосты — у бункера, не у деревни: иначе след не звучит никогда. */
 /* Развилка С1 (не показывается): носивший перестаёт через 22 дня — но если
    игрок сам хоть раз ставил машину на смену (tinfed, 12ta: T.last пишется
    только полным нарядом из рук), дорожка не зарастает: машина работает, к
    работающей ходят. Связь живёт в голове игрока или нигде. */
 {id:"tin_feeders",form:"beast",at:"tin",cast:["tinkeeper"],
  traces:[
-  {id:"t1",via:"land",text:"От посёлка к машине натоптана дорожка. Не ваша."},
+  {id:"t1",via:"land",text:"К бункеру натоптана дорожка. Не ваша."},
   {id:"t2",via:"tin",when:{none:["stalled","kept"]},text:"у бункера кучка, свежая. Кто-то носит сюда. Не вы."},
-  {id:"t3",via:"settle",when:{none:["stalled","kept"]},text:"в сторону машины они показывают так же, как на еду"},
+  {id:"t3",via:"tin",when:{none:["stalled","kept"]},text:"дорожку топчут не с вашей стороны. Кучка от этого свежая."},
   {id:"t4",via:"tin",when:{flag:"stalled"},text:"кучек больше нет. Дорожка зарастает."},
-  {id:"t5",via:"settle",when:{flag:"stalled"},text:"в сторону машины больше не показывают"},
-  {id:"t6",via:"tin",when:{flag:"kept"},text:"кучек нет, а дорожка не зарастает: машина ходит — к ней ходят."},
-  {id:"t7",via:"settle",when:{flag:"kept"},text:"в сторону машины показывают, как показывают на очаг"}
+  {id:"t5",via:"tin",when:{flag:"stalled"},text:"с той стороны тоже тихо. Дорожку не топчут."},
+  {id:"t6",via:"tin",when:{flag:"kept"},text:"кучек нет, а дорожка не зарастает: Жестянка ходит — к ней ходят."},
+  {id:"t7",via:"tin",when:{flag:"kept"},text:"с той стороны ходят. К работающей — ходят."}
  ],
  turns:[{after:"seen:t2",days:22,set:"stalled",unless:{tinfed:true},else:"kept"}]},
 
 /* ── 28. Косяк ── зверь · океанический мир */
 /* Развилка С1 (не показывается): охотник платит за точное время — а слепок
-   сцены с временем это и есть открытка (strip). Снял этот берег — время
+   сцены с временем это и есть открытка (card, 25j). Снял этот берег — время
    ушло к охотнику, стаю выбили; не снимал — он уехал ни с чем. Игроку
    никто никогда этого не скажет. */
 {id:"shoal",form:"beast",at:"world:ocean",cast:["hunter"],
@@ -36143,7 +36154,7 @@ const STORIES_B=[
   {id:"t6",via:"land",when:{flag:"missed"},text:"Стая идёт, как шла. Охотник уехал: точного времени ему никто не назвал."},
   {id:"t7",via:"settle",when:{flag:"missed"},text:"на берег показывают и ждут, как ждали"}
  ],
- turns:[{after:"seen:t3",days:12,set:"missed",unless:{strip:"here"},else:"hunted"}]},
+ turns:[{after:"seen:t3",days:12,set:"missed",unless:{card:true},else:"hunted"}]},
 
 /* ── 29. Ракушка ── вещь · барахолка, потом океанический мир */
 {id:"shell",form:"thing",at:"world:ocean",cast:["shellman"],
@@ -36174,7 +36185,8 @@ const STORIES_B=[
  traces:[
   {id:"t1",via:"land",text:"Один камень у площадки тёплый. Остальные — как все."},
   {id:"t2",via:"land",when:{visits:3},text:"Камень тёплый. Кто-то его выложил кругом мелкими. Не вы."},
-  {id:"t3",via:"settle",text:"на тёплый камень они показывают так же, как на небо"}
+  /* volcanic не в SETTLE_ON: посёлок здесь не встаёт, след — у камня */
+   {id:"t3",via:"land",when:{seen:"t1"},text:"Круг мелких вокруг тёплого камня смотрит вверх. Как знак на небо, только из камня."}
  ]},
 
 /* ── 33. Сад в кратере ── после · пустынный мир */
@@ -36552,8 +36564,8 @@ const STORIES_C=[
 /* ── 73. Птица принесла позывной ── переносчик · из «Второго стакана» */
 {id:"carried_callsign",form:"pair",at:"stype:trade",cast:["zero7"],
  traces:[
-  {id:"t1",via:"queue",when:{parrot:true,seenOf:"second_glass.t1"},text:"— Ваша птица сказала «Ноль-семь». Где вы это слышали? …Понятно. Не говорите ей больше ничего."},
-  {id:"t2",via:"queue",when:{parrot:true,seenOf:"second_glass.t5"},text:"— «Дождался». Это птица сказала. Она не знает, что это значит. Вы, кажется, знаете."}
+  {id:"t1",via:"queue",when:{parrot:true,seenOf:"second_glass.t1"},text:"— Ноль-семь. Вы это уже слышали. Птице не повторяйте: она запоминает."},
+  {id:"t2",via:"queue",when:{parrot:true,seenOf:"second_glass.t5"},text:"— «Дождался, наверное». Это вы слышали, не птица. Она так не скажет."}
  ],
  links:["second_glass"]},
 
@@ -51056,8 +51068,8 @@ function start(easy){
    свободна для тычков — захват, автопилот, фишки, пэды. И говорит стик не
    «жми туда», а «ЛЕТИ туда»: его вектор — желаемая скорость в осях экрана
    (направление и доля крейсерской), а тягу, чтобы к ней прийти, физика
-   (`helmApply`) считает в осях экрана полной маршевой, не по носу (бой 12.11), а не как у
-   мыши. Палец в мёртвой зоне — накат, не «стой»: тормоз — пэд ТОРМОЗ, он в ряду
+   (`helmApply`) считает в осях экрана полной маршевой, не по носу (бой 12.11).
+   Палец в мёртвой зоне — накат, не «стой»: тормоз — пэд ТОРМОЗ, он в ряду
    пэдов системы остаётся, как и ОГОНЬ. Нос стик не задаёт: с меткой он идёт за меткой (D07 без
    оговорки о руке на курсе — руки на курсе больше не бывает), без метки —
    туда, куда летим. Мышь и стрелки не тронуты: помощь включается только от
@@ -51121,8 +51133,8 @@ const HELM_NUDGE=0;          /* px увода корабля от пальца. 
                                 13.09: «экран уезжает и корабль из-под пальца уезжает. Вот это
                                 не надо» (P8, правило 4) — корабль стоит под пальцем */
 const HELM_NUDGE_R=120;      /* ближе этого палец считается «поверх корабля» */
-const HELM_DEAD=22;          /* мёртвая зона стика, px. Было 12 ≈ 2 мм на S23, и «палец лёг и
-                                стоит = стой» сработал на 15 кадрах из 3 177: большой палец
+const HELM_DEAD=22;          /* мёртвая зона стика, px: покой здесь — накат, не тормоз (бой 12.11). «Палец лёг и
+                                стоит = газ» не должен срабатывать от дрожи: большой палец
                                 уплывает дальше (P8, плейтест 13.09 §2.2). 22 ≈ 3.7 мм */
 const HELM_REACH=70;         /* px хода стика до полной тяги */
 const HELM_EDGE_BAND=240;    /* за сколько до кромки стик наружу уже ведёт вдоль неё */
@@ -51134,7 +51146,7 @@ const HELM_MARKS=3;
 /* след стика (M360a): дуга под пальцем вместо кольца в 82 px. Радиус дуги —
    это сила тяги, её угол — направление; весь рисунок умещается в HELM_FOOT от
    точки касания, и это число читают и вёрстка, и тесты. */
-const HELM_ARC0=20;          /* радиус кольца «СТОП» в мёртвой зоне, px */
+const HELM_ARC0=20;          /* радиус кольца «НАКАТ» в мёртвой зоне, px */
 /* след стика — не круг, а капсула от центра к пальцу (M422): `helmStickFoot`
    выкладывает вдоль ленты кружки этого радиуса, и приборы уходят из-под них.
    Кольцо в 93 px, на которое жаловался автор в M360, так не возвращается. */
@@ -51275,7 +51287,7 @@ cvs.addEventListener("pointerdown",e=>{
     return;
   }
   /* палец: стик один и рождается ГДЕ УГОДНО на холсте (M422). Пока он не
-     сдвинулся и не пролежал своё, это ещё тычок — захват, автопилот, фишки;
+     сдвинулся на HELM_TAKE, это ещё тычок — захват, автопилот, фишки; покой стиком не становится (бой 12.11);
      второй палец при живом стике тоже тычок, а при ждущем — щипок, и тогда
      ждущий снимается, иначе зум на телефоне достался бы одному стику */
   const xy=helmCanvasXY(e);
@@ -51438,7 +51450,7 @@ function helmTick(dt){
   /* 1. стик (M410): один, под левым пальцем. Его вектор — КУДА лететь и
      НАСКОЛЬКО быстро, в осях экрана; тягу до этой скорости подбирает
      helmApply. Курс он не держит: нос идёт за меткой, если она есть, иначе —
-     по ходу. Палец в мёртвой зоне — «стой»: тормоз без кнопки тормоза */
+     по ходу. Палец в мёртвой зоне — накат, не тормоз (бой 12.11) */
   if(HELM.S){
     helmDrag(HELM.S);
     const dx=HELM.S.x-HELM.S.x0,dy=HELM.S.y-HELM.S.y0,m=Math.hypot(dx,dy);
@@ -51523,8 +51535,8 @@ function helmApply(dt,st,sh,maxSp){
   /* ── помощь (M410) ──
      Стик задаёт скорость, а не тягу: считаем, какой скорости не хватает до
      заданной, и даём тягу ровно в ту сторону — полную, пока разница больше
-     трети крейсерской, и никакой, когда скорость набрана. Разложение по носу
-     ниже общее с мышью и стрелками: вдоль носа маршевый, вбок маневровые.
+     трети крейсерской, и никакой, когда скорость набрана. Стик бьёт этой тягой в осях экрана, полной маршевой (бой 12.11).
+     Разложение по носу — только у клавиш, не у стика.
      Пока стик в руке, ход ДЕРЖИТСЯ (`o.hold`): ни тормоза по отпусканию, ни
      довода вектора к носу (17-mode-system) — иначе с меткой в стороне нос
      тянул бы скорость к себе, а помощь возвращала бы её обратно, и корабль
@@ -51544,7 +51556,7 @@ function helmApply(dt,st,sh,maxSp){
       c.tx=ex*k;c.ty=ey*k;
     }else{c.tx=0;c.ty=0;}
   }
-  /* тяга: вдоль носа — маршевый, остальное — маневровые */
+  /* тяга клавиш: вдоль носа — маршевый, остальное — маневровые; стик — ниже, в осях экрана */
   const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
   const along=c.tx*ca+c.ty*sa,side=-c.tx*sa+c.ty*ca;
   o.main=false;o.thr=false;
@@ -51559,7 +51571,7 @@ function helmApply(dt,st,sh,maxSp){
      он зависел: против носа тяга шла маневровыми в .4, и «потянул назад»
      тормозило вчетверо дольше (4.1 с), чем «убрал палец в мёртвую зону»
      (2.3 с) — наказание за единственную верную догадку про телефон. Теперь
-     торможение идёт одной дорогой с мёртвой зоной и с кнопкой ТОРМОЗ, ходом
+     торможение идёт одной дорогой с кнопкой ТОРМОЗ, не с мёртвой зоной (там накат, бой 12.11), ходом
      HELM_STOP: полная остановка за 1.4 с при разгоне 1.6 с. Скорость падает до
      нуля, `slow` снимается сам (стоящий корабль не идёт «против»), и помощь
      разгоняет уже в новую сторону. */
@@ -51598,7 +51610,7 @@ function helmApply(dt,st,sh,maxSp){
      Отпустил — накат, у любого ввода. Правило .55 «ниже крейсерской тормозит
      само» ушло вслед за стиком (M422): один жест с двумя исходами по порогу
      скорости читался как «корабль иногда тормозит сам». Тормоз — это жест:
-     S, ТОРМОЗ, палец назад или в мёртвой зоне, и у всех он ходом HELM_STOP,
+     S, ТОРМОЗ или палец назад — не покой в мёртвой зоне (бой 12.11), — и у всех он ходом HELM_STOP,
      мимо носа и без оглядки на энергию. Игрок учит один корабль. */
   const sp0=Math.hypot(sh.vx,sh.vy);
   if((c.brake||o.slow)&&G.fuel>0){
@@ -110328,18 +110340,28 @@ function radioTune(f){
   if(B.k==="rumour"){const L=(typeof rumoursHere==="function")?rumoursHere():[];text=L.length?"…говорят, "+L[Math.floor(r()*L.length)].text:"…тихо";}
   else if(B.k==="price"){
     const st=(typeof nearestStation==="function")?nearestStation(G.sx,G.sy):null;
-    const S=st?getSystem(st.sx,st.sy):(G.sys&&G.sys.station?G.sys:null);
-    if(S&&S.station){const P=marketFor(S);let best=null;for(const k of TRADE_KEYS)if(!best||P[k]>P[best])best=k;text="…"+S.station.name+": "+RES[best].ru.toLowerCase()+" берут по "+P[best]+", топливо "+S.station.fuelPrice+".";
+    /* дальше 24 секторов nearestStation отдаёт 0:0 — там станция есть всегда,
+       и эфир называл бы родной прилавок чужим адресом на карте */
+    const hops=st?Math.max(Math.abs((st.sx|0)-(G.sx|0)),Math.abs((st.sy|0)-(G.sy|0))):99;
+    const S=(st&&hops<=24)?getSystem(st.sx,st.sy):(st?null:(G.sys&&G.sys.station?G.sys:null));
+    if(S&&S.station){const P=marketFor(S);let best=null;for(const k of TRADE_KEYS)if(!best||P[k]>P[best])best=k;text="…"+S.station.name+": "+RES[best].ru.toLowerCase()+" берут по "+P[best]+". Заправка — "+S.station.fuelPrice+" кр/ед.";
       /* услышал — записал (плейтест, пункт 5). Биржа названа вслух, и с этого
          мгновения она есть на бумаге: по ней можно проложить курс, не запоминая
          координат ушами. Только при разборчивом приёме — на краю диапазона
          слова и так выпадают, и записывать шум было бы враньём */
       if(q>.55&&typeof pricesHeard==="function")pricesHeard(S,best,P[best],S.station.fuelPrice);
     }
-    else text="…биржа молчит: станций в радиусе нет";
+    else text="…биржа молчит: в 24 секторах станций нет";
   }else if(B.k==="weather"){
     const ps=((G.sys&&G.sys.planets)||[]).filter(p=>p.type!=="gas");
-    if(ps.length){const p=ps[Math.floor(r()*ps.length)],w=weatherPower(p),wk=weatherOf(p).kind;text="…"+p.name+": "+(wk?(w>.6?"штормит, "+wk:(w>.25?wk+", умеренно":"тихо, "+wk)):"без атмосферы, без погоды")+".";}
+    if(ps.length){
+      const p=ps[Math.floor(r()*ps.length)];
+      /* вид погоды — русское имя, не ключ «dust»; «без атмосферы» только если воздуха нет */
+      const wk=weatherOf(p).kind,wn=(typeof weatherName==="function")?weatherName(p):null;
+      const air=!(p.T&&p.T.atm==="отсутствует");
+      const nm=(typeof postMapName==="function")?postMapName(G.sys,p):p.name;
+      text="…"+nm+": "+(wn?wn+".":(wk?"тихо.":(air?"погоды нет.":"без атмосферы.")));
+    }
     else text="…погоды нет: твёрдых миров в системе нет";
   }else if(B.k==="night"){
     /* ночная почта читается по строке за раз, и ход передачи ведёт 25l */
@@ -111593,10 +111615,18 @@ function postSnap(){
       const d=Math.hypot((q.x||0)-sh.x,(q.y||0)-sh.y);
       if(d<bd){bd=d;best=q;}
     }
+    /* луна ближе планеты-хозяйки: иначе подпись сажает кадр на чужое тело */
+    for(const q of (sys.planets||[]))for(const moon of (q.moons||[])){
+      const d=Math.hypot((moon.x||0)-sh.x,(moon.y||0)-sh.y);
+      if(d<bd){bd=d;best=moon;}
+    }
     if(!best)return null;
+    /* у тела есть radius, не r: прежний делитель всегда был 1, и любой кадр
+       системы уезжал «на 100 радиусов» — подпись врала «на орбите» */
+    const R=best.radius||best.r||1;
     return Object.assign(B,{m:"y"},idx(best),
       {cx:Math.round(Math.atan2(sh.y-(best.y||0),sh.x-(best.x||0))*180/Math.PI),
-       cy:Math.round(Math.min(999,bd/Math.max(1,best.r||1)*10)),lon:null});
+       cy:Math.round(Math.min(999,bd/Math.max(1,R)*10)),lon:null});
   }
   const surf=G.surf&&G.surf.p?G.surf:null, land=!surf&&G.land&&G.land.p?G.land:null;
   const st=surf||land;
@@ -111608,17 +111638,41 @@ function postSnap(){
    Место — это не только имя планеты: снимок из шахты и снимок с гребня над
    ней приходят с одним именем и разными кадрами, и подпись обязана их
    различать, иначе альбом из восьми мест читается как восемь видов одного */
-const POST_WHERE={c:"пещера",d:"шахта",b:"пояс",g:"атмосфера",y:"на орбите"};
+const POST_WHERE={c:"пещера",d:"шахта",b:"пояс",g:"атмосфера",s:"грунт",l:"заход"};
+/* карта зовёт сектор именем игрока; подпись карточки — тем же, иначе альбом
+   и карта спорят об одном месте. Римская цифра планеты остаётся. */
+function postMapName(sys,p){
+  const map=(sys&&typeof nameOf==="function")?nameOf(sys):(sys&&sys.name)||"";
+  if(!p)return map;
+  const raw=p.name||"";
+  if(map&&sys&&sys.name&&raw.indexOf(sys.name)===0)return map+raw.slice(sys.name.length);
+  return raw||map;
+}
+function postHour(p,t){
+  const sun=celSun(p,t);
+  return sun.alt>.45?"полдень":(sun.alt>.08?"день":
+    (sun.alt>-.08?(sun.az>0?"закат":"рассвет"):(sun.alt>-.5?"сумерки":"ночь")));
+}
+/* «ближе 250» — та же орбита, что у кадра системы, не любой перелёт */
+function postOnOrbit(s,p){
+  if(!p)return false;
+  const R=p.radius||p.r||1,far=Math.max(0,(s.cy|0)/10);
+  return (far-1)*R<250;
+}
 function postCaption(s){
   const W0=postWorld(s);
+  if(!W0.sys)return "";
+  /* пояс — у системы, не у первой планеты; часа в вакууме кадр не показывает */
+  if(s.m==="b"){
+    const nm=postMapName(W0.sys,null);
+    return (nm?nm+" · ":"")+(POST_WHERE.b||"пояс");
+  }
   if(!W0.p)return "";
-  const sun=celSun(W0.p,s.t);
-  const hour=sun.alt>.45?"полдень":(sun.alt>.08?"день":
-    (sun.alt>-.08?(sun.az>0?"закат":"рассвет"):(sun.alt>-.5?"сумерки":"ночь")));
-  const wh=POST_WHERE[s.m];
+  const nm=postMapName(W0.sys,W0.p);
   /* под землёй часа не видно, и врать про полдень нельзя */
-  if(s.m==="c"||s.m==="d")return W0.p.name+" · "+wh;
-  return W0.p.name+" · "+(wh?wh+", ":"")+hour;
+  if(s.m==="c"||s.m==="d")return nm+" · "+(POST_WHERE[s.m]||"");
+  const wh=s.m==="y"?(postOnOrbit(s,W0.p)?"на орбите":"в системе"):(POST_WHERE[s.m]||"");
+  return nm+" · "+(wh?wh+", ":"")+postHour(W0.p,s.t);
 }
 /* ── печать ──
    Виньетка и зерно — ровно столько, чтобы кадр читался напечатанным, а не
@@ -112196,7 +112250,8 @@ function renderAlbum(box){
   const A=albumAll();
   box.innerHTML="";
   if(!A.length){
-    tableRow(box,"dim","","альбом пуст: кнопка ФОТО на пульте — на грунте, на заходе, в пещере, шахте, поясе, атмосфере и в системе");
+    /* ФОТО с M826 живёт в меню, не на пульте: пустой альбом не шлёт искать кнопку там, где её нет */
+    tableRow(box,"dim","","альбом пуст: кнопка ФОТО в меню — на грунте, на заходе, в пещере, шахте, поясе, атмосфере и в системе");
     return;
   }
   const wrap=document.createElement("div");
@@ -113234,7 +113289,11 @@ function renderCardBack(host,s,onChange,ro){
      вся затея, — и объясняет её как часть мира, а не как справку интерфейса. */
   const ad=el("div","addr");
   ad.appendChild(el("i","box",""));
-  ad.appendChild(el("s",null,"адресат не указывается · карточка идёт в общую почту"));
+  /* провод берёт только грунт и заход: обещать общую почту кадру из шахты — врать */
+  const travels=!s.m||s.m==="s"||s.m==="l";
+  ad.appendChild(el("s",null,travels
+    ?"адресат не указывается · карточка идёт в общую почту"
+    :"почта этот кадр не везёт · только грунт и заход"));
   back.appendChild(ad);
 
   /* штамп: место и час, никогда — имя */
@@ -113285,7 +113344,8 @@ function mailOn(){
   return typeof location!=="undefined"&&location.protocol.indexOf("http")===0&&
          typeof traceId==="function"&&!!traceId();
 }
-function mailToday(){const d=new Date(now());return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+/* сутки почты — по UTC, как у сервера: местная полночь отпускала четвёртую карточку, провод её не брал */
+function mailToday(){const d=new Date(now());return d.getUTCFullYear()+"-"+(d.getUTCMonth()+1)+"-"+d.getUTCDate();}
 function mailLeft(){
   const M=mailAll(),t=mailToday();
   if(M.day!==t){M.day=t;M.sent=0;}
@@ -113305,7 +113365,8 @@ function mailWire(s){
      первой же строкой (`!s.v` — «снимок не читается»), и своя отправленная
      карточка ложилась в стопку чёрным прямоугольником. Сервер эту единицу
      всё равно ставит сам, но карточка живёт и до сервера, и после него */
-  return {v:POST_V,m:s.m,sx:s.sx|0,sy:s.sy|0,pi:s.pi==null?-1:s.pi|0,mi:s.mi==null?-1:s.mi|0,
+  /* без буквы места старый снимок — грунт: иначе провод опускает m, и сервер карточку не читает */
+  return {v:POST_V,m:s.m||"s",sx:s.sx|0,sy:s.sy|0,pi:s.pi==null?-1:s.pi|0,mi:s.mi==null?-1:s.mi|0,
     lon:(s.lon==null?null:+s.lon),cx:s.cx|0,t:s.t|0,ver:String(s.ver||VER),
     f:String(s.f||""),c:(s.c||[]).map(x=>x|0),g:(s.g||[]).map(x=>x|0)};
 }
@@ -113338,13 +113399,21 @@ function mailPush(ch,card,mine){
 function mailSend(s,ch,mv){
   if(!mailOn()||!postSigned(s))return Promise.resolve(false);
   if(mailLeft()<=0){tell("dim","Три карточки в сутки — и хватит","ТРИ КАРТОЧКИ В СУТКИ");return Promise.resolve(false);}
+  /* сервер читает только «s» и «l»; остальные кадры он отвергает молча (error, не reason) */
+  if(s.m&&s.m!=="s"&&s.m!=="l"){
+    logAdd("dim","Почта не берёт этот кадр: только грунт и заход");
+    tell("dim","Почта берёт снимок с грунта и с захода","ПОЧТА\nэтот кадр она не везёт");
+    return Promise.resolve(false);
+  }
   const M=mailAll();
   /* ход в партии (M192) едет ТОЙ ЖЕ посылкой, что и карточка: партия — это
      та же переписка, и заводить ей второй провод незачем */
   return mailCall(ch?"reply":"put",
     {card:mailWire(s),ch:ch||undefined,mv:mv||undefined}).then(j=>{
     if(!j||!j.ok){
-      if(j&&j.reason)logAdd("dim","Почта: "+j.reason);
+      /* fail() сервера кладёт текст в error, не в reason — отказ без строки читался как «ушло» */
+      const why=j&&(j.reason||j.error);
+      if(why)logAdd("dim","Почта: "+why);
       return false;
     }
     M.sent=(M.sent|0)+1;
@@ -113376,13 +113445,19 @@ function mailDock(){
   mailBusy=now;
   mailCall("in").then(j=>{
     if(j&&j.ok&&j.in&&j.in.length){
+      let n=0;
       for(const r of j.in)if(r&&r.card&&r.ch){
-        mailPush(String(r.ch),r.card,false);
+        const ch=String(r.ch);
+        /* «не принимать» уже сказано: с этого конца ничего не кладём, даже если ящик не успел опустеть */
+        const held=mailAll().st.find(x=>x.ch===ch);
+        if(held&&held.mute)continue;
+        mailPush(ch,r.card,false);
         /* пришёл ход — кладём его в партию этой же цепочки (M192) */
-        if(r.mv&&typeof chessTake==="function")chessTake(String(r.ch),r.mv);
+        if(r.mv&&typeof chessTake==="function")chessTake(ch,r.mv);
+        n++;
       }
       /* одна строка на событие: раньше tell писал вторую (плейтест 02.09) */
-      tell("good","Пришёл ответ на карточку"+(j.in.length>1?" ×"+j.in.length:""),"ПРИШЁЛ ОТВЕТ\nстопка на столе");
+      if(n)tell("good","Пришёл ответ на карточку"+(n>1?" ×"+n:""),"ПРИШЁЛ ОТВЕТ\nстопка на столе");
       if(tableOpenNow)tableRender();
     }
   });
@@ -113439,8 +113514,9 @@ function renderMail(box){
     return;
   }
   if(!M.st.length){
-    tableRow(box,"dim","","почта пуста: подпишите снимок в альбоме и отправьте — карточку поймает кто-нибудь");
-    tableRow(box,"dim","","чужие карточки и ответы приходят при стыковке, по одной за раз");
+    tableRow(box,"dim","","почта пуста: подпишите снимок с грунта или с захода и отправьте — карточку поймает кто-нибудь");
+    /* чужие ловятся в ночном эфире, не к заправке; ответы приходят пачкой, не по одной */
+    tableRow(box,"dim","","ответы приходят при стыковке, все сразу. чужие карточки ловят в ночном эфире, не у причала");
     return;
   }
   const wrap=document.createElement("div");wrap.className="album mail";
@@ -113487,12 +113563,16 @@ function renderMail(box){
       pack.appendChild(acts);
 
       if(mailPick===i){
-        const mine=albumAll().filter(a=>postSigned(a));
+        const signed=albumAll().filter(a=>postSigned(a));
+        /* провод не везёт шахту, пояс и орбиту — не предлагать их как ответ */
+        const mine=signed.filter(a=>!a.m||a.m==="s"||a.m==="l");
         const pick=document.createElement("div");pick.className="row pick";
         if(!mine.length){
           const n=document.createElement("s");
           n.className="none";
-          n.textContent="в альбоме нет подписанной карточки: закладка АЛЬБОМ, развернуть снимок, ПОДПИСАТЬ";
+          n.textContent=signed.length
+            ?"почта берёт только снимок с грунта и с захода"
+            :"в альбоме нет подписанной карточки: закладка АЛЬБОМ, развернуть снимок, ПОДПИСАТЬ";
           pick.appendChild(n);
         }else for(const a of mine)
           mailCard(pick,a,150,false,()=>{mailSend(a,st.ch);mailPick=-1;});
@@ -113576,6 +113656,8 @@ function ethTick(q){
     if(now-ethAsk<12000)return "…";
     ethAsk=now;
     mailCall("ask").then(j=>{
+      /* «на сегодня хватит» сервер отдаёт без карточки: иначе эфир вечно крутит «…» */
+      if(j&&j.ok&&!j.card&&j.reason){const M=mailAll();M.caught=ETH_CATCH;return;}
       if(!j||!j.ok||!j.card||!j.ch)return;
       ethCard={ch:String(j.ch),card:j.card,mv:j.mv||null,lines:postLines(j.card)};
       ethLine=0;ethHold=0;

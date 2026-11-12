@@ -39,8 +39,9 @@ function renderMail(box){
     return;
   }
   if(!M.st.length){
-    tableRow(box,"dim","","почта пуста: подпишите снимок в альбоме и отправьте — карточку поймает кто-нибудь");
-    tableRow(box,"dim","","чужие карточки и ответы приходят при стыковке, по одной за раз");
+    tableRow(box,"dim","","почта пуста: подпишите снимок с грунта или с захода и отправьте — карточку поймает кто-нибудь");
+    /* чужие ловятся в ночном эфире, не к заправке; ответы приходят пачкой, не по одной */
+    tableRow(box,"dim","","ответы приходят при стыковке, все сразу. чужие карточки ловят в ночном эфире, не у причала");
     return;
   }
   const wrap=document.createElement("div");wrap.className="album mail";
@@ -87,12 +88,16 @@ function renderMail(box){
       pack.appendChild(acts);
 
       if(mailPick===i){
-        const mine=albumAll().filter(a=>postSigned(a));
+        const signed=albumAll().filter(a=>postSigned(a));
+        /* провод не везёт шахту, пояс и орбиту — не предлагать их как ответ */
+        const mine=signed.filter(a=>!a.m||a.m==="s"||a.m==="l");
         const pick=document.createElement("div");pick.className="row pick";
         if(!mine.length){
           const n=document.createElement("s");
           n.className="none";
-          n.textContent="в альбоме нет подписанной карточки: закладка АЛЬБОМ, развернуть снимок, ПОДПИСАТЬ";
+          n.textContent=signed.length
+            ?"почта берёт только снимок с грунта и с захода"
+            :"в альбоме нет подписанной карточки: закладка АЛЬБОМ, развернуть снимок, ПОДПИСАТЬ";
           pick.appendChild(n);
         }else for(const a of mine)
           mailCard(pick,a,150,false,()=>{mailSend(a,st.ch);mailPick=-1;});
