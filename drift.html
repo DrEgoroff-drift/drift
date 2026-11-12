@@ -3439,7 +3439,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.108";
+const VER="0.499.109";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -35883,8 +35883,8 @@ const STORIES=[
 {id:"krapiva_suitcase",form:"habit",at:"fixed:9",cast:["krapiva"],
  traces:[
   {id:"t1",via:"cant",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},scene:{seat:"door",figure:1,col:[92,70,96],props:["paper"]}},
-  {id:"t2",via:"queue",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Это Крапива. Она не летает. Она сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
-  {id:"t3",via:"queue",when:{visits:3,none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Говорит: я не летаю, я еду. Разницу не объясняет."},
+  {id:"t2",via:"queue",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Это Крапива. Она не летает, она едет — так говорит. Сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
+  {id:"t3",via:"queue",when:{seenOf:"relay_krapiva.t1",none:["ship","rode"]},text:"— Крапива? Уехала. Билет лежит. Куда — не сказала, и мы не спрашивали."},
   {id:"t4",via:"news",when:{flag:"ship"},text:"Мадам Крапива купила корабль. Целиком, с экипажем. Куда — не сказала."},
   {id:"t5",via:"cant",when:{flag:"ship"},scene:{seat:"door",figure:0,props:["paper"]}},
   /* развилка (M259/M260): она сидит У ДВЕРИ и смотрит на пилотов. Корпус в
@@ -35895,7 +35895,7 @@ const STORIES=[
   {id:"t7",via:"cant",when:{flag:"rode"},scene:{seat:"door",figure:0,props:["paper"]}}
  ],
  /* эстафета уже видела её в пути — второй отъезд дома не заводится */
-  turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode",when:{unseenOf:"relay_krapiva.t1"}}]},
+  turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode"}]},
 
 /* ── 7. Ефимово место ── место · везде, где есть стойка */
 {id:"efim_stool",form:"place",at:"any",cast:["efim"],
@@ -35952,8 +35952,10 @@ const STORIES=[
   {id:"t1",via:"queue",when:{noflag:"paid",unseenOf:"relay_kim.t1"},text:"— Ким? Отдаст. Он всегда отдаёт. Долго, но всегда."},
   {id:"t2",via:"cant",when:{noflag:"paid",unseenOf:"relay_kim.t1"},scene:{seat:"far",figure:0,props:["key","paper"]}},
   {id:"t3",via:"news",when:{visits:2,noflag:"paid",unseenOf:"relay_kim.t1"},text:"Вещи Долгого Кима продаются с барахолки. Сам Ким не против. Сам Ким не здесь."},
-  {id:"t4",via:"queue",when:{flag:"paid"},text:"— Отдал. Говорил же. Ключ только не забрал."},
-  {id:"t5",via:"cant",when:{flag:"paid"},scene:{seat:"far",figure:0,props:["key"]}}
+  {id:"t4",via:"queue",when:{flag:"paid",unseenOf:"relay_kim.t1"},text:"— Отдал. Говорил же. Ключ только не забрал."},
+  {id:"t5",via:"cant",when:{flag:"paid",unseenOf:"relay_kim.t1"},scene:{seat:"far",figure:0,props:["key"]}},
+  /* эстафета закрыла долг чемоданом — даже если дома он уже «отдал сам» */
+  {id:"t6",via:"queue",when:{seenOf:"relay_kim.t1"},text:"— Ким? Долг закрыт. Не им — так говорят. Ключ так и лежит."}
  ],
  turns:[{after:"seen:t1",days:30,set:"paid"}]},
 
@@ -36078,7 +36080,7 @@ const STORIES=[
   {id:"t4",via:"news",when:{any:["left","copied"]},text:"Комиссия, направленная на комбинат, к месту назначения не прибыла. Комбинат отвечает, что комиссия была и уехала."},
   {id:"t5",via:"cant",when:{any:["left","copied"]},scene:{seat:"far",figure:0,props:["paper"]}},
   {id:"t6",via:"queue",when:{flag:"left"},text:"— Уехали. Бумагу оставили. В бумаге — ничего, одни линии. Ровные такие. Мы её не выбрасываем."},
-  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне. Мы её точно не выбрасываем."}
+  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне у стойки. Мы её точно не выбрасываем."}
  ],
  turns:[{after:"seen:t1",days:7,set:"left",unless:{wall:true},else:"copied"}]},
 
@@ -38137,6 +38139,15 @@ function planetBargeLoad(b){
   if(!got)return 0;
   b.pload=load;N.calls++;
   return got;
+}
+/* Баржи не сохраняются: их неснятый груз возвращается только в копию склада.
+   Живая встреча и остаток на борту от автосохранения не меняются. */
+function planetSaveStock(){
+  const N=G.pnode;if(!N)return null;
+  const out=Object.assign({},N,{stock:Object.assign({},N.stock)});
+  for(const b of G.barges||[])for(const k in b.pload||{})
+    out.stock[k]=Math.min(PLANET_CAP,(out.stock[k]||0)+Math.max(0,b.pload[k]|0));
+  return out;
 }
 function planetLoadSum(b){
   let s=0;if(b&&b.pload)for(const k in b.pload)s+=b.pload[k]|0;
@@ -49169,7 +49180,7 @@ function snapshot(){
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,name:G.name||"",
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
-    nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
+    nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:planetSaveStock(),hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
     wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},cosm:G.cosm||null,locker:G.locker||null,boxes:G.boxes||[],
@@ -49433,6 +49444,7 @@ function applySave(s){
   /* планета-узел (12n): решение игрока в ней есть — где он стоял, когда собрал
      сотню, — поэтому она персистится. Склад чинится по месту: список ресурсов
      перепроверяется по ходовым товарам, чтобы старая запись не завела редкое. */
+  G.barges=[];   /* старые эфемерные борта не возвращают груз в загруженный склад повторно */
   G.pnode=null;
   const pn=s.pnode;
   if(pn&&typeof pn==="object"&&typeof pn.key==="string"){
@@ -51784,7 +51796,7 @@ function helmApply(dt,st,sh,maxSp){
     sh.vx+=c.tx*ku*HELM_ACC*st.thr*dt;
     sh.vy+=c.ty*ku*HELM_ACC*st.thr*dt;
     o.main=(along/(mag||1))>.05;o.thr=sideK>.05;
-    G.fuel=Math.max(0,G.fuel-(.021*Math.max(0,along/(mag||1))+.017*sideK)*dt);
+    G.fuel=Math.max(0,G.fuel-(.021*Math.abs(along/(mag||1))+.017*sideK)*dt);
     if(typeof EN_THR==="number"&&sideK>0)G.energy=Math.max(0,(G.energy||0)-EN_THR*sideK*dt);
   }else if(mag>0&&G.fuel>0&&!o.slow){
     let fwd=0,tx=0,ty=0;
@@ -81400,7 +81412,7 @@ Object.assign(BLOG,{
   palbanya:(B,a)=>a.rank+" "+a.who+" заодно попарился: одно нарушение «не заметил»",
   grib:    ()=>"чайный гриб разросся: харч вдвое, «а потом посмотрим»",
   gribeat: (B,a)=>"чайный гриб ест органику · −"+a.q+" · вырезать — аврал в оранжерее",
-  gribcut: (B,a)=>"чайный гриб вырезан · срез "+a.q+" ед · Рассвет такое берёт"
+  gribcut: (B,a)=>"чайный гриб вырезан · срез "+a.q+" ед"
 });
 function banyaLive(B){
   for(const cell of (B&&B.cells)||[])if(cell&&cell.k==="banya"&&cell.hp>0)return true;
@@ -81472,7 +81484,7 @@ function gribCut(B){
   if(q-got>0)B.pool.grib=(B.pool.grib|0)+(q-got);
   B.grib=null;
   baseLog(B,"gribcut",n,{q});
-  tell("good","Чайный гриб вырезан","ЧАЙНЫЙ ГРИБ ВЫРЕЗАН\nсрез "+q+" ед"+(got<q?" · "+(q-got)+" на складе базы":"")+"\nРассвет платит ×1,5");
+  tell("good","Чайный гриб вырезан","ЧАЙНЫЙ ГРИБ ВЫРЕЗАН\nсрез "+q+" ед"+(got<q?" · "+(q-got)+" на складе базы":""));
   sfx("ui",{f:420,to:660,d:.25,v:.3});
 }
 BUILD_KEYS.push("banya");   /* список меню собран в 21a раньше этого файла */

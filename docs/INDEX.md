@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 711 · top-level symbols: 9072
+Files: 712 · top-level symbols: 9073
 
 ## SYMBOLS
 
@@ -2292,7 +2292,7 @@ STATE_HASH_SKIP              src/08a-statehash.js:25-34
 STAT_SHOW                    src/05-parts.js:426-438
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
-STORIES                      src/12k-stories-a.js:45-353
+STORIES                      src/12k-stories-a.js:45-355
 STORIES_B                    src/12k-stories-b.js:27-455
 STORIES_C                    src/12k-stories-c.js:23-294
 STORIES_D                    src/12k-stories-d.js:17-78
@@ -2640,7 +2640,7 @@ appetitePrice                src/12ab-hold.js:117
 applyCrewEvent               src/12b-crew-events.js:227-236
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:216-629
+applySave                    src/14-save.js:216-630
 applySaveRest                src/14a1-save-rest.js:15-395
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
@@ -6801,7 +6801,7 @@ planPack                     src/05e-plan.js:82-123
 planPtIn                     src/05e-plan.js:22-29
 planTook                     src/11r-plan.js:59-63
 planetBargeLoad              src/12n-planet.js:108-121
-planetBargeRow               src/12n-planet.js:145-151
+planetBargeRow               src/12n-planet.js:154-160
 planetBiome                  src/20-life.js:137-155
 planetGrant                  src/12n-planet.js:25-40
 planetHasLife                src/07a-terrain.js:61-64
@@ -6810,14 +6810,15 @@ planetHeightAt               src/07a-terrain.js:65-72
 planetHere                   src/12n-planet.js:61-64
 planetLightsN                src/17e-station-body.js:38-43
 planetLightsOn               src/17e-station-body.js:46-50
-planetLoadSum                src/12n-planet.js:122-125
+planetLoadSum                src/12n-planet.js:131-134
 planetMat                    src/18a-material.js:25-30
 planetMatHue                 src/18a-material.js:55-58
 planetMatNow                 src/18a-material.js:44-51
 planetPeriod                 src/07-planet.js:37-41
 planetReady                  src/12n-planet.js:19-21
-planetRender                 src/12n-planet.js:155-184
+planetRender                 src/12n-planet.js:164-193
 planetRing                   src/17gab1-gpu-orb-draw.js:89-94
+planetSaveStock              src/12n-planet.js:124-130
 planetScene                  src/10-music.js:74-95
 planetSpin                   src/07-planet.js:43-53
 planetSpinFrame              src/07-planet.js:56-58
@@ -6829,7 +6830,7 @@ planetStripDrop              src/17gb-gpu-planet-strip.js:123-126
 planetStripParams            src/17gb-gpu-planet-strip.js:12-17
 planetStripPx                src/17gb-gpu-planet-strip.js:19-45
 planetSunRot                 src/07-planet.js:85-89
-planetTakeLoad               src/12n-planet.js:126-143
+planetTakeLoad               src/12n-planet.js:135-152
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
 plantSpeciesName             src/20e-species.js:86-89
@@ -9599,9 +9600,9 @@ zoomTo                       src/15-input.js:370
 ## src/12k-rep.js · 5 KB
   · репутация: вас помнят там, где вы бывали:1
 
-## src/12k-stories-a.js · 33 KB
+## src/12k-stories-a.js · 34 KB
   · истории, часть первая:1
-  · длинные — в духе институтской фантастики:248
+  · длинные — в духе институтской фантастики:250
 
 ## src/12k-stories-b.js · 39 KB
   · истории, часть вторая:1
@@ -11148,6 +11149,8 @@ zoomTo                       src/15-input.js:370
 ## tests/91zzzw9m-raid-engine.js · 3 KB
 
 ## tests/91zzzy-character-assets.js · 4 KB
+
+## tests/91zzzy-release-review.js · 1 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

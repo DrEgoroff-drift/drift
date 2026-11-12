@@ -116,8 +116,8 @@ const STORIES=[
 {id:"krapiva_suitcase",form:"habit",at:"fixed:9",cast:["krapiva"],
  traces:[
   {id:"t1",via:"cant",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},scene:{seat:"door",figure:1,col:[92,70,96],props:["paper"]}},
-  {id:"t2",via:"queue",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Это Крапива. Она не летает. Она сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
-  {id:"t3",via:"queue",when:{visits:3,none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Говорит: я не летаю, я еду. Разницу не объясняет."},
+  {id:"t2",via:"queue",when:{none:["ship","rode"],unseenOf:"relay_krapiva.t1"},text:"— Это Крапива. Она не летает, она едет — так говорит. Сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
+  {id:"t3",via:"queue",when:{seenOf:"relay_krapiva.t1",none:["ship","rode"]},text:"— Крапива? Уехала. Билет лежит. Куда — не сказала, и мы не спрашивали."},
   {id:"t4",via:"news",when:{flag:"ship"},text:"Мадам Крапива купила корабль. Целиком, с экипажем. Куда — не сказала."},
   {id:"t5",via:"cant",when:{flag:"ship"},scene:{seat:"door",figure:0,props:["paper"]}},
   /* развилка (M259/M260): она сидит У ДВЕРИ и смотрит на пилотов. Корпус в
@@ -128,7 +128,7 @@ const STORIES=[
   {id:"t7",via:"cant",when:{flag:"rode"},scene:{seat:"door",figure:0,props:["paper"]}}
  ],
  /* эстафета уже видела её в пути — второй отъезд дома не заводится */
-  turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode",when:{unseenOf:"relay_krapiva.t1"}}]},
+  turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode"}]},
 
 /* ── 7. Ефимово место ── место · везде, где есть стойка */
 {id:"efim_stool",form:"place",at:"any",cast:["efim"],
@@ -185,8 +185,10 @@ const STORIES=[
   {id:"t1",via:"queue",when:{noflag:"paid",unseenOf:"relay_kim.t1"},text:"— Ким? Отдаст. Он всегда отдаёт. Долго, но всегда."},
   {id:"t2",via:"cant",when:{noflag:"paid",unseenOf:"relay_kim.t1"},scene:{seat:"far",figure:0,props:["key","paper"]}},
   {id:"t3",via:"news",when:{visits:2,noflag:"paid",unseenOf:"relay_kim.t1"},text:"Вещи Долгого Кима продаются с барахолки. Сам Ким не против. Сам Ким не здесь."},
-  {id:"t4",via:"queue",when:{flag:"paid"},text:"— Отдал. Говорил же. Ключ только не забрал."},
-  {id:"t5",via:"cant",when:{flag:"paid"},scene:{seat:"far",figure:0,props:["key"]}}
+  {id:"t4",via:"queue",when:{flag:"paid",unseenOf:"relay_kim.t1"},text:"— Отдал. Говорил же. Ключ только не забрал."},
+  {id:"t5",via:"cant",when:{flag:"paid",unseenOf:"relay_kim.t1"},scene:{seat:"far",figure:0,props:["key"]}},
+  /* эстафета закрыла долг чемоданом — даже если дома он уже «отдал сам» */
+  {id:"t6",via:"queue",when:{seenOf:"relay_kim.t1"},text:"— Ким? Долг закрыт. Не им — так говорят. Ключ так и лежит."}
  ],
  turns:[{after:"seen:t1",days:30,set:"paid"}]},
 
@@ -311,7 +313,7 @@ const STORIES=[
   {id:"t4",via:"news",when:{any:["left","copied"]},text:"Комиссия, направленная на комбинат, к месту назначения не прибыла. Комбинат отвечает, что комиссия была и уехала."},
   {id:"t5",via:"cant",when:{any:["left","copied"]},scene:{seat:"far",figure:0,props:["paper"]}},
   {id:"t6",via:"queue",when:{flag:"left"},text:"— Уехали. Бумагу оставили. В бумаге — ничего, одни линии. Ровные такие. Мы её не выбрасываем."},
-  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне. Мы её точно не выбрасываем."}
+  {id:"t7",via:"queue",when:{flag:"copied"},text:"— Уехали. Бумагу оставили. Линии — и один знак, как на камне у стойки. Мы её точно не выбрасываем."}
  ],
  turns:[{after:"seen:t1",days:7,set:"left",unless:{wall:true},else:"copied"}]},
 
