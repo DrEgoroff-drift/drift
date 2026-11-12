@@ -79,7 +79,7 @@ function snapshot(){
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,name:G.name||"",
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
-    nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
+    nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:planetSaveStock(),hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,caravan:G.caravan||null,
     wander:G.wander||{got:[],gave:[],chit:0,shelf:[],hold:[]},cosm:G.cosm||null,locker:G.locker||null,boxes:G.boxes||[],
@@ -343,6 +343,7 @@ function applySave(s){
   /* планета-узел (12n): решение игрока в ней есть — где он стоял, когда собрал
      сотню, — поэтому она персистится. Склад чинится по месту: список ресурсов
      перепроверяется по ходовым товарам, чтобы старая запись не завела редкое. */
+  G.barges=[];   /* старые эфемерные борта не возвращают груз в загруженный склад повторно */
   G.pnode=null;
   const pn=s.pnode;
   if(pn&&typeof pn==="object"&&typeof pn.key==="string"){

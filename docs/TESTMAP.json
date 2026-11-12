@@ -81,6 +81,7 @@
   "tests/91zzzw9l-hallgone.js": ["src/01-core.js", "src/05e-clearance.js", "src/08-state.js", "src/14-save.js", "src/26-ui-station.js", "src/27c-ui-hq.js", "src/27cb-ui-cantina-hall.js", "src/27f4-cant3d.js", "src/28l-gauge.js", "src/28m-dispatch.js", "src/28r-fight.js", "src/28t-hallgone.js"],
   "tests/91zzzw9m-raid-engine.js": ["src/08-state.js", "src/08b-gpu.js", "src/08c-gpu-kit.js", "src/23cc-mine-play.js", "src/24a-mode-raid.js", "src/28-loop.js"],
   "tests/91zzzy-character-assets.js": ["src/08-state.js", "src/08bj-ovl-hang.js", "src/12y-parrot-face.js", "src/12y3-govorun.js", "src/21pha-pln-man.js", "src/21phb-mech-man.js", "src/27f2-room3d.js", "src/27f3-person3d.js", "src/27f3c-npc-art.js", "src/28-loop.js"],
+  "tests/91zzzy-release-review.js": ["src/01-core.js", "src/02-world.js", "src/08-state.js", "src/14-save.js", "src/15a-helm.js", "src/28-loop.js"],
   "tests/91zzzzb-save.js": ["src/01-core.js", "src/05b-instr-kit.js", "src/08-state.js", "src/12m-rare.js", "src/14-save.js", "src/14a-cloud.js", "src/20b-poi-find.js"],
   "tests/91zzzzk7-yard-probe.js": ["src/01-core.js", "src/02-world.js", "src/04-mods.js", "src/05-parts.js", "src/06-galaxy.js", "src/08-state.js", "src/12-economy.js", "src/12aa-need.js", "src/13-pirates.js", "src/13d-loadout.js", "src/15a-helm.js", "src/21pb-pln-wgsl-air.js", "src/26e1-stapel.js"],
   "tests/91zzzzk8-plan-factors.js": ["src/01-core.js", "src/03-ships.js", "src/04-mods.js", "src/04b-fleet.js", "src/05c-arms.js", "src/08-state.js", "src/26e1-stapel.js", "src/27jb-kb.js"],

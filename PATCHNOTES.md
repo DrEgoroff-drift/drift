@@ -1,3 +1,10 @@
+## 0.499.109 — Verified controls, journeys and save repairs
+
+- Collected the verification waves: captured touch gestures, screen-space stick thrust, coast in the dead zone, visible brake/fire controls, faster landing preparation, clearer map and station labels, consistent story outcomes, mail refusals and UTC limits, settlement and barge fixes, and base catch-up/food corrections.
+- Save loading retains the ninth crew member, scientist perks, expanded kit shelf, job counters, base guests and wake-up state. Unsurrendered planet-node freight aboard ephemeral barges returns to the saved warehouse without changing the live encounter or duplicating cargo on reload.
+- Release review fixed fuel-free reverse stick thrust and removed the unavailable mushroom-sale promise. Analytics now runs only on web game pages, not in the test harness or offline file.
+- Reactor overload gameplay, station-building visuals, additional mail snapshot types and the disputed balance changes remain outside this release.
+
 ## 0.499.108 — fleet night: fixes across the world
 
 - Frame: pirates and liner hulls prebake ahead of the screen edge; late pipelines skip assembly in heavy frames; the phone-gate tools are fixed.

@@ -119,6 +119,15 @@ function planetBargeLoad(b){
   b.pload=load;N.calls++;
   return got;
 }
+/* Баржи не сохраняются: их неснятый груз возвращается только в копию склада.
+   Живая встреча и остаток на борту от автосохранения не меняются. */
+function planetSaveStock(){
+  const N=G.pnode;if(!N)return null;
+  const out=Object.assign({},N,{stock:Object.assign({},N.stock)});
+  for(const b of G.barges||[])for(const k in b.pload||{})
+    out.stock[k]=Math.min(PLANET_CAP,(out.stock[k]||0)+Math.max(0,b.pload[k]|0));
+  return out;
+}
 function planetLoadSum(b){
   let s=0;if(b&&b.pload)for(const k in b.pload)s+=b.pload[k]|0;
   return s;

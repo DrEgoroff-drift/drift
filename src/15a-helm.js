@@ -539,7 +539,7 @@ function helmApply(dt,st,sh,maxSp){
     sh.vx+=c.tx*ku*HELM_ACC*st.thr*dt;
     sh.vy+=c.ty*ku*HELM_ACC*st.thr*dt;
     o.main=(along/(mag||1))>.05;o.thr=sideK>.05;
-    G.fuel=Math.max(0,G.fuel-(.021*Math.max(0,along/(mag||1))+.017*sideK)*dt);
+    G.fuel=Math.max(0,G.fuel-(.021*Math.abs(along/(mag||1))+.017*sideK)*dt);
     if(typeof EN_THR==="number"&&sideK>0)G.energy=Math.max(0,(G.energy||0)-EN_THR*sideK*dt);
   }else if(mag>0&&G.fuel>0&&!o.slow){
     let fwd=0,tx=0,ty=0;

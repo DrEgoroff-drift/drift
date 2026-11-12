@@ -316,6 +316,7 @@ if("serviceWorker" in navigator&&location.protocol==="https:")
 
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript">
+    if (typeof TEST_SUITES === "undefined" && /^https?:$/.test(location.protocol)) {
     (function(m,e,t,r,i,k,a){
         m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
         m[i].l=1*new Date();
@@ -324,6 +325,7 @@ if("serviceWorker" in navigator&&location.protocol==="https:")
     })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=114027617', 'ym');
 
     ym(114027617, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    }
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/114027617" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
