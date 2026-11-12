@@ -453,7 +453,10 @@ function drawMapIn(){
       mpArc(x,y,rr+9,-.6,.6,1,NM.col);
       mpArc(x,y,rr+9,Math.PI-.6,Math.PI+.6,1,NM.col);
       MPN.fillStyle=NM.col;mapFont(8);MPN.textAlign="center";
-      tag(NM.what.toUpperCase(),false,y+rr+13);
+      /* «сменился хозяин» 18b уже рисует биркой с датой (mapTagAt): то же слово без
+         даты второй раз — не подпись, а помеха. Свою кладём только там, где той не будет */
+      const dated=!G.mapClean&&mapLayerOn("own")&&!!mapTagAt(gx,gy);
+      if(!dated)tag(NM.what.toUpperCase(),false,y+rr+13);
       mpAlpha(1);
     }
     /* след артефакта: сектор, который вычитал исследователь с «происхождением» */
@@ -510,7 +513,12 @@ function drawMapIn(){
     /* выбрана станция следующего плеча — прыжок так и называется (M289, R2) */
     const NX=(routeOf().legs.length>=2)?routeNext():null;
     const onRoute=NX&&NX.sys.sx===G.sel.x&&NX.sys.sy===G.sel.y;
-    if(!shown)L.push([dry?MAP_DRY_INK:bad?"rgba(255,107,87,.85)":"#f2b25c",
+    /* пустая клетка выбирается (M347), но прыгать в неё некуда: подвал не обещает
+       «ПРЫЖОК» и не красит его красным «вне радиуса» — причина другая, и она названа
+       (то же слово, что в шапке, 18a) */
+    const empty=!starAt(G.sel.x,G.sel.y);
+    if(!shown)L.push([(empty||dry)?MAP_DRY_INK:bad?"rgba(255,107,87,.85)":"#f2b25c",
+      empty?"ПУСТО · КУРСА НЕТ":
       dsel===0?"ТЕКУЩАЯ СИСТЕМА":
       (dsel>st.jump+.02?"ВНЕ РАДИУСА · примерно "+Math.ceil(dsel/Math.max(.5,st.jump))+" "+pl3(Math.ceil(dsel/Math.max(.5,st.jump)),"прыжок","прыжка","прыжков"):
        (dry?mapDryWord(cost):(onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива")),1]);
@@ -520,7 +528,9 @@ function drawMapIn(){
     if(!shown)L.push([HANG.INK2,
       (ss?nameOf(ss).toUpperCase()+" · "+ss.cls.ru+" · "+ss.planets.length+" "+pl3(ss.planets.length,"планета","планеты","планет")+
           (ss.station?" · станция":"")+(ss.belt?" · пояс":"")+" · "+galPlaceName(G.sel.x,G.sel.y)+" · ":"СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   ")+
-      dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"+
+      /* десятичная запятая, как в шапке (18a) и на табличке (18l): «3,1 пк» и
+         «3.10 из 3.00 пк» в одном кадре читались двумя разными числами */
+      dsel.toFixed(2).replace(".",",")+" из "+st.jump.toFixed(2).replace(".",",")+" пк"+
       rungFootTxt(G.sel.x,G.sel.y),1]);   /* пятилетка римской цифрой (M292); 1 — строка о выборе, запасная к табличке */
     if(routeOf().legs.length>=1)
       L.push([HANG.INK,routeLine()]);

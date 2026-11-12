@@ -2651,7 +2651,7 @@ arrWarmHull                  src/17h1-arr-warm.js:19
 arrWarmStep                  src/17h1-arr-warm.js:63-74
 arrWarmSteps                 src/17h1-arr-warm.js:24-61
 arrive                       src/16-flight.js:110-152
-arriveSystem                 src/18-mode-map.js:734-785
+arriveSystem                 src/18-mode-map.js:744-795
 artBytes                     src/21phb-art-skin.js:3
 artGet                       src/08ca-gpu-canvas.js:551
 artLz4                       src/21phb-art-skin.js:4-16
@@ -4133,7 +4133,7 @@ drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
 drawMap                      src/18-mode-map.js:229-232
-drawMapIn                    src/18-mode-map.js:233-683
+drawMapIn                    src/18-mode-map.js:233-693
 drawMisFigure                src/11z-misclosure.js:63-87
 drawMonolith                 src/20aa-poi-shapes.js:189-206
 drawMooredBarge              src/17e-station-body.js:17-36
@@ -5694,7 +5694,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:721-729
+jump                         src/18-mode-map.js:731-739
 jumpToBase                   src/21a-mode-base.js:386-403
 kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:220
@@ -6032,7 +6032,7 @@ mapCellXY                    src/18a-map-addr.js:52
 mapCleanSet                  src/18-mode-map.js:197
 mapCourseDash                src/18l-map-plate.js:40-47
 mapDeck                      src/18-mode-map.js:14-18
-mapDryWord                   src/18-mode-map.js:695
+mapDryWord                   src/18-mode-map.js:705
 mapFace                      src/18l-map-plate.js:13
 mapFit                       src/18-mode-map.js:165-170
 mapFont                      src/18-mode-map.js:54
@@ -6042,14 +6042,14 @@ mapGpuPass                   src/17z3-map-gpu.js:20-24
 mapGridDraw                  src/18a-map-addr.js:55-66
 mapHintHung                  src/18l-map-plate.js:37
 mapHit                       src/18-mode-map.js:76-115
-mapHoldingsDraw              src/18b-map-hold.js:105-201
-mapHoldingsTop               src/18b-map-hold.js:203-243
+mapHoldingsDraw              src/18b-map-hold.js:105-207
+mapHoldingsTop               src/18b-map-hold.js:209-249
 mapHousePatch                src/18b-map-hold.js:31-45
 mapInkBox                    src/18-mode-map.js:67
 mapInkPoly                   src/18-mode-map.js:65
 mapInkText                   src/18-mode-map.js:69
-mapJump                      src/18-mode-map.js:696-705
-mapJumpCost                  src/18-mode-map.js:690-693
+mapJump                      src/18-mode-map.js:706-715
+mapJumpCost                  src/18-mode-map.js:700-703
 mapLate                      src/18-mode-map.js:73
 mapLateFlush                 src/18-mode-map.js:83-115
 mapLayer                     src/18b-map-hold.js:26
@@ -8742,7 +8742,7 @@ updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:105-177
-updateMap                    src/18-mode-map.js:706-720
+updateMap                    src/18-mode-map.js:716-730
 updateRaid                   src/24a-mode-raid.js:276-408
 updateRail                   src/18g-rail-ride.js:53-105
 updateScoop                  src/19a-mode-scoop.js:79-180
@@ -10013,7 +10013,7 @@ zoomTo                       src/15-input.js:370
 ## src/17z4-map-pen.js · 11 KB
   · перо карты (G15: карта с #c на видеокарту):1
 
-## src/18-mode-map.js · 60 KB
+## src/18-mode-map.js · 61 KB
   · карта:1
   · где у карты пол и где правый борт:4
   · карта: ночное небо, а не схема молекулы:138
@@ -10030,7 +10030,7 @@ zoomTo                       src/15-input.js:370
 ## src/18b-geology.js · 7 KB
   · геология:1
 
-## src/18b-map-hold.js · 16 KB
+## src/18b-map-hold.js · 17 KB
   · владения на карте (M348):1
 
 ## src/18c-chunks.js · 6 KB

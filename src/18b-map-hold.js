@@ -110,6 +110,17 @@ function mapHoldingsDraw(vis,cell,V,st){
      в круге прыжка и у выбора, кромки вполсилы; полная подробность — на слое «ВЛАДЕНИЯ» */
   const allL=mapLayer()==="all",kE=allL?.5:1;
   const MS=mapSave();
+  /* чип сигнала сбора (M378): круг и число ответивших — ни имени, ни слова.
+     Рисуется и вне обжитого круга: сбор поднимают на любой станции («ПОДНЯТЬ» в совете),
+     а у дикого сектора хозяина в летописи нет (−1), и пропуск чужого цикла оставлял
+     поднятый сигнал невидимым на карте — обещание «сигналы видны на карте» (12at) */
+  const rallyChip=v=>{const R=rallyAt(v.gx,v.gy);if(!R)return;
+    mpAlpha(1);
+    mpCircle(v.x,v.y,cell*.32,1.4,"rgba(255,214,120,.9)");
+    MPN.font=Math.max(8,cell*.16).toFixed(0)+"px ui-monospace,monospace";
+    MPN.textAlign="center";
+    mpText("СБОР "+(R.yes|0),v.x,v.y+cell*.06,"rgba(255,214,120,.9)");
+    mapInkText("СБОР "+(R.yes|0),v.x,v.y+cell*.06);};
   /* ── чьи это системы (M370, §7.4 «на карте эмблемный чип») ──
      Летопись знает хозяина каждой системы обжитого круга. Шесть заливок на
      телефоне были бы шумом (вывод holding §13), поэтому владение читается
@@ -133,14 +144,7 @@ function mapHoldingsDraw(vis,cell,V,st){
     }else{
       mpDisc(x0+cell-6,y0+6,2,rgba(hex2rgb(powerOf(key).col),(.5*fade).toFixed(3)));
     }
-    /* сигнал сбора (M378): чип с числом ответивших — ни имени, ни слова */
-    const R=rallyAt(v.gx,v.gy);
-    if(R){
-      mpCircle(x0+cell*.5,y0+cell*.5,cell*.32,1.4,"rgba(255,214,120,.9)");
-      MPN.font=Math.max(8,cell*.16).toFixed(0)+"px ui-monospace,monospace";
-      MPN.textAlign="center";
-      mpText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06,"rgba(255,214,120,.9)");mapInkText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06);
-    }
+    rallyChip(v);   /* сигнал сбора (M378): чип с числом ответивших — ни имени, ни слова */
     if(chronFront(v.gx,v.gy))
       mpFrame(x0+.7,y0+.7,cell-1.4,cell-1.4,1.4,"rgba(255,90,70,"+(.7*fade).toFixed(2)+")");
     /* ── фронт пунктиром по границе (M371, §7.4) ──
@@ -166,6 +170,8 @@ function mapHoldingsDraw(vis,cell,V,st){
       mpDash(q[2],q[3],q[4],q[5],1.6,wc,[3,3]);
     }
   }
+  /* сбор в диком секторе: хозяина в летописи нет, а сигнал есть — чип ему тоже */
+  for(const v of vis)if(chronOwner(v.gx,v.gy)<0)rallyChip(v);
   for(const k in P){
     const [gx,gy]=k.split(",").map(Number);
     const c=mapCellXY(gx,gy,V,cell),x0=c.x-cell/2,y0=c.y-cell/2;
