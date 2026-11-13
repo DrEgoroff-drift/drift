@@ -4,6 +4,7 @@
    кнопки: корабль за кадр сдвигается на дробь, и точное равенство недостижимо.
    126 ступеней на оборот: сторона захода по-прежнему своя, мир тот же. */
 function plnLonBucket(l){return Math.round(l/0.05)*0.05;}
+function plnLonMatch(a,b){return a===b||(a!=null&&b!=null&&Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)))<=0.1);}
 function plnLonOf(p){
   if(!G.ship||typeof p.x!=="number")return null;
   const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
@@ -18,13 +19,7 @@ function startLanding(p){
      планеты на корабль, — а из неё вычитается текущий поворот планеты: за
      сутки под кораблём проезжает вся поверхность, и один и тот же мир на
      разных заходах встречает разным местом. */
-  let lon=null;
-  if(G.ship&&typeof p.x==="number"){
-    const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
-    const spin=(typeof planetSpinFrame==="function")
-      ? planetSpinFrame(p)/PLANET_SPIN*TAU : 0;
-    lon=plnLonBucket(app-spin);
-  }
+  const lon=plnLonOf(p);
   const _t0=NEAR.on?wallMs():0;
   /* рельеф берём готовым, если его успел испечь plnbody (21pg) на ту же долготу:
      иначе кнопка «ПОСАДКА» платит за genTerrain и ленту земли сама — это и была
@@ -35,12 +30,11 @@ function startLanding(p){
   let tr=null;
   /* рельеф остаётся в кэше и после нажатия: повторная посадка на ту же планету
      (вернулся в систему и сел снова) не должна снова платить за genTerrain */
-  if(p.__tr&&(p.__tr.lon===lon||Math.abs((p.__tr.lon||0)-(lon||0))<=0.1))tr=p.__tr;
+  if(p.__tr&&(plnBodyLocked(p)||plnLonMatch(p.__tr.lon,lon)))tr=p.__tr;
   if(!tr)tr=genTerrain(p,lon);
   const r=rng(p.seed^0x77);
   if(NEAR.on)NEAR.sl.gen=Math.round((wallMs()-_t0)*10)/10;
-  tr.lon=lon;
-  if(typeof p.__lon==="number")p.__lon=lon;
+  if(tr!==p.__tr)tr.lon=lon;
   /* достопримечательности вписываются в рельеф до того, как по нему расставят
      залежи и флору: они выравнивают под собой грунт (20a-poi) */
   {const _t=NEAR.on?wallMs():0;genPOI(tr,p);if(NEAR.on)NEAR.sl.poi=Math.round((wallMs()-_t)*10)/10;}

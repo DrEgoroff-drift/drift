@@ -304,14 +304,14 @@ function plnBodyLandDrop(p){
 function plnBodyDrop(p){
   if(!p)return;
   plnBodyLandDrop(p);
-  p.__tr=null;p.__gs=null;p.__lon=null;
+  p.__tr=null;p.__gs=null;p.__lon=null;p.__approach=false;p.__approachOrbit=null;
 }
 /* система сменилась: её подготовка больше не нужна */
 function plnBodyClear(S){
   /* в заходе и на поверхности лента в работе — её не трогаем */
   if(G.mode==="landing"||G.mode==="surface")return;
   S=S||PLNBODY.sys;
-  if(S&&S.planets)for(const p of S.planets)plnBodyDrop(p);
+  if(S&&S.planets)for(const p of plnBodyAll(S))plnBodyDrop(p);
   PLNBODY.landP=null;PLNBODY.S=null;PLNBODY.C=null;PLNBODY.V=null;PLNBODY.failT=0;
   if(PLN_LAND.cur){plnLandFree(PLN_LAND.cur);PLN_LAND.cur=null;}
 }
@@ -325,18 +325,33 @@ function preloadSystem(sx,sy){
      Текущую систему не трогаем — она готовится своим проходом */
   const old=PLNBODY.target;
   if(old&&(old.sx!==sx||old.sy!==sy)){
-    try{const T=getSystem(old.sx,old.sy);if(T&&T!==G.sys&&T.planets)for(const q of T.planets)plnBodyDrop(q);}catch(_){}
+    try{const T=getSystem(old.sx,old.sy);if(T&&T!==G.sys&&T.planets)for(const q of plnBodyAll(T))plnBodyDrop(q);}catch(_){}
   }
   PLNBODY.target={sx,sy};
   try{if(typeof getSystem==="function")getSystem(sx,sy);}catch(_){}
   return true;
 }
 function preloadClear(){PLNBODY.target=null;}
+function plnBodyAll(S){return S&&S.planets?S.planets.flatMap(p=>[p,...(p.moons||[])]):[];}
+function plnBodyAim(S){
+  const p=G.ap&&G.ap.kind==="planet"?G.ap.p:G.orbit&&G.orbit.p;
+  return p&&p.type!=="gas"&&plnBodyAll(S).includes(p)?p:null;
+}
+/* Автопилот выбирает площадку один раз. Вращение тела по пути не отменяет стройку;
+   ручной выход с орбиты снова возвращает выбор стороны по положению корабля. */
+function plnBodyLocked(p){
+  if(!p.__approach||plnBodyAim(G.sys)!==p)return false;
+  if(G.ap&&G.ap.kind==="planet")return true;
+  const o=G.orbit;
+  if(p.__approachOrbit!==o){p.__approachOrbit=o;p.__approachAng=o.ang;}
+  return plnLonMatch(p.__approachAng,o.ang);
+}
 /* планеты системы от ближней к дальней: вероятная цель — первой */
 function plnBodyOrder(S){
   const sh=G.ship||{},arr=[];
-  if(S&&S.planets)for(const p of S.planets)if(p&&typeof p.x==="number")arr.push(p);
-  arr.sort((a,b)=>Math.hypot(sh.x-a.x,sh.y-a.y)-Math.hypot(sh.x-b.x,sh.y-b.y));
+  for(const p of plnBodyAll(S))if(p&&typeof p.x==="number")arr.push(p);
+  const aim=plnBodyAim(S);
+  arr.sort((a,b)=>(a===aim?-1:b===aim?1:Math.hypot(sh.x-a.x,sh.y-a.y)-a.radius-(Math.hypot(sh.x-b.x,sh.y-b.y)-b.radius)));
   return arr;
 }
 /* подпись вещей земли: по ней видно, что мир изменился (выработали залежь, сорвали
@@ -370,11 +385,12 @@ function plnBodyData(p){
 }
 /* ближайшая твёрдая планета: на газовую не садятся */
 function plnBodyNear(S){
+  const aim=plnBodyAim(S);if(aim)return aim;
   let b=null,bd=1e18;
   if(!S||!S.planets||!G.ship)return null;
-  for(const q of S.planets){
+  for(const q of plnBodyAll(S)){
     if(!q||q.type==="gas"||typeof q.x!=="number")continue;
-    const d=Math.hypot(G.ship.x-q.x,G.ship.y-q.y);
+    const d=Math.hypot(G.ship.x-q.x,G.ship.y-q.y)-q.radius;
     if(d<bd){bd=d;b=q;}
   }
   return b;
@@ -393,15 +409,16 @@ function plnBodyLandPrep(budget){
      заставляли «ближайшую» мигать каждый кадр: старая лента освобождалась, новая
      начинала строиться с нуля — кадр за кадром. Новую цель берём, только если она
      заметно ближе: иначе живёт прежняя лента, и в памяти по-прежнему одна */
-  if(PLNBODY.landP&&PLNBODY.landP!==near&&PLNBODY.landP.__land&&plnBodyDist(PLNBODY.landP)<=plnBodyDist(near)*1.12)near=PLNBODY.landP;
+  if(!plnBodyAim(G.sys)&&PLNBODY.landP&&PLNBODY.landP!==near&&PLNBODY.landP.__land&&plnBodyDist(PLNBODY.landP)<=plnBodyDist(near)*1.12)near=PLNBODY.landP;
   /* ближайшая действительно сменилась — ленту прежней отпускаем */
   if(PLNBODY.landP&&PLNBODY.landP!==near)plnBodyLandDrop(PLNBODY.landP);
   const lon=plnLonOf(near);
   /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
-  if(near.__tr&&near.__lon!=null&&lon!=null&&Math.abs(near.__lon-lon)>0.1){
+  if(near.__tr&&!plnBodyLocked(near)&&!plnLonMatch(near.__lon,lon)){
     plnBodyDrop(near);return;
   }
   if(!near.__tr||!near.__gs)return;           /* данные посчитает следующий проход */
+  near.__approach=plnBodyAim(G.sys)===near;
   if(near.__land&&(near.__land.tr!==near.__tr||near.__land.gsKey!==near.__gsKey||near.__land.gen!==PLN_GPU.gen))plnBodyLandDrop(near);
   if(!near.__land){
     const tr=near.__tr;
@@ -420,7 +437,7 @@ function plnBodyLandPrep(budget){
        а передача объектива принадлежит настоящему заходу, не фону */
     const y0=PLN.y0;PLN.y0=tr.padY;
     const gyw=groundAt(tr,tr.padX);
-    const C=plnLens(S2,surfScale(),(ws,hs,f)=>({vx:tr.padX/PLN_M-ws/2,vy:Math.max(-400,Math.min(gyw-hs*(1-f),tr.padY/PLN_M-hs*.24))}));
+    const C=plnLens(S2,surfScale(),(ws,hs,f)=>({vx:tr.padX-ws/2,vy:Math.max(-400,Math.min(gyw-hs*(1-f),landStartY(tr,tr.padX)-hs*.24))}));
     PLN.y0=y0;
     PLNBODY.C=C;PLNBODY.V={hw:C.hw,D:C.D};
     return;

@@ -264,7 +264,7 @@ hud=function(){
 };
 const PLN_OLD_ULAND=updateLanding;
 updateLanding=function(){
-  if(PLN.on&&G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone)return;   /* заход ещё собирается (21pz) — спуск стоит */
+  if(PLN.on&&G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone)return;   /* готовность передаёт рисовалка, физика не летит за скрытым кадром */
   const m0=G.mode;
   PLN_OLD_ULAND.apply(this,arguments);
   const L=G.land;
@@ -290,6 +290,7 @@ drawLanding=function(){
     }
   }
   if(warm){
+    G.land.warm=true;G.land.warmDone=false;
     /* пока собирается: прежняя сцена — система с кораблём, не пустой кадр */
     BLOOM_K.landing=BLOOM_K.system||0;PLN_DESC.live=false;
     const m=G.mode;G.mode="system";
@@ -297,6 +298,7 @@ drawLanding=function(){
     return;
   }
   BLOOM_K.landing=ok?0:PLN_DESC.bloom;
+  if(G.land){G.land.warm=false;G.land.warmDone=true;}
   PLN_DESC.live=ok;
   if(!ok){PLN_OLD_LANDING.apply(this,arguments);return;}
   plnDescOver();

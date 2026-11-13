@@ -297,7 +297,7 @@ function plnHandWin(S,ws,hs,f,h){
    Первый кадр спуска строил землю, расстановку, вещи, метки и травы разом: 90–150 мс. Пока идёт
    сборка, на экране прежняя сцена (drawLanding рисует систему), спуск стоит; каждый кадр — не больше
    7 мс работы. Этапы: куски ленты в окне (рядами), посадки, вещи земли, метки, своё, травы.
-   true — ещё собирается; страховка — 4 с (240 кадров) */
+   true — ещё собирается; готовность определяется выполненной работой, не счётчиком кадров */
 function plnWarmStep(L,S,p,C,V,ms,bg){
   if(!L.warm){L.warm={st:0,k:0,n:0,fn:0};return true;}   /* кадр, где заведён лист мира (plnLand), — только он */
   const w=L.warm;
@@ -305,23 +305,19 @@ function plnWarmStep(L,S,p,C,V,ms,bg){
      В фоне (bg) их не трогаем: полёт не должен компилировать конвейеры (91zzzzzzy4), а у устья
      пещеры их всё равно собирает 22d */
   if(w.n===0&&!bg&&typeof cave3PipesAhead==="function")cave3PipesAhead();
-  /* бюджет 7 мс — кадр спуска. Фон (plnbody) зовёт те же ступени со своим бюджетом
-     и без потолка кадров: там работа идёт минутами полёта, а не пятью секундами ожидания.
-     Потолок спуска считается отдельно (fn), чтобы проделанная фоном работа не съедала
-     запас настоящего захода: если фон не успел, спуск всё равно получает свои 240 кадров */
-  if(bg){if(++w.n>3000){L.warmDone=true;return false;}}
-  else if(++w.fn>240){L.warmDone=true;return false;}
+  /* Медленный кадр не делает недостроенную землю готовой. Оба пути проходят
+     одинаковую очередь до конца, а работа каждого вызова ограничена бюджетом. */
+  if(bg)++w.n;else ++w.fn;
   const B=ms!=null&&ms>0?ms:7;
   /* набор флоры строится из системы по шагу (plnKitTick); не успел — достраивается здесь, в бюджет кадра.
      Фон не строит его сам: набор и его конвейеры — дело работника flora, а полёт не должен компилировать */
   if(!(PLN_FLORA.kit&&PLN_FLORA.gen===PLN_GPU.gen)){
     if(bg)return true;
-    const t0=wallMs();
-    while(wallMs()-t0<B&&plnFloraKitStep());
+    plnFloraKitStep(B);
     return true;
   }
   if(w.st===0){
-    plnLandStep(L,C.ex,V,null,B,true);
+    plnLandStep(L,C.ex,V,32,B,true);
     if(!L.jobs.some(J=>!J.done&&plnLandSees(J,C.ex,V,20)))w.st=1;
     return true;
   }
@@ -367,7 +363,7 @@ function plnSurface(S,o){
      посадкам — остаток, но не меньше половины low */
   const B=PLN_BUILD,tb=wallMs();
   const lim=L.first?fbLeft(B.low,B.ms,B.frame):B.first;   /* общий счёт стройки кадра (17a0 FB) */
-  if(fly&&o.warm&&!PLN.rush&&!L.warmDone){const tw=wallMs();const rw=plnWarmStep(L,S,p,C,V);if(NEAR.on)nearWarm(wallMs()-tw);if(rw)return "warm";}
+  if(fly&&o.warm&&!PLN.rush&&!L.warmDone){const tw=wallMs();const rw=plnWarmStep(L,S,p,C,V);fbSpend(wallMs()-tw);if(NEAR.on)nearWarm(wallMs()-tw);if(rw)return "warm";}
   {const _s=NEAR.on?wallMs():0;plnLandStep(L,C.ex,V,null,lim);if(NEAR.on)NEAR.wStep=Math.round((wallMs()-_s)*10)/10;}
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */

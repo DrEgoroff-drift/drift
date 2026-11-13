@@ -35,7 +35,7 @@ function sameRun(sc,draw,frames){
     }
   }catch(e){return {err:"шаг "+i+" упал: "+e.message};}
   finally{LOOP_OFF=loop0;drawWorld=dw;hud=hu;}
-  return {h:out,t:G.t,rnd:rndState()[1]};
+  return {h:out,t:G.t,rnd:rndState()[1],parts:stateHashParts()};
 }
 TEST_SUITES.push(()=>suite("детерминизм: два прогона на одном семени и одних часах — один хэш мира каждые сто шагов",()=>{
   const scenes=lookScenes();
@@ -50,7 +50,8 @@ TEST_SUITES.push(()=>suite("детерминизм: два прогона на �
     ok(A.t>=SAME_FRAMES,sc.id+": время мира шло ("+(A.t|0)+")");
     const B=sameRun(sc,false,SAME_FRAMES);
     if(B&&B.err){ok(false,sc.id+" (второй): "+B.err);continue;}
-    eq(B&&B.h.join(" "),A.h.join(" "),sc.id+": второй прогон — тот же мир");
+    const changed=B?Object.keys(A.parts).filter(k=>A.parts[k]!==B.parts[k]).join(", "):"нет прогона";
+    eq(B&&B.h.join(" "),A.h.join(" "),sc.id+": второй прогон — тот же мир"+(changed?"; поля: "+changed:""));
   }
   ok(ran>=scenes.length-2,"сцен прогнано "+ran+" из "+scenes.length);
 }));

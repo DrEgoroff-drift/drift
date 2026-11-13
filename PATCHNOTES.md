@@ -1,3 +1,11 @@
+## 0.499.111 — Landing without rebuilding the approach
+
+- Cache exact noise gradients instead of repeating trigonometry for every terrain sample. The fixed 1.5 MiB cache preserves double-precision results, terrain density, materials and detail.
+- Prepare the autopilot target, including moons; fix the background camera's world/metre mismatch and retain the selected approach site through orbital capture. Manual travel around the orbit still selects another side.
+- Spend the available construction budget on visible chunks instead of stopping after two chunks. Readiness now means completed work, never a frame-count timeout; hidden descent pauses physics until its scene is drawable.
+- Cover exact noise equivalence, target priority, moon cleanup, longitude wrap and ready geometry. Reset background queues between tests and wait for the landing scene before testing its controls.
+- `python docs/probe-landing.py --approach` measures the real approach-to-descent handover; omit `--approach` for a cold entry, add `--slow 6` for CPU throttling. Screenshots remain outside git.
+
 ## 0.499.110 — Complete review of the 68-file collection
 
 - Reviewed every changed file in the collected 25 commits and its relevant callers; the per-file ledger is in `docs/REVIEW-2026-11-13.md`.

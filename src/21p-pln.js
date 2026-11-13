@@ -57,12 +57,24 @@ function plnHash(ix,iy,s){
   h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;
   return (h>>>0)/4294967296;
 }
+/* Градиент узла зависит только от хеша, а не от точки внутри клетки. Соседние
+   вершины брали те же sin/cos миллионы раз. Кэш прямого отображения хранит
+   исходные double без округления; коллизия лишь заменяет запись. 1.5 МБ навсегда,
+   без роста при перелётах и без аллокаций в горячем цикле. */
+const PLN_GRAD={key:new Float64Array(65536).fill(-1),x:new Float64Array(65536),y:new Float64Array(65536)};
+function plnGrad(ix,iy,s){
+  const h=plnHash(ix,iy,s),i=(h*4294967296)&65535,C=PLN_GRAD;
+  if(C.key[i]!==h){const a=h*TAU;C.key[i]=h;C.x[i]=Math.cos(a);C.y[i]=Math.sin(a);}
+  return i;
+}
 function plnNoise(x,y,s){
   const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;
   const ux=fx*fx*fx*(fx*(fx*6-15)+10),uy=fy*fy*fy*(fy*(fy*6-15)+10);
-  const a0=plnHash(ix,iy,s)*TAU,a1=plnHash(ix+1,iy,s)*TAU,a2=plnHash(ix,iy+1,s)*TAU,a3=plnHash(ix+1,iy+1,s)*TAU;
-  const a=Math.cos(a0)*fx+Math.sin(a0)*fy,b=Math.cos(a1)*(fx-1)+Math.sin(a1)*fy,
-        c=Math.cos(a2)*fx+Math.sin(a2)*(fy-1),d=Math.cos(a3)*(fx-1)+Math.sin(a3)*(fy-1);
+  const C=PLN_GRAD;
+  let i=plnGrad(ix,iy,s);const a=C.x[i]*fx+C.y[i]*fy;
+  i=plnGrad(ix+1,iy,s);const b=C.x[i]*(fx-1)+C.y[i]*fy;
+  i=plnGrad(ix,iy+1,s);const c=C.x[i]*fx+C.y[i]*(fy-1);
+  i=plnGrad(ix+1,iy+1,s);const d=C.x[i]*(fx-1)+C.y[i]*(fy-1);
   return (a+(b-a)*ux+(c-a)*uy+(a-b-c+d)*ux*uy)*1.41;
 }
 function plnFbm(x,y,oct,s){

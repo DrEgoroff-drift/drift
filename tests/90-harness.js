@@ -303,6 +303,8 @@ function resetWorld(){
      -Full, где набор шёл перед ними). Брошенная задача закрывается как в игре — it.return() */
   if(typeof PB!=="undefined")for(const k of [...PB.keys()])prebakeDrop(k);
   G.mode="system";G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.zoom=1;
+  plnBodyClear();PLNBODY.sys=null;preloadClear();
+  WORK_F=0;for(const w of WORK)w.f=0;
   G.shipId="strizh";G.owned={strizh:true};
   G.ship={x:0,y:-760,vx:0,vy:0,a:0,av:0,bank:0};
   G.fuel=100;G.hull=100;G.credits=600;G.data=0;G.matches=0;G.coop=null;
@@ -326,6 +328,7 @@ function resetWorld(){
   G.tech=new Set();G.techLvl={};G.barter=new Set();
   G.found=new Set();G.species=new Set();
   G.ap=null;G.orbit=null;G.watch=null;
+  G.wander=null;G.cosm=null;G.doors=null;G.fork=null;G.seams={};
   G.land=null;G.surf=null;G.st=null;G.belt=null;G.dig=null;G.cave=null;G.base=null;
   G.crew=[];G.allies=[];G.bases={};G.drones=[];G.droneInventory=0;G.droneSold={};G.smena=[];
   G.rogues=[];G.exiles=[];G.aiRift=null;
@@ -438,6 +441,7 @@ function landOnTestPlanet(){
    Спрашиваем саму печь: пока в очереди что-то есть — крутим, но не дольше
    потолка. Возвращает, сколько кадров прошло, — чтобы набор мог это сказать. */
 function bakeIdle(){
+  if(G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone)return false;
   if(typeof MAT_JOB!=="undefined"&&MAT_JOB)return false;
   /* печь заранее (17a0): задачи в очереди — мастер ещё не готов (кабина пояса печётся 10–11 кадров) */
   if(typeof PB!=="undefined"&&PB.size)return false;

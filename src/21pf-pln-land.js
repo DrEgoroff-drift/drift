@@ -408,7 +408,7 @@ function plnLandPath(L,x,z,nw){
    k — номер кулисы: 0 лента, 1 ложбина, 2 дальний берег, 3 холмы, 4 хребет, 5 и 7 горы, 6 равнина */
 function plnLandCol(L,x,z,h,n,k){
   const sd=L.sd,PAL=PLN_PAL,slope=1-n[1],wy=PLN_LAND.wRel,Fw=L.wl&&L.wl.far||PLN_FAR.terran,sn=Fw.snow,tl=Fw.tree;
-  const v1=plnFbm(x*.05+9,z*.05+2,3,sd+41)*.5+.5,v2=plnFbm(x*.011+4,z*.011+6,3,sd+42)*.5+.5;
+  const v1=k===6?0:plnFbm(x*.05+9,z*.05+2,3,sd+41)*.5+.5,v2=k<3?0:plnFbm(x*.011+4,z*.011+6,3,sd+42)*.5+.5;
   let c;
   if(k===0){
     const va=plnFbm(x*.045+1,z*.07+7,3,sd+43)*.5+.5,vb=plnFbm(x*.09+5,z*.13+3,2,sd+44)*.5+.5;
@@ -509,7 +509,7 @@ function plnLandBuild(L,J,m){
    ближние к объективу первыми; без n и lim — числа PLN_BUILD, первому вызову — его собственные.
    Первый вызов берёт только видимое у корабля, дальше очередь идёт до конца по кадрам, ближнее
    первым. PLN.rush — всё до конца разом, для стенда и съёмки */
-function plnLandStep(L,ex,V,n,lim){
+function plnLandStep(L,ex,V,n,lim,visibleOnly){
   if(L.left<=0)return 0;
   const t0=wallMs(),all=!!PLN.rush,first=!L.first,B=PLN_BUILD;
   const cap=n==null?(first?B.nFirst:B.n):n,ms=lim==null?(first?B.first:B.ms):lim;
@@ -530,7 +530,7 @@ function plnLandStep(L,ex,V,n,lim){
     for(const J of L.jobs){
       if(J.done)continue;
       const see=plnLandSees(J,ex,V,20),pr=(see?0:1e4)+Math.abs((J.xa+J.xb)/2-ex)+(J.t==="rib"?0:J.t==="far"?200+J.b*10:100);
-      if(pr<bp&&(all||see||!first)){bp=pr;best=J;}
+      if(pr<bp&&(all||see||(!first&&!visibleOnly))){bp=pr;best=J;}
     }
     if(!best||(!all&&(k>=cap||wallMs()-t0>=ms)))break;
     if(all){plnLandBuild(L,best);k++;continue;}

@@ -3439,7 +3439,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.110";
+const VER="0.499.111";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -72331,6 +72331,7 @@ function drawRocks(tr,camx,camy,pal){
    кнопки: корабль за кадр сдвигается на дробь, и точное равенство недостижимо.
    126 ступеней на оборот: сторона захода по-прежнему своя, мир тот же. */
 function plnLonBucket(l){return Math.round(l/0.05)*0.05;}
+function plnLonMatch(a,b){return a===b||(a!=null&&b!=null&&Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)))<=0.1);}
 function plnLonOf(p){
   if(!G.ship||typeof p.x!=="number")return null;
   const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
@@ -72345,13 +72346,7 @@ function startLanding(p){
      планеты на корабль, — а из неё вычитается текущий поворот планеты: за
      сутки под кораблём проезжает вся поверхность, и один и тот же мир на
      разных заходах встречает разным местом. */
-  let lon=null;
-  if(G.ship&&typeof p.x==="number"){
-    const app=Math.atan2(G.ship.y-p.y,G.ship.x-p.x);
-    const spin=(typeof planetSpinFrame==="function")
-      ? planetSpinFrame(p)/PLANET_SPIN*TAU : 0;
-    lon=plnLonBucket(app-spin);
-  }
+  const lon=plnLonOf(p);
   const _t0=NEAR.on?wallMs():0;
   /* рельеф берём готовым, если его успел испечь plnbody (21pg) на ту же долготу:
      иначе кнопка «ПОСАДКА» платит за genTerrain и ленту земли сама — это и была
@@ -72362,12 +72357,11 @@ function startLanding(p){
   let tr=null;
   /* рельеф остаётся в кэше и после нажатия: повторная посадка на ту же планету
      (вернулся в систему и сел снова) не должна снова платить за genTerrain */
-  if(p.__tr&&(p.__tr.lon===lon||Math.abs((p.__tr.lon||0)-(lon||0))<=0.1))tr=p.__tr;
+  if(p.__tr&&(plnBodyLocked(p)||plnLonMatch(p.__tr.lon,lon)))tr=p.__tr;
   if(!tr)tr=genTerrain(p,lon);
   const r=rng(p.seed^0x77);
   if(NEAR.on)NEAR.sl.gen=Math.round((wallMs()-_t0)*10)/10;
-  tr.lon=lon;
-  if(typeof p.__lon==="number")p.__lon=lon;
+  if(tr!==p.__tr)tr.lon=lon;
   /* достопримечательности вписываются в рельеф до того, как по нему расставят
      залежи и флору: они выравнивают под собой грунт (20a-poi) */
   {const _t=NEAR.on?wallMs():0;genPOI(tr,p);if(NEAR.on)NEAR.sl.poi=Math.round((wallMs()-_t)*10)/10;}
@@ -86050,12 +86044,24 @@ function plnHash(ix,iy,s){
   h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;
   return (h>>>0)/4294967296;
 }
+/* Градиент узла зависит только от хеша, а не от точки внутри клетки. Соседние
+   вершины брали те же sin/cos миллионы раз. Кэш прямого отображения хранит
+   исходные double без округления; коллизия лишь заменяет запись. 1.5 МБ навсегда,
+   без роста при перелётах и без аллокаций в горячем цикле. */
+const PLN_GRAD={key:new Float64Array(65536).fill(-1),x:new Float64Array(65536),y:new Float64Array(65536)};
+function plnGrad(ix,iy,s){
+  const h=plnHash(ix,iy,s),i=(h*4294967296)&65535,C=PLN_GRAD;
+  if(C.key[i]!==h){const a=h*TAU;C.key[i]=h;C.x[i]=Math.cos(a);C.y[i]=Math.sin(a);}
+  return i;
+}
 function plnNoise(x,y,s){
   const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;
   const ux=fx*fx*fx*(fx*(fx*6-15)+10),uy=fy*fy*fy*(fy*(fy*6-15)+10);
-  const a0=plnHash(ix,iy,s)*TAU,a1=plnHash(ix+1,iy,s)*TAU,a2=plnHash(ix,iy+1,s)*TAU,a3=plnHash(ix+1,iy+1,s)*TAU;
-  const a=Math.cos(a0)*fx+Math.sin(a0)*fy,b=Math.cos(a1)*(fx-1)+Math.sin(a1)*fy,
-        c=Math.cos(a2)*fx+Math.sin(a2)*(fy-1),d=Math.cos(a3)*(fx-1)+Math.sin(a3)*(fy-1);
+  const C=PLN_GRAD;
+  let i=plnGrad(ix,iy,s);const a=C.x[i]*fx+C.y[i]*fy;
+  i=plnGrad(ix+1,iy,s);const b=C.x[i]*(fx-1)+C.y[i]*fy;
+  i=plnGrad(ix,iy+1,s);const c=C.x[i]*fx+C.y[i]*(fy-1);
+  i=plnGrad(ix+1,iy+1,s);const d=C.x[i]*(fx-1)+C.y[i]*(fy-1);
   return (a+(b-a)*ux+(c-a)*uy+(a-b-c+d)*ux*uy)*1.41;
 }
 function plnFbm(x,y,oct,s){
@@ -88118,7 +88124,7 @@ function plnLandPath(L,x,z,nw){
    k — номер кулисы: 0 лента, 1 ложбина, 2 дальний берег, 3 холмы, 4 хребет, 5 и 7 горы, 6 равнина */
 function plnLandCol(L,x,z,h,n,k){
   const sd=L.sd,PAL=PLN_PAL,slope=1-n[1],wy=PLN_LAND.wRel,Fw=L.wl&&L.wl.far||PLN_FAR.terran,sn=Fw.snow,tl=Fw.tree;
-  const v1=plnFbm(x*.05+9,z*.05+2,3,sd+41)*.5+.5,v2=plnFbm(x*.011+4,z*.011+6,3,sd+42)*.5+.5;
+  const v1=k===6?0:plnFbm(x*.05+9,z*.05+2,3,sd+41)*.5+.5,v2=k<3?0:plnFbm(x*.011+4,z*.011+6,3,sd+42)*.5+.5;
   let c;
   if(k===0){
     const va=plnFbm(x*.045+1,z*.07+7,3,sd+43)*.5+.5,vb=plnFbm(x*.09+5,z*.13+3,2,sd+44)*.5+.5;
@@ -88219,7 +88225,7 @@ function plnLandBuild(L,J,m){
    ближние к объективу первыми; без n и lim — числа PLN_BUILD, первому вызову — его собственные.
    Первый вызов берёт только видимое у корабля, дальше очередь идёт до конца по кадрам, ближнее
    первым. PLN.rush — всё до конца разом, для стенда и съёмки */
-function plnLandStep(L,ex,V,n,lim){
+function plnLandStep(L,ex,V,n,lim,visibleOnly){
   if(L.left<=0)return 0;
   const t0=wallMs(),all=!!PLN.rush,first=!L.first,B=PLN_BUILD;
   const cap=n==null?(first?B.nFirst:B.n):n,ms=lim==null?(first?B.first:B.ms):lim;
@@ -88240,7 +88246,7 @@ function plnLandStep(L,ex,V,n,lim){
     for(const J of L.jobs){
       if(J.done)continue;
       const see=plnLandSees(J,ex,V,20),pr=(see?0:1e4)+Math.abs((J.xa+J.xb)/2-ex)+(J.t==="rib"?0:J.t==="far"?200+J.b*10:100);
-      if(pr<bp&&(all||see||!first)){bp=pr;best=J;}
+      if(pr<bp&&(all||see||(!first&&!visibleOnly))){bp=pr;best=J;}
     }
     if(!best||(!all&&(k>=cap||wallMs()-t0>=ms)))break;
     if(all){plnLandBuild(L,best);k++;continue;}
@@ -88927,14 +88933,14 @@ function plnBodyLandDrop(p){
 function plnBodyDrop(p){
   if(!p)return;
   plnBodyLandDrop(p);
-  p.__tr=null;p.__gs=null;p.__lon=null;
+  p.__tr=null;p.__gs=null;p.__lon=null;p.__approach=false;p.__approachOrbit=null;
 }
 /* система сменилась: её подготовка больше не нужна */
 function plnBodyClear(S){
   /* в заходе и на поверхности лента в работе — её не трогаем */
   if(G.mode==="landing"||G.mode==="surface")return;
   S=S||PLNBODY.sys;
-  if(S&&S.planets)for(const p of S.planets)plnBodyDrop(p);
+  if(S&&S.planets)for(const p of plnBodyAll(S))plnBodyDrop(p);
   PLNBODY.landP=null;PLNBODY.S=null;PLNBODY.C=null;PLNBODY.V=null;PLNBODY.failT=0;
   if(PLN_LAND.cur){plnLandFree(PLN_LAND.cur);PLN_LAND.cur=null;}
 }
@@ -88948,18 +88954,33 @@ function preloadSystem(sx,sy){
      Текущую систему не трогаем — она готовится своим проходом */
   const old=PLNBODY.target;
   if(old&&(old.sx!==sx||old.sy!==sy)){
-    try{const T=getSystem(old.sx,old.sy);if(T&&T!==G.sys&&T.planets)for(const q of T.planets)plnBodyDrop(q);}catch(_){}
+    try{const T=getSystem(old.sx,old.sy);if(T&&T!==G.sys&&T.planets)for(const q of plnBodyAll(T))plnBodyDrop(q);}catch(_){}
   }
   PLNBODY.target={sx,sy};
   try{if(typeof getSystem==="function")getSystem(sx,sy);}catch(_){}
   return true;
 }
 function preloadClear(){PLNBODY.target=null;}
+function plnBodyAll(S){return S&&S.planets?S.planets.flatMap(p=>[p,...(p.moons||[])]):[];}
+function plnBodyAim(S){
+  const p=G.ap&&G.ap.kind==="planet"?G.ap.p:G.orbit&&G.orbit.p;
+  return p&&p.type!=="gas"&&plnBodyAll(S).includes(p)?p:null;
+}
+/* Автопилот выбирает площадку один раз. Вращение тела по пути не отменяет стройку;
+   ручной выход с орбиты снова возвращает выбор стороны по положению корабля. */
+function plnBodyLocked(p){
+  if(!p.__approach||plnBodyAim(G.sys)!==p)return false;
+  if(G.ap&&G.ap.kind==="planet")return true;
+  const o=G.orbit;
+  if(p.__approachOrbit!==o){p.__approachOrbit=o;p.__approachAng=o.ang;}
+  return plnLonMatch(p.__approachAng,o.ang);
+}
 /* планеты системы от ближней к дальней: вероятная цель — первой */
 function plnBodyOrder(S){
   const sh=G.ship||{},arr=[];
-  if(S&&S.planets)for(const p of S.planets)if(p&&typeof p.x==="number")arr.push(p);
-  arr.sort((a,b)=>Math.hypot(sh.x-a.x,sh.y-a.y)-Math.hypot(sh.x-b.x,sh.y-b.y));
+  for(const p of plnBodyAll(S))if(p&&typeof p.x==="number")arr.push(p);
+  const aim=plnBodyAim(S);
+  arr.sort((a,b)=>(a===aim?-1:b===aim?1:Math.hypot(sh.x-a.x,sh.y-a.y)-a.radius-(Math.hypot(sh.x-b.x,sh.y-b.y)-b.radius)));
   return arr;
 }
 /* подпись вещей земли: по ней видно, что мир изменился (выработали залежь, сорвали
@@ -88993,11 +89014,12 @@ function plnBodyData(p){
 }
 /* ближайшая твёрдая планета: на газовую не садятся */
 function plnBodyNear(S){
+  const aim=plnBodyAim(S);if(aim)return aim;
   let b=null,bd=1e18;
   if(!S||!S.planets||!G.ship)return null;
-  for(const q of S.planets){
+  for(const q of plnBodyAll(S)){
     if(!q||q.type==="gas"||typeof q.x!=="number")continue;
-    const d=Math.hypot(G.ship.x-q.x,G.ship.y-q.y);
+    const d=Math.hypot(G.ship.x-q.x,G.ship.y-q.y)-q.radius;
     if(d<bd){bd=d;b=q;}
   }
   return b;
@@ -89016,15 +89038,16 @@ function plnBodyLandPrep(budget){
      заставляли «ближайшую» мигать каждый кадр: старая лента освобождалась, новая
      начинала строиться с нуля — кадр за кадром. Новую цель берём, только если она
      заметно ближе: иначе живёт прежняя лента, и в памяти по-прежнему одна */
-  if(PLNBODY.landP&&PLNBODY.landP!==near&&PLNBODY.landP.__land&&plnBodyDist(PLNBODY.landP)<=plnBodyDist(near)*1.12)near=PLNBODY.landP;
+  if(!plnBodyAim(G.sys)&&PLNBODY.landP&&PLNBODY.landP!==near&&PLNBODY.landP.__land&&plnBodyDist(PLNBODY.landP)<=plnBodyDist(near)*1.12)near=PLNBODY.landP;
   /* ближайшая действительно сменилась — ленту прежней отпускаем */
   if(PLNBODY.landP&&PLNBODY.landP!==near)plnBodyLandDrop(PLNBODY.landP);
   const lon=plnLonOf(near);
   /* рельеф уехал от захода больше допуска startLanding — он и его лента больше не годятся */
-  if(near.__tr&&near.__lon!=null&&lon!=null&&Math.abs(near.__lon-lon)>0.1){
+  if(near.__tr&&!plnBodyLocked(near)&&!plnLonMatch(near.__lon,lon)){
     plnBodyDrop(near);return;
   }
   if(!near.__tr||!near.__gs)return;           /* данные посчитает следующий проход */
+  near.__approach=plnBodyAim(G.sys)===near;
   if(near.__land&&(near.__land.tr!==near.__tr||near.__land.gsKey!==near.__gsKey||near.__land.gen!==PLN_GPU.gen))plnBodyLandDrop(near);
   if(!near.__land){
     const tr=near.__tr;
@@ -89043,7 +89066,7 @@ function plnBodyLandPrep(budget){
        а передача объектива принадлежит настоящему заходу, не фону */
     const y0=PLN.y0;PLN.y0=tr.padY;
     const gyw=groundAt(tr,tr.padX);
-    const C=plnLens(S2,surfScale(),(ws,hs,f)=>({vx:tr.padX/PLN_M-ws/2,vy:Math.max(-400,Math.min(gyw-hs*(1-f),tr.padY/PLN_M-hs*.24))}));
+    const C=plnLens(S2,surfScale(),(ws,hs,f)=>({vx:tr.padX-ws/2,vy:Math.max(-400,Math.min(gyw-hs*(1-f),landStartY(tr,tr.padX)-hs*.24))}));
     PLN.y0=y0;
     PLNBODY.C=C;PLNBODY.V={hw:C.hw,D:C.D};
     return;
@@ -98445,7 +98468,7 @@ function plnHandWin(S,ws,hs,f,h){
    Первый кадр спуска строил землю, расстановку, вещи, метки и травы разом: 90–150 мс. Пока идёт
    сборка, на экране прежняя сцена (drawLanding рисует систему), спуск стоит; каждый кадр — не больше
    7 мс работы. Этапы: куски ленты в окне (рядами), посадки, вещи земли, метки, своё, травы.
-   true — ещё собирается; страховка — 4 с (240 кадров) */
+   true — ещё собирается; готовность определяется выполненной работой, не счётчиком кадров */
 function plnWarmStep(L,S,p,C,V,ms,bg){
   if(!L.warm){L.warm={st:0,k:0,n:0,fn:0};return true;}   /* кадр, где заведён лист мира (plnLand), — только он */
   const w=L.warm;
@@ -98453,23 +98476,19 @@ function plnWarmStep(L,S,p,C,V,ms,bg){
      В фоне (bg) их не трогаем: полёт не должен компилировать конвейеры (91zzzzzzy4), а у устья
      пещеры их всё равно собирает 22d */
   if(w.n===0&&!bg&&typeof cave3PipesAhead==="function")cave3PipesAhead();
-  /* бюджет 7 мс — кадр спуска. Фон (plnbody) зовёт те же ступени со своим бюджетом
-     и без потолка кадров: там работа идёт минутами полёта, а не пятью секундами ожидания.
-     Потолок спуска считается отдельно (fn), чтобы проделанная фоном работа не съедала
-     запас настоящего захода: если фон не успел, спуск всё равно получает свои 240 кадров */
-  if(bg){if(++w.n>3000){L.warmDone=true;return false;}}
-  else if(++w.fn>240){L.warmDone=true;return false;}
+  /* Медленный кадр не делает недостроенную землю готовой. Оба пути проходят
+     одинаковую очередь до конца, а работа каждого вызова ограничена бюджетом. */
+  if(bg)++w.n;else ++w.fn;
   const B=ms!=null&&ms>0?ms:7;
   /* набор флоры строится из системы по шагу (plnKitTick); не успел — достраивается здесь, в бюджет кадра.
      Фон не строит его сам: набор и его конвейеры — дело работника flora, а полёт не должен компилировать */
   if(!(PLN_FLORA.kit&&PLN_FLORA.gen===PLN_GPU.gen)){
     if(bg)return true;
-    const t0=wallMs();
-    while(wallMs()-t0<B&&plnFloraKitStep());
+    plnFloraKitStep(B);
     return true;
   }
   if(w.st===0){
-    plnLandStep(L,C.ex,V,null,B,true);
+    plnLandStep(L,C.ex,V,32,B,true);
     if(!L.jobs.some(J=>!J.done&&plnLandSees(J,C.ex,V,20)))w.st=1;
     return true;
   }
@@ -98515,7 +98534,7 @@ function plnSurface(S,o){
      посадкам — остаток, но не меньше половины low */
   const B=PLN_BUILD,tb=wallMs();
   const lim=L.first?fbLeft(B.low,B.ms,B.frame):B.first;   /* общий счёт стройки кадра (17a0 FB) */
-  if(fly&&o.warm&&!PLN.rush&&!L.warmDone){const tw=wallMs();const rw=plnWarmStep(L,S,p,C,V);if(NEAR.on)nearWarm(wallMs()-tw);if(rw)return "warm";}
+  if(fly&&o.warm&&!PLN.rush&&!L.warmDone){const tw=wallMs();const rw=plnWarmStep(L,S,p,C,V);fbSpend(wallMs()-tw);if(NEAR.on)nearWarm(wallMs()-tw);if(rw)return "warm";}
   {const _s=NEAR.on?wallMs():0;plnLandStep(L,C.ex,V,null,lim);if(NEAR.on)NEAR.wStep=Math.round((wallMs()-_s)*10)/10;}
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
@@ -98886,7 +98905,7 @@ hud=function(){
 };
 const PLN_OLD_ULAND=updateLanding;
 updateLanding=function(){
-  if(PLN.on&&G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone)return;   /* заход ещё собирается (21pz) — спуск стоит */
+  if(PLN.on&&G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone)return;   /* готовность передаёт рисовалка, физика не летит за скрытым кадром */
   const m0=G.mode;
   PLN_OLD_ULAND.apply(this,arguments);
   const L=G.land;
@@ -98912,6 +98931,7 @@ drawLanding=function(){
     }
   }
   if(warm){
+    G.land.warm=true;G.land.warmDone=false;
     /* пока собирается: прежняя сцена — система с кораблём, не пустой кадр */
     BLOOM_K.landing=BLOOM_K.system||0;PLN_DESC.live=false;
     const m=G.mode;G.mode="system";
@@ -98919,6 +98939,7 @@ drawLanding=function(){
     return;
   }
   BLOOM_K.landing=ok?0:PLN_DESC.bloom;
+  if(G.land){G.land.warm=false;G.land.warmDone=true;}
   PLN_DESC.live=ok;
   if(!ok){PLN_OLD_LANDING.apply(this,arguments);return;}
   plnDescOver();
